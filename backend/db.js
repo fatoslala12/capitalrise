@@ -1,5 +1,3 @@
-const { Pool } = require('pg');
-
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -8,7 +6,6 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   ssl: {
     rejectUnauthorized: false
-  }
+  },
+  family: 4 // 💡 kjo është shtesa që zgjidh problemin me IPv6
 });
-
-module.exports = pool;
