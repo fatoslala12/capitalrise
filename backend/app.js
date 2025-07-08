@@ -1,11 +1,14 @@
 const express = require('express');
-const cors = require('cors');
 const app = express();
 
+const cors = require("cors");
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://building-system.vercel.app'],
-  credentials: true
+  origin: "https://building-system-seven.vercel.app", // ose ['https://...'] për më shumë origins
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 
 
 const PORT = process.env.PORT || 5000;
