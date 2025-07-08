@@ -24,7 +24,7 @@ export default function Contracts() {
 
   // Merr kontratat nga backend
   useEffect(() => {
-    axios.get("http://localhost:5000/api/contracts", {
+    axios.get("https://building-system.onrender.com/api/contracts", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setContracts(res.data))
@@ -33,7 +33,7 @@ export default function Contracts() {
 
   // Merr orët e punës nga backend
   useEffect(() => {
-    axios.get("http://localhost:5000/api/work-hours", {
+    axios.get("https://building-system.onrender.com/api/work-hours", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setWorkHours(res.data))
@@ -93,7 +93,7 @@ export default function Contracts() {
     };
 
     try {
-      const res = await axios.post("http://localhost:5000/api/contracts", payload, {
+      const res = await axios.post("https://building-system.onrender.com/api/contracts", payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContracts([...contracts, res.data]);
@@ -143,7 +143,7 @@ export default function Contracts() {
 
     try {
       const res = await axios.put(
-        `http://localhost:5000/api/contracts/${contract.contract_number}`,
+        `https://building-system.onrender.com/api/contracts/${contract.contract_number}`,
         contract,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -158,7 +158,7 @@ export default function Contracts() {
   const handleDelete = async (contract_number) => {
     if (!window.confirm("Jeni i sigurt që doni të fshini këtë kontratë?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/contracts/${contract_number}`, {
+      await axios.delete(`https://building-system.onrender.com/api/contracts/${contract_number}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContracts(contracts.filter((c) => c.contract_number !== contract_number));

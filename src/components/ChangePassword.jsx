@@ -18,7 +18,7 @@ export default function ChangePassword() {
     }
     try {
       await axios.post(
-        "http://localhost:5000/api/users/change-password",
+        "https://building-system.onrender.com/api/users/change-password",
         {
           email: user.email,
           currentPassword: current,

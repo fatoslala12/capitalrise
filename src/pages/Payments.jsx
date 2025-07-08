@@ -10,7 +10,7 @@ export default function Payments() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/contracts", {
+      .get("https://building-system.onrender.com/api/contracts", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setContracts(res.data || []))

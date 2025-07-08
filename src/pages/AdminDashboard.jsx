@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 
   // Merr punonjësit nga backend
   useEffect(() => {
-    axios.get("http://localhost:5000/api/employees", {
+    axios.get("https://building-system.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setEmployees(res.data))
@@ -46,7 +46,7 @@ export default function AdminDashboard() {
       for (const emp of employees) {
         try {
           const res = await axios.get(
-            `http://localhost:5000/api/work-hours/${emp.id}`,
+            `https://building-system.onrender.com/api/work-hours/${emp.id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           allData[emp.id] = res.data || {};

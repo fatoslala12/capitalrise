@@ -50,7 +50,7 @@ export default function EmployeesList() {
 
   // Merr kontratat nga backend
   useEffect(() => {
-    axios.get("http://localhost:5000/api/contracts", {
+    axios.get("https://building-system.onrender.com/api/contracts", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -63,7 +63,7 @@ export default function EmployeesList() {
 
   // Merr punonjësit nga backend
   useEffect(() => {
-    axios.get("http://localhost:5000/api/employees", {
+    axios.get("https://building-system.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setEmployees(res.data))
@@ -72,7 +72,7 @@ export default function EmployeesList() {
 
   // Merr orët e punës nga backend
   useEffect(() => {
-    axios.get("http://localhost:5000/api/work-hours", {
+    axios.get("https://building-system.onrender.com/api/work-hours", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setWorkHours(res.data))
@@ -81,7 +81,7 @@ export default function EmployeesList() {
 
   // Merr detyrat nga backend
   useEffect(() => {
-    axios.get("http://localhost:5000/api/tasks", {
+    axios.get("https://building-system.onrender.com/api/tasks", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setTasks(res.data))
@@ -180,7 +180,7 @@ export default function EmployeesList() {
     try {
       console.log("Payload:", toSnakeCase(newEmployee));
       // 1. Shto punonjësin
-      const res = await axios.post("http://localhost:5000/api/employees", toSnakeCase(newEmployee), {
+      const res = await axios.post("https://building-system.onrender.com/api/employees", toSnakeCase(newEmployee), {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEmployees([...employees, res.data.employee]);
@@ -213,7 +213,7 @@ export default function EmployeesList() {
         // Gjej contract_id për këtë siteName
         const contract = contracts.find(c => c.site_name === siteName);
         if (contract) {
-          await axios.post("http://localhost:5000/api/employee-workplaces", {
+          await axios.post("https://building-system.onrender.com/api/employee-workplaces", {
             employee_id: res.data.employee.id,
             contract_id: contract.id
           }, {
@@ -231,11 +231,11 @@ export default function EmployeesList() {
     if (!id) return;
     if (window.confirm("A jeni i sigurt që doni të fshini këtë punonjës?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/employees/${id}`, {
+        await axios.delete(`https://building-system.onrender.com/api/employees/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         // Rifresko listën nga backend
-        const res = await axios.get("http://localhost:5000/api/employees", {
+        const res = await axios.get("https://building-system.onrender.com/api/employees", {
           headers: { Authorization: `Bearer ${token}` }
         });
         setEmployees(res.data);

@@ -36,10 +36,10 @@ export default function Reports() {
     const fetchData = async () => {
       try {
         const [contractsRes, employeesRes, workHoursRes, invoicesRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/contracts", { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("http://localhost:5000/api/employees", { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("http://localhost:5000/api/work-hours/all", { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("http://localhost:5000/api/invoices", { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get("https://building-system.onrender.com/api/contracts", { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get("https://building-system.onrender.com/api/employees", { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get("https://building-system.onrender.com/api/work-hours/all", { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get("https://building-system.onrender.com/api/invoices", { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         const contracts = contractsRes.data || [];
         const employees = employeesRes.data || [];

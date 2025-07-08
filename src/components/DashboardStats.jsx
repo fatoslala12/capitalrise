@@ -22,9 +22,9 @@ export default function DashboardStats() {
   useEffect(() => {
     const fetchData = async () => {
       const [contractsRes, employeesRes, paidStatusRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/contracts", { headers }),
-        axios.get("http://localhost:5000/api/employees", { headers }),
-        axios.get("http://localhost:5000/api/work-hours/paid-status", { headers }),
+        axios.get("https://building-system.onrender.com/api/contracts", { headers }),
+        axios.get("https://building-system.onrender.com/api/employees", { headers }),
+        axios.get("https://building-system.onrender.com/api/work-hours/paid-status", { headers }),
       ]);
       setContracts(contractsRes.data || []);
       setEmployees(employeesRes.data || []);
@@ -45,10 +45,10 @@ export default function DashboardStats() {
 
     const fetchWorkHoursAndInvoices = async () => {
       const [workHoursRes, invoicesRes, tasksRes, expensesRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/work-hours/all", { headers }),
-        axios.get("http://localhost:5000/api/invoices", { headers }),
-        axios.get("http://localhost:5000/api/tasks", { headers }),
-        axios.get("http://localhost:5000/api/expenses", { headers }),
+        axios.get("https://building-system.onrender.com/api/work-hours/all", { headers }),
+        axios.get("https://building-system.onrender.com/api/invoices", { headers }),
+        axios.get("https://building-system.onrender.com/api/tasks", { headers }),
+        axios.get("https://building-system.onrender.com/api/expenses", { headers }),
       ]);
       const workHours = workHoursRes.data || [];
       const invoices = invoicesRes.data || [];

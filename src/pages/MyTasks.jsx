@@ -14,7 +14,7 @@ export default function MyTasks() {
   useEffect(() => {
     if (!user?.email) return;
     axios
-      .get(`http://localhost:5000/api/tasks?assignedTo=${user.email}`, {
+      .get(`https://building-system.onrender.com/api/tasks?assignedTo=${user.email}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setTasks(res.data || []))
@@ -25,7 +25,7 @@ export default function MyTasks() {
   const handleComplete = async (id) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/tasks/${id}/complete`,
+        `https://building-system.onrender.com/api/tasks/${id}/complete`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

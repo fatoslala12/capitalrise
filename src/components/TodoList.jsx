@@ -13,7 +13,7 @@ export default function TodoList({ isAdminView = false }) {
   useEffect(() => {
     if (!user) return;
     axios
-      .get(`http://localhost:5000/api/todos?user=${user.email}`, { headers })
+      .get(`https://building-system.onrender.com/api/todos?user=${user.email}`, { headers })
       .then((res) => setTasks(res.data || []))
       .catch(() => setTasks([]));
   }, [user]);
@@ -23,7 +23,7 @@ export default function TodoList({ isAdminView = false }) {
     if (!newTask.trim()) return;
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/todos",
+        "https://building-system.onrender.com/api/todos",
         { user: user.email, text: newTask.trim() },
         { headers }
       );
@@ -37,7 +37,7 @@ export default function TodoList({ isAdminView = false }) {
   // Fshi detyrë
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/todos/${id}`, { headers });
+      await axios.delete(`https://building-system.onrender.com/api/todos/${id}`, { headers });
       setTasks(tasks.filter((t) => t._id !== id));
     } catch {
       alert("Gabim gjatë fshirjes së detyrës!");

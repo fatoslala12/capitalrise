@@ -45,7 +45,7 @@ export default function ContractDetails() {
     const fetchData = async () => {
       try {
         const contractRes = await axios.get(
-          `http://localhost:5000/api/contracts/contract-number/${contract_number}`,
+          `https://building-system.onrender.com/api/contracts/contract-number/${contract_number}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setContract(contractRes.data);
@@ -55,7 +55,7 @@ export default function ContractDetails() {
 
       try {
         const invoicesRes = await axios.get(
-          `http://localhost:5000/api/invoices/${contract_number}`,
+          `https://building-system.onrender.com/api/invoices/${contract_number}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setInvoices(invoicesRes.data || []);
@@ -75,7 +75,7 @@ export default function ContractDetails() {
       const newDoc = { name: file.name, content: reader.result };
       try {
         const res = await axios.put(
-          `http://localhost:5000/api/contracts/${contract.id}/documents`,
+          `https://building-system.onrender.com/api/contracts/${contract.id}/documents`,
           { document: newDoc },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -91,7 +91,7 @@ export default function ContractDetails() {
   const handleDocumentDelete = async (index) => {
     try {
       const res = await axios.delete(
-        `http://localhost:5000/api/contracts/${contract.id}/documents/${index}`,
+        `https://building-system.onrender.com/api/contracts/${contract.id}/documents/${index}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setContract(res.data);
@@ -105,7 +105,7 @@ export default function ContractDetails() {
     if (!newComment.trim()) return;
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/contracts/${contract.id}/comments`,
+        `https://building-system.onrender.com/api/contracts/${contract.id}/comments`,
         { text: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -182,13 +182,13 @@ export default function ContractDetails() {
     };
     try {
       await axios.post(
-        `http://localhost:5000/api/invoices/${contract.contract_number}`,
+        `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
         newInvoiceWithContract,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Refresh invoices after saving
       const invoicesRes = await axios.get(
-        `http://localhost:5000/api/invoices/${contract.contract_number}`,
+        `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setInvoices(invoicesRes.data || []);
@@ -219,12 +219,12 @@ export default function ContractDetails() {
     if (!window.confirm("A jeni i sigurt që dëshironi të fshini këtë faturë?")) return;
     try {
       await axios.delete(
-        `http://localhost:5000/api/invoices/${invoiceId}`,
+        `https://building-system.onrender.com/api/invoices/${invoiceId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Rifresko faturat pas fshirjes
       const invoicesRes = await axios.get(
-        `http://localhost:5000/api/invoices/${contract.contract_number}`,
+        `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setInvoices(invoicesRes.data || []);
@@ -238,13 +238,13 @@ export default function ContractDetails() {
   const handleTogglePaid = async (invoiceId, currentPaid) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/invoices/${invoiceId}/toggle-paid`,
+        `https://building-system.onrender.com/api/invoices/${invoiceId}/toggle-paid`,
         { paid: !currentPaid },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Refresh invoices after change
       const invoicesRes = await axios.get(
-        `http://localhost:5000/api/invoices/${contract.contract_number}`,
+        `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setInvoices(invoicesRes.data || []);

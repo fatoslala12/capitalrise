@@ -24,7 +24,7 @@ export default function PaymentDetails() {
   // Merr të dhënat nga backend
   useEffect(() => {
     // Kontrata
-    axios.get(`http://localhost:5000/api/contracts/contract-number/${contract_number}`, {
+    axios.get(`https://building-system.onrender.com/api/contracts/contract-number/${contract_number}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -34,21 +34,21 @@ export default function PaymentDetails() {
       .catch(() => setContract(null));
 
     // Orët e punës
-    axios.get(`http://localhost:5000/api/work-hours/structured`, {
+    axios.get(`https://building-system.onrender.com/api/work-hours/structured`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setWorkHours(res.data || {}))
       .catch(() => setWorkHours({}));
 
     // Punonjësit
-    axios.get("http://localhost:5000/api/employees", {
+    axios.get("https://building-system.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setEmployees(res.data || []))
       .catch(() => setEmployees([]));
 
     // Shpenzimet
-    axios.get(`http://localhost:5000/api/expenses/${contract_number}`, {
+    axios.get(`https://building-system.onrender.com/api/expenses/${contract_number}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setExpensesInvoices(res.data || []))
@@ -96,7 +96,7 @@ export default function PaymentDetails() {
       };
       try {
         const res = await axios.post(
-          `http://localhost:5000/api/expenses/${contract_number}`,
+          `https://building-system.onrender.com/api/expenses/${contract_number}`,
           expenseInvoice,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -121,12 +121,12 @@ export default function PaymentDetails() {
   const handleDelete = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/expenses/${id}`,
+        `https://building-system.onrender.com/api/expenses/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Rifresko faturat pas fshirjes
       const res = await axios.get(
-        `http://localhost:5000/api/expenses/${contract_number}`,
+        `https://building-system.onrender.com/api/expenses/${contract_number}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log('Faturat pas fshirjes:', res.data);
@@ -140,13 +140,13 @@ export default function PaymentDetails() {
   const togglePaid = async (id) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/expenses/${id}/toggle-paid`,
+        `https://building-system.onrender.com/api/expenses/${id}/toggle-paid`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Rifresko faturat pas ndryshimit të statusit
       const res = await axios.get(
-        `http://localhost:5000/api/expenses/${contract_number}`,
+        `https://building-system.onrender.com/api/expenses/${contract_number}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log('Faturat pas ndryshimit të statusit:', res.data);

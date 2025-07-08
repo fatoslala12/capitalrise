@@ -33,7 +33,7 @@ export default function EmployeeDetails() {
 
   // Merr të gjithë punonjësit për workplace
   useEffect(() => {
-    axios.get("http://localhost:5000/api/employees", {
+    axios.get("https://building-system.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setAllEmployees(res.data))
@@ -50,7 +50,7 @@ export default function EmployeeDetails() {
   // Merr historikun e orëve të punës nga backend
   useEffect(() => {
     if (!id) return;
-    axios.get(`http://localhost:5000/api/work-hours/structured/${id}`, {
+    axios.get(`https://building-system.onrender.com/api/work-hours/structured/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -61,7 +61,7 @@ export default function EmployeeDetails() {
         console.log('workHistory API error:', err);
         setWorkHistory({});
       });
-    axios.get(`http://localhost:5000/api/payments/${id}`, {
+    axios.get(`https://building-system.onrender.com/api/payments/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -75,7 +75,7 @@ export default function EmployeeDetails() {
   // Merr të dhënat e user-it përkatës nga backend (bazuar në employee.id)
   useEffect(() => {
     if (!employee) return;
-    axios.get(`http://localhost:5000/api/users?employee_id=${employee.id}`, {
+    axios.get(`https://building-system.onrender.com/api/users?employee_id=${employee.id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setUser(res.data[0] || null))
@@ -85,7 +85,7 @@ export default function EmployeeDetails() {
   // Merr attachments kur hapet faqja
   useEffect(() => {
     if (!id) return;
-    axios.get(`http://localhost:5000/api/employees/${id}/attachments`, {
+    axios.get(`https://building-system.onrender.com/api/employees/${id}/attachments`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setAttachments(res.data))
@@ -119,7 +119,7 @@ export default function EmployeeDetails() {
 
   const handleSave = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/employees/${id}`, toSnakeCase(employee), {
+      await axios.put(`https://building-system.onrender.com/api/employees/${id}`, toSnakeCase(employee), {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEditing(false);
@@ -137,7 +137,7 @@ export default function EmployeeDetails() {
       try {
         setUploadProgress(10);
         await axios.post(
-          `http://localhost:5000/api/employees/${id}/attachments`,
+          `https://building-system.onrender.com/api/employees/${id}/attachments`,
           {
             file_name: file.name,
             file_path: reader.result,
@@ -154,7 +154,7 @@ export default function EmployeeDetails() {
         );
         setUploadProgress(0);
         // Rifresko attachments
-        const res = await axios.get(`http://localhost:5000/api/employees/${id}/attachments`, {
+        const res = await axios.get(`https://building-system.onrender.com/api/employees/${id}/attachments`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setAttachments(res.data);
@@ -170,11 +170,11 @@ export default function EmployeeDetails() {
     if (!window.confirm("A jeni i sigurt që doni të fshini këtë dokument?")) return;
     try {
       await axios.delete(
-        `http://localhost:5000/api/employees/${id}/attachments/${attachmentId}`,
+        `https://building-system.onrender.com/api/employees/${id}/attachments/${attachmentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Rifresko attachments pas fshirjes
-      const res = await axios.get(`http://localhost:5000/api/employees/${id}/attachments`, {
+      const res = await axios.get(`https://building-system.onrender.com/api/employees/${id}/attachments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAttachments(res.data);
@@ -187,11 +187,11 @@ export default function EmployeeDetails() {
     if (!window.confirm("A jeni i sigurt që doni të fshini këtë dokument?")) return;
     try {
       await axios.delete(
-        `http://localhost:5000/api/employees/${id}/attachments/${attachmentId}`,
+        `https://building-system.onrender.com/api/employees/${id}/attachments/${attachmentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Rifresko attachments pas fshirjes
-      const res = await axios.get(`http://localhost:5000/api/employees/${id}/attachments`, {
+      const res = await axios.get(`https://building-system.onrender.com/api/employees/${id}/attachments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAttachments(res.data);

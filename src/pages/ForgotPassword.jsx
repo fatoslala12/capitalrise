@@ -18,7 +18,7 @@ export default function ForgotPassword() {
       return;
     }
     try {
-      await axios.post("http://localhost:5000/api/users/reset-password", {
+      await axios.post("https://building-system.onrender.com/api/users/reset-password", {
         email: email.trim().toLowerCase(),
         newPassword,
       });

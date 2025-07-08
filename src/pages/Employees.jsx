@@ -11,7 +11,7 @@ export default function Employees() {
   // Merr user-at nga backend
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/users", {
+      .get("https://building-system.onrender.com/api/users", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setUsers(res.data))
@@ -21,7 +21,7 @@ export default function Employees() {
   // Merr punonjësit nga backend
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/employees", {
+      .get("https://building-system.onrender.com/api/employees", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setEmployees(res.data))
@@ -36,7 +36,7 @@ export default function Employees() {
     }
     try {
       await axios.post(
-        "http://localhost:5000/api/users/reset-password",
+        "https://building-system.onrender.com/api/users/reset-password",
         { email },
         { headers: { Authorization: `Bearer ${token}` } }
       );

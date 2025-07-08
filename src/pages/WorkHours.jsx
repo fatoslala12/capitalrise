@@ -39,7 +39,7 @@ export default function WorkHours() {
   // Shto këtë useEffect në fillim të komponentit
   useEffect(() => {
     if (user && user.role === "manager" && !user.workplace && user.employee_id) {
-      axios.get(`http://localhost:5000/api/employees/${user.employee_id}`, {
+      axios.get(`https://building-system.onrender.com/api/employees/${user.employee_id}`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
         if (res.data && res.data.workplace) {
@@ -53,7 +53,7 @@ export default function WorkHours() {
   useEffect(() => {
     console.log("USER NE WORKHOURS:", user);
     if (!user) return;
-    axios.get("http://localhost:5000/api/employees", {
+    axios.get("https://building-system.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(async res => {
@@ -64,7 +64,7 @@ export default function WorkHours() {
           return;
         }
         // MANAGER: filtro sipas kontratave të përbashkëta
-        const ewRes = await axios.get("http://localhost:5000/api/employee-workplaces", {
+        const ewRes = await axios.get("https://building-system.onrender.com/api/employee-workplaces", {
           headers: { Authorization: `Bearer ${token}` }
         });
         const allRelations = ewRes.data || [];
@@ -85,7 +85,7 @@ export default function WorkHours() {
   // Merr orët e punës nga backend
   useEffect(() => {
     if (employees.length === 0) return;
-    axios.get("http://localhost:5000/api/work-hours/structured", {
+    axios.get("https://building-system.onrender.com/api/work-hours/structured", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -97,7 +97,7 @@ export default function WorkHours() {
 
   // Merr kontratat për site options
   useEffect(() => {
-    axios.get("http://localhost:5000/api/contracts", {
+    axios.get("https://building-system.onrender.com/api/contracts", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -110,7 +110,7 @@ export default function WorkHours() {
   // Merr statusin e pagesës nga backend
   useEffect(() => {
     console.log('getPaidStatus called with week:', currentWeekLabel);
-    axios.get(`http://localhost:5000/api/work-hours/paid-status?week=${encodeURIComponent(currentWeekLabel)}`, {
+    axios.get(`https://building-system.onrender.com/api/work-hours/paid-status?week=${encodeURIComponent(currentWeekLabel)}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -157,14 +157,14 @@ export default function WorkHours() {
     try {
       console.log('hourData që po dërgohet:', hourData);
       await axios.post(
-        "http://localhost:5000/api/work-hours",
+        "https://building-system.onrender.com/api/work-hours",
         { hourData, weekLabel: currentWeekLabel },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSaved(true);
       alert("Orët u ruajtën me sukses për të gjithë punonjësit.");
       // Rifresko të dhënat e orëve nga backend
-      axios.get("http://localhost:5000/api/work-hours/structured", {
+      axios.get("https://building-system.onrender.com/api/work-hours/structured", {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => {

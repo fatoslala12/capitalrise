@@ -34,7 +34,7 @@ export default function Dashboard() {
 
   // Merr punonjësit nga backend
   useEffect(() => {
-    axios.get("http://localhost:5000/api/employees")
+    axios.get("https://building-system.onrender.com/api/employees")
       .then(res => setEmployees(res.data))
       .catch(() => setEmployees([]));
   }, []);
@@ -46,7 +46,7 @@ export default function Dashboard() {
       const allData = {};
       for (const emp of employees) {
         try {
-          const res = await axios.get(`http://localhost:5000/api/work-hours/${emp.id}`);
+          const res = await axios.get(`https://building-system.onrender.com/api/work-hours/${emp.id}`);
           allData[emp.id] = res.data || {};
         } catch {
           allData[emp.id] = {};
@@ -59,7 +59,7 @@ export default function Dashboard() {
 
   // Merr detyrat nga backend
   useEffect(() => {
-    axios.get("http://localhost:5000/api/tasks")
+    axios.get("https://building-system.onrender.com/api/tasks")
       .then(res => setTasks(res.data))
       .catch(() => setTasks([]));
   }, []);

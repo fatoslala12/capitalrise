@@ -18,19 +18,19 @@ export default function Tasks() {
 
   // Merr të dhënat nga backend
   useEffect(() => {
-    axios.get("http://localhost:5000/api/employees", {
+    axios.get("https://building-system.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setEmployees(res.data || []))
       .catch(() => setEmployees([]));
 
-    axios.get("http://localhost:5000/api/contracts", {
+    axios.get("https://building-system.onrender.com/api/contracts", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setContracts(res.data || []))
       .catch(() => setContracts([]));
 
-    axios.get("http://localhost:5000/api/tasks", {
+    axios.get("https://building-system.onrender.com/api/tasks", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setTasks(res.data || []))
@@ -69,7 +69,7 @@ export default function Tasks() {
           due_date: newTask.dueDate || null,
           assigned_by: user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.email
         };
-        const res = await axios.post("http://localhost:5000/api/tasks", entry, {
+        const res = await axios.post("https://building-system.onrender.com/api/tasks", entry, {
           headers: { Authorization: `Bearer ${token}` }
         });
         return res.data;
@@ -84,7 +84,7 @@ export default function Tasks() {
   const handleDelete = async (id) => {
     if (!window.confirm("Fshi këtë detyrë?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/tasks/${id}`, {
+      await axios.delete(`https://building-system.onrender.com/api/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks((prev) => prev.filter((t) => t.id !== id));
