@@ -23,8 +23,11 @@ router.post("/login", async (req, res) => {
     }
 
     // Krahasim i thjeshtë pa bcrypt
-    const isPasswordValid = password === user.password;
+  const isPasswordValid = String(password).trim() === String(user.password).trim();
     console.log("[DEBUG] Krahasim manual: frontend =", password, "| databaza =", user.password);
+console.log("[DEBUG] LLOJ password nga frontend:", typeof password, "| Vlera:", password);
+console.log("[DEBUG] LLOJ password në DB:", typeof user.password, "| Vlera:", user.password);
+
 
     if (!isPasswordValid) {
       console.warn("[WARNING] Fjalëkalimi nuk përputhet.");
