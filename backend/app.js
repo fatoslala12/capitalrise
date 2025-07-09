@@ -4,14 +4,24 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Konfigurimi i saktë për CORS
+// ✅ Konfigurimi i saktë për CORS me array
 const corsOptions = {
-  origin: "https://building-system-seven.vercel.app",
+  origin: ["https://building-system-seven.vercel.app"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 };
 
+// ✅ Apliko CORS
 app.use(cors(corsOptions));
+
+// ✅ Lejo edhe OPTIONS për preflight requests
+app.options("*", cors(corsOptions));
+
+// (Opsionale, për debug CORS nga Render)
+app.use((req, res, next) => {
+  console.log("[CORS CHECK] Origin:", req.headers.origin, "| Method:", req.method);
+  next();
+});
 
 // Middleware për JSON
 app.use(express.json({ limit: '10mb' }));
