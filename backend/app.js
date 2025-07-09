@@ -1,21 +1,18 @@
 const express = require('express');
 const cors = require("cors");
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Konfigurimi i saktë për CORS me array
-const corsOptions = {
-  origin: ["https://building-system-seven.vercel.app"],
+// Konfigurimi CORS për të lejuar gjithçka nga vercel
+app.use(cors({
+  origin: "https://building-system-seven.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-};
+}));
 
-// ✅ Apliko CORS
-app.use(cors(corsOptions));
-
-// ✅ Lejo edhe OPTIONS për preflight requests
-app.options("*", cors(corsOptions));
+// Opsionale – për të kthyer përgjigje për OPTIONS
+app.options('*', cors());
 
 // (Opsionale, për debug CORS nga Render)
 app.use((req, res, next) => {
