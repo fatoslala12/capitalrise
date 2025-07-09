@@ -22,6 +22,9 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Email ose fjalëkalim i gabuar." });
     }
 
+    // LOG që na duhet për të parë vlerat e krahasimit
+    console.log("[DEBUG] Krahasim fjalëkalimi: nga frontend =", password, "| hash në db =", user.password);
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       console.warn("[WARNING] Fjalëkalimi nuk përputhet.");
