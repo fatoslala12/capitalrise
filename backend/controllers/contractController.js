@@ -1,6 +1,7 @@
 const pool = require('../db');
 console.log('Contract controller loaded');
 
+// GET all contracts
 exports.getAllContracts = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM contracts ORDER BY id DESC');
@@ -12,21 +13,23 @@ exports.getAllContracts = async (req, res) => {
   }
 };
 
+// GET contract by ID
 exports.getContractById = async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query('SELECT * FROM contracts WHERE id = $1', [id]);
     if (result.rows.length === 0) {
-      console.log(`No contract found with id: ${id}`);
+      console.log(`[DEBUG] Asnjë kontratë me id: ${id}`);
       return res.status(404).json({ error: 'Not found' });
     }
     res.json(result.rows[0]);
   } catch (err) {
-    console.error('Error fetching contract:', err);
+    console.error('[ERROR] Marrja e kontratës:', err);
     res.status(500).json({ error: err.message });
   }
 };
 
+// CREATE new contract
 exports.createContract = async (req, res) => {
   const {
     contract_number,
@@ -69,73 +72,74 @@ exports.createContract = async (req, res) => {
         documents ? JSON.stringify(documents) : null
       ]
     );
+    console.log(`[DEBUG] Kontrata u shtua: ${result.rows[0].id}`);
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error("Gabim gjatë shtimit të kontratës:", err);
+    console.error("[ERROR] Gjatë shtimit të kontratës:", err);
     res.status(400).json({ error: err.message });
   }
 };
 
+// UPDATE contract (lejon dhe vetëm status-in)
 exports.updateContract = async (req, res) => {
   const { id } = req.params;
-  const {
-    company,
-    company_no,
-    site_name,
-    start_date,
-    finish_date,
-    status,
-    address,
-    closed_manually,
-    closed_date,
-    documents
-  } = req.body;
+  const fields = [
+    'company', 'company_no', 'site_name', 'start_date', 'finish_date',
+    'status', 'address', 'closed_manually', 'closed_date', 'documents'
+  ];
+  
+  const updates = [];
+  const values = [];
+  let index = 1;
+
+  for (const field of fields) {
+    if (req.body[field] !== undefined) {
+      updates.push(`${field} = $${index}`);
+      if (field === 'documents') {
+        values.push(JSON.stringify(req.body[field]));
+      } else {
+        values.push(req.body[field]);
+      }
+      index++;
+    }
+  }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ error: "Asnjë fushë për të përditësuar." });
+  }
+
+  const updateQuery = `
+    UPDATE contracts
+    SET ${updates.join(', ')}, updated_at = NOW()
+    WHERE id = $${index}
+    RETURNING *`;
+
+  values.push(id);
 
   try {
-    const result = await pool.query(`
-      UPDATE contracts SET
-        company=$1,
-        company_no=$2,
-        site_name=$3,
-        start_date=$4,
-        finish_date=$5,
-        status=$6,
-        address=$7,
-        closed_manually=$8,
-        closed_date=$9,
-        documents=$10,
-        updated_at=NOW()
-      WHERE id=$11 RETURNING *`,
-      [
-        company,
-        company_no,
-        site_name,
-        start_date,
-        finish_date,
-        status,
-        address || null,
-        closed_manually ?? false,
-        closed_date || null,
-        documents ? JSON.stringify(documents) : null,
-        id
-      ]
-    );
+    const result = await pool.query(updateQuery, values);
+    console.log(`[DEBUG] Kontrata u përditësua: ${id}`);
     res.json(result.rows[0]);
   } catch (err) {
+    console.error("[ERROR] Gjatë përditësimit të kontratës:", err);
     res.status(400).json({ error: err.message });
   }
 };
 
+// DELETE contract
 exports.deleteContract = async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query('DELETE FROM contracts WHERE id = $1', [id]);
+    console.log(`[DEBUG] Kontrata u fshi: ${id}`);
     res.status(204).send();
   } catch (err) {
+    console.error("[ERROR] Gjatë fshirjes së kontratës:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
+// ADD comment
 exports.addComment = async (req, res) => {
   const { id } = req.params;
   const { text } = req.body;
@@ -149,10 +153,12 @@ exports.addComment = async (req, res) => {
     );
     res.json(update.rows[0]);
   } catch (err) {
+    console.error('[ERROR] Komenti:', err);
     res.status(500).json({ error: err.message });
   }
 };
 
+// UPLOAD document
 exports.uploadDocument = async (req, res) => {
   const { id } = req.params;
   const { document } = req.body;
@@ -166,10 +172,12 @@ exports.uploadDocument = async (req, res) => {
     );
     res.json(update.rows[0]);
   } catch (err) {
+    console.error('[ERROR] Dokumenti:', err);
     res.status(500).json({ error: err.message });
   }
 };
 
+// DELETE document
 exports.deleteDocument = async (req, res) => {
   const { id, index } = req.params;
   try {
@@ -182,10 +190,12 @@ exports.deleteDocument = async (req, res) => {
     );
     res.json(update.rows[0]);
   } catch (err) {
+    console.error('[ERROR] Fshirja e dokumentit:', err);
     res.status(500).json({ error: err.message });
   }
 };
 
+// GET contract by contract_number
 exports.getContractByNumber = async (req, res) => {
   try {
     const result = await pool.query(
@@ -195,6 +205,7 @@ exports.getContractByNumber = async (req, res) => {
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
     res.json(result.rows[0]);
   } catch (err) {
+    console.error('[ERROR] Kërkimi nga contract_number:', err);
     res.status(500).json({ error: err.message });
   }
 };
