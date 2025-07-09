@@ -1,24 +1,20 @@
 const { Pool } = require('pg');
 
-console.log("[INIT] Duke krijuar lidhjen me databazën...");
-console.log("[INIT] DATABASE_URL nga process.env:", process.env.DATABASE_URL);
-
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: { rejectUnauthorized: false },
 });
 
-// Provojmë një query të thjeshtë për të testuar lidhjen
 (async () => {
+  console.log('[INIT] Duke testuar lidhjen me databazën...');
+
   try {
-    console.log("[CHECK] Duke testuar lidhjen me databazën me 'SELECT 1'...");
-    const result = await pool.query("SELECT 1");
-    console.log("[CHECK] Lidhja me databazën funksionon ✔️", result.rows);
+    const client = await pool.connect();
+    console.log('✅ Lidhja me databazën u realizua me sukses!');
+    await client.query('SELECT 1'); // thjesht një test minimal
+    client.release();
   } catch (err) {
-    console.error("[ERROR] Lidhja me databazën dështoi ❌");
-    console.error(err);
+    console.error('❌ Gabim gjatë lidhjes me databazën:', err);
   }
 })();
 
