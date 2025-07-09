@@ -8,7 +8,7 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const result = await pool.query("SELECT * FROM building_system.users WHERE email = $1", [email]);
+    const result = await pool.query("SELECT * FROM public.users WHERE email = $1", [email]);
     const user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
