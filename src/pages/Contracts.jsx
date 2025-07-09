@@ -22,14 +22,20 @@ export default function Contracts() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // Merr kontratat nga backend
   useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/contracts", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setContracts(res.data))
-      .catch(() => setContracts([]));
-  }, [token]);
+  axios.get("https://building-system.onrender.com/api/contracts", {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then(res => {
+    console.log("[DEBUG] Kontratat nga backend:", res.data);
+    setContracts(res.data);
+  })
+  .catch(err => {
+    console.error("[ERROR] Marrja e kontratave dështoi:", err);
+    setContracts([]);
+  });
+}, [token]);
+
 
   // Merr orët e punës nga backend
   useEffect(() => {
