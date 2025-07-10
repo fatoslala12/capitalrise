@@ -41,6 +41,19 @@ export default function Tasks() {
     setNewTask({ ...newTask, [e.target.name]: e.target.value });
   };
 
+  // Funksion për të kthyer camelCase në snake_case për payload-in e detyrës
+  function toSnakeCaseTask(obj) {
+    return {
+      assigned_to: obj.assignedTo,
+      title: obj.description,
+      description: obj.description,
+      status: obj.status || 'ongoing',
+      site_name: obj.siteName || null,
+      due_date: obj.dueDate || null,
+      assigned_by: obj.assignedBy || obj.assigned_by || null
+    };
+  }
+
   const handleAssign = async () => {
     const now = new Date().toISOString();
     let receivers = [];
@@ -60,15 +73,14 @@ export default function Tasks() {
 
     try {
       const newEntries = await Promise.all(receivers.map(async (id) => {
-        const entry = {
-          assigned_to: id,
-          title: newTask.description,
+        const entry = toSnakeCaseTask({
+          assignedTo: id,
           description: newTask.description,
           status: "ongoing",
-          site_name: newTask.siteName || null,
-          due_date: newTask.dueDate || null,
-          assigned_by: user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.email
-        };
+          siteName: newTask.siteName || null,
+          dueDate: newTask.dueDate || null,
+          assignedBy: user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.email
+        });
         const res = await axios.post("https://building-system.onrender.com/api/tasks", entry, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -90,6 +102,18 @@ export default function Tasks() {
       setTasks((prev) => prev.filter((t) => t.id !== id));
     } catch {
       alert("Gabim gjatë fshirjes së detyrës!");
+    }
+  };
+
+  // Funksion për të ndryshuar statusin e detyrës
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await axios.put(`https://building-system.onrender.com/api/tasks/${id}`, { status: newStatus }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: newStatus } : t));
+    } catch {
+      alert("Gabim gjatë ndryshimit të statusit të detyrës!");
     }
   };
 
@@ -189,6 +213,14 @@ export default function Tasks() {
                 <tr key={t.id} className="text-center">
                   <td className={`p-2 border font-semibold ${t.status === "ongoing" ? "text-yellow-600" : "text-green-600"}`}>
                     {t.status === "ongoing" ? "Në vazhdim" : "Përfunduar"}
+                    {t.status === "ongoing" && (
+                      <button
+                        onClick={() => handleStatusChange(t.id, "completed")}
+                        className="ml-2 px-2 py-1 bg-green-200 text-green-800 rounded text-xs hover:bg-green-400"
+                      >
+                        ✅ Përfundo
+                      </button>
+                    )}
                   </td>
                   <td className="p-2 border">{t.description}</td>
                   <td className="p-2 border">{t.first_name ? `${t.first_name} ${t.last_name}` : t.assigned_to}</td>
