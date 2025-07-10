@@ -31,6 +31,8 @@ export default function DashboardStats() {
   const [unpaidExpenses, setUnpaidExpenses] = useState([]);
   const [taskStats, setTaskStats] = useState({ totalTasks: 0, completedTasks: 0, ongoingTasks: 0 });
   const [taskFilter, setTaskFilter] = useState('ongoing');
+  // Shto këtë state për të mbajtur të gjitha detyrat
+  const [allTasks, setAllTasks] = useState([]);
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
@@ -75,11 +77,12 @@ export default function DashboardStats() {
       console.log('[DEBUG] expenses raw:', expensesRes.data);
       const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
       const invoices = snakeToCamel(invoicesRes.data || []);
-      const allTasks = snakeToCamel(tasksRes.data || []);
+      const allTasksData = snakeToCamel(tasksRes.data || []);
+      setAllTasks(allTasksData);
       const allExpenses = snakeToCamel(expensesRes.data || []);
       console.log('[DEBUG] structuredWorkHours camel:', structuredWorkHours);
       console.log('[DEBUG] invoices camel:', invoices);
-      console.log('[DEBUG] tasks camel:', allTasks);
+      console.log('[DEBUG] tasks camel:', allTasksData);
       console.log('[DEBUG] expenses camel:', allExpenses);
 
       let totalPaidNow = 0;
@@ -146,8 +149,8 @@ export default function DashboardStats() {
       setUnpaid(unpaidList);
 
       // Tasks
-      const totalTasks = allTasks.length;
-      const completedTasks = allTasks.filter(t => t.status === "completed").length;
+      const totalTasks = allTasksData.length;
+      const completedTasks = allTasksData.filter(t => t.status === "completed").length;
       const ongoingTasks = totalTasks - completedTasks;
       setTaskStats({ totalTasks, completedTasks, ongoingTasks });
 

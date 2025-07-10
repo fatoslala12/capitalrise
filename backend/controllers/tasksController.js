@@ -30,6 +30,7 @@ exports.getTasksByEmployee = async (req, res) => {
 
 exports.addTask = async (req, res) => {
   const { assigned_to, title, description, status, site_name, due_date, assigned_by } = req.body;
+  console.log('[DEBUG] addTask payload:', req.body);
   try {
     const result = await pool.query(`
       INSERT INTO tasks (assigned_to, title, description, status, site_name, due_date, assigned_by)
@@ -38,6 +39,7 @@ exports.addTask = async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    console.error('[DEBUG] addTask error:', err.message, err.stack);
     res.status(400).json({ error: err.message });
   }
 };
