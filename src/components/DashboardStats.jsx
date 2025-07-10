@@ -37,6 +37,7 @@ export default function DashboardStats() {
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
+  // useEffect për të marrë të dhënat vetëm një herë në mount
   useEffect(() => {
     const fetchData = async () => {
       const [contractsRes, employeesRes, paidStatusRes] = await Promise.all([
@@ -44,13 +45,9 @@ export default function DashboardStats() {
         api.get("/api/employees"),
         api.get("/api/work-hours/paid-status"),
       ]);
-      console.log('[DEBUG] contracts raw:', contractsRes.data);
-      console.log('[DEBUG] employees raw:', employeesRes.data);
-      console.log('[DEBUG] paidStatus raw:', paidStatusRes.data);
       setContracts(snakeToCamel(contractsRes.data || []));
       setEmployees(snakeToCamel(employeesRes.data || []));
       setPaidStatus(snakeToCamel(paidStatusRes.data || {}));
-
       const today = new Date();
       const monday = new Date(today);
       monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
@@ -59,11 +56,12 @@ export default function DashboardStats() {
       setThisWeekLabel(`${monday.toLocaleDateString()} - ${end.toLocaleDateString()}`);
     };
     fetchData();
+    // dependency array bosh që të mos bëjë loop
   }, []);
 
+  // useEffect për të marrë të dhënat e javës vetëm kur ndryshon thisWeekLabel
   useEffect(() => {
     if (!thisWeekLabel || employees.length === 0) return;
-
     const fetchWorkHoursAndInvoices = async () => {
       const [workHoursRes, invoicesRes, tasksRes, expensesRes] = await Promise.all([
         api.get("/api/work-hours/structured"),
@@ -71,10 +69,6 @@ export default function DashboardStats() {
         api.get("/api/tasks"),
         api.get("/api/expenses"),
       ]);
-      console.log('[DEBUG] workHours raw:', workHoursRes.data);
-      console.log('[DEBUG] invoices raw:', invoicesRes.data);
-      console.log('[DEBUG] tasks raw:', tasksRes.data);
-      console.log('[DEBUG] expenses raw:', expensesRes.data);
       const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
       const invoices = snakeToCamel(invoicesRes.data || []);
       const allTasksData = snakeToCamel(tasksRes.data || []);
@@ -168,9 +162,9 @@ export default function DashboardStats() {
       });
       setUnpaidExpenses(unpaidExpensesList);
     };
-
     fetchWorkHoursAndInvoices();
-  }, [thisWeekLabel, employees, paidStatus, contracts, headers]);
+    // dependency array vetëm nga thisWeekLabel dhe employees.length
+  }, [thisWeekLabel, employees.length]);
 
   const activeSites = [...new Set(contracts.filter(c => c.status === "Aktive").map(c => c.siteName))];
   const activeEmployees = employees.filter(e => e.status === "Aktiv");
@@ -236,8 +230,8 @@ export default function DashboardStats() {
               <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-4 bg-white rounded-xl p-4 shadow border border-blue-100">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md border ${t.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{t.status === 'completed' ? 'Përfunduar' : 'Në vazhdim'}</span>
                 <span className="font-semibold flex-1 text-lg">{t.description || t.title}</span>
-                <span className="text-xs text-blue-700 font-bold">{t.site_name || t.siteName || '-'}</span>
-                <span className="text-xs text-gray-500">Afati: {t.due_date ? new Date(t.due_date).toLocaleDateString() : '-'}</span>
+                <span className="text-lg text-blue-700 font-bold">{t.site_name || t.siteName || '-'}</span>
+                <span className="text-lg text-purple-700 font-bold">Afati: {t.due_date ? new Date(t.due_date).toLocaleDateString() : '-'}</span>
                 <span className="text-xs text-gray-500">Nga: {t.assigned_by || t.assignedBy || '-'}</span>
               </li>
             ))}
@@ -249,32 +243,32 @@ export default function DashboardStats() {
 
       {/* Grafik për site */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve</h3>
-        <ResponsiveContainer width="100%" height={300}>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve</h3>
+        <ResponsiveContainer width="100%" height={350}>
           <BarChart data={siteSummary} layout="vertical" margin={{ left: 50 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
-            <YAxis type="category" dataKey="site" width={150} />
+            <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#3b82f6' }} />
             <Tooltip />
-            <Bar dataKey="hours" fill="#3b82f6" radius={[0, 6, 6, 0]} />
+            <Bar dataKey="hours" fill="#3b82f6" radius={[0, 6, 6, 0]} barSize={30} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* Top 5 më të paguar */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
         <ul className="space-y-3 text-gray-800">
           {mostPaidEmployees.map((e, i) => (
-            <li key={e.id} className="flex items-center gap-4 bg-blue-50 p-3 rounded shadow-sm">
-              <img src={e.photo} alt="Foto" className="w-10 h-10 rounded-full object-cover border" />
+            <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
+              <img src={e.photo} alt="Foto" className="w-14 h-14 rounded-full object-cover border-2 border-blue-300 shadow" />
               <div className="flex-1">
-                <p className="font-semibold text-base">
+                <p className="font-bold text-lg">
                   {i + 1}. {e.name}
                 </p>
                 <p className="text-xs text-gray-500 capitalize">{e.role}</p>
               </div>
-              <div className="text-blue-700 font-bold text-sm">£{e.gross.toFixed(2)}</div>
+              <div className="text-blue-700 font-extrabold text-xl">£{e.gross.toFixed(2)}</div>
             </li>
           ))}
         </ul>
@@ -282,14 +276,17 @@ export default function DashboardStats() {
 
       {/* Faturat e papaguara */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
         {unpaid.length === 0 ? (
           <p className="text-gray-500 italic">Të gjitha faturat janë të paguara ✅</p>
         ) : (
-          <ul className="space-y-2 text-red-700 text-sm">
+          <ul className="space-y-2 text-red-700 text-base">
             {unpaid.map((item, idx) => (
-              <li key={idx} className="bg-red-50 p-2 rounded shadow-sm border border-red-200">
-                🔴 Kontrata #{item.contractNumber} | Fatura #{item.invoiceNumber} | {item.siteName} — <strong>£{item.total.toFixed(2)}</strong>
+              <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
+                <span className="font-bold">🔴 Kontrata #{item.contractNumber}</span>
+                <span>Fatura #{item.invoiceNumber}</span>
+                <span>{item.siteName}</span>
+                <span className="font-bold">£{item.total.toFixed(2)}</span>
               </li>
             ))}
           </ul>
@@ -298,14 +295,16 @@ export default function DashboardStats() {
 
       {/* Shpenzimet e papaguara */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
         {unpaidExpenses.length === 0 ? (
           <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
         ) : (
-          <ul className="space-y-2 text-red-700 text-sm">
+          <ul className="space-y-2 text-red-700 text-base">
             {unpaidExpenses.map((item, idx) => (
-              <li key={idx} className="bg-red-50 p-2 rounded shadow-sm border border-red-200">
-                🔴 {item.date} | {item.type} — <strong>£{item.gross.toFixed(2)}</strong>
+              <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
+                <span className="font-bold">🔴 {item.date}</span>
+                <span>{item.type}</span>
+                <span className="font-bold">£{item.gross.toFixed(2)}</span>
               </li>
             ))}
           </ul>
