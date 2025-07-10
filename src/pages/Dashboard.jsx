@@ -32,6 +32,13 @@ export default function Dashboard() {
     { label: formatDateRange(getStartOfWeek(-2)), start: getStartOfWeek(-2) }
   ];
 
+  // Merr emër + mbiemër për user-in (mos shfaq email në asnjë rast)
+  const userFullName = (user?.first_name && user?.last_name)
+    ? `${user.first_name} ${user.last_name}`
+    : (user?.firstName && user?.lastName)
+      ? `${user.firstName} ${user.lastName}`
+      : "";
+
   // Merr punonjësit nga backend
   useEffect(() => {
     api.get("/api/employees")
@@ -80,7 +87,7 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Mirë se erdhe, {user?.email}</h1>
+      <h1 className="text-2xl font-bold mb-4">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h1>
 
       {/* Përdorues - Punonjës */}
       {user.role === "user" && (
