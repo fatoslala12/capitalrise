@@ -173,6 +173,14 @@ export default function DashboardStats() {
   // Filtrim i detyrave sipas statusit
   const filteredTasks = allTasks.filter(t => taskFilter === 'all' ? true : t.status === taskFilter);
 
+  // Merr emër + mbiemër për user-in
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userFullName = (user?.first_name && user?.last_name)
+    ? `${user.first_name} ${user.last_name}`
+    : (user?.firstName && user?.lastName)
+      ? `${user.firstName} ${user.lastName}`
+      : user?.email || "";
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
       {/* HEADER MODERN */}
@@ -183,7 +191,8 @@ export default function DashboardStats() {
           </svg>
         </div>
         <div>
-          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</h2>
+          <h2 className="text-2xl font-bold mb-2 text-gray-900">Mirë se erdhe, {userFullName}</h2>
+          <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</div>
           <div className="text-lg font-medium text-purple-700">Statistika, detyra, pagesa dhe më shumë</div>
         </div>
       </div>
@@ -229,10 +238,10 @@ export default function DashboardStats() {
             {filteredTasks.map((t, idx) => (
               <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-4 bg-white rounded-xl p-4 shadow border border-blue-100">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md border ${t.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{t.status === 'completed' ? 'Përfunduar' : 'Në vazhdim'}</span>
-                <span className="font-semibold flex-1 text-lg">{t.description || t.title}</span>
-                <span className="text-lg text-blue-700 font-bold">{t.site_name || t.siteName || '-'}</span>
-                <span className="text-lg text-purple-700 font-bold">Afati: {t.due_date ? new Date(t.due_date).toLocaleDateString() : '-'}</span>
-                <span className="text-xs text-gray-500">Nga: {t.assigned_by || t.assignedBy || '-'}</span>
+                <span className="font-semibold flex-1 text-lg">{t.description || t.title || ''}</span>
+                <span className="text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
+                <span className="text-lg text-purple-700 font-bold">Afati: {t.due_date ? new Date(t.due_date).toLocaleDateString() : ''}</span>
+                <span className="text-xs text-gray-500">Nga: {t.assigned_by || t.assignedBy || ''}</span>
               </li>
             ))}
           </ul>
@@ -283,10 +292,10 @@ export default function DashboardStats() {
           <ul className="space-y-2 text-red-700 text-base">
             {unpaid.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <span className="font-bold">🔴 Kontrata #{item.contractNumber}</span>
-                <span>Fatura #{item.invoiceNumber}</span>
-                <span>{item.siteName}</span>
-                <span className="font-bold">£{item.total.toFixed(2)}</span>
+                <span className="font-bold">🔴 Kontrata #{item.contractNumber || ''}</span>
+                <span>Nr. Fature: <b>{item.invoiceNumber || ''}</b></span>
+                <span>Site: <b>{item.siteName || ''}</b></span>
+                <span className="font-bold text-lg flex items-center gap-1">💷 {item.total !== undefined ? `£${item.total.toFixed(2)}` : ''}</span>
               </li>
             ))}
           </ul>
@@ -302,9 +311,15 @@ export default function DashboardStats() {
           <ul className="space-y-2 text-red-700 text-base">
             {unpaidExpenses.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <span className="font-bold">🔴 {item.date}</span>
-                <span>{item.type}</span>
-                <span className="font-bold">£{item.gross.toFixed(2)}</span>
+                <span className="font-bold">🔴 {item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
+                <span>Lloj: <b>{item.type || ''}</b></span>
+                <span>Shuma: <b>💷 {item.gross !== undefined ? `£${item.gross.toFixed(2)}` : ''}</b></span>
+                <span>Kontrata: <b>{(() => {
+                  if (!item.contract_id || !contracts.length) return '';
+                  const c = contracts.find(c => String(c.id) === String(item.contract_id));
+                  return c ? `${c.site_name || c.siteName || ''}` : '';
+                })()}</b></span>
+                <span>{item.description || ''}</span>
               </li>
             ))}
           </ul>
