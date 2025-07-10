@@ -37,6 +37,12 @@ export default function Tasks() {
       .catch(() => setTasks([]));
   }, [token]);
 
+  // Filtro site-t sipas workplace të punonjësit të zgjedhur
+  const selectedEmployee = employees.find(e => String(e.id) === String(newTask.assignedTo));
+  const filteredSites = selectedEmployee && Array.isArray(selectedEmployee.workplace)
+    ? selectedEmployee.workplace
+    : contracts.map(c => c.site_name);
+
   const handleChange = (e) => {
     setNewTask({ ...newTask, [e.target.name]: e.target.value });
   };
@@ -162,10 +168,8 @@ export default function Tasks() {
               className="w-full border p-2 rounded"
             >
               <option value="">-- Asnjë --</option>
-              {contracts.map((c) => (
-                <option key={c.contract_number} value={c.site_name}>
-                  {c.site_name} (#{c.contract_number})
-                </option>
+              {filteredSites.map((site) => (
+                <option key={site} value={site}>{site}</option>
               ))}
             </select>
           </div>
@@ -225,6 +229,13 @@ export default function Tasks() {
                   </td>
                   <td className="p-2 border">{t.description}</td>
                   <td className="p-2 border">{t.first_name ? `${t.first_name} ${t.last_name}` : t.assigned_to}</td>
+                  {/* Nëse nuk ka emër, kërko nga employees */}
+                  {!t.first_name && employees.length > 0 && (
+                    (() => {
+                      const emp = employees.find(e => String(e.id) === String(t.assigned_to));
+                      return emp ? `${emp.first_name} ${emp.last_name}` : t.assigned_to;
+                    })()
+                  )}
                   <td className="p-2 border">{t.site_name || "-"}</td>
                   <td className="p-2 border">{t.due_date ? format(new Date(t.due_date), "dd/MM/yyyy") : "-"}</td>
                   <td className="p-2 border">{t.assigned_by || "-"}</td>

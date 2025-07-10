@@ -180,32 +180,44 @@ export default function DashboardStats() {
   const filteredTasks = allTasks.filter(t => taskFilter === 'all' ? true : t.status === taskFilter);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="max-w-7xl mx-auto px-4 py-10 space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+      {/* HEADER MODERN */}
+      <div className="flex flex-col md:flex-row items-center gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl shadow-lg px-10 py-6 mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
+        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-3 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-12 h-12">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</h2>
+          <div className="text-lg font-medium text-purple-700">Statistika, detyra, pagesa dhe më shumë</div>
+        </div>
+      </div>
+
       {/* Statistika kryesore */}
-      <div className="bg-white p-6 rounded-2xl shadow-md">
-        <h3 className="text-xl font-semibold mb-2">📍 Site aktive</h3>
-        <p className="text-4xl text-blue-700 font-bold">{activeSites.length}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center">
+          <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">📍 Site aktive</h3>
+          <p className="text-5xl text-blue-700 font-extrabold">{activeSites.length}</p>
+        </div>
+        <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center">
+          <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">👷 Punonjës aktivë</h3>
+          <p className="text-5xl text-green-700 font-extrabold">{activeEmployees.length}</p>
+        </div>
+        <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center">
+          <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">💷 Paguar këtë javë</h3>
+          <p className="text-5xl text-indigo-700 font-extrabold">£{totalPaid.toFixed(2)}</p>
+        </div>
+        <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center">
+          <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">📈 Fitimi (20%)</h3>
+          <p className="text-5xl text-emerald-700 font-extrabold">£{profit.toFixed(2)}</p>
+        </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-md">
-        <h3 className="text-xl font-semibold mb-2">👷 Punonjës aktivë</h3>
-        <p className="text-4xl text-green-700 font-bold">{activeEmployees.length}</p>
-      </div>
-
-      <div className="bg-white p-6 rounded-2xl shadow-md">
-        <h3 className="text-xl font-semibold mb-2">💷 Paguar këtë javë</h3>
-        <p className="text-4xl text-indigo-700 font-bold">£{totalPaid.toFixed(2)}</p>
-      </div>
-
-      <div className="bg-white p-6 rounded-2xl shadow-md">
-        <h3 className="text-xl font-semibold mb-2">📈 Fitimi (20%)</h3>
-        <p className="text-4xl text-emerald-700 font-bold">£{profit.toFixed(2)}</p>
-      </div>
-
-      {/* Detyrat */}
-      <div className="bg-white p-6 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-xl font-semibold mb-2">📋 Detyrat</h3>
-        <div className="mb-2 flex gap-4 items-center">
+      {/* Detyrat - më të dukshme */}
+      <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-8 rounded-2xl shadow-xl col-span-full border border-yellow-200">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📋 Detyrat</h3>
+        <div className="mb-4 flex gap-4 items-center">
           <label className="font-medium">Filtro:</label>
           <select value={taskFilter} onChange={e => setTaskFilter(e.target.value)} className="border p-2 rounded">
             <option value="ongoing">Vetëm aktive</option>
@@ -213,16 +225,18 @@ export default function DashboardStats() {
             <option value="all">Të gjitha</option>
           </select>
         </div>
-        <p className="text-sm text-gray-600 mb-2">
-          Totali: <strong>{allTasks.length}</strong> | ✅ Të përfunduara: <strong>{allTasks.filter(t => t.status === 'completed').length}</strong> | 🕒 Në vazhdim: <strong>{allTasks.filter(t => t.status === 'ongoing').length}</strong>
-        </p>
+        <div className="mb-4 flex flex-wrap gap-6">
+          <div className="bg-blue-100 px-6 py-3 rounded-xl text-blue-800 font-bold shadow">Totali: {allTasks.length}</div>
+          <div className="bg-green-100 px-6 py-3 rounded-xl text-green-800 font-bold shadow">✅ Të përfunduara: {allTasks.filter(t => t.status === 'completed').length}</div>
+          <div className="bg-yellow-100 px-6 py-3 rounded-xl text-yellow-800 font-bold shadow">🕒 Në vazhdim: {allTasks.filter(t => t.status === 'ongoing').length}</div>
+        </div>
         {filteredTasks.length > 0 ? (
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {filteredTasks.map((t, idx) => (
-              <li key={t.id || idx} className="flex items-center gap-4 bg-blue-50 rounded-xl p-3 shadow">
+              <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-4 bg-white rounded-xl p-4 shadow border border-blue-100">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md border ${t.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{t.status === 'completed' ? 'Përfunduar' : 'Në vazhdim'}</span>
-                <span className="font-semibold flex-1">{t.description || t.title}</span>
-                <span className="text-xs text-gray-500">{t.site_name || t.siteName || '-'}</span>
+                <span className="font-semibold flex-1 text-lg">{t.description || t.title}</span>
+                <span className="text-xs text-blue-700 font-bold">{t.site_name || t.siteName || '-'}</span>
                 <span className="text-xs text-gray-500">Afati: {t.due_date ? new Date(t.due_date).toLocaleDateString() : '-'}</span>
                 <span className="text-xs text-gray-500">Nga: {t.assigned_by || t.assignedBy || '-'}</span>
               </li>
@@ -233,12 +247,26 @@ export default function DashboardStats() {
         )}
       </div>
 
+      {/* Grafik për site */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={siteSummary} layout="vertical" margin={{ left: 50 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
+            <YAxis type="category" dataKey="site" width={150} />
+            <Tooltip />
+            <Bar dataKey="hours" fill="#3b82f6" radius={[0, 6, 6, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
       {/* Top 5 më të paguar */}
-      <div className="bg-white p-6 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-xl font-semibold mb-4">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
         <ul className="space-y-3 text-gray-800">
           {mostPaidEmployees.map((e, i) => (
-            <li key={e.id} className="flex items-center gap-4 bg-gray-50 p-3 rounded shadow-sm">
+            <li key={e.id} className="flex items-center gap-4 bg-blue-50 p-3 rounded shadow-sm">
               <img src={e.photo} alt="Foto" className="w-10 h-10 rounded-full object-cover border" />
               <div className="flex-1">
                 <p className="font-semibold text-base">
@@ -252,23 +280,9 @@ export default function DashboardStats() {
         </ul>
       </div>
 
-      {/* Grafik për site */}
-      <div className="bg-white p-6 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-xl font-semibold mb-4">📊 Ora të punuara këtë javë sipas site-ve</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={siteSummary} layout="vertical" margin={{ left: 50 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
-            <YAxis type="category" dataKey="site" width={150} />
-            <Tooltip />
-            <Bar dataKey="hours" fill="#3b82f6" radius={[0, 6, 6, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
       {/* Faturat e papaguara */}
-      <div className="bg-white p-6 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-xl font-semibold mb-4">📌 Faturat e Papaguara</h3>
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
         {unpaid.length === 0 ? (
           <p className="text-gray-500 italic">Të gjitha faturat janë të paguara ✅</p>
         ) : (
@@ -283,8 +297,8 @@ export default function DashboardStats() {
       </div>
 
       {/* Shpenzimet e papaguara */}
-      <div className="bg-white p-6 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-xl font-semibold mb-4">📂 Shpenzimet e Papaguara</h3>
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
         {unpaidExpenses.length === 0 ? (
           <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
         ) : (
