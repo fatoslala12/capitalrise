@@ -30,6 +30,7 @@ export default function DashboardStats() {
   const [unpaid, setUnpaid] = useState([]);
   const [unpaidExpenses, setUnpaidExpenses] = useState([]);
   const [taskStats, setTaskStats] = useState({ totalTasks: 0, completedTasks: 0, ongoingTasks: 0 });
+  const [taskFilter, setTaskFilter] = useState('ongoing');
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
@@ -172,6 +173,9 @@ export default function DashboardStats() {
   const activeEmployees = employees.filter(e => e.status === "Aktiv");
   const profit = totalPaid * 0.2;
 
+  // Filtrim i detyrave sipas statusit
+  const filteredTasks = allTasks.filter(t => taskFilter === 'all' ? true : t.status === taskFilter);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Statistika kryesore */}
@@ -198,18 +202,29 @@ export default function DashboardStats() {
       {/* Detyrat */}
       <div className="bg-white p-6 rounded-2xl shadow-md col-span-full">
         <h3 className="text-xl font-semibold mb-2">📋 Detyrat</h3>
+        <div className="mb-2 flex gap-4 items-center">
+          <label className="font-medium">Filtro:</label>
+          <select value={taskFilter} onChange={e => setTaskFilter(e.target.value)} className="border p-2 rounded">
+            <option value="ongoing">Vetëm aktive</option>
+            <option value="completed">Vetëm të përfunduara</option>
+            <option value="all">Të gjitha</option>
+          </select>
+        </div>
         <p className="text-sm text-gray-600 mb-2">
-          Totali: <strong>{taskStats.totalTasks}</strong> | ✅ Të përfunduara: <strong>{taskStats.completedTasks}</strong> | 🕒 Në vazhdim: <strong>{taskStats.ongoingTasks}</strong>
+          Totali: <strong>{allTasks.length}</strong> | ✅ Të përfunduara: <strong>{allTasks.filter(t => t.status === 'completed').length}</strong> | 🕒 Në vazhdim: <strong>{allTasks.filter(t => t.status === 'ongoing').length}</strong>
         </p>
-        {taskStats.totalTasks > 0 ? (
-          <div className="w-full bg-gray-200 rounded-full h-4 mt-2 overflow-hidden">
-            <div
-              className="bg-green-500 h-4 text-xs text-white text-center"
-              style={{ width: `${(taskStats.completedTasks / taskStats.totalTasks) * 100}%` }}
-            >
-              {Math.round((taskStats.completedTasks / taskStats.totalTasks) * 100)}%
-            </div>
-          </div>
+        {filteredTasks.length > 0 ? (
+          <ul className="space-y-2">
+            {filteredTasks.map((t, idx) => (
+              <li key={t.id || idx} className="flex items-center gap-4 bg-blue-50 rounded-xl p-3 shadow">
+                <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md border ${t.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{t.status === 'completed' ? 'Përfunduar' : 'Në vazhdim'}</span>
+                <span className="font-semibold flex-1">{t.description || t.title}</span>
+                <span className="text-xs text-gray-500">{t.site_name || t.siteName || '-'}</span>
+                <span className="text-xs text-gray-500">Afati: {t.due_date ? new Date(t.due_date).toLocaleDateString() : '-'}</span>
+                <span className="text-xs text-gray-500">Nga: {t.assigned_by || t.assignedBy || '-'}</span>
+              </li>
+            ))}
+          </ul>
         ) : (
           <p className="text-gray-500 italic mt-2">Nuk ka ende detyra të dhëna.</p>
         )}

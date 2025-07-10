@@ -74,13 +74,14 @@ export default function Tasks() {
     try {
       const newEntries = await Promise.all(receivers.map(async (id) => {
         const entry = toSnakeCaseTask({
-          assignedTo: id,
+          assignedTo: parseInt(id, 10),
           description: newTask.description,
           status: "ongoing",
           siteName: newTask.siteName || null,
           dueDate: newTask.dueDate || null,
           assignedBy: user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.email
         });
+        console.log('[DEBUG] Task payload:', entry);
         const res = await axios.post("https://building-system.onrender.com/api/tasks", entry, {
           headers: { Authorization: `Bearer ${token}` }
         });
