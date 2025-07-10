@@ -7,6 +7,10 @@ exports.getInvoicesByContract = async (req, res) => {
       'SELECT * FROM invoices WHERE contract_number = $1::text ORDER BY date DESC',
       [contract_number]
     );
+    console.log('[DEBUG] /api/invoices/contract/:contract_number - rows:', result.rows.length);
+    result.rows.forEach((row, idx) => {
+      console.log(`[DEBUG] Invoice Row ${idx}:`, row);
+    });
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -93,6 +97,19 @@ exports.deleteInvoice = async (req, res) => {
     res.status(204).send();
   } catch (err) {
     console.error("Gabim gjatë fshirjes së faturës:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAllInvoices = async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM invoices');
+    console.log('[DEBUG] /api/invoices - rows:', result.rows.length);
+    result.rows.forEach((row, idx) => {
+      console.log(`[DEBUG] Invoice Row ${idx}:`, row);
+    });
+    res.json(result.rows);
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };

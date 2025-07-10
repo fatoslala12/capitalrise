@@ -2,12 +2,11 @@ const pool = require('../db');
 
 exports.getAllExpenses = async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT ei.*, c.site_name
-      FROM expenses_invoices ei
-      JOIN contracts c ON ei.contract_id = c.id
-      ORDER BY ei.date DESC
-    `);
+    const result = await pool.query('SELECT * FROM expenses_invoices');
+    console.log('[DEBUG] /api/expenses - rows:', result.rows.length);
+    result.rows.forEach((row, idx) => {
+      console.log(`[DEBUG] Expense Row ${idx}:`, row);
+    });
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

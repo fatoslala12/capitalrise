@@ -41,6 +41,9 @@ export default function DashboardStats() {
         api.get("/api/employees"),
         api.get("/api/work-hours/paid-status"),
       ]);
+      console.log('[DEBUG] contracts raw:', contractsRes.data);
+      console.log('[DEBUG] employees raw:', employeesRes.data);
+      console.log('[DEBUG] paidStatus raw:', paidStatusRes.data);
       setContracts(snakeToCamel(contractsRes.data || []));
       setEmployees(snakeToCamel(employeesRes.data || []));
       setPaidStatus(snakeToCamel(paidStatusRes.data || {}));
@@ -65,10 +68,18 @@ export default function DashboardStats() {
         api.get("/api/tasks"),
         api.get("/api/expenses"),
       ]);
+      console.log('[DEBUG] workHours raw:', workHoursRes.data);
+      console.log('[DEBUG] invoices raw:', invoicesRes.data);
+      console.log('[DEBUG] tasks raw:', tasksRes.data);
+      console.log('[DEBUG] expenses raw:', expensesRes.data);
       const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
       const invoices = snakeToCamel(invoicesRes.data || []);
       const allTasks = snakeToCamel(tasksRes.data || []);
       const allExpenses = snakeToCamel(expensesRes.data || []);
+      console.log('[DEBUG] structuredWorkHours camel:', structuredWorkHours);
+      console.log('[DEBUG] invoices camel:', invoices);
+      console.log('[DEBUG] tasks camel:', allTasks);
+      console.log('[DEBUG] expenses camel:', allExpenses);
 
       let totalPaidNow = 0;
       const payments = [];

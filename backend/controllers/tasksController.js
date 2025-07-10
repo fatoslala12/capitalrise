@@ -2,12 +2,11 @@ const pool = require('../db');
 
 exports.getAllTasks = async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT t.*, e.first_name, e.last_name
-      FROM tasks t
-      JOIN employees e ON t.assigned_to = e.id
-      ORDER BY t.created_at DESC
-    `);
+    const result = await pool.query('SELECT * FROM tasks');
+    console.log('[DEBUG] /api/tasks - rows:', result.rows.length);
+    result.rows.forEach((row, idx) => {
+      console.log(`[DEBUG] Task Row ${idx}:`, row);
+    });
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
