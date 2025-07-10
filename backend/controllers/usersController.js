@@ -4,10 +4,10 @@ const bcrypt = require('bcrypt');
 exports.getAllUsers = async (req, res) => {
   try {
     if (req.query.employee_id) {
-      const result = await pool.query('SELECT * FROM building_system.users WHERE employee_id = $1', [req.query.employee_id]);
+      const result = await pool.query('SELECT * FROM users WHERE employee_id = $1', [req.query.employee_id]);
       return res.json(result.rows);
     }
-    const result = await pool.query('SELECT id, email, role, created_at FROM building_system.users');
+    const result = await pool.query('SELECT id, email, role, created_at FROM users');
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -19,7 +19,7 @@ exports.createUser = async (req, res) => {
   try {
     const hashed = await bcrypt.hash(password, 10);
     const result = await pool.query(`
-      INSERT INTO building_system.users (email, password, role)
+      INSERT INTO users (email, password, role)
       VALUES ($1, $2, $3) RETURNING id, email, role`,
       [email, hashed, role]
     );
@@ -50,7 +50,7 @@ exports.updateUser = async (req, res) => {
 
     values.push(id);
     const result = await pool.query(`
-      UPDATE building_system.users SET ${updates.join(', ')}, updated_at = NOW()
+      UPDATE users SET ${updates.join(', ')}, updated_at = NOW()
       WHERE id = $${index} RETURNING id, email, role`,
       values
     );
@@ -64,7 +64,7 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   const { id } = req.params;
   try {
-    await pool.query('DELETE FROM building_system.users WHERE id = $1', [id]);
+    await pool.query('DELETE FROM users WHERE id = $1', [id]);
     res.status(204).send();
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -84,7 +84,7 @@ exports.addUser = async (req, res) => {
 
     // Kontrollo nëse ekziston email-i
     const emailCheck = await pool.query(
-      `SELECT 1 FROM building_system.users WHERE email = $1`,
+      `SELECT 1 FROM users WHERE email = $1`,
       [email]
     );
     if (emailCheck.rows.length > 0) {
@@ -93,7 +93,7 @@ exports.addUser = async (req, res) => {
 
     // Shto user-in (password default 12345678 nëse nuk jepet nga forma)
     const userRes = await pool.query(
-      `INSERT INTO building_system.users
+      `INSERT INTO users
       (email, password, role, employee_id, first_name, last_name, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
       RETURNING *`,

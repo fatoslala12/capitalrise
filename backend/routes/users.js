@@ -14,7 +14,7 @@ router.post('/login', async (req, res) => {
 
   try {
     const result = await require('../db/db').query(
-      'SELECT * FROM building_system.users WHERE email = $1',
+      'SELECT * FROM users WHERE email = $1',
       [email]
     );
 

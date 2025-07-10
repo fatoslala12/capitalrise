@@ -6,8 +6,8 @@ exports.getAllEmployees = async (req, res) => {
     // Merr të gjithë punonjësit dhe rolet e tyre
     const employeesRes = await pool.query(`
       SELECT e.*, u.role
-      FROM building_system.employees e
-      LEFT JOIN building_system.users u ON u.employee_id = e.id
+      FROM employees e
+      LEFT JOIN users u ON u.employee_id = e.id
       ORDER BY e.id
     `);
     const employees = employeesRes.rows;
@@ -15,8 +15,8 @@ exports.getAllEmployees = async (req, res) => {
     // Merr të gjitha lidhjet employee-workplace me emrat e site-ve
     const workplacesRes = await pool.query(`
       SELECT ew.employee_id, c.site_name
-      FROM building_system.employee_workplaces ew
-      JOIN building_system.contracts c ON ew.contract_id = c.id
+      FROM employee_workplaces ew
+      JOIN contracts c ON ew.contract_id = c.id
     `);
     const workplaceMap = {};
     workplacesRes.rows.forEach(w => {
@@ -37,7 +37,7 @@ exports.getAllEmployees = async (req, res) => {
 
 exports.getEmployeeById = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM building_system.employees WHERE id = $1', [req.params.id]);
+    const result = await pool.query('SELECT * FROM employees WHERE id = $1', [req.params.id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
     res.json(result.rows[0]);
   } catch (err) {
@@ -62,7 +62,7 @@ exports.createEmployee = async (req, res) => {
     } = req.body;
 
     const empRes = await client.query(
-      `INSERT INTO building_system.employees
+      `INSERT INTO employees
       (first_name, last_name, dob, pob, residence, nid, start_date, phone, next_of_kin, next_of_kin_phone, label_type, qualification, status, photo, hourly_rate, username, created_by, updated_by)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
       RETURNING *`,
@@ -77,7 +77,7 @@ exports.createEmployee = async (req, res) => {
     // 2. Shto user-in
     const hashed = await bcrypt.hash(password || "12345678", 10);
     const userRes = await client.query(
-      `INSERT INTO building_system.users
+      `INSERT INTO users
       (email, password, role, employee_id)
       VALUES ($1, $2, $3, $4)
       RETURNING *`,
@@ -109,7 +109,7 @@ exports.updateEmployee = async (req, res) => {
     values.push(id);
 
     const result = await pool.query(
-      `UPDATE building_system.employees SET ${setQuery}, updated_at = CURRENT_TIMESTAMP WHERE id = $${values.length} RETURNING *`,
+      `UPDATE employees SET ${setQuery}, updated_at = CURRENT_TIMESTAMP WHERE id = $${values.length} RETURNING *`,
       values
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -126,22 +126,22 @@ exports.deleteEmployee = async (req, res) => {
     const empId = req.params.id;
     console.log('Fshirje punonjësi:', empId);
     // Fshi lidhjet në employee_workplaces
-    const ew = await client.query('DELETE FROM building_system.employee_workplaces WHERE employee_id = $1', [empId]);
+    const ew = await client.query('DELETE FROM employee_workplaces WHERE employee_id = $1', [empId]);
     console.log('employee_workplaces deleted:', ew.rowCount);
     // Fshi orët e punës
-    const wh = await client.query('DELETE FROM building_system.work_hours WHERE employee_id = $1', [empId]);
+    const wh = await client.query('DELETE FROM work_hours WHERE employee_id = $1', [empId]);
     console.log('work_hours deleted:', wh.rowCount);
     // Fshi pagesat
-    const pay = await client.query('DELETE FROM building_system.payments WHERE employee_id = $1', [empId]);
+    const pay = await client.query('DELETE FROM payments WHERE employee_id = $1', [empId]);
     console.log('payments deleted:', pay.rowCount);
     // Fshi detyrat
-    const tasks = await client.query('DELETE FROM building_system.tasks WHERE assigned_to = $1', [empId]);
+    const tasks = await client.query('DELETE FROM tasks WHERE assigned_to = $1', [empId]);
     console.log('tasks deleted:', tasks.rowCount);
     // Fshi user-in
-    const users = await client.query('DELETE FROM building_system.users WHERE employee_id = $1', [empId]);
+    const users = await client.query('DELETE FROM users WHERE employee_id = $1', [empId]);
     console.log('users deleted:', users.rowCount);
     // Fshi punonjësin
-    const result = await client.query('DELETE FROM building_system.employees WHERE id = $1 RETURNING *', [empId]);
+    const result = await client.query('DELETE FROM employees WHERE id = $1 RETURNING *', [empId]);
     console.log('employees deleted:', result.rowCount);
     await client.query('COMMIT');
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -178,7 +178,7 @@ exports.addEmployee = async (req, res) => {
 
     // 1. Shto punonjësin
     const empRes = await pool.query(
-      `INSERT INTO building_system.employees
+      `INSERT INTO employees
       (first_name, last_name, dob, pob, residence, nid, start_date, phone, next_of_kin, next_of_kin_phone, label_type, qualification, status, photo, hourly_rate, username)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
       RETURNING *`,
@@ -202,12 +202,12 @@ exports.uploadEmployeeDocument = async (req, res) => {
   const { document } = req.body;
   try {
     // Merr dokumentet ekzistuese
-    const result = await pool.query('SELECT documents FROM building_system.employees WHERE id = $1', [id]);
+    const result = await pool.query('SELECT documents FROM employees WHERE id = $1', [id]);
     let documents = result.rows[0]?.documents || [];
     if (typeof documents === 'string') documents = JSON.parse(documents);
     documents.push(document);
     const update = await pool.query(
-      'UPDATE building_system.employees SET documents = $1 WHERE id = $2 RETURNING *',
+      'UPDATE employees SET documents = $1 WHERE id = $2 RETURNING *',
       [JSON.stringify(documents), id]
     );
     res.json(update.rows[0]);
@@ -221,7 +221,7 @@ exports.getEmployeeAttachments = async (req, res) => {
   if (!id) return res.status(400).json({ error: 'employee id is required' });
   try {
     const result = await pool.query(
-      `SELECT * FROM building_system.attachments 
+      `SELECT * FROM attachments 
        WHERE entity_type = $1 AND entity_id = $2 
        ORDER BY id DESC`,
       ['employee', id]
@@ -245,7 +245,7 @@ exports.addEmployeeAttachment = async (req, res) => {
   }
   try {
     const result = await pool.query(
-      `INSERT INTO building_system.attachments 
+      `INSERT INTO attachments 
         (entity_type, entity_id, file_name, file_path, uploaded_by, uploaded_at)
        VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *`,
       ['employee', id, file_name, file_path, uploaded_by]
@@ -260,12 +260,12 @@ exports.deleteEmployeeAttachment = async (req, res) => {
   const { id, attachmentId } = req.params;
   try {
     await pool.query(
-      'DELETE FROM building_system.attachments WHERE id = $1 AND entity_type = $2 AND entity_id = $3',
+      'DELETE FROM attachments WHERE id = $1 AND entity_type = $2 AND entity_id = $3',
       [attachmentId, 'employee', id]
     );
     // Kthe listën e re të attachments
     const result = await pool.query(
-      `SELECT * FROM building_system.attachments 
+      `SELECT * FROM attachments 
        WHERE entity_type = $1 AND entity_id = $2 
        ORDER BY id DESC`,
       ['employee', id]
@@ -283,10 +283,10 @@ exports.getEmployeesBySite = async (req, res) => {
     // Merr të gjithë punonjësit që punojnë në këtë site
     const employeesRes = await pool.query(`
       SELECT DISTINCT e.*, u.role
-      FROM building_system.employees e
-      LEFT JOIN building_system.users u ON u.employee_id = e.id
-      JOIN building_system.employee_workplaces ew ON ew.employee_id = e.id
-      JOIN building_system.contracts c ON ew.contract_id = c.id
+      FROM employees e
+      LEFT JOIN users u ON u.employee_id = e.id
+      JOIN employee_workplaces ew ON ew.employee_id = e.id
+      JOIN contracts c ON ew.contract_id = c.id
       WHERE LOWER(c.site_name) = LOWER($1)
       ORDER BY e.id
     `, [site_name]);
@@ -295,8 +295,8 @@ exports.getEmployeesBySite = async (req, res) => {
     // Merr të gjitha lidhjet employee-workplace me emrat e site-ve
     const workplacesRes = await pool.query(`
       SELECT ew.employee_id, c.site_name
-      FROM building_system.employee_workplaces ew
-      JOIN building_system.contracts c ON ew.contract_id = c.id
+      FROM employee_workplaces ew
+      JOIN contracts c ON ew.contract_id = c.id
     `);
     const workplaceMap = {};
     workplacesRes.rows.forEach(w => {

@@ -4,8 +4,8 @@ exports.getAllTasks = async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT t.*, e.first_name, e.last_name
-      FROM building_system.tasks t
-      JOIN building_system.employees e ON t.assigned_to = e.id
+      FROM tasks t
+      JOIN employees e ON t.assigned_to = e.id
       ORDER BY t.created_at DESC
     `);
     res.json(result.rows);
@@ -18,7 +18,7 @@ exports.getTasksByEmployee = async (req, res) => {
   const { employeeId } = req.params;
   try {
     const result = await pool.query(`
-      SELECT * FROM building_system.tasks
+      SELECT * FROM tasks
       WHERE assigned_to = $1
       ORDER BY created_at DESC`,
       [employeeId]
@@ -33,7 +33,7 @@ exports.addTask = async (req, res) => {
   const { assigned_to, title, description, status, site_name, due_date, assigned_by } = req.body;
   try {
     const result = await pool.query(`
-      INSERT INTO building_system.tasks (assigned_to, title, description, status, site_name, due_date, assigned_by)
+      INSERT INTO tasks (assigned_to, title, description, status, site_name, due_date, assigned_by)
       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
       [assigned_to, title, description, status, site_name, due_date, assigned_by]
     );
@@ -48,7 +48,7 @@ exports.updateTaskStatus = async (req, res) => {
   const { status } = req.body;
   try {
     const result = await pool.query(`
-      UPDATE building_system.tasks
+      UPDATE tasks
       SET status = $1, updated_at = NOW()
       WHERE id = $2 RETURNING *`,
       [status, id]
@@ -62,7 +62,7 @@ exports.updateTaskStatus = async (req, res) => {
 exports.deleteTask = async (req, res) => {
   const { id } = req.params;
   try {
-    await pool.query('DELETE FROM building_system.tasks WHERE id = $1', [id]);
+    await pool.query('DELETE FROM tasks WHERE id = $1', [id]);
     res.status(204).send();
   } catch (err) {
     res.status(500).json({ error: err.message });

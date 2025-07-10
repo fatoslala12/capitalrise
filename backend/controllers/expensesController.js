@@ -4,8 +4,8 @@ exports.getAllExpenses = async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT ei.*, c.site_name
-      FROM building_system.expenses_invoices ei
-      JOIN building_system.contracts c ON ei.contract_id = c.id
+      FROM expenses_invoices ei
+      JOIN contracts c ON ei.contract_id = c.id
       ORDER BY ei.date DESC
     `);
     res.json(result.rows);
@@ -18,13 +18,13 @@ exports.getExpensesByContract = async (req, res) => {
   const { contract_number } = req.params;
   try {
     const contractRes = await pool.query(
-      'SELECT id FROM building_system.contracts WHERE contract_number = $1',
+      'SELECT id FROM contracts WHERE contract_number = $1',
       [contract_number]
     );
     if (contractRes.rows.length === 0) return res.json([]);
     const contract_id = contractRes.rows[0].id;
     const result = await pool.query(
-      'SELECT * FROM building_system.expenses_invoices WHERE contract_id = $1',
+      'SELECT * FROM expenses_invoices WHERE contract_id = $1',
       [contract_id]
     );
     res.json(result.rows);
@@ -37,7 +37,7 @@ exports.addExpense = async (req, res) => {
   const { contract_id, expense_type, date, gross, net, tax, paid } = req.body;
   try {
     const result = await pool.query(`
-      INSERT INTO building_system.expenses_invoices
+      INSERT INTO expenses_invoices
       (contract_id, expense_type, date, gross, net, tax, paid)
       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
       [contract_id, expense_type, date, gross, net, tax, paid]
@@ -53,7 +53,7 @@ exports.updateExpense = async (req, res) => {
   const { gross, net, tax, paid } = req.body;
   try {
     const result = await pool.query(`
-      UPDATE building_system.expenses_invoices
+      UPDATE expenses_invoices
       SET gross = $1, net = $2, tax = $3, paid = $4, updated_at = NOW()
       WHERE id = $5 RETURNING *`,
       [gross, net, tax, paid, id]
@@ -67,7 +67,7 @@ exports.updateExpense = async (req, res) => {
 exports.deleteExpense = async (req, res) => {
   const { id } = req.params;
   try {
-    await pool.query('DELETE FROM building_system.expenses_invoices WHERE id = $1', [id]);
+    await pool.query('DELETE FROM expenses_invoices WHERE id = $1', [id]);
     res.status(204).send();
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -79,18 +79,18 @@ exports.addExpenseForContract = async (req, res) => {
   const fields = req.body;
   try {
     const contractRes = await pool.query(
-      'SELECT id FROM building_system.contracts WHERE contract_number = $1',
+      'SELECT id FROM contracts WHERE contract_number = $1',
       [contract_number]
     );
     if (contractRes.rows.length === 0) return res.status(400).json({ error: 'Kontrata nuk u gjet' });
     const contract_id = contractRes.rows[0].id;
     const result = await pool.query(
-      `INSERT INTO building_system.expenses_invoices (contract_id, expense_type, date, gross, net, tax, paid, receipt_path)
+      `INSERT INTO expenses_invoices (contract_id, expense_type, date, gross, net, tax, paid, receipt_path)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
       [contract_id, fields.expense_type, fields.date, fields.gross, fields.net, fields.tax, fields.paid, fields.receipt_path || null]
     );
     const all = await pool.query(
-      'SELECT * FROM building_system.expenses_invoices WHERE contract_id = $1',
+      'SELECT * FROM expenses_invoices WHERE contract_id = $1',
       [contract_id]
     );
     res.json(all.rows);
@@ -104,19 +104,19 @@ exports.togglePaidStatus = async (req, res) => {
   try {
     // Merr statusin aktual
     const current = await pool.query(
-      'SELECT paid, contract_id FROM building_system.expenses_invoices WHERE id = $1',
+      'SELECT paid, contract_id FROM expenses_invoices WHERE id = $1',
       [id]
     );
     if (current.rows.length === 0) return res.status(404).json({ error: 'Shpenzimi nuk u gjet' });
     const newPaid = !current.rows[0].paid;
     const contract_id = current.rows[0].contract_id;
     await pool.query(
-      'UPDATE building_system.expenses_invoices SET paid = $1 WHERE id = $2',
+      'UPDATE expenses_invoices SET paid = $1 WHERE id = $2',
       [newPaid, id]
     );
     // Kthe të gjithë faturat për këtë kontratë
     const all = await pool.query(
-      'SELECT * FROM building_system.expenses_invoices WHERE contract_id = $1',
+      'SELECT * FROM expenses_invoices WHERE contract_id = $1',
       [contract_id]
     );
     res.json(all.rows);
