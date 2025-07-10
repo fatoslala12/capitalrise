@@ -15,6 +15,21 @@ import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
+// Funksion universal për të kthyer snake_case në camelCase
+function snakeToCamel(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(snakeToCamel);
+  } else if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [
+        key.replace(/_([a-z])/g, g => g[1].toUpperCase()),
+        snakeToCamel(value)
+      ])
+    );
+  }
+  return obj;
+}
 
 export default function Reports() {
   const [filteredHours, setFilteredHours] = useState([]);
@@ -41,10 +56,10 @@ export default function Reports() {
           axios.get("https://building-system.onrender.com/api/work-hours/all", { headers: { Authorization: `Bearer ${token}` } }),
           axios.get("https://building-system.onrender.com/api/invoices", { headers: { Authorization: `Bearer ${token}` } }),
         ]);
-        const contracts = contractsRes.data || [];
-        const employees = employeesRes.data || [];
-        const workHours = workHoursRes.data || [];
-        const invoices = invoicesRes.data || [];
+        const contracts = snakeToCamel(contractsRes.data || []);
+        const employees = snakeToCamel(employeesRes.data || []);
+        const workHours = snakeToCamel(workHoursRes.data || []);
+        const invoices = snakeToCamel(invoicesRes.data || []);
 
         // Site options
         const sites = [...new Set(contracts.map(c => c.siteName).filter(Boolean))];
@@ -264,6 +279,45 @@ export default function Reports() {
             <Tooltip />
             <Bar dataKey="hours" fill="#d63031" />
           </BarChart>
+        </div>
+
+        {/* Faturat e papaguara - dizajn i ri */}
+        <div className="bg-white p-4 shadow rounded mb-6">
+          <h2 className="text-lg font-semibold mb-2">📌 Faturat e Papaguara</h2>
+          {allInvoices.filter(inv => !inv.paid).length === 0 ? (
+            <p className="text-gray-500 italic">Të gjitha faturat janë të paguara ✅</p>
+          ) : (
+            <ul className="space-y-2 text-red-700 text-base">
+              {allInvoices.filter(inv => !inv.paid).map((inv, idx) => (
+                <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
+                  <span className="font-bold">🔴 Kontrata #{inv.contractNumber || ''}</span>
+                  <span className="font-bold text-black">Nr. Fature: <b>{inv.invoiceNumber || ''}</b></span>
+                  <span className="font-bold text-black flex items-center gap-1">🏢 Site: <b>{inv.siteName || ''}</b></span>
+                  <span className="font-bold text-lg flex items-center gap-1">💷 {inv.total !== undefined ? `£${inv.total.toFixed(2)}` : ''}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Shpenzimet e papaguara - dizajn i ri */}
+        <div className="bg-white p-4 shadow rounded mb-6">
+          <h2 className="text-lg font-semibold mb-2">📂 Shpenzimet e Papaguara</h2>
+          {allInvoices.filter(inv => !inv.paid).length === 0 ? (
+            <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
+          ) : (
+            <ul className="space-y-2 text-red-700 text-base">
+              {allInvoices.filter(inv => !inv.paid).map((inv, idx) => (
+                <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
+                  <span className="font-bold flex items-center gap-1">📅 {inv.date ? new Date(inv.date).toLocaleDateString() : ''}</span>
+                  <span className="font-bold text-lg">{inv.invoiceNumber || ''}</span>
+                  <span className="font-bold text-lg flex items-center gap-1">💷 {inv.total !== undefined ? `£${inv.total.toFixed(2)}` : ''}</span>
+                  <span className="font-bold text-blue-700 flex items-center gap-1">🏢 {inv.siteName || ''}</span>
+                  <span className="text-gray-700">{inv.description || ''}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="bg-white p-4 shadow rounded mb-6">
