@@ -173,13 +173,13 @@ export default function DashboardStats() {
   // Filtrim i detyrave sipas statusit
   const filteredTasks = allTasks.filter(t => taskFilter === 'all' ? true : t.status === taskFilter);
 
-  // Merr emër + mbiemër për user-in
+  // Merr emër + mbiemër për user-in (mos shfaq email në asnjë rast)
   const user = JSON.parse(localStorage.getItem("user"));
   const userFullName = (user?.first_name && user?.last_name)
     ? `${user.first_name} ${user.last_name}`
     : (user?.firstName && user?.lastName)
       ? `${user.firstName} ${user.lastName}`
-      : user?.email || "";
+      : "";
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
@@ -191,7 +191,7 @@ export default function DashboardStats() {
           </svg>
         </div>
         <div>
-          <h2 className="text-2xl font-bold mb-2 text-gray-900">Mirë se erdhe, {userFullName}</h2>
+          <h2 className="text-2xl font-bold mb-2 text-gray-900">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h2>
           <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</div>
           <div className="text-lg font-medium text-purple-700">Statistika, detyra, pagesa dhe më shumë</div>
         </div>
@@ -293,8 +293,8 @@ export default function DashboardStats() {
             {unpaid.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
                 <span className="font-bold">🔴 Kontrata #{item.contractNumber || ''}</span>
-                <span>Nr. Fature: <b>{item.invoiceNumber || ''}</b></span>
-                <span>Site: <b>{item.siteName || ''}</b></span>
+                <span className="font-bold text-black">Nr. Fature: <b>{item.invoiceNumber || ''}</b></span>
+                <span className="font-bold text-black flex items-center gap-1">🏢 Site: <b>{item.siteName || ''}</b></span>
                 <span className="font-bold text-lg flex items-center gap-1">💷 {item.total !== undefined ? `£${item.total.toFixed(2)}` : ''}</span>
               </li>
             ))}
@@ -311,15 +311,15 @@ export default function DashboardStats() {
           <ul className="space-y-2 text-red-700 text-base">
             {unpaidExpenses.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <span className="font-bold">🔴 {item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
-                <span>Lloj: <b>{item.type || ''}</b></span>
-                <span>Shuma: <b>💷 {item.gross !== undefined ? `£${item.gross.toFixed(2)}` : ''}</b></span>
-                <span>Kontrata: <b>{(() => {
+                <span className="font-bold flex items-center gap-1">📅 {item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
+                <span className="font-bold text-lg">{item.type || ''}</span>
+                <span className="font-bold text-lg flex items-center gap-1">💷 {item.gross !== undefined ? `£${item.gross.toFixed(2)}` : ''}</span>
+                <span className="font-bold text-blue-700 flex items-center gap-1">🏢 {(() => {
                   if (!item.contract_id || !contracts.length) return '';
                   const c = contracts.find(c => String(c.id) === String(item.contract_id));
                   return c ? `${c.site_name || c.siteName || ''}` : '';
-                })()}</b></span>
-                <span>{item.description || ''}</span>
+                })()}</span>
+                <span className="text-gray-700">{item.description || ''}</span>
               </li>
             ))}
           </ul>
