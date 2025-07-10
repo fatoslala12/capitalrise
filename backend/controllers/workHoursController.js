@@ -242,7 +242,7 @@ exports.getStructuredWorkHours = async (req, res) => {
       if (!data[empId][weekLabel]) data[empId][weekLabel] = {};
       data[empId][weekLabel][day] = {
         hours: row.hours,
-        site: row.site_name,
+        site: row.site_name, // përdor vetëm site_name si site
         rate: row.rate,
         contract_id: row.contract_id
       };
