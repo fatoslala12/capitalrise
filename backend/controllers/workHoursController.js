@@ -9,6 +9,10 @@ exports.getAllWorkHours = async (req, res) => {
       JOIN contracts c ON wh.contract_id = c.id
       ORDER BY wh.date DESC
     `);
+    console.log('[DEBUG] /api/work-hours/all - rows:', result.rows.length);
+    result.rows.forEach((row, idx) => {
+      console.log(`[DEBUG] Row ${idx}:`, row);
+    });
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
