@@ -60,12 +60,12 @@ export default function DashboardStats() {
 
     const fetchWorkHoursAndInvoices = async () => {
       const [workHoursRes, invoicesRes, tasksRes, expensesRes] = await Promise.all([
-        api.get("/api/work-hours/all"),
+        api.get("/api/work-hours/structured"),
         api.get("/api/invoices"),
         api.get("/api/tasks"),
         api.get("/api/expenses"),
       ]);
-      const workHours = snakeToCamel(workHoursRes.data || []);
+      const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
       const invoices = snakeToCamel(invoicesRes.data || []);
       const allTasks = snakeToCamel(tasksRes.data || []);
       const allExpenses = snakeToCamel(expensesRes.data || []);
@@ -75,24 +75,23 @@ export default function DashboardStats() {
       const siteMap = {};
 
       employees.forEach(emp => {
-        const wh = workHours.find(w => w.employeeId === emp.id);
-        const weekData = wh?.weeks?.[thisWeekLabel] || {};
-        const hourlyRate = parseFloat(weekData.hourlyRate || emp.hourlyRate || 0);
+        const empWeeks = structuredWorkHours[emp.id] || {};
+        const weekData = empWeeks[thisWeekLabel] || {};
         let totalHours = 0;
-
+        let hourlyRate = parseFloat(emp.hourlyRate || 0);
         Object.values(weekData).forEach(val => {
           if (val?.hours) {
             totalHours += parseFloat(val.hours);
             if (val.site) {
               siteMap[val.site] = (siteMap[val.site] || 0) + parseFloat(val.hours);
             }
+            if (val.rate) hourlyRate = parseFloat(val.rate);
           }
         });
-
         const gross = totalHours * hourlyRate;
+        // Paid status by week/employee nuk është e thjeshtë, por ruajmë logjikën ekzistuese
         const isPaid = paidStatus[`${thisWeekLabel}_${emp.id}`];
         if (isPaid) totalPaidNow += gross;
-
         payments.push({
           id: emp.id,
           name: `${emp.firstName} ${emp.lastName}`,
