@@ -7,6 +7,21 @@ import axios from "axios";
 
 const employeePlaceholder = "https://via.placeholder.com/100";
 
+// Funksion për të kthyer snake_case në camelCase për një objekt ose array
+function snakeToCamel(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(snakeToCamel);
+  } else if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [
+        key.replace(/_([a-z])/g, g => g[1].toUpperCase()),
+        snakeToCamel(value)
+      ])
+    );
+  }
+  return obj;
+}
+
 export default function EmployeesList() {
   const [employees, setEmployees] = useState([]);
   const [siteOptions, setSiteOptions] = useState([]);
@@ -54,8 +69,9 @@ export default function EmployeesList() {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
-        setContracts(res.data);
-        const uniqueSites = [...new Set(res.data.map(c => c.site_name).filter(Boolean))];
+        const contractsData = snakeToCamel(res.data);
+        setContracts(contractsData);
+        const uniqueSites = [...new Set(contractsData.map(c => c.siteName).filter(Boolean))];
         setSiteOptions(uniqueSites);
       })
       .catch(() => setContracts([]));
@@ -66,7 +82,7 @@ export default function EmployeesList() {
     axios.get("https://building-system.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(res => setEmployees(res.data))
+      .then(res => setEmployees(snakeToCamel(res.data)))
       .catch(() => setEmployees([]));
   }, [token]);
 
@@ -75,7 +91,7 @@ export default function EmployeesList() {
     axios.get("https://building-system.onrender.com/api/work-hours", {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(res => setWorkHours(res.data))
+      .then(res => setWorkHours(snakeToCamel(res.data)))
       .catch(() => setWorkHours([]));
   }, [token]);
 
@@ -84,7 +100,7 @@ export default function EmployeesList() {
     axios.get("https://building-system.onrender.com/api/tasks", {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(res => setTasks(res.data))
+      .then(res => setTasks(snakeToCamel(res.data)))
       .catch(() => setTasks([]));
   }, [token]);
 
@@ -235,8 +251,8 @@ export default function EmployeesList() {
   const getManagerContractIds = () => {
     if (!isManager) return [];
     // Gjej të gjitha contract_id ku menaxheri ka punuar
-    const myHours = workHours.filter(h => h.employee_id === user.employee_id);
-    const myContractIds = Array.from(new Set(myHours.map(h => h.contract_id)));
+    const myHours = workHours.filter(h => h.employeeId === user.employeeId);
+    const myContractIds = Array.from(new Set(myHours.map(h => h.contractId)));
     return myContractIds;
   };
 
@@ -248,30 +264,30 @@ export default function EmployeesList() {
         const managerContractIds = getManagerContractIds();
         if (managerContractIds.length === 0) {
           // Nëse menaxheri nuk ka kontrata, shfaq vetëm veten
-          contractMatch = emp.id === user.employee_id;
+          contractMatch = emp.id === user.employeeId;
         } else {
           // Gjej të gjitha contract_id të punonjësit
-          const empHours = workHours.filter(h => h.employee_id === emp.id);
-          const empContractIds = new Set(empHours.map(h => h.contract_id));
+          const empHours = workHours.filter(h => h.employeeId === emp.id);
+          const empContractIds = new Set(empHours.map(h => h.contractId));
           // Kontrollo nëse ka të paktën një contract_id të përbashkët
           contractMatch = Array.from(empContractIds).some(cid => managerContractIds.includes(cid));
           // Shto gjithmonë veten
-          if (emp.id === user.employee_id) contractMatch = true;
+          if (emp.id === user.employeeId) contractMatch = true;
         }
       } else {
         contractMatch = filterWorkplace === "All" || (Array.isArray(emp.workplace) && emp.workplace.includes(filterWorkplace));
       }
       const roleMatch = filterRole === "All" || emp.role === filterRole;
-      const taxMatch = filterTax === "All" || emp.label_type === filterTax;
+      const taxMatch = filterTax === "All" || emp.labelType === filterTax;
       return statusMatch && contractMatch && roleMatch && taxMatch;
     })
     .sort((a, b) => {
       if (sortBy === "salaryHigh") {
-        return parseFloat(b.hourly_rate) - parseFloat(a.hourly_rate);
+        return parseFloat(b.hourlyRate) - parseFloat(a.hourlyRate);
       } else if (sortBy === "salaryLow") {
-        return parseFloat(a.hourly_rate) - parseFloat(b.hourly_rate);
+        return parseFloat(a.hourlyRate) - parseFloat(b.hourlyRate);
       } else if (sortBy === "nameAZ") {
-        return (a.first_name || "").localeCompare(b.first_name || "");
+        return (a.firstName || "").localeCompare(b.firstName || "");
       }
       return 0;
     });
@@ -475,8 +491,8 @@ export default function EmployeesList() {
             </thead>
             <tbody>
               {filteredEmployees.map((emp) => {
-                const firstName = emp.first_name || emp.firstName || "";
-                const lastName = emp.last_name || emp.lastName || "";
+                const firstName = emp.firstName || emp.first_name || "";
+                const lastName = emp.lastName || emp.last_name || "";
                 const status = emp.status || "";
                 const statusColor = status === "Aktiv" ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200";
                 const role = emp.role || "";
@@ -499,11 +515,11 @@ export default function EmployeesList() {
                       {Array.isArray(emp.workplace) ? emp.workplace.join(", ") : (emp.workplace || "")}
                     </td>
                     <td className="py-3 px-3">{emp.phone || ""}</td>
-                    <td className="py-3 px-3 font-bold text-green-700">{emp.hourly_rate !== undefined && emp.hourly_rate !== null && emp.hourly_rate !== "" ? `£${emp.hourly_rate}` : (emp.hourlyRate !== undefined && emp.hourlyRate !== null && emp.hourlyRate !== "" ? `£${emp.hourlyRate}` : "")}</td>
+                    <td className="py-3 px-3 font-bold text-green-700">{emp.hourlyRate !== undefined && emp.hourlyRate !== null && emp.hourlyRate !== "" ? `£${emp.hourlyRate}` : (emp.hourly_rate !== undefined && emp.hourly_rate !== null && emp.hourly_rate !== "" ? `£${emp.hourly_rate}` : "")}</td>
                     <td className="py-3 px-3">
                       <span className={`px-4 py-1 rounded-full border text-base font-bold shadow-md ${statusColor}`}>{status}</span>
                     </td>
-                    <td className="py-3 px-3 font-semibold text-blue-700">{emp.label_type || emp.labelType || ""}</td>
+                    <td className="py-3 px-3 font-semibold text-blue-700">{emp.labelType || emp.label_type || ""}</td>
                     <td className="py-3 px-3 flex items-center gap-2 justify-center">
                       <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 bg-gradient-to-r from-blue-400 to-purple-400 text-white rounded-full shadow hover:scale-110 hover:from-purple-600 hover:to-blue-600 transition-all text-xl" title="Shiko Detaje">
                         <FaEye />

@@ -4,6 +4,21 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts";
 
+// Funksion për të kthyer snake_case në camelCase për një objekt ose array
+function snakeToCamel(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(snakeToCamel);
+  } else if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [
+        key.replace(/_([a-z])/g, g => g[1].toUpperCase()),
+        snakeToCamel(value)
+      ])
+    );
+  }
+  return obj;
+}
+
 export default function DashboardStats() {
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -26,9 +41,9 @@ export default function DashboardStats() {
         api.get("/api/employees"),
         api.get("/api/work-hours/paid-status"),
       ]);
-      setContracts(contractsRes.data || []);
-      setEmployees(employeesRes.data || []);
-      setPaidStatus(paidStatusRes.data || {});
+      setContracts(snakeToCamel(contractsRes.data || []));
+      setEmployees(snakeToCamel(employeesRes.data || []));
+      setPaidStatus(snakeToCamel(paidStatusRes.data || {}));
 
       const today = new Date();
       const monday = new Date(today);
@@ -50,10 +65,10 @@ export default function DashboardStats() {
         api.get("/api/tasks"),
         api.get("/api/expenses"),
       ]);
-      const workHours = workHoursRes.data || [];
-      const invoices = invoicesRes.data || [];
-      const allTasks = tasksRes.data || [];
-      const allExpenses = expensesRes.data || [];
+      const workHours = snakeToCamel(workHoursRes.data || []);
+      const invoices = snakeToCamel(invoicesRes.data || []);
+      const allTasks = snakeToCamel(tasksRes.data || []);
+      const allExpenses = snakeToCamel(expensesRes.data || []);
 
       let totalPaidNow = 0;
       const payments = [];
