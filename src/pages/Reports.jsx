@@ -68,15 +68,15 @@ export default function Reports() {
         // Employee options
         const employeeNames = employees.map(e => ({
           id: e.id,
-          employeeName: `${e.firstName} ${e.lastName}`
+          employeeName: `${e.firstName || e.first_name || ''} ${e.lastName || e.last_name || ''}`.trim()
         }));
         setEmployeeOptions(employeeNames);
 
         // Përgatit orët e punës për raportim
         const allHours = [];
         workHours.forEach((wh) => {
-          const emp = employees.find(e => e.id.toString() === wh.employeeId.toString());
-          const empName = emp ? `${emp.firstName} ${emp.lastName}` : `Punonjës ${wh.employeeId}`;
+          const emp = employees.find(e => String(e.id) === String(wh.employeeId));
+          const empName = emp ? `${emp.firstName || emp.first_name || ''} ${emp.lastName || emp.last_name || ''}`.trim() : `Punonjës ${wh.employeeId}`;
           Object.entries(wh.weeks || {}).forEach(([weekLabel, days]) => {
             Object.entries(days).forEach(([day, entry]) => {
               if (day !== "hourlyRate") {
