@@ -5,7 +5,7 @@ import WorkHoursTable from "../components/WorkHoursTable";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import DashboardStats from "../components/DashboardStats";
-import axios from "axios"; // Shto axios
+import api from "../api";
 
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
@@ -34,7 +34,7 @@ export default function Dashboard() {
 
   // Merr punonjësit nga backend
   useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/employees")
+    api.get("/api/employees")
       .then(res => setEmployees(res.data))
       .catch(() => setEmployees([]));
   }, []);
@@ -46,7 +46,7 @@ export default function Dashboard() {
       const allData = {};
       for (const emp of employees) {
         try {
-          const res = await axios.get(`https://building-system.onrender.com/api/work-hours/${emp.id}`);
+          const res = await api.get(`/api/work-hours/${emp.id}`);
           allData[emp.id] = res.data || {};
         } catch {
           allData[emp.id] = {};
@@ -59,7 +59,7 @@ export default function Dashboard() {
 
   // Merr detyrat nga backend
   useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/tasks")
+    api.get("/api/tasks")
       .then(res => setTasks(res.data))
       .catch(() => setTasks([]));
   }, []);

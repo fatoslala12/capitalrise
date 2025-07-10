@@ -178,9 +178,9 @@ export default function EmployeesList() {
       }
     }
     try {
-      console.log("Payload:", toSnakeCase(newEmployee));
-      // 1. Shto punonjësin
-      const res = await axios.post("https://building-system.onrender.com/api/employees", toSnakeCase(newEmployee), {
+      // 1. Shto punonjësin me workplace në payload
+      const payload = { ...toSnakeCase(newEmployee), workplace: newEmployee.workplace };
+      const res = await axios.post("https://building-system.onrender.com/api/employees", payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEmployees([...employees, res.data.employee]);
@@ -207,20 +207,6 @@ export default function EmployeesList() {
         nextOfKin: "",
         nextOfKinPhone: ""
       });
-
-      // 2. Lidh punonjësin me të gjitha vendet e punës të zgjedhura
-      for (const siteName of newEmployee.workplace) {
-        // Gjej contract_id për këtë siteName
-        const contract = contracts.find(c => c.site_name === siteName);
-        if (contract) {
-          await axios.post("https://building-system.onrender.com/api/employee-workplaces", {
-            employee_id: res.data.employee.id,
-            contract_id: contract.id
-          }, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-        }
-      }
     } catch (err) {
       console.error("Gabim gjatë shtimit të punonjësit:", err);
       alert("Gabim gjatë shtimit të punonjësit!");

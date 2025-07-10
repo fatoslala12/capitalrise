@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts";
@@ -22,9 +22,9 @@ export default function DashboardStats() {
   useEffect(() => {
     const fetchData = async () => {
       const [contractsRes, employeesRes, paidStatusRes] = await Promise.all([
-        axios.get("https://building-system.onrender.com/api/contracts", { headers }),
-        axios.get("https://building-system.onrender.com/api/employees", { headers }),
-        axios.get("https://building-system.onrender.com/api/work-hours/paid-status", { headers }),
+        api.get("/api/contracts"),
+        api.get("/api/employees"),
+        api.get("/api/work-hours/paid-status"),
       ]);
       setContracts(contractsRes.data || []);
       setEmployees(employeesRes.data || []);
@@ -45,10 +45,10 @@ export default function DashboardStats() {
 
     const fetchWorkHoursAndInvoices = async () => {
       const [workHoursRes, invoicesRes, tasksRes, expensesRes] = await Promise.all([
-        axios.get("https://building-system.onrender.com/api/work-hours/all", { headers }),
-        axios.get("https://building-system.onrender.com/api/invoices", { headers }),
-        axios.get("https://building-system.onrender.com/api/tasks", { headers }),
-        axios.get("https://building-system.onrender.com/api/expenses", { headers }),
+        api.get("/api/work-hours/all"),
+        api.get("/api/invoices"),
+        api.get("/api/tasks"),
+        api.get("/api/expenses"),
       ]);
       const workHours = workHoursRes.data || [];
       const invoices = invoicesRes.data || [];

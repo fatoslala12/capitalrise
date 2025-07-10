@@ -58,7 +58,8 @@ exports.createEmployee = async (req, res) => {
       email, // nga forma
       role,  // nga forma
       password, // opsional, default 12345678
-      created_by // nga forma
+      created_by, // nga forma
+      workplace = [] // array me emra ose ID kontratash
     } = req.body;
 
     const empRes = await client.query(
@@ -85,8 +86,28 @@ exports.createEmployee = async (req, res) => {
     );
     const user = userRes.rows[0];
 
+    // 3. Shto workplace-at në employee_workplaces
+    let insertedWorkplaces = [];
+    for (const wp of workplace) {
+      let contractId = null;
+      if (typeof wp === 'number' || (typeof wp === 'string' && /^\d+$/.test(wp))) {
+        contractId = Number(wp);
+      } else {
+        // Gjej contract_id nga emri i site-it
+        const contractRes = await client.query('SELECT id FROM contracts WHERE site_name = $1 LIMIT 1', [wp]);
+        if (contractRes.rows.length > 0) contractId = contractRes.rows[0].id;
+      }
+      if (contractId) {
+        const ewRes = await client.query(
+          `INSERT INTO employee_workplaces (employee_id, contract_id) VALUES ($1, $2) RETURNING *`,
+          [employee.id, contractId]
+        );
+        insertedWorkplaces.push(ewRes.rows[0]);
+      }
+    }
+
     await client.query('COMMIT');
-    res.status(201).json({ employee, user });
+    res.status(201).json({ employee, user, workplaces: insertedWorkplaces });
   } catch (err) {
     console.error("Gabim gjatë shtimit të punonjësit:", err);
     await client.query('ROLLBACK');
