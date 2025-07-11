@@ -8,6 +8,7 @@ router.post('/', verifyToken, requireRole('admin'), controller.createUser);
 router.put('/:id', verifyToken, requireRole('admin'), controller.updateUser);
 router.delete('/:id', verifyToken, requireRole('admin'), controller.deleteUser);
 router.post('/', verifyToken, requireRole('admin'), controller.addUser);
+router.post('/reset-password', verifyToken, requireRole('admin'), controller.resetPassword);
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
