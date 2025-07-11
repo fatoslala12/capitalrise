@@ -2,8 +2,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import LoadingSpinner from "../components/ui/LoadingSpinner";
-
 export default function Contracts() {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -228,7 +226,14 @@ export default function Contracts() {
   );
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar kontratat..." />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar kontratat...</h2>
+        </div>
+      </div>
+    );
   }
 
   return (
