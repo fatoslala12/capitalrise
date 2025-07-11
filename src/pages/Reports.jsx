@@ -16,6 +16,10 @@ import * as XLSX from "xlsx";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import api from "../api";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import { Container, Grid } from "../components/ui/Layout";
 // Funksion universal për të kthyer snake_case në camelCase
 function snakeToCamel(obj) {
   if (Array.isArray(obj)) {
@@ -253,14 +257,7 @@ export default function Reports() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar raportet...</h2>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar raportet..." />;
   }
 
   return (

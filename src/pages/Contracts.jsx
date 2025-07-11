@@ -2,8 +2,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input, { Select } from "../components/ui/Input";
+import { Container, Grid, ResponsiveTable } from "../components/ui/Layout";
+import { useToast } from "../components/ui/Toast";
 
 export default function Contracts() {
+  const toast = useToast();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newContract, setNewContract] = useState({
@@ -121,8 +128,9 @@ export default function Contracts() {
         closed_date: null,
         documents: []
       });
+      toast.success("Kontrata u shtua me sukses!");
     } catch (err) {
-      alert("Gabim gjatë shtimit të kontratës!");
+      toast.error("Gabim gjatë shtimit të kontratës!");
     }
   };
 
@@ -160,9 +168,10 @@ export default function Contracts() {
       );
       updated[contractIndex] = res.data;
       setContracts(updated);
+      toast.success("Statusi i kontratës u ndryshua me sukses!");
     } catch (err) {
       console.error("Error updating contract status:", err);
-      alert("Gabim gjatë ndryshimit të statusit!");
+      toast.error("Gabim gjatë ndryshimit të statusit!");
     }
   };
 
@@ -173,7 +182,7 @@ export default function Contracts() {
     // Gjej kontratën për të marrë id
     const contract = contracts.find(c => c.contract_number === contract_number);
     if (!contract) {
-      alert("Kontrata nuk u gjet!");
+      toast.error("Kontrata nuk u gjet!");
       return;
     }
     
@@ -182,9 +191,10 @@ export default function Contracts() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContracts(contracts.filter((c) => c.contract_number !== contract_number));
+      toast.success("Kontrata u fshi me sukses!");
     } catch (err) {
       console.error("Error deleting contract:", err);
-      alert("Gabim gjatë fshirjes!");
+      toast.error("Gabim gjatë fshirjes!");
     }
   };
 
@@ -224,14 +234,7 @@ export default function Contracts() {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar kontratat...</h2>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar kontratat..." />;
   }
 
   return (

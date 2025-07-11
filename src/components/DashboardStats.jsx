@@ -3,6 +3,9 @@ import api from "../api";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
+import { Container, Grid, Stack } from "../components/ui/Layout";
 
 // Funksion për të kthyer snake_case në camelCase për një objekt ose array
 function snakeToCamel(obj) {
@@ -214,14 +217,7 @@ export default function DashboardStats() {
       : "";
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar statistikat...</h2>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat..." />;
   }
 
   return (

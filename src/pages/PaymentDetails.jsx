@@ -2,9 +2,12 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { useToast } from "../components/ui/Toast";
 
 export default function PaymentDetails() {
   const { contract_number } = useParams();
+  const toast = useToast();
   const [contract, setContract] = useState(null);
   const [expensesInvoices, setExpensesInvoices] = useState([]);
   const [workHours, setWorkHours] = useState({});
@@ -133,9 +136,11 @@ export default function PaymentDetails() {
           paid: false,
           file: null,
         }));
+        
+        toast.success("Shpenzimi u shtua me sukses!");
       } catch (error) {
         console.error('Error adding expense:', error);
-        alert("Gabim gjatë shtimit të shpenzimit!");
+        toast.error("Gabim gjatë shtimit të shpenzimit!");
       }
     }
   };
@@ -154,8 +159,9 @@ export default function PaymentDetails() {
       );
       console.log('Faturat pas fshirjes:', res.data);
       setExpensesInvoices(Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []));
+      toast.success("Shpenzimi u fshi me sukses!");
     } catch {
-      alert("Gabim gjatë fshirjes!");
+      toast.error("Gabim gjatë fshirjes!");
     }
   };
 
@@ -174,8 +180,9 @@ export default function PaymentDetails() {
       );
       console.log('Faturat pas ndryshimit të statusit:', res.data);
       setExpensesInvoices(Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []));
+      toast.success("Statusi i pagesës u ndryshua me sukses!");
     } catch {
-      alert("Gabim gjatë ndryshimit të statusit të pagesës!");
+      toast.error("Gabim gjatë ndryshimit të statusit të pagesës!");
     }
   };
 
@@ -237,14 +244,7 @@ export default function PaymentDetails() {
   const totalOverallNet = totalNeto + totalInvoicesNet;
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar detajet e pagesës...</h2>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar detajet e pagesës..." />;
   }
 
   if (contract === null) {
