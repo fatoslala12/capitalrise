@@ -2,6 +2,7 @@ const pool = require('../db');
 
 exports.getAllWorkHours = async (req, res) => {
   try {
+    console.log('[DEBUG] /api/work-hours/all called');
     const result = await pool.query(`
       SELECT wh.*, e.first_name, e.last_name, c.site_name
       FROM work_hours wh
@@ -10,11 +11,9 @@ exports.getAllWorkHours = async (req, res) => {
       ORDER BY wh.date DESC
     `);
     console.log('[DEBUG] /api/work-hours/all - rows:', result.rows.length);
-    result.rows.forEach((row, idx) => {
-      console.log(`[DEBUG] Row ${idx}:`, row);
-    });
     res.json(result.rows);
   } catch (err) {
+    console.error('[ERROR] /api/work-hours/all:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 };
