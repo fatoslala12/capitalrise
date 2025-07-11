@@ -42,27 +42,105 @@ export default function DashboardStats() {
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
-  // useEffect për të marrë të dhënat vetëm një herë në mount
+  // useEffect për të marrë të dhënat dhe llogaritë dashboard stats
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [contractsRes, employeesRes, dashboardRes, invoicesRes, tasksRes, expensesRes] = await Promise.all([
+        
+        // Try the new optimized API first, fallback to manual calculation if it fails
+        let dashboardData = null;
+        try {
+          const dashboardRes = await api.get("/api/work-hours/dashboard-stats");
+          dashboardData = snakeToCamel(dashboardRes.data || {});
+          console.log('[DEBUG] Dashboard API success:', dashboardData);
+        } catch (dashboardError) {
+          console.log('[DEBUG] Dashboard API failed, using fallback:', dashboardError.message);
+        }
+        
+        const [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
           api.get("/api/contracts"),
           api.get("/api/employees"),
-          api.get("/api/work-hours/dashboard-stats"),
           api.get("/api/invoices"),
           api.get("/api/tasks"),
           api.get("/api/expenses"),
+          api.get("/api/payments"),
+          api.get("/api/work-hours/structured"),
         ]);
         
         setContracts(snakeToCamel(contractsRes.data || []));
         setEmployees(snakeToCamel(employeesRes.data || []));
-        setDashboardStats(snakeToCamel(dashboardRes.data || {}));
         
         const invoices = snakeToCamel(invoicesRes.data || []);
         const allTasksData = snakeToCamel(tasksRes.data || []);
         const allExpenses = snakeToCamel(expensesRes.data || []);
+        const allPayments = snakeToCamel(paymentsRes.data || []);
+        const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
+        
+        // Calculate current week
+        const today = new Date();
+        const day = today.getDay();
+        const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(today);
+        monday.setDate(diff);
+        monday.setHours(0, 0, 0, 0);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
+        
+        // Use dashboard API data if available, otherwise calculate manually
+        if (dashboardData && Object.keys(dashboardData).length > 0) {
+          setDashboardStats(dashboardData);
+        } else {
+          console.log('[DEBUG] Calculating dashboard stats manually');
+          
+          // Manual calculation as fallback
+          const thisWeekPayments = allPayments.filter(p => p.weekLabel === thisWeek);
+          const paidThisWeek = thisWeekPayments.filter(p => p.isPaid === true);
+          const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || 0), 0);
+          
+          // Calculate work hours for this week
+          let totalWorkHours = 0;
+          const siteHours = {};
+          
+          Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
+            const weekData = empData[thisWeek] || {};
+            Object.values(weekData).forEach(dayData => {
+              if (dayData?.hours) {
+                const hours = parseFloat(dayData.hours);
+                totalWorkHours += hours;
+                if (dayData.site) {
+                  siteHours[dayData.site] = (siteHours[dayData.site] || 0) + hours;
+                }
+              }
+            });
+          });
+          
+          // Top 5 employees by payment amount
+          const top5Employees = thisWeekPayments
+            .sort((a, b) => parseFloat(b.grossAmount || 0) - parseFloat(a.grossAmount || 0))
+            .slice(0, 5)
+            .map(p => {
+              const emp = employeesRes.data.find(e => e.id === p.employeeId);
+              return {
+                id: p.employeeId,
+                name: emp ? `${emp.first_name} ${emp.last_name}` : 'Unknown',
+                grossAmount: parseFloat(p.grossAmount || 0),
+                isPaid: p.isPaid
+              };
+            });
+          
+          setDashboardStats({
+            thisWeek: thisWeek,
+            totalPaid: totalPaid,
+            totalProfit: totalPaid * 0.20,
+            workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
+            top5Employees: top5Employees,
+            totalWorkHours: totalWorkHours,
+            paidEmployeesCount: paidThisWeek.length,
+            totalEmployeesWithHours: Object.keys(structuredWorkHours).length
+          });
+        }
         
         setAllTasks(allTasksData);
         
