@@ -63,15 +63,15 @@ export default function MainLayout() {
           );
         })}
       </nav>
-      <div className="mt-auto mb-6 px-2">
+      <div className="mt-auto p-4 border-t border-blue-800/30">
         <Button
           variant="danger"
-          size="md"
+          size="lg"
           onClick={logout}
           icon="🚪"
-          className="w-full"
+          className="w-full font-bold text-base"
         >
-          Dil
+          Dil nga Sistemi
         </Button>
       </div>
     </>
@@ -79,12 +79,12 @@ export default function MainLayout() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar - Always visible */}
       <aside className="hidden lg:flex w-56 bg-gradient-to-b from-[#1e3c72] via-[#2a5298] to-[#6dd5ed] text-white flex-col shadow-2xl">
         <SidebarContent />
       </aside>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar - Collapsible */}
       <MobileSidebar 
         isOpen={isMobileMenuOpen} 
         onClose={() => setIsMobileMenuOpen(false)}
@@ -94,9 +94,9 @@ export default function MainLayout() {
         </div>
       </MobileSidebar>
 
-      {/* Main Content */}
-      <div className="flex-1 bg-gray-50 flex flex-col">
-        {/* Mobile Header */}
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Header - Only visible on mobile */}
         <header className="lg:hidden bg-white shadow-sm border-b border-gray-200 px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => setIsMobileMenuOpen(true)}
@@ -114,8 +114,8 @@ export default function MainLayout() {
           <div className="w-10"></div> {/* Spacer for centering */}
         </header>
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-auto">
+        {/* Main Content */}
+        <main className="flex-1 bg-gray-50 overflow-auto">
           <Outlet />
         </main>
       </div>
