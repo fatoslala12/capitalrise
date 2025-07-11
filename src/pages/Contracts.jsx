@@ -149,13 +149,14 @@ export default function Contracts() {
 
     try {
       const res = await axios.put(
-        `https://building-system.onrender.com/api/contracts/${contract.contract_number}`,
+        `https://building-system.onrender.com/api/contracts/${contract.id}`,
         contract,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       updated[contractIndex] = res.data;
       setContracts(updated);
     } catch (err) {
+      console.error("Error updating contract status:", err);
       alert("Gabim gjatë ndryshimit të statusit!");
     }
   };
@@ -163,12 +164,21 @@ export default function Contracts() {
   // Fshi kontratë nga backend
   const handleDelete = async (contract_number) => {
     if (!window.confirm("Jeni i sigurt që doni të fshini këtë kontratë?")) return;
+    
+    // Gjej kontratën për të marrë id
+    const contract = contracts.find(c => c.contract_number === contract_number);
+    if (!contract) {
+      alert("Kontrata nuk u gjet!");
+      return;
+    }
+    
     try {
-      await axios.delete(`https://building-system.onrender.com/api/contracts/${contract_number}`, {
+      await axios.delete(`https://building-system.onrender.com/api/contracts/${contract.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContracts(contracts.filter((c) => c.contract_number !== contract_number));
     } catch (err) {
+      console.error("Error deleting contract:", err);
       alert("Gabim gjatë fshirjes!");
     }
   };
@@ -297,12 +307,18 @@ export default function Contracts() {
                       <span className={`px-4 py-2 rounded-full text-base font-bold shadow-md ${c.status === "Mbyllur" ? "bg-green-100 text-green-600" : c.status === "Mbyllur me vonesë" ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"}`}>{c.status}</span>
                     </td>
                     <td className="py-4 px-4 align-middle">
-                      <input
-                        type="checkbox"
-                        checked={c.closed_manually}
-                        onChange={() => handleToggleStatus(c.contract_number)}
-                        className="w-6 h-6 accent-green-500 cursor-pointer"
-                      />
+                      <div className="flex flex-col items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={c.closed_manually}
+                          onChange={() => handleToggleStatus(c.contract_number)}
+                          className="w-6 h-6 accent-green-500 cursor-pointer"
+                          title={c.closed_manually ? "Klik për ta riaktivizuar" : "Klik për ta mbyllur"}
+                        />
+                        <span className="text-xs text-gray-500">
+                          {c.closed_manually ? "Mbyllur" : "Aktive"}
+                        </span>
+                      </div>
                     </td>
                     <td className="py-4 px-4 align-middle flex justify-center gap-2">
                       <button className="px-5 py-3 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg text-lg font-semibold shadow hover:from-pink-600 hover:to-red-600 transition-all flex items-center gap-2" onClick={() => handleDelete(c.contract_number)}>
