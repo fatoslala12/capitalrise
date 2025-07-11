@@ -5,11 +5,32 @@ exports.getAllWorkHours = async (req, res) => {
     console.log('[DEBUG] /api/work-hours/all called');
     console.log('[DEBUG] About to execute SQL query...');
     
+    // First, let's check if work_hours table has data
+    const checkWorkHours = await pool.query('SELECT COUNT(*) as count FROM work_hours');
+    console.log('[DEBUG] work_hours table count:', checkWorkHours.rows[0].count);
+    
+    // Check if employees table has data
+    const checkEmployees = await pool.query('SELECT COUNT(*) as count FROM employees');
+    console.log('[DEBUG] employees table count:', checkEmployees.rows[0].count);
+    
+    // Check if contracts table has data
+    const checkContracts = await pool.query('SELECT COUNT(*) as count FROM contracts');
+    console.log('[DEBUG] contracts table count:', checkContracts.rows[0].count);
+    
+    // Try a simpler query first
+    const simpleResult = await pool.query('SELECT * FROM work_hours LIMIT 5');
+    console.log('[DEBUG] Simple work_hours query result:', simpleResult.rows.length);
+    
+    if (simpleResult.rows.length > 0) {
+      console.log('[DEBUG] Sample work_hours row:', simpleResult.rows[0]);
+    }
+    
+    // Now try the full query
     const result = await pool.query(`
       SELECT wh.*, e.first_name, e.last_name, c.site_name
       FROM work_hours wh
-      JOIN employees e ON wh.employee_id = e.id
-      JOIN contracts c ON wh.contract_id = c.id
+      LEFT JOIN employees e ON wh.employee_id = e.id
+      LEFT JOIN contracts c ON wh.contract_id = c.id
       ORDER BY wh.date DESC
     `);
     
