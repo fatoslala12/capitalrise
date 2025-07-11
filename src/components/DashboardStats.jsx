@@ -306,7 +306,7 @@ export default function DashboardStats() {
       </div>
 
       {/* Shpenzimet e papaguara */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full mb-8">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
         {unpaidExpenses.length === 0 ? (
           <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
@@ -327,6 +327,20 @@ export default function DashboardStats() {
             ))}
           </ul>
         )}
+      </div>
+
+      {/* Butoni Dil */}
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+          }}
+          className="bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:from-pink-500 hover:to-red-500 transition text-lg"
+        >
+          🚪 Dil
+        </button>
       </div>
     </div>
   );
