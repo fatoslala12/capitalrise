@@ -6,20 +6,34 @@ import axios from "axios";
 export default function Payments() {
   const [contracts, setContracts] = useState([]);
   const [filterStatus, setFilterStatus] = useState("All");
+  const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+    setLoading(true);
     axios
       .get("https://building-system.onrender.com/api/contracts", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setContracts(res.data || []))
-      .catch(() => setContracts([]));
+      .catch(() => setContracts([]))
+      .finally(() => setLoading(false));
   }, [token]);
 
   const filteredContracts = contracts.filter((c) => {
     return filterStatus === "All" || c.status === filterStatus;
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar pagesat...</h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-full xl:max-w-[90vw] mx-auto px-2 py-8 min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100">

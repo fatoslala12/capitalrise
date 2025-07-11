@@ -31,6 +31,7 @@ export default function WorkHours() {
   const [expandedWeeks, setExpandedWeeks] = useState([]);
   const [siteOptions, setSiteOptions] = useState([]);
   const [paidStatus, setPaidStatus] = useState({});
+  const [loading, setLoading] = useState(true);
   const currentWeekStart = getStartOfWeek();
   const currentWeekLabel = formatDateRange(currentWeekStart);
 
@@ -51,6 +52,8 @@ export default function WorkHours() {
   useEffect(() => {
     console.log("USER NE WORKHOURS:", user);
     if (!user) return;
+    
+    setLoading(true);
     
     // Debug call për manager permissions
     if (isManager && user.employee_id) {
@@ -165,6 +168,9 @@ export default function WorkHours() {
       .catch(err => {
         console.error("Error fetching employees:", err);
         setEmployees([]);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [user?.id, user?.employee_id, user?.role, token, isAdmin, isManager]); // Simplified dependencies
 
@@ -310,6 +316,17 @@ export default function WorkHours() {
     // Shfaq vetëm javët që kanë filluar para ose në ditën e sotme
     return weekStartDate <= today;
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar orët e punës...</h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto p-6">

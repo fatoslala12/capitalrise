@@ -54,8 +54,11 @@ export default function DashboardStats() {
           const dashboardRes = await api.get("/api/work-hours/dashboard-stats");
           dashboardData = snakeToCamel(dashboardRes.data || {});
           console.log('[DEBUG] Dashboard API success:', dashboardData);
+          console.log('[DEBUG] Dashboard totalPaid:', dashboardData?.totalPaid);
+          console.log('[DEBUG] Dashboard top5Employees:', dashboardData?.top5Employees);
         } catch (dashboardError) {
           console.log('[DEBUG] Dashboard API failed, using fallback:', dashboardError.message);
+          console.error('[DEBUG] Dashboard API error details:', dashboardError);
         }
         
         const [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
@@ -212,8 +215,11 @@ export default function DashboardStats() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-10 flex justify-center items-center min-h-screen">
-        <div className="text-2xl font-bold text-blue-600">Duke ngarkuar statistikat...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar statistikat...</h2>
+        </div>
       </div>
     );
   }

@@ -8,6 +8,7 @@ export default function Tasks() {
   const [employees, setEmployees] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newTask, setNewTask] = useState({
     description: "",
     assignedTo: "",
@@ -18,23 +19,37 @@ export default function Tasks() {
 
   // Merr të dhënat nga backend
   useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/employees", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setEmployees(res.data || []))
-      .catch(() => setEmployees([]));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        const [employeesRes, contractsRes, tasksRes] = await Promise.all([
+          axios.get("https://building-system.onrender.com/api/employees", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get("https://building-system.onrender.com/api/contracts", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get("https://building-system.onrender.com/api/tasks", {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
 
-    axios.get("https://building-system.onrender.com/api/contracts", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setContracts(res.data || []))
-      .catch(() => setContracts([]));
-
-    axios.get("https://building-system.onrender.com/api/tasks", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setTasks(res.data || []))
-      .catch(() => setTasks([]));
+        setEmployees(employeesRes.data || []);
+        setContracts(contractsRes.data || []);
+        setTasks(tasksRes.data || []);
+        
+      } catch (error) {
+        console.error("Error fetching tasks data:", error);
+        setEmployees([]);
+        setContracts([]);
+        setTasks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
   }, [token]);
 
   // Filtro site-t sipas workplace të punonjësit të zgjedhur
@@ -123,6 +138,17 @@ export default function Tasks() {
       alert("Gabim gjatë ndryshimit të statusit të detyrës!");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar detyrat...</h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">

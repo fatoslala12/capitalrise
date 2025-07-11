@@ -9,6 +9,7 @@ export default function PaymentDetails() {
   const [expensesInvoices, setExpensesInvoices] = useState([]);
   const [workHours, setWorkHours] = useState({});
   const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newExpenseInvoice, setNewExpenseInvoice] = useState({
     companyName: "",
     expense_type: "",
@@ -23,36 +24,43 @@ export default function PaymentDetails() {
 
   // Merr të dhënat nga backend
   useEffect(() => {
-    // Kontrata
-    axios.get(`https://building-system.onrender.com/api/contracts/contract-number/${contract_number}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        setContract(res.data);
-        setNewExpenseInvoice((prev) => ({ ...prev, companyName: res.data.company || "" }));
-      })
-      .catch(() => setContract(null));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        const [contractRes, workHoursRes, employeesRes, expensesRes] = await Promise.all([
+          axios.get(`https://building-system.onrender.com/api/contracts/contract-number/${contract_number}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`https://building-system.onrender.com/api/work-hours/structured`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get("https://building-system.onrender.com/api/employees", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`https://building-system.onrender.com/api/expenses/${contract_number}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
 
-    // Orët e punës
-    axios.get(`https://building-system.onrender.com/api/work-hours/structured`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setWorkHours(res.data || {}))
-      .catch(() => setWorkHours({}));
-
-    // Punonjësit
-    axios.get("https://building-system.onrender.com/api/employees", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setEmployees(res.data || []))
-      .catch(() => setEmployees([]));
-
-    // Shpenzimet
-    axios.get(`https://building-system.onrender.com/api/expenses/${contract_number}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setExpensesInvoices(res.data || []))
-      .catch(() => setExpensesInvoices([]));
+        setContract(contractRes.data);
+        setWorkHours(workHoursRes.data || {});
+        setEmployees(employeesRes.data || []);
+        setExpensesInvoices(expensesRes.data || []);
+        setNewExpenseInvoice((prev) => ({ ...prev, companyName: contractRes.data.company || "" }));
+        
+      } catch (error) {
+        console.error("Error fetching payment details:", error);
+        setContract(null);
+        setWorkHours({});
+        setEmployees([]);
+        setExpensesInvoices([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
   }, [contract_number, token]);
 
   const handleChange = (e) => {
@@ -161,39 +169,75 @@ export default function PaymentDetails() {
   let totalBruto = 0;
   let totalNeto = 0;
 
+  console.log('[DEBUG PaymentDetails] workHours data:', workHours);
+  console.log('[DEBUG PaymentDetails] contract data:', contract);
+  console.log('[DEBUG PaymentDetails] employees data:', employees);
+
   if (workHours && typeof workHours === 'object' && Object.keys(workHours).length > 0) {
     Object.entries(workHours).forEach(([employeeId, weeks]) => {
+      console.log(`[DEBUG PaymentDetails] Processing employee ${employeeId}, weeks:`, weeks);
       Object.entries(weeks).forEach(([weekLabel, days]) => {
+        console.log(`[DEBUG PaymentDetails] Processing week ${weekLabel}, days:`, days);
         // Filtro vetëm për këtë kontratë
         const filteredDays = Object.values(days).filter(
-          (day) => day.contract_id && contract && day.contract_id === contract.id
+          (day) => {
+            console.log(`[DEBUG PaymentDetails] Day data:`, day);
+            console.log(`[DEBUG PaymentDetails] Contract ID check: day.contract_id=${day.contract_id}, contract.id=${contract?.id}`);
+            return day.contract_id && contract && day.contract_id === contract.id;
+          }
         );
+        console.log(`[DEBUG PaymentDetails] Filtered days for contract ${contract?.id}:`, filteredDays);
         const totalHours = filteredDays.reduce((sum, d) => sum + Number(d.hours || 0), 0);
+        console.log(`[DEBUG PaymentDetails] Total hours for ${employeeId} in ${weekLabel}: ${totalHours}`);
         if (totalHours === 0) return;
         const emp = employees.find((e) => e.id.toString() === employeeId);
-        const rate = parseFloat(emp?.hourlyRate || 0);
+        console.log(`[DEBUG PaymentDetails] Employee found:`, emp);
+        const rate = parseFloat(emp?.hourlyRate || emp?.hourly_rate || 0);
+        console.log(`[DEBUG PaymentDetails] Employee rate: ${rate}`);
         const bruto = totalHours * rate;
         const neto = bruto * (emp?.labelType === "NI" ? 0.7 : 0.8);
         totalBruto += bruto;
         totalNeto += neto;
         rows.push({
-          name: emp ? `${emp.first_name} ${emp.last_name}` : employeeId,
+          name: emp ? `${emp.first_name} ${emp.last_name}` : `Employee #${employeeId}`,
           week: weekLabel,
           hours: totalHours,
           bruto,
           neto,
         });
+        console.log(`[DEBUG PaymentDetails] Added row:`, { name: emp ? `${emp.first_name} ${emp.last_name}` : `Employee #${employeeId}`, week: weekLabel, hours: totalHours, bruto, neto });
       });
     });
   }
+
+  console.log('[DEBUG PaymentDetails] Final rows:', rows);
+  console.log('[DEBUG PaymentDetails] Total bruto:', totalBruto, 'Total neto:', totalNeto);
 
   const totalInvoicesGross = expensesInvoices.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0);
   const totalInvoicesNet = expensesInvoices.reduce((sum, inv) => sum + parseFloat(inv.net || 0), 0);
   const totalOverallGross = totalBruto + totalInvoicesGross;
   const totalOverallNet = totalNeto + totalInvoicesNet;
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar detajet e pagesës...</h2>
+        </div>
+      </div>
+    );
+  }
+
   if (contract === null) {
-    return <div className="p-8 text-center text-red-600 font-bold">Kontrata nuk ekziston ose ka ndodhur një gabim!</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Kontrata nuk u gjet</h2>
+          <p className="text-gray-600">Kontrata nuk ekziston ose ka ndodhur një gabim!</p>
+        </div>
+      </div>
+    );
   }
 
   return (
