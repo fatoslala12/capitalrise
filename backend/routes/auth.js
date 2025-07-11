@@ -48,6 +48,7 @@ console.log("[DEBUG] LLOJ password në DB:", typeof user.password, "| Vlera:", u
         email: user.email,
         firstName: user.firstname,
         lastName: user.lastname,
+        employee_id: user.employee_id,
       },
     });
   } catch (error) {

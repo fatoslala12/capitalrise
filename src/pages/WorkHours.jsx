@@ -50,33 +50,62 @@ export default function WorkHours() {
   useEffect(() => {
     console.log("USER NE WORKHOURS:", user);
     if (!user) return;
+    
     axios.get("https://building-system.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(async res => {
         const emps = res.data || [];
+        console.log("ALL EMPLOYEES FROM BACKEND:", emps);
+        
         if (isAdmin) {
           console.log("EMPLOYEES FOR ADMIN:", emps);
           setEmployees(emps);
           return;
         }
+        
         // MANAGER: filtro sipas kontratave të përbashkëta
+        console.log("MANAGER employee_id:", user.employee_id);
+        
+        if (!user.employee_id) {
+          console.log("NO employee_id found for manager, showing self only");
+          // Nëse manager nuk ka employee_id, gjej punonjësin me email të njëjtë
+          const selfEmployee = emps.find(emp => 
+            emp.email === user.email || 
+            (emp.first_name + " " + emp.last_name).toLowerCase().includes(user.firstName?.toLowerCase() || "")
+          );
+          if (selfEmployee) {
+            console.log("Found self employee:", selfEmployee);
+            setEmployees([selfEmployee]);
+          } else {
+            setEmployees([]);
+          }
+          return;
+        }
+        
         const ewRes = await axios.get("https://building-system.onrender.com/api/employee-workplaces", {
           headers: { Authorization: `Bearer ${token}` }
         });
         const allRelations = ewRes.data || [];
+        console.log("ALL EMPLOYEE WORKPLACES:", allRelations);
+        
         const myContractIds = allRelations
           .filter(r => String(r.employee_id) === String(user.employee_id))
           .map(r => r.contract_id);
+        console.log("MY CONTRACT IDs:", myContractIds);
+        
         const filteredEmps = emps.filter(emp => {
           if (String(emp.id) === String(user.employee_id)) return true;
           const empContracts = allRelations.filter(r => String(r.employee_id) === String(emp.id)).map(r => r.contract_id);
           return empContracts.some(cid => myContractIds.includes(cid));
         });
-        console.log("EMPLOYEES FOR MANAGER:", filteredEmps);
+        console.log("FILTERED EMPLOYEES FOR MANAGER:", filteredEmps);
         setEmployees(filteredEmps);
       })
-      .catch(() => setEmployees([]));
+      .catch(err => {
+        console.error("Error fetching employees:", err);
+        setEmployees([]);
+      });
   }, [user, token, isAdmin]);
 
   // Merr orët e punës nga backend
@@ -232,12 +261,10 @@ export default function WorkHours() {
         <div className="bg-yellow-100 text-yellow-800 p-4 rounded text-center font-semibold mb-6">
           Nuk keni asnjë punonjës aktiv të caktuar në site-t tuaj.<br/>
           {(() => {
-            // Kontrollo nëse menaxheri ekziston si punonjës
-            const selfExists = employees.some(emp => String(emp.id) === String(user.employee_id));
-            if (!selfExists) {
-              return <span className="block mt-2 text-red-600">Nuk jeni të regjistruar si punonjës në sistem. Kontaktoni administratorin për t'u shtuar si punonjës.<br/>Kontrollo në DB:<br/><code>SELECT * FROM employees WHERE id = '{user.employee_id}';</code></span>;
+            if (!user.employee_id) {
+              return <span className="block mt-2 text-blue-600">Po përpiqem të gjej punonjësin tuaj në sistem...<br/>Kontrolloni në DB:<br/><code>SELECT * FROM employees WHERE email = '{user.email}';</code></span>;
             }
-            return null;
+            return <span className="block mt-2 text-red-600">Nuk jeni të regjistruar si punonjës në sistem. Kontaktoni administratorin për t'u shtuar si punonjës.<br/>Kontrollo në DB:<br/><code>SELECT * FROM employees WHERE id = '{user.employee_id}';</code></span>;
           })()}
         </div>
       )}
