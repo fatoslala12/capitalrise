@@ -358,12 +358,17 @@ exports.getWorkHoursByContract = async (req, res) => {
     );
     if (contractRes.rows.length === 0) return res.json([]);
     const contract_id = contractRes.rows[0].id;
-    const result = await pool.query(
-      'SELECT * FROM work_hours WHERE contract_id = $1',
-      [contract_id]
-    );
+    const result = await pool.query(`
+      SELECT wh.*, e.first_name, e.last_name,
+        CONCAT(e.first_name, ' ', e.last_name) as employee_name
+      FROM work_hours wh
+      LEFT JOIN employees e ON wh.employee_id = e.id
+      WHERE wh.contract_id = $1
+      ORDER BY wh.date DESC, e.first_name, e.last_name
+    `, [contract_id]);
     res.json(result.rows);
   } catch (err) {
+    console.error('[ERROR] getWorkHoursByContract:', err);
     res.status(500).json({ error: err.message });
   }
 };

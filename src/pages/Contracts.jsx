@@ -5,6 +5,7 @@ import axios from "axios";
 
 export default function Contracts() {
   const [contracts, setContracts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newContract, setNewContract] = useState({
     company: "",
     company_no: "",
@@ -23,18 +24,22 @@ export default function Contracts() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-  axios.get("https://building-system.onrender.com/api/contracts", {
-    headers: { Authorization: `Bearer ${token}` }
-  })
-  .then(res => {
-    console.log("[DEBUG] Kontratat nga backend:", res.data);
-    setContracts(res.data);
-  })
-  .catch(err => {
-    console.error("[ERROR] Marrja e kontratave dështoi:", err);
-    setContracts([]);
-  });
-}, [token]);
+    setLoading(true);
+    axios.get("https://building-system.onrender.com/api/contracts", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => {
+      console.log("[DEBUG] Kontratat nga backend:", res.data);
+      setContracts(res.data);
+    })
+    .catch(err => {
+      console.error("[ERROR] Marrja e kontratave dështoi:", err);
+      setContracts([]);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+  }, [token]);
 
 
   // Merr orët e punës nga backend
@@ -218,6 +223,17 @@ export default function Contracts() {
     (a, b) => new Date(b.start_date) - new Date(a.start_date)
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar kontratat...</h2>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-full xl:max-w-[90vw] mx-auto px-4 py-8 space-y-12 bg-gradient-to-br from-blue-100 via-white to-purple-100 min-h-screen">
       {/* HEADER MODERN */}
@@ -281,7 +297,14 @@ export default function Contracts() {
               </tr>
             </thead>
             <tbody>
-              {sortedContracts.map((c, index) => {
+              {sortedContracts.length === 0 ? (
+                <tr>
+                  <td colSpan="11" className="py-8 text-center text-gray-500 italic">
+                    Nuk ka kontrata akoma. Krijoni të parën!
+                  </td>
+                </tr>
+              ) : (
+                sortedContracts.map((c, index) => {
                 const shpenzuar = calculateSpentForSite(c.site_name);
                 const vlera = Number(c.company_no || 0);
                 const fitimi = vlera - shpenzuar;
@@ -327,7 +350,7 @@ export default function Contracts() {
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>

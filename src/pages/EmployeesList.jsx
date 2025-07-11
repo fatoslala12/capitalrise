@@ -28,6 +28,7 @@ export default function EmployeesList() {
   const [contracts, setContracts] = useState([]);
   const [workHours, setWorkHours] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newEmployee, setNewEmployee] = useState({
     id: 1000,
     firstName: "",
@@ -65,44 +66,43 @@ export default function EmployeesList() {
 
   // Merr kontratat nga backend
   useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/contracts", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        const contractsData = snakeToCamel(res.data);
-        setContracts(contractsData);
-        const uniqueSites = [...new Set(contractsData.map(c => c.siteName).filter(Boolean))];
-        setSiteOptions(uniqueSites);
+    setLoading(true);
+    Promise.all([
+      axios.get("https://building-system.onrender.com/api/contracts", {
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+      axios.get("https://building-system.onrender.com/api/employees", {
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+      axios.get("https://building-system.onrender.com/api/work-hours", {
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+      axios.get("https://building-system.onrender.com/api/tasks", {
+        headers: { Authorization: `Bearer ${token}` }
       })
-      .catch(() => setContracts([]));
+    ])
+    .then(([contractsRes, employeesRes, workHoursRes, tasksRes]) => {
+      const contractsData = snakeToCamel(contractsRes.data);
+      setContracts(contractsData);
+      const uniqueSites = [...new Set(contractsData.map(c => c.siteName).filter(Boolean))];
+      setSiteOptions(uniqueSites);
+      
+      setEmployees(snakeToCamel(employeesRes.data));
+      setWorkHours(snakeToCamel(workHoursRes.data));
+      setTasks(snakeToCamel(tasksRes.data));
+    })
+    .catch(() => {
+      setContracts([]);
+      setEmployees([]);
+      setWorkHours([]);
+      setTasks([]);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
   }, [token]);
 
-  // Merr punonjësit nga backend
-  useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/employees", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setEmployees(snakeToCamel(res.data)))
-      .catch(() => setEmployees([]));
-  }, [token]);
 
-  // Merr orët e punës nga backend
-  useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/work-hours", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setWorkHours(snakeToCamel(res.data)))
-      .catch(() => setWorkHours([]));
-  }, [token]);
-
-  // Merr detyrat nga backend
-  useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/tasks", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setTasks(snakeToCamel(res.data)))
-      .catch(() => setTasks([]));
-  }, [token]);
 
   useEffect(() => {
     setNewEmployee((prev) => ({
@@ -353,6 +353,17 @@ export default function EmployeesList() {
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar punonjësit...</h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">

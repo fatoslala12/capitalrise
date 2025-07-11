@@ -19,6 +19,8 @@ export default function ContractDetails() {
 
   const [contract, setContract] = useState(null);
   const [invoices, setInvoices] = useState([]);
+  const [workHours, setWorkHours] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [invoiceToPrint, setInvoiceToPrint] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [newInvoice, setNewInvoice] = useState({
@@ -40,27 +42,38 @@ export default function ContractDetails() {
   });
   const token = localStorage.getItem("token");
 
-  // Merr kontratën dhe faturat nga backend
+  // Merr kontratën, faturat dhe orët e punës nga backend
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        
         const contractRes = await axios.get(
           `https://building-system.onrender.com/api/contracts/contract-number/${contract_number}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setContract(contractRes.data);
-      } catch {
-        setContract(null);
-      }
 
-      try {
         const invoicesRes = await axios.get(
           `https://building-system.onrender.com/api/invoices/${contract_number}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setInvoices(invoicesRes.data || []);
-      } catch {
+
+        // Merr orët e punës për këtë kontratë
+        const workHoursRes = await axios.get(
+          `https://building-system.onrender.com/api/work-hours/contract/${contract_number}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setWorkHours(workHoursRes.data || []);
+        
+      } catch (error) {
+        console.error("Error fetching contract data:", error);
+        setContract(null);
         setInvoices([]);
+        setWorkHours([]);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -266,8 +279,31 @@ export default function ContractDetails() {
     html2pdf().set(opt).from(element).save();
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar detajet e kontratës...</h2>
+        </div>
+      </div>
+    );
+  }
+
   if (!contract || Object.keys(contract).length === 0) {
-    return <div>Kontrata nuk u gjet.</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Kontrata nuk u gjet</h2>
+          <button 
+            onClick={() => navigate('/admin/contracts')} 
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
+          >
+            🔙 Kthehu tek Kontratat
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const netTotal = newInvoice.items.reduce((acc, i) => acc + (i.amount || 0), 0);
@@ -359,6 +395,55 @@ export default function ContractDetails() {
             </li>
           ))}
         </ul>
+      </div>
+
+      {/* Orët e Punës për këtë kontratë */}
+      <div className="bg-white/70 p-10 rounded-3xl shadow-2xl border-2 border-green-200 animate-fade-in">
+        <h3 className="text-2xl font-bold mb-4 text-green-800 flex items-center gap-2">⏰ Orët e Punës</h3>
+        {workHours.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm bg-white shadow rounded-xl">
+              <thead className="bg-gradient-to-r from-green-100 to-blue-100 text-green-900">
+                <tr>
+                  <th className="py-3 px-2 text-center font-semibold">Data</th>
+                  <th className="py-3 px-2 text-center font-semibold">Punonjësi</th>
+                  <th className="py-3 px-2 text-center font-semibold">Orë</th>
+                  <th className="py-3 px-2 text-center font-semibold">Tarifa/orë</th>
+                  <th className="py-3 px-2 text-center font-semibold">Total Paguar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {workHours.map((wh, idx) => (
+                  <tr key={idx} className="hover:bg-green-50 transition-all">
+                    <td className="py-2 px-2 text-center">{new Date(wh.date).toLocaleDateString('sq-AL')}</td>
+                    <td className="py-2 px-2 text-center font-medium">
+                      {wh.employee_name || `Employee #${wh.employee_id}`}
+                    </td>
+                    <td className="py-2 px-2 text-center font-bold text-blue-600">{wh.hours}</td>
+                    <td className="py-2 px-2 text-center font-bold text-purple-600">£{parseFloat(wh.rate || 0).toFixed(2)}</td>
+                    <td className="py-2 px-2 text-center font-bold text-green-600">
+                      £{(parseFloat(wh.hours || 0) * parseFloat(wh.rate || 0)).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot className="bg-green-100">
+                <tr>
+                  <td colSpan="2" className="py-3 px-2 text-center font-bold text-green-800">TOTALET:</td>
+                  <td className="py-3 px-2 text-center font-bold text-blue-700">
+                    {workHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} orë
+                  </td>
+                  <td className="py-3 px-2 text-center">-</td>
+                  <td className="py-3 px-2 text-center font-bold text-green-700 text-lg">
+                    £{workHours.reduce((sum, wh) => sum + (parseFloat(wh.hours || 0) * parseFloat(wh.rate || 0)), 0).toFixed(2)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        ) : (
+          <p className="text-gray-500 italic text-center py-8">Nuk ka orë pune të regjistruara për këtë kontratë akoma</p>
+        )}
       </div>
 
       {/* Forma Fature */}

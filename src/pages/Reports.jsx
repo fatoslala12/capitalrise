@@ -44,12 +44,14 @@ export default function Reports() {
   const [employeeOptions, setEmployeeOptions] = useState([]);
   const [allWorkHours, setAllWorkHours] = useState([]);
   const [allInvoices, setAllInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
   // Merr të gjitha të dhënat nga backend
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         console.log('[DEBUG] Reports: Fetching data...');
         
         const [contractsRes, employeesRes, workHoursRes, invoicesRes, paymentsRes, expensesRes] = await Promise.all([
@@ -139,6 +141,8 @@ export default function Reports() {
         setEmployeeOptions([]);
         setAllWorkHours([]);
         setAllInvoices([]);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -247,6 +251,17 @@ export default function Reports() {
     XLSX.utils.book_append_sheet(wb, ws, "Raporti");
     XLSX.writeFile(wb, "raporti.xlsx");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar raportet...</h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
