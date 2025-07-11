@@ -15,7 +15,7 @@ import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import axios from "axios";
+import api from "../api";
 // Funksion universal për të kthyer snake_case në camelCase
 function snakeToCamel(obj) {
   if (Array.isArray(obj)) {
@@ -50,19 +50,35 @@ export default function Reports() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [contractsRes, employeesRes, workHoursRes, invoicesRes] = await Promise.all([
-          axios.get("https://building-system.onrender.com/api/contracts", { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("https://building-system.onrender.com/api/employees", { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("https://building-system.onrender.com/api/work-hours/all", { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("https://building-system.onrender.com/api/invoices", { headers: { Authorization: `Bearer ${token}` } }),
+        console.log('[DEBUG] Reports: Fetching data...');
+        
+        const [contractsRes, employeesRes, workHoursRes, invoicesRes, paymentsRes, expensesRes] = await Promise.all([
+          api.get("/api/contracts"),
+          api.get("/api/employees"),
+          api.get("/api/work-hours/"),
+          api.get("/api/invoices"),
+          api.get("/api/payments"),
+          api.get("/api/expenses"),
         ]);
+        
         const contracts = snakeToCamel(contractsRes.data || []);
         const employees = snakeToCamel(employeesRes.data || []);
         const workHours = snakeToCamel(workHoursRes.data || []);
         const invoices = snakeToCamel(invoicesRes.data || []);
+        const payments = snakeToCamel(paymentsRes.data || []);
+        const expenses = snakeToCamel(expensesRes.data || []);
 
-        // Site options
-        const sites = [...new Set(contracts.map(c => c.siteName).filter(Boolean))];
+        console.log('[DEBUG] Reports: Data fetched', {
+          contracts: contracts.length,
+          employees: employees.length,
+          workHours: workHours.length,
+          invoices: invoices.length,
+          payments: payments.length,
+          expenses: expenses.length
+        });
+
+        // Site options from contracts
+        const sites = [...new Set(contracts.map(c => c.siteName || c.site_name).filter(Boolean))];
         setSiteOptions(sites);
 
         // Employee options
@@ -72,28 +88,28 @@ export default function Reports() {
         }));
         setEmployeeOptions(employeeNames);
 
-        // Përgatit orët e punës për raportim
+        // Process work hours for reporting
         const allHours = [];
         workHours.forEach((wh) => {
-          const emp = employees.find(e => String(e.id) === String(wh.employeeId));
-          const empName = emp ? `${emp.firstName || emp.first_name || ''} ${emp.lastName || emp.last_name || ''}`.trim() : `Punonjës ${wh.employeeId}`;
-          Object.entries(wh.weeks || {}).forEach(([weekLabel, days]) => {
-            Object.entries(days).forEach(([day, entry]) => {
-              if (day !== "hourlyRate") {
-                allHours.push({
-                  employeeId: wh.employeeId,
-                  employeeName: empName,
-                  site: entry.site,
-                  date: `${weekLabel} - ${day}`,
-                  hours: parseFloat(entry.hours || 0)
-                });
-              }
-            });
+          const emp = employees.find(e => String(e.id) === String(wh.employeeId || wh.employee_id));
+          const empName = emp ? `${emp.firstName || emp.first_name || ''} ${emp.lastName || emp.last_name || ''}`.trim() : `Punonjës ${wh.employeeId || wh.employee_id}`;
+          
+          // Find contract/site info
+          const contract = contracts.find(c => String(c.id) === String(wh.contractId || wh.contract_id));
+          const siteName = contract ? (contract.siteName || contract.site_name) : (wh.site || 'Unknown Site');
+          
+          allHours.push({
+            employeeId: wh.employeeId || wh.employee_id,
+            employeeName: empName,
+            site: siteName,
+            date: wh.date,
+            hours: parseFloat(wh.hours || 0),
+            rate: parseFloat(wh.rate || emp?.hourlyRate || emp?.hourly_rate || 0)
           });
         });
         setAllWorkHours(allHours);
 
-        // Përgatit faturat për raportim
+        // Process invoices for reporting
         const allInvs = [];
         invoices.forEach(inv => {
           if (!inv) return;
@@ -104,16 +120,21 @@ export default function Reports() {
           const vat = subtotal * 0.2;
           const other = parseFloat(inv.other || 0);
           const total = subtotal + vat + other;
+          
+          const contract = contracts.find(c => c.contractNumber === inv.contractNumber || c.contract_number === inv.contract_number);
+          
           allInvs.push({
             ...inv,
             total,
             paid: inv.paid,
-            paidLate: !!inv.paidLate
+            paidLate: !!inv.paidLate,
+            siteName: contract ? (contract.siteName || contract.site_name) : 'Unknown Site'
           });
         });
         setAllInvoices(allInvs);
 
       } catch (err) {
+        console.error('[ERROR] Reports: Failed to fetch data:', err);
         setSiteOptions([]);
         setEmployeeOptions([]);
         setAllWorkHours([]);
@@ -123,50 +144,53 @@ export default function Reports() {
     fetchData();
   }, [token]);
 
-  // Përpunim filtrash dhe përmbledhjesh
+  // Process filters and summaries
   useEffect(() => {
+    console.log('[DEBUG] Reports: Processing filters...', {
+      workHours: allWorkHours.length,
+      invoices: allInvoices.length,
+      siteFilter,
+      employeeFilter,
+      excludeWeekends
+    });
+
     const workHours = allWorkHours;
     const invoices = allInvoices;
 
     const filtered = workHours.filter(w => {
-      const isWeekend = /Saturday|Sunday/i.test(w.date);
+      // Check if date is weekend
+      const date = new Date(w.date);
+      const dayOfWeek = date.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday = 0, Saturday = 6
+      
       return (!excludeWeekends || !isWeekend) &&
         (!siteFilter || w.site === siteFilter) &&
         (!employeeFilter || w.employeeName === employeeFilter);
     });
+
+    console.log('[DEBUG] Reports: Filtered work hours:', filtered.length);
 
     const totalHours = filtered.reduce((sum, w) => sum + (parseFloat(w.hours) || 0), 0);
     const totalPaid = invoices
       .filter(inv => inv.paid)
       .reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
 
-    const now = new Date();
-    const months = eachMonthOfInterval({ start: startOfYear(now), end: endOfYear(now) });
-    const monthly = months.map(month => {
-      const key = format(month, "yyyy-MM");
-      const total = invoices
-        .filter(inv => inv.paid && inv.date?.startsWith(key))
-        .reduce((sum, i) => sum + parseFloat(i.total || 0), 0);
-      return {
-        month: format(month, "MMM"),
-        expenses: total,
-      };
-    });
+    console.log('[DEBUG] Reports: Totals calculated:', { totalHours, totalPaid });
 
+    // Group by employee
     const groupedByEmployee = {};
     const groupedBySite = {};
+    
     for (let w of filtered) {
-      if (!groupedByEmployee[w.employeeName]) groupedByEmployee[w.employeeName] = 0;
-      groupedByEmployee[w.employeeName] += parseFloat(w.hours || 0);
+      const empName = w.employeeName || 'Unknown Employee';
+      const site = w.site || 'Unknown Site';
+      
+      if (!groupedByEmployee[empName]) groupedByEmployee[empName] = 0;
+      groupedByEmployee[empName] += parseFloat(w.hours || 0);
 
-      if (!groupedBySite[w.site]) groupedBySite[w.site] = 0;
-      groupedBySite[w.site] += parseFloat(w.hours || 0);
+      if (!groupedBySite[site]) groupedBySite[site] = 0;
+      groupedBySite[site] += parseFloat(w.hours || 0);
     }
-
-    const radar = Object.entries(groupedByEmployee).map(([employeeName, hours]) => ({
-      employeeName,
-      efficiency: hours,
-    }));
 
     const barBySite = Object.entries(groupedBySite).map(([site, hours]) => ({
       site,
@@ -178,6 +202,7 @@ export default function Reports() {
       hours,
     }));
 
+    // Invoice status pie chart
     const statusCounts = {};
     for (let inv of invoices) {
       const status = inv.paid
@@ -190,6 +215,12 @@ export default function Reports() {
       status,
       value,
     }));
+
+    console.log('[DEBUG] Reports: Charts data prepared:', {
+      barBySite: barBySite.length,
+      barByEmployee: barByEmployee.length,
+      pie: pie.length
+    });
 
     setFilteredHours(filtered);
     setSummary({ totalHours, totalPaid });
@@ -259,26 +290,34 @@ export default function Reports() {
 
         <div className="bg-white p-4 shadow rounded mb-6">
           <h2 className="text-lg font-semibold mb-2">📊 Orë sipas punonjësve</h2>
-          <BarChart width={700} height={300} data={employeeEfficiency}>
-            <XAxis dataKey="employeeName" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="hours" fill="#8884d8" />
-          </BarChart>
+          {employeeEfficiency && employeeEfficiency.length > 0 ? (
+            <BarChart width={700} height={300} data={employeeEfficiency}>
+              <XAxis dataKey="employeeName" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="hours" fill="#8884d8" />
+            </BarChart>
+          ) : (
+            <p className="text-gray-500 italic py-8">Nuk ka të dhëna për të shfaqur</p>
+          )}
         </div>
 
         <div className="bg-white p-4 shadow rounded mb-6">
-          <h2 className="text-lg font-semibold mb-2">💸 Shpenzimet sipas site-it të punës (pagesa reale)</h2>
-          <BarChart
-            width={800}
-            height={350}
-            data={monthlyExpenses}
-          >
-            <XAxis dataKey="site" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="hours" fill="#d63031" />
-          </BarChart>
+          <h2 className="text-lg font-semibold mb-2">🏗️ Orë pune sipas site-it</h2>
+          {monthlyExpenses && monthlyExpenses.length > 0 ? (
+            <BarChart
+              width={800}
+              height={350}
+              data={monthlyExpenses}
+            >
+              <XAxis dataKey="site" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="hours" fill="#3498db" />
+            </BarChart>
+          ) : (
+            <p className="text-gray-500 italic py-8">Nuk ka të dhëna për të shfaqur</p>
+          )}
         </div>
 
         {/* Faturat e papaguara - dizajn i ri */}
@@ -322,49 +361,57 @@ export default function Reports() {
 
         <div className="bg-white p-4 shadow rounded mb-6">
           <h2 className="text-lg font-semibold mb-2">📍 Orë dhe Fitim Neto sipas site-it të punës</h2>
-          <BarChart
-            width={800}
-            height={350}
-            data={Object.entries(
-              filteredHours.reduce((acc, curr) => {
-                const site = curr.site || "Pa site";
-                const rate = 15; // mund të zëvendësohet me logjikë nga kontrata ose punonjësi
-                const bruto = curr.hours * rate;
-                const neto = bruto * 0.8;
+          {filteredHours && filteredHours.length > 0 ? (
+            <BarChart
+              width={800}
+              height={350}
+              data={Object.entries(
+                filteredHours.reduce((acc, curr) => {
+                  const site = curr.site || "Pa site";
+                  const rate = curr.rate || 15; // Use actual rate from data or default to 15
+                  const bruto = curr.hours * rate;
+                  const neto = bruto * 0.2; // Company profit (20%)
 
-                if (!acc[site]) acc[site] = { site, hours: 0, profit: 0 };
-                acc[site].hours += curr.hours;
-                acc[site].profit += neto;
-                return acc;
-              }, {})
-            ).map(([_, value]) => value)}
-          >
-            <XAxis dataKey="site" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="hours" fill="#3498db" name="Orë totale" />
-            <Bar dataKey="profit" fill="#2ecc71" name="Fitim Neto" />
-          </BarChart>
+                  if (!acc[site]) acc[site] = { site, hours: 0, profit: 0 };
+                  acc[site].hours += curr.hours;
+                  acc[site].profit += neto;
+                  return acc;
+                }, {})
+              ).map(([_, value]) => value)}
+            >
+              <XAxis dataKey="site" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="hours" fill="#3498db" name="Orë totale" />
+              <Bar dataKey="profit" fill="#2ecc71" name="Fitim Neto (20%)" />
+            </BarChart>
+          ) : (
+            <p className="text-gray-500 italic py-8">Nuk ka të dhëna për të shfaqur</p>
+          )}
         </div>
 
         <div className="bg-white p-4 shadow rounded mb-6">
           <h2 className="text-lg font-semibold mb-2">🧾 Statusi i faturave</h2>
-          <PieChart width={400} height={300}>
-            <Pie
-              data={invoiceStatus}
-              dataKey="value"
-              nameKey="status"
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              label
-            >
-              {invoiceStatus.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
+          {invoiceStatus && invoiceStatus.length > 0 ? (
+            <PieChart width={400} height={300}>
+              <Pie
+                data={invoiceStatus}
+                dataKey="value"
+                nameKey="status"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                label
+              >
+                {invoiceStatus.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          ) : (
+            <p className="text-gray-500 italic py-8">Nuk ka të dhëna për fatura</p>
+          )}
         </div>
       </div>
     </div>
