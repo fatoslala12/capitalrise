@@ -5,12 +5,9 @@ import axios from "axios";
 
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
-  const day = today.getDay(); // 0 = e diel, 1 = e hënë, ..., 6 = e shtunë
-  const daysToMonday = day === 0 ? 6 : day - 1;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - daysToMonday + offset * 7);
-  monday.setHours(0, 0, 0, 0);
-  return monday;
+  const day = today.getDay();
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1) + offset * 7;
+  return new Date(today.setDate(diff));
 };
 
 const formatDateRange = (startDate) => {
@@ -176,12 +173,22 @@ export default function WorkHours() {
     }
   };
 
+  // Set only the current week expanded by default for admin
+  useEffect(() => {
+    if (isAdmin) {
+      setExpandedWeeks([currentWeekLabel]);
+    }
+  }, [isAdmin, currentWeekLabel]);
+
   const toggleWeek = (weekLabel) => {
-    setExpandedWeeks((prev) =>
-      prev.includes(weekLabel)
-        ? prev.filter(w => w !== weekLabel)
-        : [...prev, weekLabel]
-    );
+    setExpandedWeeks((prev) => {
+      // Nëse java që klikohet është e hapur, mbyll të gjitha
+      if (prev.includes(weekLabel)) {
+        return [];
+      }
+      // Nëse java që klikohet është e mbyllur, hap vetëm atë
+      return [weekLabel];
+    });
   };
 
   // Gjenero javët ekzistuese nga hourData
@@ -193,18 +200,17 @@ export default function WorkHours() {
       .forEach(label => allWeekLabels.add(label));
   });
 
+  // Shto javën aktuale nëse nuk është në të dhënat ekzistuese
+  allWeekLabels.add(currentWeekLabel);
+
   const sortedWeeks = Array.from(allWeekLabels).sort((a, b) => {
     const [aStart] = a.split(" - ");
     const [bStart] = b.split(" - ");
     return new Date(bStart) - new Date(aStart);
   });
 
-  // Set only the current week expanded by default for admin
-  useEffect(() => {
-    if (isAdmin) {
-      setExpandedWeeks([currentWeekLabel]);
-    }
-  }, [isAdmin, currentWeekLabel]);
+  // Nda javën aktuale nga të tjerat
+  const otherWeeks = sortedWeeks.filter(weekLabel => weekLabel !== currentWeekLabel);
 
   return (
     <div className="overflow-x-auto p-6">
@@ -219,7 +225,7 @@ export default function WorkHours() {
             // Kontrollo nëse menaxheri ekziston si punonjës
             const selfExists = employees.some(emp => String(emp.id) === String(user.employee_id));
             if (!selfExists) {
-              return <span className="block mt-2 text-red-600">Nuk jeni të regjistruar si punonjës në sistem. Kontaktoni administratorin për t'u shtuar si punonjës.<br/>Query për DB:<br/><code>SELECT * FROM building_system.employees WHERE id = '{user.employee_id}';</code></span>;
+              return <span className="block mt-2 text-red-600">Nuk jeni të regjistruar si punonjës në sistem. Kontaktoni administratorin për t'u shtuar si punonjës.<br/>Kontrollo në DB:<br/><code>SELECT * FROM employees WHERE id = '{user.employee_id}';</code></span>;
             }
             return null;
           })()}
@@ -308,7 +314,7 @@ export default function WorkHours() {
 
       {(saved || isAdmin) && (
         <div className="mt-12">
-          <h3 className="text-xl font-semibold mb-4 text-center">📊 Orët e Ruajtura</h3>
+          <h3 className="text-xl font-semibold mb-4 text-center">📊 Java Aktuale - {currentWeekLabel}</h3>
           <WorkHoursTable
             employees={employees}
             weekLabel={currentWeekLabel}
@@ -321,30 +327,8 @@ export default function WorkHours() {
         </div>
       )}
 
-      {isAdmin && sortedWeeks
-        .filter(weekLabel => weekLabel !== currentWeekLabel)
-        .map((weekLabel) => (
-          <div key={weekLabel} className="mt-6">
-            <button className="text-blue-600 underline mb-2" onClick={() => toggleWeek(weekLabel)}>
-              {expandedWeeks.includes(weekLabel) ? "▼ Fshih" : "▶ Shfaq"} {weekLabel}
-            </button>
-            {expandedWeeks.includes(weekLabel) && (
-              <WorkHoursTable
-                employees={employees}
-                weekLabel={weekLabel}
-                data={hourData}
-                onChange={handleChange}
-                readOnly={true}
-                showPaymentControl={isAdmin}
-                siteOptions={siteOptions}
-              />
-            )}
-          </div>
-        ))}
-
-      {/* Manageri sheh të gjitha javët për punonjësit e tij */}
-      {isManager && sortedWeeks.map((weekLabel, index) => (
-        <div key={index} className="mt-6">
+      {isAdmin && otherWeeks.map((weekLabel) => (
+        <div key={weekLabel} className="mt-6">
           <button className="text-blue-600 underline mb-2" onClick={() => toggleWeek(weekLabel)}>
             {expandedWeeks.includes(weekLabel) ? "▼ Fshih" : "▶ Shfaq"} {weekLabel}
           </button>
@@ -360,7 +344,27 @@ export default function WorkHours() {
             />
           )}
         </div>
-      ))}
+      )}
+
+      {/* Manageri sheh të gjitha javët për punonjësit e tij */}
+      {isManager && otherWeeks.map((weekLabel) => (
+        <div key={weekLabel} className="mt-6">
+          <button className="text-blue-600 underline mb-2" onClick={() => toggleWeek(weekLabel)}>
+            {expandedWeeks.includes(weekLabel) ? "▼ Fshih" : "▶ Shfaq"} {weekLabel}
+          </button>
+          {expandedWeeks.includes(weekLabel) && (
+            <WorkHoursTable
+              employees={employees}
+              weekLabel={weekLabel}
+              data={hourData}
+              onChange={handleChange}
+              readOnly={true}
+              showPaymentControl={isAdmin}
+              siteOptions={siteOptions}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

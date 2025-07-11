@@ -109,10 +109,38 @@ exports.addWorkHours = async (req, res) => {
       );
       if (checkPay.rows.length === 0) {
         console.log('    Inserting payment for', employeeId, weekLabel);
-        await client.query(
-          `INSERT INTO payments (employee_id, week_label, is_paid) VALUES ($1, $2, $3)`,
-          [employeeId, weekLabel, false]
+        
+        // Llogarit gross dhe net amount për javën
+        let totalHours = 0;
+        let employeeRate = 0;
+        let labelType = 'UTR'; // default
+        
+        // Merr employee info për rate dhe label type
+        const empInfo = await client.query(
+          `SELECT hourly_rate, label_type FROM employees WHERE id = $1`,
+          [employeeId]
         );
+        if (empInfo.rows.length > 0) {
+          employeeRate = Number(empInfo.rows[0].hourly_rate || 0);
+          labelType = empInfo.rows[0].label_type || 'UTR';
+        }
+        
+        // Llogarit total orë për javën
+        Object.values(week).forEach(entry => {
+          if (entry.hours && entry.hours > 0) {
+            totalHours += Number(entry.hours);
+          }
+        });
+        
+        const grossAmount = totalHours * employeeRate;
+        const netAmount = grossAmount * (labelType === 'UTR' ? 0.8 : 0.7);
+        
+        await client.query(
+          `INSERT INTO payments (employee_id, week_label, is_paid, gross_amount, net_amount) VALUES ($1, $2, $3, $4, $5)`,
+          [employeeId, weekLabel, false, grossAmount, netAmount]
+        );
+        
+        console.log(`    Payment inserted: ${totalHours}h × £${employeeRate} = £${grossAmount} gross, £${netAmount} net`);
       }
     }
     await client.query('COMMIT');
