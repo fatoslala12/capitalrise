@@ -6,6 +6,9 @@ import {
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
 import { Container, Grid, Stack } from "../components/ui/Layout";
+import { CountStatCard, MoneyStatCard } from "../components/ui/StatCard";
+import { StatusBadge, PaymentBadge } from "../components/ui/Badge";
+import EmptyState, { NoTasksEmpty } from "../components/ui/EmptyState";
 
 // Funksion për të kthyer snake_case në camelCase për një objekt ose array
 function snakeToCamel(obj) {
@@ -237,24 +240,30 @@ export default function DashboardStats() {
       </div>
 
       {/* Statistika kryesore */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center">
-          <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">📍 Site aktive</h3>
-          <p className="text-5xl text-blue-700 font-extrabold">{activeSites.length}</p>
-        </div>
-        <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center">
-          <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">👷 Punonjës aktivë</h3>
-          <p className="text-5xl text-green-700 font-extrabold">{activeEmployees.length}</p>
-        </div>
-        <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center">
-          <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">💷 Paguar këtë javë</h3>
-          <p className="text-5xl text-indigo-700 font-extrabold">£{dashboardStats.totalPaid.toFixed(2)}</p>
-        </div>
-        <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center">
-          <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">📈 Fitimi (20%)</h3>
-          <p className="text-5xl text-emerald-700 font-extrabold">£{dashboardStats.totalProfit.toFixed(2)}</p>
-        </div>
-      </div>
+      <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="lg" className="mb-12">
+        <CountStatCard
+          title="Site aktive"
+          count={activeSites.length}
+          icon="📍"
+          color="blue"
+        />
+        <CountStatCard
+          title="Punonjës aktivë"
+          count={activeEmployees.length}
+          icon="👷"
+          color="green"
+        />
+        <MoneyStatCard
+          title="Paguar këtë javë"
+          amount={dashboardStats.totalPaid}
+          color="purple"
+        />
+        <MoneyStatCard
+          title="Fitimi (20%)"
+          amount={dashboardStats.totalProfit}
+          color="amber"
+        />
+      </Grid>
 
       {/* Detyrat - më të dukshme */}
       <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-8 rounded-2xl shadow-xl col-span-full border border-yellow-200">
@@ -276,7 +285,7 @@ export default function DashboardStats() {
           <ul className="space-y-3">
             {filteredTasks.map((t, idx) => (
               <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-4 bg-white rounded-xl p-4 shadow border border-blue-100">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md border ${t.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{t.status === 'completed' ? 'Përfunduar' : 'Në vazhdim'}</span>
+                <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
                 <span className="font-semibold flex-1 text-lg">{t.description || t.title || ''}</span>
                 <span className="text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
                 <span className="text-lg text-purple-700 font-bold">Afati: {t.due_date ? new Date(t.due_date).toLocaleDateString() : ''}</span>
@@ -285,7 +294,7 @@ export default function DashboardStats() {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500 italic mt-2">Nuk ka ende detyra të dhëna.</p>
+          <NoTasksEmpty />
         )}
       </div>
 

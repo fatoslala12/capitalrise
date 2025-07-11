@@ -8,6 +8,8 @@ import Button from "../components/ui/Button";
 import Input, { Select } from "../components/ui/Input";
 import { Container, Grid, ResponsiveTable } from "../components/ui/Layout";
 import { useToast } from "../components/ui/Toast";
+import { StatusBadge } from "../components/ui/Badge";
+import { NoContractsEmpty } from "../components/ui/EmptyState";
 
 export default function Contracts() {
   const toast = useToast();
@@ -302,8 +304,8 @@ export default function Contracts() {
             <tbody>
               {sortedContracts.length === 0 ? (
                 <tr>
-                  <td colSpan="11" className="py-8 text-center text-gray-500 italic">
-                    Nuk ka kontrata akoma. Krijoni të parën!
+                  <td colSpan="11" className="py-8">
+                    <NoContractsEmpty />
                   </td>
                 </tr>
               ) : (
@@ -329,8 +331,8 @@ export default function Contracts() {
                     <td className="py-4 px-4 align-middle font-bold text-blue-900">£{vlera.toFixed(2)}</td>
                     <td className="py-4 px-4 align-middle font-bold text-purple-700">£{shpenzuar.toFixed(2)}</td>
                     <td className="py-4 px-4 align-middle font-bold text-green-700">£{fitimi.toFixed(2)}</td>
-                    <td className={`py-4 px-4 align-middle font-bold ${c.status === "Mbyllur" ? "text-green-600" : c.status === "Mbyllur me vonesë" ? "text-red-600" : "text-blue-600"}`}>
-                      <span className={`px-4 py-2 rounded-full text-base font-bold shadow-md ${c.status === "Mbyllur" ? "bg-green-100 text-green-600" : c.status === "Mbyllur me vonesë" ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"}`}>{c.status}</span>
+                    <td className="py-4 px-4 align-middle">
+                      <StatusBadge status={c.status} size="lg" />
                     </td>
                     <td className="py-4 px-4 align-middle">
                       <div className="flex flex-col items-center gap-2">
@@ -347,9 +349,15 @@ export default function Contracts() {
                       </div>
                     </td>
                     <td className="py-4 px-4 align-middle flex justify-center gap-2">
-                      <button className="px-5 py-3 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg text-lg font-semibold shadow hover:from-pink-600 hover:to-red-600 transition-all flex items-center gap-2" onClick={() => handleDelete(c.contract_number)}>
-                        🗑 <span className="hidden md:inline">Fshi</span>
-                      </button>
+                      <Button 
+                        variant="danger" 
+                        size="md" 
+                        onClick={() => handleDelete(c.contract_number)}
+                        icon="🗑"
+                        className="min-w-0"
+                      >
+                        <span className="hidden md:inline">Fshi</span>
+                      </Button>
                     </td>
                   </tr>
                 );
