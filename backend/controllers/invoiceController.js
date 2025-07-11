@@ -103,13 +103,21 @@ exports.deleteInvoice = async (req, res) => {
 
 exports.getAllInvoices = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM invoices');
-    console.log('[DEBUG] /api/invoices - rows:', result.rows.length);
-    result.rows.forEach((row, idx) => {
-      console.log(`[DEBUG] Invoice Row ${idx}:`, row);
-    });
+    console.log('[DEBUG] /api/invoices called');
+    let result = { rows: [] };
+    try {
+      result = await pool.query('SELECT * FROM invoices ORDER BY date DESC');
+      console.log('[DEBUG] /api/invoices - rows:', result.rows.length);
+      if (result.rows.length > 0) {
+        console.log('[DEBUG] Invoice Row 0:', result.rows[0]);
+      }
+    } catch (err) {
+      console.error('[ERROR] /api/invoices main query:', err.message);
+      return res.json([]);
+    }
     res.json(result.rows);
   } catch (err) {
+    console.error('[ERROR] /api/invoices (outer catch):', err.message);
     res.status(500).json({ error: err.message });
   }
 };

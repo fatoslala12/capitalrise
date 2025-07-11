@@ -2,15 +2,21 @@ const pool = require('../db');
 
 exports.getAllPayments = async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT p.*, e.first_name, e.last_name, c.site_name
-      FROM payments p
-      JOIN employees e ON p.employee_id = e.id
-      JOIN contracts c ON p.contract_id = c.id
-      ORDER BY p.created_at DESC
-    `);
+    console.log('[DEBUG] /api/payments called');
+    let result = { rows: [] };
+    try {
+      result = await pool.query('SELECT * FROM payments ORDER BY created_at DESC');
+      console.log('[DEBUG] /api/payments - rows:', result.rows.length);
+      if (result.rows.length > 0) {
+        console.log('[DEBUG] Payment Row 0:', result.rows[0]);
+      }
+    } catch (err) {
+      console.error('[ERROR] /api/payments main query:', err.message);
+      return res.json([]);
+    }
     res.json(result.rows);
   } catch (err) {
+    console.error('[ERROR] /api/payments (outer catch):', err.message);
     res.status(500).json({ error: err.message });
   }
 };
