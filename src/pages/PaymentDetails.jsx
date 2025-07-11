@@ -43,6 +43,13 @@ export default function PaymentDetails() {
           })
         ]);
 
+        console.log('[DEBUG] Contract data:', contractRes.data);
+        console.log('[DEBUG] Work hours data:', workHoursRes.data);
+        console.log('[DEBUG] Employees data:', employeesRes.data);
+        console.log('[DEBUG] Expenses response:', expensesRes.data);
+        console.log('[DEBUG] Expenses response type:', typeof expensesRes.data);
+        console.log('[DEBUG] Expenses array length:', Array.isArray(expensesRes.data) ? expensesRes.data.length : 'Not array');
+        
         setContract(contractRes.data);
         setWorkHours(workHoursRes.data || {});
         setEmployees(employeesRes.data || []);
@@ -220,6 +227,9 @@ export default function PaymentDetails() {
 
   console.log('[DEBUG PaymentDetails] Final rows:', rows);
   console.log('[DEBUG PaymentDetails] Total bruto:', totalBruto, 'Total neto:', totalNeto);
+  console.log('[DEBUG PaymentDetails] expensesInvoices before render:', expensesInvoices);
+  console.log('[DEBUG PaymentDetails] expensesInvoices length:', expensesInvoices.length);
+  console.log('[DEBUG PaymentDetails] expensesInvoices array:', expensesInvoices);
 
   const totalInvoicesGross = expensesInvoices.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0);
   const totalInvoicesNet = expensesInvoices.reduce((sum, inv) => sum + parseFloat(inv.net || 0), 0);
@@ -310,7 +320,7 @@ export default function PaymentDetails() {
 
           {/* Shpenzimet/Faturat */}
           <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 overflow-x-auto">
-            <h4 className="text-xl font-bold text-blue-800 mb-2">🧾 Shpenzime & Fatura</h4>
+            <h4 className="text-xl font-bold text-blue-800 mb-2">🧾 Shpenzime & Fatura ({expensesInvoices.length} gjithsej)</h4>
             <table className="w-full text-base text-blue-900">
               <thead className="bg-gradient-to-r from-blue-100 to-purple-100">
                 <tr>
@@ -324,33 +334,42 @@ export default function PaymentDetails() {
                 </tr>
               </thead>
               <tbody>
-                {expensesInvoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-purple-50 transition-all">
-                    <td className="py-2 px-3 font-semibold">{inv.expense_type}</td>
-                    <td className="py-2 px-3 text-center">{inv.date ? new Date(inv.date).toLocaleDateString('en-GB') : '-'}</td>
-                    <td className="py-2 px-3 text-center font-bold text-blue-700">£{Number(inv.gross).toFixed(2)}</td>
-                    <td className="py-2 px-3 text-center font-bold text-green-700">£{Number(inv.net).toFixed(2)}</td>
-                    <td className="py-2 px-3 text-center font-bold text-purple-700">£{Number(inv.tax).toFixed(2)}</td>
-                    <td className="py-2 px-3 text-center">
-                      <button
-                        onClick={() => togglePaid(inv.id)}
-                        className={`px-3 py-1 rounded-full font-bold shadow border text-sm transition-all duration-200
-                          ${inv.paid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}
-                        `}
-                      >
-                        {inv.paid ? 'Paguar' : 'Jo i paguar'}
-                      </button>
-                    </td>
-                    <td className="py-2 px-3 text-center">
-                      <button
-                        onClick={() => handleDelete(inv.id)}
-                        className="px-3 py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg text-base font-semibold shadow hover:from-pink-600 hover:to-red-600 transition-all"
-                      >
-                        🗑
-                      </button>
+                {console.log('[DEBUG] Rendering expensesInvoices in tbody:', expensesInvoices) || 
+                 expensesInvoices.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-4 text-center text-gray-500 italic">
+                      {expensesInvoices.length === 0 ? 'Nuk ka expenses për këtë kontratë' : 'Duke ngarkuar...'}
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  expensesInvoices.map((inv) => (
+                    <tr key={inv.id} className="hover:bg-purple-50 transition-all">
+                      <td className="py-2 px-3 font-semibold">{inv.expense_type}</td>
+                      <td className="py-2 px-3 text-center">{inv.date ? new Date(inv.date).toLocaleDateString('en-GB') : '-'}</td>
+                      <td className="py-2 px-3 text-center font-bold text-blue-700">£{Number(inv.gross).toFixed(2)}</td>
+                      <td className="py-2 px-3 text-center font-bold text-green-700">£{Number(inv.net).toFixed(2)}</td>
+                      <td className="py-2 px-3 text-center font-bold text-purple-700">£{Number(inv.tax).toFixed(2)}</td>
+                      <td className="py-2 px-3 text-center">
+                        <button
+                          onClick={() => togglePaid(inv.id)}
+                          className={`px-3 py-1 rounded-full font-bold shadow border text-sm transition-all duration-200
+                            ${inv.paid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}
+                          `}
+                        >
+                          {inv.paid ? 'Paguar' : 'Jo i paguar'}
+                        </button>
+                      </td>
+                      <td className="py-2 px-3 text-center">
+                        <button
+                          onClick={() => handleDelete(inv.id)}
+                          className="px-3 py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg text-base font-semibold shadow hover:from-pink-600 hover:to-red-600 transition-all"
+                        >
+                          🗑
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
               <tfoot>
                 <tr className="bg-blue-50 font-bold">
