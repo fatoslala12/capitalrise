@@ -1,7 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useLanguage } from "../context/LanguageContext";
-import LanguageButton from "../components/LanguageButton";
 
 const adminMenu = [
   { path: "/admin/dashboard", label: "🏠 Dashboard" },
@@ -30,7 +28,6 @@ const userMenu = [
 
 export default function MainLayout() {
   const { user, logout } = useAuth();
-  const { t } = useLanguage();
   const location = useLocation();
 
   let menu = [];
@@ -63,12 +60,11 @@ export default function MainLayout() {
           })}
         </nav>
         <div className="mt-auto mb-6 px-2">
-          <LanguageButton />
           <button
             onClick={logout}
             className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-pink-600 hover:to-red-600 text-white px-4 py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 text-base transition-all"
           >
-            <span className="text-lg">🚪</span> {t('logout')}
+            <span className="text-lg">🚪</span> Dil
           </button>
         </div>
       </aside>
