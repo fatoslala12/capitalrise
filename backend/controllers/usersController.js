@@ -112,10 +112,10 @@ exports.resetPassword = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email mungon!' });
   try {
-    const hashed = await bcrypt.hash('123456789', 10);
+    // Hiq hash-in, vendos password-in si plain text
     const result = await pool.query(
       'UPDATE users SET password = $1, updated_at = NOW() WHERE email = $2 RETURNING id, email, role',
-      [hashed, email]
+      ['123456789', email]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Përdoruesi nuk u gjet!' });
