@@ -262,9 +262,9 @@ exports.getStructuredWorkHours = async (req, res) => {
       const empId = row.employee_id;
       const date = new Date(row.date);
       
-      // Use same week calculation as frontend (starts from Tuesday) - corrected
+      // Use same week calculation as frontend (Monday to Sunday)
       const weekDay = date.getDay();
-      const diff = date.getDate() - (weekDay === 0 ? 5 : weekDay === 1 ? 6 : weekDay - 2);
+      const diff = date.getDate() - weekDay + (weekDay === 0 ? -6 : 1);
       const weekStart = new Date(date);
       weekStart.setDate(diff);
       weekStart.setHours(0, 0, 0, 0);
@@ -327,9 +327,9 @@ exports.getStructuredWorkHoursForEmployee = async (req, res) => {
     result.rows.forEach(row => {
       const date = new Date(row.date);
       
-      // Use same week calculation as frontend (starts from Tuesday) - corrected
+      // Use same week calculation as frontend (Monday to Sunday)
       const weekDay = date.getDay();
-      const diff = date.getDate() - (weekDay === 0 ? 5 : weekDay === 1 ? 6 : weekDay - 2);
+      const diff = date.getDate() - weekDay + (weekDay === 0 ? -6 : 1);
       const weekStart = new Date(date);
       weekStart.setDate(diff);
       weekStart.setHours(0, 0, 0, 0);

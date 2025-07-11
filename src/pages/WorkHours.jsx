@@ -6,8 +6,8 @@ import axios from "axios";
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
   const day = today.getDay();
-  // Rregulluar: java fillon nga e martë - formula e saktë
-  const diff = today.getDate() - (day === 0 ? 5 : day === 1 ? 6 : day - 2) + offset * 7;
+  // Java tradicionale: E Hëna (1) → E Diel (0)
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1) + offset * 7;
   return new Date(today.setDate(diff));
 };
 
@@ -91,8 +91,6 @@ export default function WorkHours() {
           if (selfEmployee) {
             console.log("Found self employee:", selfEmployee);
             setEmployees([selfEmployee]);
-            // Update user context me employee_id e gjetur
-            setUser(prev => ({ ...prev, employee_id: selfEmployee.id }));
           } else {
             console.log("Could not find matching employee record");
             setEmployees([]);
@@ -137,7 +135,7 @@ export default function WorkHours() {
         console.error("Error fetching employees:", err);
         setEmployees([]);
       });
-  }, [user, token, isAdmin]);
+  }, [user?.id, user?.employee_id, user?.role, token, isAdmin, isManager]); // Simplified dependencies
 
   // Merr orët e punës nga backend
   useEffect(() => {

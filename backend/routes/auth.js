@@ -34,7 +34,11 @@ console.log("[DEBUG] LLOJ password në DB:", typeof user.password, "| Vlera:", u
       return res.status(401).json({ error: "Email ose fjalëkalim i gabuar." });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ 
+      id: user.id, 
+      role: user.role, 
+      employee_id: user.employee_id 
+    }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
