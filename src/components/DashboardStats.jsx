@@ -151,12 +151,15 @@ export default function DashboardStats() {
       // Unpaid expenses
       const unpaidExpensesList = [];
       allExpenses.forEach(exp => {
-        if (exp && !exp.paid) {
+        // Tolerant: false, 0, 'false', undefined
+        if (exp && (exp.paid === false || exp.paid === 0 || exp.paid === 'false')) {
           unpaidExpensesList.push({
             id: exp.id,
             date: exp.date,
             type: exp.expenseType,
-            gross: parseFloat(exp.gross || 0)
+            gross: parseFloat(exp.gross || 0),
+            contract_id: exp.contractId,
+            description: exp.description
           });
         }
       });
