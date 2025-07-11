@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "../api";
+import api from "../api";
 
 const days = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"];
 
@@ -17,7 +17,7 @@ export default function WorkHoursTable({
   useEffect(() => {
     const fetchPaidStatus = async () => {
       try {
-        const res = await axios.get("/work-hours/paid-status", { params: { week: weekLabel } });
+        const res = await api.get("/api/work-hours/paid-status", { params: { week: weekLabel } });
         const transformed = {};
         res.data.forEach(item => {
           transformed[`${item.week}_${item.employeeId}`] = item.paid;
@@ -36,7 +36,7 @@ export default function WorkHoursTable({
     setPaidStatus(updated);
 
     try {
-      await axios.post("/work-hours/paid-status", {
+      await api.post("/api/work-hours/paid-status", {
         week: weekLabel,
         employeeId: empId,
         paid: updated[key],
@@ -156,7 +156,7 @@ export default function WorkHoursTable({
                       onChange={async () => {
                         await handleTick(emp.id);
                         // Refresh paid status after change
-                        const res = await axios.get("/work-hours/paid-status", { params: { week: weekLabel } });
+                        const res = await api.get("/api/work-hours/paid-status", { params: { week: weekLabel } });
                         const transformed = {};
                         res.data.forEach(item => {
                           transformed[`${item.week}_${item.employeeId}`] = item.paid;

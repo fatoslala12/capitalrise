@@ -261,13 +261,22 @@ exports.getStructuredWorkHours = async (req, res) => {
     result.rows.forEach(row => {
       const empId = row.employee_id;
       const date = new Date(row.date);
+      
+      // Use same week calculation as frontend
+      const weekDay = date.getDay();
+      const diff = date.getDate() - weekDay + (weekDay === 0 ? -6 : 1);
       const weekStart = new Date(date);
-      weekStart.setDate(date.getDate() - date.getDay() + 1); // fillimi i javës (E hënë)
+      weekStart.setDate(diff);
+      weekStart.setHours(0, 0, 0, 0);
+      
       const weekStartStr = weekStart.toISOString().slice(0, 10);
       const weekEndStr = new Date(weekStart.getTime() + 6 * 86400000).toISOString().slice(0, 10);
       const weekLabel = `${weekStartStr} - ${weekEndStr}`;
+      
       const dayNames = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"];
-      const day = dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
+      const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
+      const day = dayNames[dayIndex];
+      
       if (!data[empId]) data[empId] = {};
       if (!data[empId][weekLabel]) data[empId][weekLabel] = {};
       data[empId][weekLabel][day] = {
@@ -317,15 +326,24 @@ exports.getStructuredWorkHoursForEmployee = async (req, res) => {
     const data = {};
     result.rows.forEach(row => {
       const date = new Date(row.date);
+      
+      // Use same week calculation as frontend
+      const weekDay = date.getDay();
+      const diff = date.getDate() - weekDay + (weekDay === 0 ? -6 : 1);
       const weekStart = new Date(date);
-      weekStart.setDate(date.getDate() - date.getDay() + 1);
+      weekStart.setDate(diff);
+      weekStart.setHours(0, 0, 0, 0);
+      
       const weekStartStr = weekStart.toISOString().slice(0, 10);
       const weekEndStr = new Date(weekStart.getTime() + 6 * 86400000).toISOString().slice(0, 10);
       const weekLabel = `${weekStartStr} - ${weekEndStr}`;
+      
       const dayNames = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"];
-      const day = dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
+      const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
+      const dayName = dayNames[dayIndex];
+      
       if (!data[weekLabel]) data[weekLabel] = {};
-      data[weekLabel][day] = {
+      data[weekLabel][dayName] = {
         hours: row.hours,
         site: row.site_name,
         rate: row.rate,

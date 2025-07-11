@@ -176,7 +176,7 @@ export default function WorkHours() {
   // Set only the current week expanded by default for admin
   useEffect(() => {
     if (isAdmin) {
-      setExpandedWeeks([currentWeekLabel]);
+      setExpandedWeeks([]);
     }
   }, [isAdmin, currentWeekLabel]);
 
@@ -209,8 +209,18 @@ export default function WorkHours() {
     return new Date(bStart) - new Date(aStart);
   });
 
-  // Nda javën aktuale nga të tjerat
-  const otherWeeks = sortedWeeks.filter(weekLabel => weekLabel !== currentWeekLabel);
+  // Nda javën aktuale nga të tjerat dhe filtro javët e ardhshme
+  const today = new Date();
+  const otherWeeks = sortedWeeks.filter(weekLabel => {
+    if (weekLabel === currentWeekLabel) return false;
+    
+    // Kontrollo nëse java është në të kaluarën ose aktuale
+    const [weekStart] = weekLabel.split(' - ');
+    const weekStartDate = new Date(weekStart);
+    
+    // Shfaq vetëm javët që kanë filluar para ose në ditën e sotme
+    return weekStartDate <= today;
+  });
 
   return (
     <div className="overflow-x-auto p-6">
