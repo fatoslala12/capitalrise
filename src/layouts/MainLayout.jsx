@@ -1,42 +1,39 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useLanguage } from "../context/LanguageContext";
-import LanguageButton from "../components/LanguageButton";
 
-const getAdminMenu = (t) => [
-  { path: "/admin/dashboard", icon: "🏠", label: t('dashboard') },
-  { path: "/admin/employees", icon: "👷", label: t('employees') },
-  { path: "/admin/employees-list", icon: "➕", label: t('employees') + " +" },
-  { path: "/admin/work-hours", icon: "🕒", label: t('workHours') },
-  { path: "/admin/payments", icon: "💰", label: t('payments') },
-  { path: "/admin/contracts", icon: "📄", label: t('contracts') },
-  { path: "/admin/tasks", icon: "📝", label: t('tasks') },
-  { path: "/admin/reports", icon: "📈", label: t('reports') },
+const adminMenu = [
+  { path: "/admin/dashboard", label: "🏠 Dashboard" },
+  { path: "/admin/employees", label: "👷 Punonjësit" },
+  { path: "/admin/employees-list", label: "➕ Shto Punonjës" },
+  { path: "/admin/work-hours", label: "🕒 Orët e Punës" },
+  { path: "/admin/payments", label: "💰 Pagesat" },
+  { path: "/admin/contracts", label: "📄 Kontratat" },
+  { path: "/admin/tasks", label: "📝 Detyrat" },
+  { path: "/admin/reports", label: "📈 Raportet" },
 ];
 
-const getManagerMenu = (t) => [
-  { path: "/manager/dashboard", icon: "🏠", label: t('dashboard') },
-  { path: "/manager/my-tasks", icon: "📝", label: t('myTasks') },
-  { path: "/manager/employees-list", icon: "➕", label: "Manage " + t('employees') },
-  { path: "/manager/work-hours", icon: "🕒", label: t('workHours') },
-  { path: "/manager/payments", icon: "💰", label: t('payments') },
+const managerMenu = [
+  { path: "/manager/dashboard", label: "🏠 Dashboard" },
+  { path: "/manager/my-tasks", label: "📝 Detyrat e Mia" },
+  { path: "/manager/employees-list", label: "➕ Menaxho Punonjësit" },
+  { path: "/manager/work-hours", label: "🕒 Orët e Punës" },
+  { path: "/manager/payments", label: "💰 Pagesat" },
 ];
 
-const getUserMenu = (t) => [
-  { path: "/user/dashboard", icon: "🏠", label: t('dashboard') },
-  { path: "/user/work-hours", icon: "🕒", label: t('workHours') },
-  { path: "/user/my-tasks", icon: "📝", label: t('myTasks') },
+const userMenu = [
+  { path: "/user/dashboard", label: "🏠 Dashboard" },
+  { path: "/user/work-hours", label: "🕒 Orët e Punës" },
+  { path: "/user/my-tasks", label: "📝 Detyrat e Mia" },
 ];
 
 export default function MainLayout() {
   const { user, logout } = useAuth();
-  const { t } = useLanguage();
   const location = useLocation();
 
   let menu = [];
-  if (user?.role === "admin") menu = getAdminMenu(t);
-  else if (user?.role === "manager") menu = getManagerMenu(t);
-  else if (user?.role === "user") menu = getUserMenu(t);
+  if (user?.role === "admin") menu = adminMenu;
+  else if (user?.role === "manager") menu = managerMenu;
+  else if (user?.role === "user") menu = userMenu;
 
   return (
     <div className="flex min-h-screen">
@@ -56,19 +53,18 @@ export default function MainLayout() {
                   ${isActive ? "bg-white/20 border-l-4 border-blue-200 shadow text-blue-50" : "hover:bg-blue-700/70 hover:shadow-md hover:scale-[1.04]"}
                 `}
               >
-                <span className="text-xl">{item.icon}</span>
-                <span className="ml-1 whitespace-nowrap">{item.label}</span>
+                <span className="text-xl">{item.label.split(" ")[0]}</span>
+                <span className="ml-1 whitespace-nowrap">{item.label.replace(/^[^ ]+ /, "")}</span>
               </Link>
             );
           })}
         </nav>
         <div className="mt-auto mb-6 px-2">
-          <LanguageButton />
           <button
             onClick={logout}
             className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-pink-600 hover:to-red-600 text-white px-4 py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 text-base transition-all"
           >
-            <span className="text-lg">🚪</span> {t('logout')}
+            <span className="text-lg">🚪</span> Dil
           </button>
         </div>
       </aside>
