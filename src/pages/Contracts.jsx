@@ -3,10 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
-import { useToast } from "../components/ui/Toast";
 
 export default function Contracts() {
-  const toast = useToast();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newContract, setNewContract] = useState({
@@ -124,9 +122,9 @@ export default function Contracts() {
         closed_date: null,
         documents: []
       });
-      toast.success("Kontrata u shtua me sukses!");
+      alert("Kontrata u shtua me sukses!");
     } catch (err) {
-      toast.error("Gabim gjatë shtimit të kontratës!");
+      alert("Gabim gjatë shtimit të kontratës!");
     }
   };
 
@@ -164,10 +162,10 @@ export default function Contracts() {
       );
       updated[contractIndex] = res.data;
       setContracts(updated);
-      toast.success("Statusi i kontratës u ndryshua me sukses!");
+      alert("Statusi i kontratës u ndryshua me sukses!");
     } catch (err) {
       console.error("Error updating contract status:", err);
-      toast.error("Gabim gjatë ndryshimit të statusit!");
+      alert("Gabim gjatë ndryshimit të statusit!");
     }
   };
 
@@ -178,7 +176,7 @@ export default function Contracts() {
     // Gjej kontratën për të marrë id
     const contract = contracts.find(c => c.contract_number === contract_number);
     if (!contract) {
-      toast.error("Kontrata nuk u gjet!");
+      alert("Kontrata nuk u gjet!");
       return;
     }
     
@@ -187,10 +185,10 @@ export default function Contracts() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContracts(contracts.filter((c) => c.contract_number !== contract_number));
-      toast.success("Kontrata u fshi me sukses!");
+      alert("Kontrata u fshi me sukses!");
     } catch (err) {
       console.error("Error deleting contract:", err);
-      toast.error("Gabim gjatë fshirjes!");
+      alert("Gabim gjatë fshirjes!");
     }
   };
 

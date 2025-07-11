@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { MobileSidebar } from "../components/ui/Layout";
-import Button from "../components/ui/Button";
+// import Button from "../components/ui/Button";
 
 const adminMenu = [
   { path: "/admin/dashboard", label: "🏠 Dashboard" },
@@ -63,26 +63,24 @@ export default function MainLayout() {
           );
         })}
       </nav>
+      {/* Empty space for bottom alignment */}
       <div className="mt-auto p-4 border-t border-blue-800/30">
-        <Button
-          variant="danger"
-          size="lg"
-          onClick={logout}
-          icon="🚪"
-          className="w-full font-bold text-base"
-        >
-          Dil nga Sistemi
-        </Button>
+        <div className="text-center text-sm text-blue-200">
+          © 2024 Alban Construction
+        </div>
       </div>
     </>
   );
 
   return (
     <div className="flex min-h-screen">
-      {/* Desktop Sidebar - Always visible */}
-      <aside className="hidden lg:flex w-56 bg-gradient-to-b from-[#1e3c72] via-[#2a5298] to-[#6dd5ed] text-white flex-col shadow-2xl">
+      {/* Desktop Sidebar - Always visible and fixed */}
+      <aside className="hidden lg:flex w-56 bg-gradient-to-b from-[#1e3c72] via-[#2a5298] to-[#6dd5ed] text-white flex-col shadow-2xl fixed h-full z-10">
         <SidebarContent />
       </aside>
+      
+      {/* Desktop content spacer */}
+      <div className="hidden lg:block w-56 flex-shrink-0"></div>
 
       {/* Mobile Sidebar - Collapsible */}
       <MobileSidebar 
@@ -96,22 +94,38 @@ export default function MainLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile Header - Only visible on mobile */}
-        <header className="lg:hidden bg-white shadow-sm border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        {/* Desktop Header - Always visible */}
+        <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+          {/* Mobile menu button - only visible on mobile */}
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <span className="sr-only">Open sidebar</span>
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <div className="flex items-center gap-2">
+          
+          {/* Desktop spacer */}
+          <div className="hidden lg:block flex-1"></div>
+          
+          {/* Mobile center logo */}
+          <div className="lg:hidden flex items-center gap-2">
             <span className="text-blue-700 text-xl">🏗️</span>
             <span className="font-bold text-gray-900">Alban Construction</span>
           </div>
-          <div className="w-10"></div> {/* Spacer for centering */}
+          
+                     {/* Logout button - always visible on right */}
+           <div className="flex items-center gap-4">
+             <span className="hidden lg:inline text-gray-600">Mirë se vini, {user?.name || user?.email}</span>
+             <button
+               onClick={logout}
+               className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors flex items-center gap-2"
+             >
+               🚪 Dil
+             </button>
+           </div>
         </header>
 
         {/* Main Content */}
