@@ -3,6 +3,8 @@ const pool = require('../db');
 exports.getAllWorkHours = async (req, res) => {
   try {
     console.log('[DEBUG] /api/work-hours/all called');
+    console.log('[DEBUG] About to execute SQL query...');
+    
     const result = await pool.query(`
       SELECT wh.*, e.first_name, e.last_name, c.site_name
       FROM work_hours wh
@@ -10,10 +12,18 @@ exports.getAllWorkHours = async (req, res) => {
       JOIN contracts c ON wh.contract_id = c.id
       ORDER BY wh.date DESC
     `);
+    
+    console.log('[DEBUG] SQL query executed successfully');
     console.log('[DEBUG] /api/work-hours/all - rows:', result.rows.length);
+    
+    if (result.rows.length > 0) {
+      console.log('[DEBUG] First row sample:', result.rows[0]);
+    }
+    
     res.json(result.rows);
   } catch (err) {
-    console.error('[ERROR] /api/work-hours/all:', err.message, err.stack);
+    console.error('[ERROR] /api/work-hours/all:', err.message);
+    console.error('[ERROR] Full error stack:', err.stack);
     res.status(500).json({ error: err.message });
   }
 };
