@@ -5,7 +5,7 @@ exports.getAllExpenses = async (req, res) => {
     console.log('[DEBUG] /api/expenses called');
     let result = { rows: [] };
     try {
-      result = await pool.query('SELECT * FROM expenses ORDER BY date DESC');
+      result = await pool.query('SELECT * FROM expenses_invoices ORDER BY date DESC');
       console.log('[DEBUG] /api/expenses - rows:', result.rows.length);
       if (result.rows.length > 0) {
         console.log('[DEBUG] Expense Row 0:', result.rows[0]);
