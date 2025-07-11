@@ -103,13 +103,20 @@ export default function PaymentDetails() {
         file: fileContent,
       };
       try {
-        const res = await axios.post(
+        await axios.post(
           `https://building-system.onrender.com/api/expenses/${contract_number}`,
           expenseInvoice,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log('Faturat pas shtimit:', res.data);
-        setExpensesInvoices(Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []));
+        
+        // Rifresko të gjithë expenses-et pas shtimit
+        const expensesRes = await axios.get(
+          `https://building-system.onrender.com/api/expenses/${contract_number}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        console.log('Expenses pas shtimit:', expensesRes.data);
+        setExpensesInvoices(expensesRes.data || []);
+        
         setNewExpenseInvoice((prev) => ({
           ...prev,
           expense_type: "",
@@ -119,7 +126,8 @@ export default function PaymentDetails() {
           paid: false,
           file: null,
         }));
-      } catch {
+      } catch (error) {
+        console.error('Error adding expense:', error);
         alert("Gabim gjatë shtimit të shpenzimit!");
       }
     }
