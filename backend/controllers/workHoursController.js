@@ -93,7 +93,8 @@ exports.addWorkHours = async (req, res) => {
         } else {
           console.log('    Inserting work_hours for', employeeId, dateStr);
           await client.query(
-            `INSERT INTO work_hours (employee_id, date, hours, site, rate, contract_id) VALUES ($1, $2, $3, $4, $5, $6)`,
+            `INSERT INTO work_hours (employee_id, date, hours, site, rate, contract_id, created_at, updated_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
             [employeeId, dateStr, entry.hours, entry.site || null, rate, contract_id]
           );
         }

@@ -83,17 +83,48 @@ export default function WorkHours() {
         
         if (!user.employee_id) {
           console.log("NO employee_id found for manager, trying to find by email");
-          // Nëse manager nuk ka employee_id, gjej punonjësin me email të njëjtë
-          const selfEmployee = emps.find(emp => 
-            emp.email === user.email || 
-            (emp.first_name + " " + emp.last_name).toLowerCase().includes(user.firstName?.toLowerCase() || "")
-          );
+          console.log("User email to search:", user.email);
+          
+          // Kontrollo secili employee për debugging
+          emps.forEach(emp => {
+            console.log(`Employee ${emp.id}: ${emp.first_name} ${emp.last_name}, email: ${emp.email || 'NO EMAIL'}`);
+          });
+          
+          // Gjej punonjësin me email të njëjtë (matching i saktë)
+          const selfEmployee = emps.find(emp => {
+            console.log(`Checking employee ${emp.id} email ${emp.email} against user email ${user.email}`);
+            return emp.email && emp.email.toLowerCase() === user.email.toLowerCase();
+          });
+          
           if (selfEmployee) {
-            console.log("Found self employee:", selfEmployee);
+            console.log("Found self employee by email:", selfEmployee);
             setEmployees([selfEmployee]);
           } else {
-            console.log("Could not find matching employee record");
-            setEmployees([]);
+            console.log("Could not find matching employee record by email");
+            // Fallback: kontrolloj nëse ka user record në database që lidh user_id me employee_id
+            console.log("Searching for user-employee link in backend...");
+            axios.get(`https://building-system.onrender.com/api/users/${user.id}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            }).then(userRes => {
+              if (userRes.data && userRes.data.employee_id) {
+                const linkedEmployee = emps.find(emp => String(emp.id) === String(userRes.data.employee_id));
+                if (linkedEmployee) {
+                  console.log("Found linked employee:", linkedEmployee);
+                  setEmployees([linkedEmployee]);
+                  // Përditëso user në context që të ketë employee_id
+                  setUser(prev => ({ ...prev, employee_id: userRes.data.employee_id }));
+                } else {
+                  console.log("Employee not found for linked employee_id:", userRes.data.employee_id);
+                  setEmployees([]);
+                }
+              } else {
+                console.log("No employee_id found in user record");
+                setEmployees([]);
+              }
+            }).catch(err => {
+              console.error("Error fetching user details:", err);
+              setEmployees([]);
+            });
           }
           return;
         }

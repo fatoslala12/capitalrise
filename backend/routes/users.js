@@ -4,10 +4,11 @@ const controller = require('../controllers/usersController');
 const { verifyToken, requireRole } = require('../middleware/auth');
 
 router.get('/', verifyToken, requireRole('admin'), controller.getAllUsers);
+router.get('/:id', verifyToken, controller.getUserById); // accessible by authenticated users
 router.post('/', verifyToken, requireRole('admin'), controller.createUser);
 router.put('/:id', verifyToken, requireRole('admin'), controller.updateUser);
 router.delete('/:id', verifyToken, requireRole('admin'), controller.deleteUser);
-router.post('/', verifyToken, requireRole('admin'), controller.addUser);
+router.post('/add', verifyToken, requireRole('admin'), controller.addUser); // changed from duplicate POST /
 router.post('/reset-password', verifyToken, requireRole('admin'), controller.resetPassword);
 
 router.post('/login', async (req, res) => {
