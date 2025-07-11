@@ -2,57 +2,16 @@ const pool = require('../db');
 
 exports.getAllWorkHours = async (req, res) => {
   try {
-    console.log('[DEBUG] /api/work-hours/all called');
-    console.log('[DEBUG] About to execute SQL query...');
-    let workHoursCount = 0, employeesCount = 0, contractsCount = 0;
-    try {
-      const checkWorkHours = await pool.query('SELECT COUNT(*) as count FROM work_hours');
-      workHoursCount = checkWorkHours.rows[0].count;
-      console.log('[DEBUG] work_hours table count:', workHoursCount);
-    } catch (err) {
-      console.error('[ERROR] work_hours table count:', err.message);
-    }
-    try {
-      const checkEmployees = await pool.query('SELECT COUNT(*) as count FROM employees');
-      employeesCount = checkEmployees.rows[0].count;
-      console.log('[DEBUG] employees table count:', employeesCount);
-    } catch (err) {
-      console.error('[ERROR] employees table count:', err.message);
-    }
-    try {
-      const checkContracts = await pool.query('SELECT COUNT(*) as count FROM contracts');
-      contractsCount = checkContracts.rows[0].count;
-      console.log('[DEBUG] contracts table count:', contractsCount);
-    } catch (err) {
-      console.error('[ERROR] contracts table count:', err.message);
-    }
-    let simpleResult = { rows: [] };
-    try {
-      simpleResult = await pool.query('SELECT * FROM work_hours LIMIT 5');
-      console.log('[DEBUG] Simple work_hours query result:', simpleResult.rows.length);
-      if (simpleResult.rows.length > 0) {
-        console.log('[DEBUG] Sample work_hours row:', simpleResult.rows[0]);
-      }
-    } catch (err) {
-      console.error('[ERROR] Simple work_hours query:', err.message);
-    }
+    console.log('[DEBUG] /api/work-hours/all called - SIMPLE QUERY');
     let result = { rows: [] };
     try {
-      result = await pool.query(`
-        SELECT wh.*, e.first_name, e.last_name, c.site_name
-        FROM work_hours wh
-        LEFT JOIN employees e ON wh.employee_id = e.id
-        LEFT JOIN contracts c ON wh.contract_id = c.id
-        ORDER BY wh.date DESC
-      `);
-      console.log('[DEBUG] SQL query executed successfully');
+      result = await pool.query('SELECT * FROM work_hours ORDER BY date DESC');
       console.log('[DEBUG] /api/work-hours/all - rows:', result.rows.length);
       if (result.rows.length > 0) {
         console.log('[DEBUG] First row sample:', result.rows[0]);
       }
     } catch (err) {
       console.error('[ERROR] /api/work-hours/all main query:', err.message);
-      // Nëse ka error, kthe array bosh që të mos bllokohet frontend-i
       return res.json([]);
     }
     res.json(result.rows);
