@@ -40,76 +40,127 @@ exports.getWorkHoursByEmployee = async (req, res) => {
 exports.addWorkHours = async (req, res) => {
   const { hourData, weekLabel } = req.body;
   console.log('addWorkHours called with:', { hourData, weekLabel });
+  
   if (!hourData || !weekLabel) {
     console.log('Missing hourData or weekLabel');
     return res.status(400).json({ error: 'hourData and weekLabel are required' });
   }
+  
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     let saved = [];
+    
     for (const [employeeId, weeks] of Object.entries(hourData)) {
-      console.log('Processing employeeId:', employeeId);
+      console.log(`[DEBUG] Processing employeeId: ${employeeId}`);
       const week = weeks[weekLabel] || {};
+      console.log(`[DEBUG] Week data for ${employeeId}:`, week);
+      
       for (const [day, entry] of Object.entries(week)) {
-        console.log('  Day:', day, 'Entry:', entry);
-        if (!entry.hours || isNaN(entry.hours) || entry.hours <= 0) continue;
+        console.log(`[DEBUG] Day: ${day}, Entry:`, entry);
+        
+        if (!entry.hours || isNaN(entry.hours) || entry.hours <= 0) {
+          console.log(`[DEBUG] Skipping ${day} for ${employeeId} - no valid hours`);
+          continue;
+        }
+        
         if (!entry.site || entry.site === "") {
+          console.log(`[ERROR] Site missing for employeeId: ${employeeId}, day: ${day}`);
           await client.query('ROLLBACK');
           return res.status(400).json({ error: `Site mungon për employeeId: ${employeeId}, dita: ${day}` });
         }
+        
+        console.log(`[DEBUG] Valid entry for ${employeeId} ${day}: ${entry.hours} hours at ${entry.site}`);
+        
         // Compose date from weekLabel and day
         const [startStr] = weekLabel.split(' - ');
         const startDate = new Date(startStr);
         const dayIndex = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"].indexOf(day);
-        if (dayIndex === -1) continue;
+        if (dayIndex === -1) {
+          console.log(`[DEBUG] Invalid day: ${day}`);
+          continue;
+        }
+        
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + dayIndex);
         const dateStr = date.toISOString().slice(0, 10);
+        console.log(`[DEBUG] Calculated date: ${dateStr} for ${day}`);
+        
         // Gjej contract_id për këtë employee dhe site
         let contract_id = null;
         if (entry.site) {
+          console.log(`[DEBUG] Looking for contract with employee_id=${employeeId} and site_name='${entry.site}'`);
+          
           const contractRes = await client.query(
-            `SELECT c.id FROM contracts c
+            `SELECT c.id, c.site_name, c.contract_number FROM contracts c
              JOIN employee_workplaces ew ON ew.contract_id = c.id
              WHERE ew.employee_id = $1 AND c.site_name = $2 LIMIT 1`,
             [employeeId, entry.site]
           );
+          
+          console.log(`[DEBUG] Contract query result:`, contractRes.rows);
           contract_id = contractRes.rows[0]?.id || null;
+          
+          if (!contract_id) {
+            console.log(`[ERROR] No contract found for employee ${employeeId} at site '${entry.site}'`);
+            // Let's see what contracts this employee has access to
+            const availableContracts = await client.query(
+              `SELECT c.id, c.site_name, c.contract_number FROM contracts c
+               JOIN employee_workplaces ew ON ew.contract_id = c.id
+               WHERE ew.employee_id = $1`,
+              [employeeId]
+            );
+            console.log(`[DEBUG] Available contracts for employee ${employeeId}:`, availableContracts.rows);
+            
+            await client.query('ROLLBACK');
+            return res.status(400).json({ 
+              error: `Punonjësi ${employeeId} nuk ka akses në site-in '${entry.site}'. Available sites: ${availableContracts.rows.map(c => c.site_name).join(', ')}` 
+            });
+          }
         }
+
         const rate = entry.rate || null;
-        console.log('    contract_id:', contract_id, 'rate:', rate);
+        console.log(`[DEBUG] contract_id: ${contract_id}, rate: ${rate}`);
+        
         // Check if entry exists
         const check = await client.query(
           `SELECT id FROM work_hours WHERE employee_id = $1 AND date = $2`,
           [employeeId, dateStr]
         );
+        
         if (check.rows.length > 0) {
-          console.log('    Updating work_hours for', employeeId, dateStr);
+          console.log(`[DEBUG] Updating work_hours for ${employeeId} ${dateStr}`);
           await client.query(
             `UPDATE work_hours SET hours = $1, site = $2, rate = $3, contract_id = $4, updated_at = NOW() WHERE id = $5`,
             [entry.hours, entry.site || null, rate, contract_id, check.rows[0].id]
           );
         } else {
-          console.log('    Inserting work_hours for', employeeId, dateStr);
+          console.log(`[DEBUG] Inserting work_hours for ${employeeId} ${dateStr}`);
           await client.query(
             `INSERT INTO work_hours (employee_id, date, hours, site, rate, contract_id, created_at, updated_at) 
              VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
             [employeeId, dateStr, entry.hours, entry.site || null, rate, contract_id]
           );
         }
+        
         saved.push({ employeeId, date: dateStr, hours: entry.hours, site: entry.site || null, contract_id, rate });
       }
+      
       // Kontrollo nëse ka të paktën një ditë me orë > 0
       const hasHours = Object.values(week).some(entry => entry.hours && entry.hours > 0);
-      if (!hasHours) continue;
+      if (!hasHours) {
+        console.log(`[DEBUG] No valid hours for employee ${employeeId}, skipping payment creation`);
+        continue;
+      }
+      
       // Kontrollo nëse ekziston pagesa për këtë javë
       const checkPay = await client.query(
         `SELECT id FROM payments WHERE employee_id = $1 AND week_label = $2`,
         [employeeId, weekLabel]
       );
+      
       if (checkPay.rows.length === 0) {
-        console.log('    Inserting payment for', employeeId, weekLabel);
+        console.log(`[DEBUG] Inserting payment for ${employeeId} ${weekLabel}`);
         
         // Llogarit gross dhe net amount për javën
         let totalHours = 0;
@@ -141,15 +192,19 @@ exports.addWorkHours = async (req, res) => {
           [employeeId, weekLabel, false, grossAmount, netAmount]
         );
         
-        console.log(`    Payment inserted: ${totalHours}h × £${employeeRate} = £${grossAmount} gross, £${netAmount} net`);
+        console.log(`[DEBUG] Payment inserted: ${totalHours}h × £${employeeRate} = £${grossAmount} gross, £${netAmount} net`);
+      } else {
+        console.log(`[DEBUG] Payment already exists for ${employeeId} ${weekLabel}`);
       }
     }
+    
     await client.query('COMMIT');
-    console.log('addWorkHours finished successfully:', saved);
+    console.log('[SUCCESS] addWorkHours finished successfully:', saved);
     res.status(201).json({ saved });
+    
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('Error in addWorkHours:', err);
+    console.error('[ERROR] Error in addWorkHours:', err);
     res.status(400).json({ error: err.message });
   } finally {
     client.release();
