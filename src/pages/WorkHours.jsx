@@ -6,7 +6,8 @@ import axios from "axios";
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
   const day = today.getDay();
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1) + offset * 7;
+  // Ndryshuar: java fillon nga e martë (2) në vend të e hënës (1)
+  const diff = today.getDate() - day + (day === 0 ? -5 : 2) + offset * 7;
   return new Date(today.setDate(diff));
 };
 
@@ -51,6 +52,19 @@ export default function WorkHours() {
     console.log("USER NE WORKHOURS:", user);
     if (!user) return;
     
+    // Debug call për manager permissions
+    if (isManager && user.employee_id) {
+      axios.get(`https://building-system.onrender.com/api/work-hours/debug-manager?employee_id=${user.employee_id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => {
+          console.log("DEBUG MANAGER ACCESS:", res.data);
+        })
+        .catch(err => {
+          console.error("Debug manager access error:", err);
+        });
+    }
+    
     axios.get("https://building-system.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -68,7 +82,7 @@ export default function WorkHours() {
         console.log("MANAGER employee_id:", user.employee_id);
         
         if (!user.employee_id) {
-          console.log("NO employee_id found for manager, showing self only");
+          console.log("NO employee_id found for manager, trying to find by email");
           // Nëse manager nuk ka employee_id, gjej punonjësin me email të njëjtë
           const selfEmployee = emps.find(emp => 
             emp.email === user.email || 
@@ -77,30 +91,47 @@ export default function WorkHours() {
           if (selfEmployee) {
             console.log("Found self employee:", selfEmployee);
             setEmployees([selfEmployee]);
+            // Update user context me employee_id e gjetur
+            setUser(prev => ({ ...prev, employee_id: selfEmployee.id }));
           } else {
+            console.log("Could not find matching employee record");
             setEmployees([]);
           }
           return;
         }
         
-        const ewRes = await axios.get("https://building-system.onrender.com/api/employee-workplaces", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const allRelations = ewRes.data || [];
-        console.log("ALL EMPLOYEE WORKPLACES:", allRelations);
-        
-        const myContractIds = allRelations
-          .filter(r => String(r.employee_id) === String(user.employee_id))
-          .map(r => r.contract_id);
-        console.log("MY CONTRACT IDs:", myContractIds);
-        
-        const filteredEmps = emps.filter(emp => {
-          if (String(emp.id) === String(user.employee_id)) return true;
-          const empContracts = allRelations.filter(r => String(r.employee_id) === String(emp.id)).map(r => r.contract_id);
-          return empContracts.some(cid => myContractIds.includes(cid));
-        });
-        console.log("FILTERED EMPLOYEES FOR MANAGER:", filteredEmps);
-        setEmployees(filteredEmps);
+        try {
+          const ewRes = await axios.get("https://building-system.onrender.com/api/employee-workplaces", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const allRelations = ewRes.data || [];
+          console.log("ALL EMPLOYEE WORKPLACES:", allRelations);
+          
+          const myContractIds = allRelations
+            .filter(r => String(r.employee_id) === String(user.employee_id))
+            .map(r => r.contract_id);
+          console.log("MY CONTRACT IDs:", myContractIds);
+          
+          if (myContractIds.length === 0) {
+            console.log("Manager has no contract assignments, showing only self");
+            const selfEmployee = emps.find(emp => String(emp.id) === String(user.employee_id));
+            setEmployees(selfEmployee ? [selfEmployee] : []);
+            return;
+          }
+          
+          const filteredEmps = emps.filter(emp => {
+            if (String(emp.id) === String(user.employee_id)) return true;
+            const empContracts = allRelations.filter(r => String(r.employee_id) === String(emp.id)).map(r => r.contract_id);
+            return empContracts.some(cid => myContractIds.includes(cid));
+          });
+          console.log("FILTERED EMPLOYEES FOR MANAGER:", filteredEmps);
+          setEmployees(filteredEmps);
+        } catch (ewError) {
+          console.error("Error fetching employee workplaces:", ewError);
+          // Fallback: show only self
+          const selfEmployee = emps.find(emp => String(emp.id) === String(user.employee_id));
+          setEmployees(selfEmployee ? [selfEmployee] : []);
+        }
       })
       .catch(err => {
         console.error("Error fetching employees:", err);
@@ -259,13 +290,35 @@ export default function WorkHours() {
 
       {isManager && employees.length === 0 && (
         <div className="bg-yellow-100 text-yellow-800 p-4 rounded text-center font-semibold mb-6">
-          Nuk keni asnjë punonjës aktiv të caktuar në site-t tuaj.<br/>
+          <p>Nuk keni asnjë punonjës aktiv të caktuar në site-t tuaj.</p>
           {(() => {
             if (!user.employee_id) {
-              return <span className="block mt-2 text-blue-600">Po përpiqem të gjej punonjësin tuaj në sistem...<br/>Kontrolloni në DB:<br/><code>SELECT * FROM employees WHERE email = '{user.email}';</code></span>;
+              return (
+                <div className="mt-2 text-blue-600">
+                  <p>Po përpiqem të gjej punonjësin tuaj në sistem...</p>
+                  <p className="text-sm">Kontrolloni në DB:</p>
+                  <code className="text-xs bg-blue-50 p-1 rounded">SELECT * FROM employees WHERE email = '{user.email}';</code>
+                  <p className="mt-2 text-sm">Ose kontrolloni lidhjen employee-user:</p>
+                  <code className="text-xs bg-blue-50 p-1 rounded">SELECT u.*, e.first_name, e.last_name FROM users u LEFT JOIN employees e ON u.employee_id = e.id WHERE u.email = '{user.email}';</code>
+                </div>
+              );
             }
-            return <span className="block mt-2 text-red-600">Nuk jeni të regjistruar si punonjës në sistem. Kontaktoni administratorin për t'u shtuar si punonjës.<br/>Kontrollo në DB:<br/><code>SELECT * FROM employees WHERE id = '{user.employee_id}';</code></span>;
+            return (
+              <div className="mt-2 text-red-600">
+                <p>Nuk jeni të regjistruar si punonjës në sistem. Kontaktoni administratorin për t'u shtuar si punonjës.</p>
+                <p className="text-sm">Kontrolloni në DB:</p>
+                <code className="text-xs bg-red-50 p-1 rounded">SELECT * FROM employees WHERE id = '{user.employee_id}';</code>
+                <p className="mt-1 text-sm">Kontrolloni workplaces:</p>
+                <code className="text-xs bg-red-50 p-1 rounded">SELECT ew.*, c.site_name FROM employee_workplaces ew JOIN contracts c ON ew.contract_id = c.id WHERE ew.employee_id = '{user.employee_id}';</code>
+              </div>
+            );
           })()}
+        </div>
+      )}
+
+      {isManager && employees.length > 0 && (
+        <div className="bg-green-100 text-green-800 p-4 rounded text-center mb-6">
+          <p>✅ U gjetën {employees.length} punonjës që mund të menaxhoni orët e tyre.</p>
         </div>
       )}
 
@@ -381,25 +434,33 @@ export default function WorkHours() {
             />
           )}
         </div>
-      )}
+      ))}
 
-      {/* Manageri sheh të gjitha javët për punonjësit e tij */}
-      {isManager && otherWeeks.map((weekLabel) => (
-        <div key={weekLabel} className="mt-6">
-          <button className="text-blue-600 underline mb-2" onClick={() => toggleWeek(weekLabel)}>
-            {expandedWeeks.includes(weekLabel) ? "▼ Fshih" : "▶ Shfaq"} {weekLabel}
-          </button>
-          {expandedWeeks.includes(weekLabel) && (
-            <WorkHoursTable
-              employees={employees}
-              weekLabel={weekLabel}
-              data={hourData}
-              onChange={handleChange}
-              readOnly={true}
-              showPaymentControl={isAdmin}
-              siteOptions={siteOptions}
-            />
-          )}
+      {/* Debug section - vetëm për development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mt-12 bg-gray-100 p-4 rounded">
+          <h3 className="font-bold mb-2">🔧 Debug Info</h3>
+          <div className="text-sm space-y-1">
+            <p><strong>User Role:</strong> {user?.role}</p>
+            <p><strong>User ID:</strong> {user?.id}</p>
+            <p><strong>Employee ID:</strong> {user?.employee_id || 'None'}</p>
+            <p><strong>User Email:</strong> {user?.email}</p>
+            <p><strong>Employees Found:</strong> {employees.length}</p>
+            <p><strong>Current Week:</strong> {currentWeekLabel}</p>
+            <p><strong>Site Options:</strong> {siteOptions.length > 0 ? siteOptions.join(', ') : 'None'}</p>
+            <details className="mt-2">
+              <summary className="cursor-pointer font-semibold">Show Employees Data</summary>
+              <pre className="text-xs bg-white p-2 mt-1 overflow-auto max-h-40">
+                {JSON.stringify(employees, null, 2)}
+              </pre>
+            </details>
+            <details className="mt-2">
+              <summary className="cursor-pointer font-semibold">Show Hour Data</summary>
+              <pre className="text-xs bg-white p-2 mt-1 overflow-auto max-h-40">
+                {JSON.stringify(hourData, null, 2)}
+              </pre>
+            </details>
+          </div>
         </div>
       )}
     </div>

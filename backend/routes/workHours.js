@@ -28,5 +28,7 @@ router.put('/:id', verifyToken, requireRole('admin'), controller.updateWorkHours
 router.delete('/:id', verifyToken, requireRole('admin'), controller.deleteWorkHours);
 router.get('/contract/:contract_number', controller.getWorkHoursByContract);
 router.get('/structured/:employeeId', controller.getStructuredWorkHoursForEmployee);
+router.get('/debug-manager', verifyToken, controller.debugManagerAccess);
+router.get('/debug-database', verifyToken, controller.debugDatabaseStatus);
 
 module.exports = router;

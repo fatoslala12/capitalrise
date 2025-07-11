@@ -262,9 +262,9 @@ exports.getStructuredWorkHours = async (req, res) => {
       const empId = row.employee_id;
       const date = new Date(row.date);
       
-      // Use same week calculation as frontend
+      // Use same week calculation as frontend (starts from Tuesday)
       const weekDay = date.getDay();
-      const diff = date.getDate() - weekDay + (weekDay === 0 ? -6 : 1);
+      const diff = date.getDate() - weekDay + (weekDay === 0 ? -5 : 2);
       const weekStart = new Date(date);
       weekStart.setDate(diff);
       weekStart.setHours(0, 0, 0, 0);
@@ -327,9 +327,9 @@ exports.getStructuredWorkHoursForEmployee = async (req, res) => {
     result.rows.forEach(row => {
       const date = new Date(row.date);
       
-      // Use same week calculation as frontend
+      // Use same week calculation as frontend (starts from Tuesday)
       const weekDay = date.getDay();
-      const diff = date.getDate() - weekDay + (weekDay === 0 ? -6 : 1);
+      const diff = date.getDate() - weekDay + (weekDay === 0 ? -5 : 2);
       const weekStart = new Date(date);
       weekStart.setDate(diff);
       weekStart.setHours(0, 0, 0, 0);
@@ -353,5 +353,129 @@ exports.getStructuredWorkHoursForEmployee = async (req, res) => {
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+// Debug endpoint për të kontrolluar manager permissions
+exports.debugManagerAccess = async (req, res) => {
+  const { employee_id } = req.query;
+  const client = await pool.connect();
+  try {
+    console.log('[DEBUG] Manager debug for employee_id:', employee_id);
+    
+    // 1. Kontrollo user record
+    const userRes = await client.query(
+      'SELECT * FROM users WHERE employee_id = $1',
+      [employee_id]
+    );
+    console.log('[DEBUG] User record:', userRes.rows);
+    
+    // 2. Kontrollo employee record  
+    const empRes = await client.query(
+      'SELECT * FROM employees WHERE id = $1',
+      [employee_id]
+    );
+    console.log('[DEBUG] Employee record:', empRes.rows);
+    
+    // 3. Kontrollo employee_workplaces
+    const workplaceRes = await client.query(
+      'SELECT ew.*, c.site_name, c.contract_number FROM employee_workplaces ew JOIN contracts c ON ew.contract_id = c.id WHERE ew.employee_id = $1',
+      [employee_id]
+    );
+    console.log('[DEBUG] Employee workplaces:', workplaceRes.rows);
+    
+    // 4. Gjej të gjithë punonjësit në të njëjtat kontrata
+    const contractIds = workplaceRes.rows.map(w => w.contract_id);
+    if (contractIds.length > 0) {
+      const coworkersRes = await client.query(
+        `SELECT DISTINCT e.id, e.first_name, e.last_name, ew.contract_id, c.site_name 
+         FROM employees e 
+         JOIN employee_workplaces ew ON ew.employee_id = e.id 
+         JOIN contracts c ON ew.contract_id = c.id 
+         WHERE ew.contract_id = ANY($1)
+         ORDER BY e.id`,
+        [contractIds]
+      );
+      console.log('[DEBUG] Coworkers:', coworkersRes.rows);
+      
+      res.json({
+        user: userRes.rows[0] || null,
+        employee: empRes.rows[0] || null,
+        workplaces: workplaceRes.rows,
+        coworkers: coworkersRes.rows,
+        managerContractIds: contractIds
+      });
+    } else {
+      res.json({
+        user: userRes.rows[0] || null,
+        employee: empRes.rows[0] || null,
+        workplaces: [],
+        coworkers: [],
+        managerContractIds: [],
+        message: 'Manager nuk është assigned në asnjë kontratë'
+      });
+    }
+    
+  } catch (err) {
+    console.error('[ERROR] Debug manager access:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+};
+
+// Debug endpoint për të shikuar të gjithë statusin e databazës
+exports.debugDatabaseStatus = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    // 1. Të gjithë users
+    const usersRes = await client.query('SELECT id, email, role, employee_id FROM users ORDER BY id');
+    
+    // 2. Të gjithë employees
+    const employeesRes = await client.query('SELECT id, first_name, last_name, email FROM employees ORDER BY id');
+    
+    // 3. Të gjitha employee_workplaces relationships
+    const workplacesRes = await client.query(`
+      SELECT ew.id, ew.employee_id, e.first_name, e.last_name, 
+             ew.contract_id, c.contract_number, c.site_name
+      FROM employee_workplaces ew
+      JOIN employees e ON ew.employee_id = e.id
+      JOIN contracts c ON ew.contract_id = c.id
+      ORDER BY ew.employee_id
+    `);
+    
+    // 4. Sample work_hours data
+    const workHoursRes = await client.query(`
+      SELECT wh.employee_id, COUNT(*) as total_records, 
+             MIN(wh.date) as earliest_date, MAX(wh.date) as latest_date
+      FROM work_hours wh
+      GROUP BY wh.employee_id
+      ORDER BY wh.employee_id
+    `);
+    
+    // 5. Sample payments data
+    const paymentsRes = await client.query(`
+      SELECT p.employee_id, COUNT(*) as total_payments,
+             COUNT(CASE WHEN p.is_paid = true THEN 1 END) as paid_count,
+             COUNT(CASE WHEN p.is_paid = false THEN 1 END) as unpaid_count
+      FROM payments p
+      GROUP BY p.employee_id
+      ORDER BY p.employee_id
+    `);
+    
+    res.json({
+      users: usersRes.rows,
+      employees: employeesRes.rows,
+      workplaces: workplacesRes.rows,
+      workHoursSummary: workHoursRes.rows,
+      paymentsSummary: paymentsRes.rows,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (err) {
+    console.error('[ERROR] Debug database status:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
   }
 };

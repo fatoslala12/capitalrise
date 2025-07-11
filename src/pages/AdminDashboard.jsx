@@ -7,7 +7,8 @@ import axios from "axios";
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
   const day = today.getDay();
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1) + offset * 7;
+  // Ndryshuar: java fillon nga e martë (2) në vend të e hënës (1)
+  const diff = today.getDate() - day + (day === 0 ? -5 : 2) + offset * 7;
   return new Date(today.setDate(diff));
 };
 
