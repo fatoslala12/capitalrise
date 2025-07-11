@@ -20,6 +20,7 @@ export default function ContractDetails() {
   const [contract, setContract] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [workHours, setWorkHours] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [invoiceToPrint, setInvoiceToPrint] = useState(null);
   const [newComment, setNewComment] = useState("");
@@ -66,12 +67,20 @@ export default function ContractDetails() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setWorkHours(workHoursRes.data || []);
+
+        // Merr listën e punonjësve për të marrë labelType (NI/UTR)
+        const employeesRes = await axios.get(
+          `https://building-system.onrender.com/api/employees`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setEmployees(employeesRes.data || []);
         
       } catch (error) {
         console.error("Error fetching contract data:", error);
         setContract(null);
         setInvoices([]);
         setWorkHours([]);
+        setEmployees([]);
       } finally {
         setLoading(false);
       }
@@ -409,23 +418,40 @@ export default function ContractDetails() {
                   <th className="py-3 px-2 text-center font-semibold">Punonjësi</th>
                   <th className="py-3 px-2 text-center font-semibold">Orë</th>
                   <th className="py-3 px-2 text-center font-semibold">Tarifa/orë</th>
-                  <th className="py-3 px-2 text-center font-semibold">Total Paguar</th>
+                  <th className="py-3 px-2 text-center font-semibold">Bruto (£)</th>
+                  <th className="py-3 px-2 text-center font-semibold">Neto (£)</th>
                 </tr>
               </thead>
               <tbody>
-                {workHours.map((wh, idx) => (
-                  <tr key={idx} className="hover:bg-green-50 transition-all">
-                    <td className="py-2 px-2 text-center">{new Date(wh.date).toLocaleDateString('sq-AL')}</td>
-                    <td className="py-2 px-2 text-center font-medium">
-                      {wh.employee_name || `Employee #${wh.employee_id}`}
-                    </td>
-                    <td className="py-2 px-2 text-center font-bold text-blue-600">{wh.hours}</td>
-                    <td className="py-2 px-2 text-center font-bold text-purple-600">£{parseFloat(wh.rate || 0).toFixed(2)}</td>
-                    <td className="py-2 px-2 text-center font-bold text-green-600">
-                      £{(parseFloat(wh.hours || 0) * parseFloat(wh.rate || 0)).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
+                {workHours.map((wh, idx) => {
+                  const hours = parseFloat(wh.hours || 0);
+                  const rate = parseFloat(wh.rate || 0);
+                  const gross = hours * rate;
+                  
+                  // Gjej punonjësin për të marrë labelType (NI/UTR)
+                  const employee = employees.find(emp => emp.id === wh.employee_id);
+                  const labelType = employee?.labelType || employee?.label_type || 'NI';
+                  
+                  // Llogarit neto: 0.7 për NI, 0.8 për UTR
+                  const netRate = labelType === 'NI' ? 0.7 : 0.8;
+                  const net = gross * netRate;
+                  
+                  return (
+                    <tr key={idx} className="hover:bg-green-50 transition-all">
+                      <td className="py-2 px-2 text-center">{new Date(wh.date).toLocaleDateString('sq-AL')}</td>
+                      <td className="py-2 px-2 text-center font-medium">
+                        {wh.employee_name || `Employee #${wh.employee_id}`}
+                        <span className="text-xs ml-2 px-2 py-1 rounded bg-blue-100 text-blue-700 font-bold">
+                          {labelType}
+                        </span>
+                      </td>
+                      <td className="py-2 px-2 text-center font-bold text-blue-600">{hours}</td>
+                      <td className="py-2 px-2 text-center font-bold text-purple-600">£{rate.toFixed(2)}</td>
+                      <td className="py-2 px-2 text-center font-bold text-orange-600">£{gross.toFixed(2)}</td>
+                      <td className="py-2 px-2 text-center font-bold text-green-600">£{net.toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
               <tfoot className="bg-green-100">
                 <tr>
@@ -434,8 +460,23 @@ export default function ContractDetails() {
                     {workHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} orë
                   </td>
                   <td className="py-3 px-2 text-center">-</td>
+                  <td className="py-3 px-2 text-center font-bold text-orange-700 text-lg">
+                    £{workHours.reduce((sum, wh) => {
+                      const hours = parseFloat(wh.hours || 0);
+                      const rate = parseFloat(wh.rate || 0);
+                      return sum + (hours * rate);
+                    }, 0).toFixed(2)}
+                  </td>
                   <td className="py-3 px-2 text-center font-bold text-green-700 text-lg">
-                    £{workHours.reduce((sum, wh) => sum + (parseFloat(wh.hours || 0) * parseFloat(wh.rate || 0)), 0).toFixed(2)}
+                    £{workHours.reduce((sum, wh) => {
+                      const hours = parseFloat(wh.hours || 0);
+                      const rate = parseFloat(wh.rate || 0);
+                      const gross = hours * rate;
+                      const employee = employees.find(emp => emp.id === wh.employee_id);
+                      const labelType = employee?.labelType || employee?.label_type || 'NI';
+                      const netRate = labelType === 'NI' ? 0.7 : 0.8;
+                      return sum + (gross * netRate);
+                    }, 0).toFixed(2)}
                   </td>
                 </tr>
               </tfoot>
