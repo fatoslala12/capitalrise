@@ -22,17 +22,22 @@ function snakeToCamel(obj) {
 export default function DashboardStats() {
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [paidStatus, setPaidStatus] = useState({});
-  const [thisWeekLabel, setThisWeekLabel] = useState("");
-  const [totalPaid, setTotalPaid] = useState(0);
-  const [mostPaidEmployees, setMostPaidEmployees] = useState([]);
-  const [siteSummary, setSiteSummary] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState({
+    thisWeek: '',
+    totalPaid: 0,
+    totalProfit: 0,
+    workHoursBysite: [],
+    top5Employees: [],
+    totalWorkHours: 0,
+    paidEmployeesCount: 0,
+    totalEmployeesWithHours: 0
+  });
   const [unpaid, setUnpaid] = useState([]);
   const [unpaidExpenses, setUnpaidExpenses] = useState([]);
   const [taskStats, setTaskStats] = useState({ totalTasks: 0, completedTasks: 0, ongoingTasks: 0 });
   const [taskFilter, setTaskFilter] = useState('ongoing');
-  // Shto këtë state për të mbajtur të gjitha detyrat
   const [allTasks, setAllTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
@@ -40,138 +45,81 @@ export default function DashboardStats() {
   // useEffect për të marrë të dhënat vetëm një herë në mount
   useEffect(() => {
     const fetchData = async () => {
-      const [contractsRes, employeesRes, paidStatusRes] = await Promise.all([
-        api.get("/api/contracts"),
-        api.get("/api/employees"),
-        api.get("/api/work-hours/paid-status"),
-      ]);
-      setContracts(snakeToCamel(contractsRes.data || []));
-      setEmployees(snakeToCamel(employeesRes.data || []));
-      setPaidStatus(snakeToCamel(paidStatusRes.data || {}));
-      const today = new Date();
-      const monday = new Date(today);
-      monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-      const end = new Date(monday);
-      end.setDate(monday.getDate() + 6);
-      setThisWeekLabel(`${monday.toLocaleDateString()} - ${end.toLocaleDateString()}`);
-    };
-    fetchData();
-    // dependency array bosh që të mos bëjë loop
-  }, []);
-
-  // useEffect për të marrë të dhënat e javës vetëm kur ndryshon thisWeekLabel
-  useEffect(() => {
-    if (!thisWeekLabel || employees.length === 0) return;
-    const fetchWorkHoursAndInvoices = async () => {
-      const [workHoursRes, invoicesRes, tasksRes, expensesRes] = await Promise.all([
-        api.get("/api/work-hours/structured"),
-        api.get("/api/invoices"),
-        api.get("/api/tasks"),
-        api.get("/api/expenses"),
-      ]);
-      const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
-      const invoices = snakeToCamel(invoicesRes.data || []);
-      const allTasksData = snakeToCamel(tasksRes.data || []);
-      setAllTasks(allTasksData);
-      const allExpenses = snakeToCamel(expensesRes.data || []);
-      console.log('[DEBUG] structuredWorkHours camel:', structuredWorkHours);
-      console.log('[DEBUG] invoices camel:', invoices);
-      console.log('[DEBUG] tasks camel:', allTasksData);
-      console.log('[DEBUG] expenses camel:', allExpenses);
-
-      let totalPaidNow = 0;
-      const payments = [];
-      const siteMap = {};
-
-      employees.forEach(emp => {
-        const empWeeks = structuredWorkHours[emp.id] || {};
-        const weekData = empWeeks[thisWeekLabel] || {};
-        let totalHours = 0;
-        let hourlyRate = parseFloat(emp.hourlyRate || 0);
-        Object.values(weekData).forEach(val => {
-          if (val?.hours) {
-            totalHours += parseFloat(val.hours);
-            if (val.site) {
-              siteMap[val.site] = (siteMap[val.site] || 0) + parseFloat(val.hours);
-            }
-            if (val.rate) hourlyRate = parseFloat(val.rate);
+      try {
+        setLoading(true);
+        const [contractsRes, employeesRes, dashboardRes, invoicesRes, tasksRes, expensesRes] = await Promise.all([
+          api.get("/api/contracts"),
+          api.get("/api/employees"),
+          api.get("/api/work-hours/dashboard-stats"),
+          api.get("/api/invoices"),
+          api.get("/api/tasks"),
+          api.get("/api/expenses"),
+        ]);
+        
+        setContracts(snakeToCamel(contractsRes.data || []));
+        setEmployees(snakeToCamel(employeesRes.data || []));
+        setDashboardStats(snakeToCamel(dashboardRes.data || {}));
+        
+        const invoices = snakeToCamel(invoicesRes.data || []);
+        const allTasksData = snakeToCamel(tasksRes.data || []);
+        const allExpenses = snakeToCamel(expensesRes.data || []);
+        
+        setAllTasks(allTasksData);
+        
+        // Process unpaid invoices
+        const unpaidList = [];
+        invoices.forEach(inv => {
+          if (inv && !inv.paid && Array.isArray(inv.items)) {
+            const net = inv.items.reduce((a, i) => a + (i.amount || 0), 0);
+            const vat = net * 0.2;
+            const total = net + vat + parseFloat(inv.other || 0);
+            if (total <= 0) return;
+            const contract = contractsRes.data.find(c => c.contract_number === inv.contract_number);
+            unpaidList.push({
+              contractNumber: inv.contractNumber,
+              invoiceNumber: inv.invoiceNumber || "-",
+              total,
+              siteName: contract?.site_name || "-"
+            });
           }
         });
-        const gross = totalHours * hourlyRate;
-        // Paid status by week/employee nuk është e thjeshtë, por ruajmë logjikën ekzistuese
-        const isPaid = paidStatus[`${thisWeekLabel}_${emp.id}`];
-        if (isPaid) totalPaidNow += gross;
-        payments.push({
-          id: emp.id,
-          name: `${emp.firstName} ${emp.lastName}`,
-          gross
+        setUnpaid(unpaidList);
+        
+        // Process tasks
+        const totalTasks = allTasksData.length;
+        const completedTasks = allTasksData.filter(t => t.status === "completed").length;
+        const ongoingTasks = totalTasks - completedTasks;
+        setTaskStats({ totalTasks, completedTasks, ongoingTasks });
+        
+        // Process unpaid expenses
+        const unpaidExpensesList = [];
+        allExpenses.forEach(exp => {
+          if (exp && (exp.paid === false || exp.paid === 0 || exp.paid === 'false')) {
+            unpaidExpensesList.push({
+              id: exp.id,
+              date: exp.date,
+              type: exp.expenseType,
+              gross: parseFloat(exp.gross || 0),
+              contract_id: exp.contractId,
+              description: exp.description
+            });
+          }
         });
-      });
-
-      setTotalPaid(totalPaidNow);
-
-      const topEarners = payments.sort((a, b) => b.gross - a.gross).slice(0, 5).map(te => {
-        const emp = employees.find(e => e.id === te.id);
-        return {
-          ...te,
-          photo: emp?.photo || "https://via.placeholder.com/40",
-          role: emp?.role || "user",
-        };
-      });
-      setMostPaidEmployees(topEarners);
-
-      const siteArray = Object.entries(siteMap).map(([site, hours]) => ({ site, hours }));
-      setSiteSummary(siteArray);
-
-      // Unpaid invoices
-      const unpaidList = [];
-      invoices.forEach(inv => {
-        if (inv && !inv.paid && Array.isArray(inv.items)) {
-          const net = inv.items.reduce((a, i) => a + (i.amount || 0), 0);
-          const vat = net * 0.2;
-          const total = net + vat + parseFloat(inv.other || 0);
-          if (total <= 0) return;
-          const contract = contracts.find(c => c.contractNumber === inv.contractNumber);
-          unpaidList.push({
-            contractNumber: inv.contractNumber,
-            invoiceNumber: inv.invoiceNumber || "-",
-            total,
-            siteName: contract?.siteName || "-"
-          });
-        }
-      });
-      setUnpaid(unpaidList);
-
-      // Tasks
-      const totalTasks = allTasksData.length;
-      const completedTasks = allTasksData.filter(t => t.status === "completed").length;
-      const ongoingTasks = totalTasks - completedTasks;
-      setTaskStats({ totalTasks, completedTasks, ongoingTasks });
-
-      // Unpaid expenses
-      const unpaidExpensesList = [];
-      allExpenses.forEach(exp => {
-        // Tolerant: false, 0, 'false', undefined
-        if (exp && (exp.paid === false || exp.paid === 0 || exp.paid === 'false')) {
-          unpaidExpensesList.push({
-            id: exp.id,
-            date: exp.date,
-            type: exp.expenseType,
-            gross: parseFloat(exp.gross || 0),
-            contract_id: exp.contractId,
-            description: exp.description
-          });
-        }
-      });
-      setUnpaidExpenses(unpaidExpensesList);
+        setUnpaidExpenses(unpaidExpensesList);
+        
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchWorkHoursAndInvoices();
-    // dependency array vetëm nga thisWeekLabel dhe employees.length
-  }, [thisWeekLabel, employees.length]);
+    fetchData();
+  }, []);
+
+
 
   const activeSites = [...new Set(contracts.filter(c => c.status === "Aktive").map(c => c.siteName))];
   const activeEmployees = employees.filter(e => e.status === "Aktiv");
-  const profit = totalPaid * 0.2;
 
   // Filtrim i detyrave sipas statusit
   const filteredTasks = allTasks.filter(t => taskFilter === 'all' ? true : t.status === taskFilter);
@@ -183,6 +131,14 @@ export default function DashboardStats() {
     : (user?.firstName && user?.lastName)
       ? `${user.firstName} ${user.lastName}`
       : "";
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-10 flex justify-center items-center min-h-screen">
+        <div className="text-2xl font-bold text-blue-600">Duke ngarkuar statistikat...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
@@ -212,11 +168,11 @@ export default function DashboardStats() {
         </div>
         <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center">
           <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">💷 Paguar këtë javë</h3>
-          <p className="text-5xl text-indigo-700 font-extrabold">£{totalPaid.toFixed(2)}</p>
+          <p className="text-5xl text-indigo-700 font-extrabold">£{dashboardStats.totalPaid.toFixed(2)}</p>
         </div>
         <div className="bg-white p-8 rounded-2xl shadow-md flex flex-col items-center">
           <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">📈 Fitimi (20%)</h3>
-          <p className="text-5xl text-emerald-700 font-extrabold">£{profit.toFixed(2)}</p>
+          <p className="text-5xl text-emerald-700 font-extrabold">£{dashboardStats.totalProfit.toFixed(2)}</p>
         </div>
       </div>
 
@@ -255,35 +211,50 @@ export default function DashboardStats() {
 
       {/* Grafik për site */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve</h3>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={siteSummary} layout="vertical" margin={{ left: 50 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
-            <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#3b82f6' }} />
-            <Tooltip />
-            <Bar dataKey="hours" fill="#3b82f6" radius={[0, 6, 6, 0]} barSize={30} />
-          </BarChart>
-        </ResponsiveContainer>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve ({dashboardStats.thisWeek})</h3>
+        <div className="mb-4 text-lg font-semibold text-gray-700">
+          Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
+        </div>
+        {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
+              <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#3b82f6' }} />
+              <Tooltip />
+              <Bar dataKey="hours" fill="#3b82f6" radius={[0, 6, 6, 0]} barSize={30} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-gray-500 italic text-center py-8">Nuk ka orë pune të regjistruara për këtë javë</p>
+        )}
       </div>
 
       {/* Top 5 më të paguar */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
-        <ul className="space-y-3 text-gray-800">
-          {mostPaidEmployees.map((e, i) => (
-            <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
-              <img src={e.photo} alt="Foto" className="w-14 h-14 rounded-full object-cover border-2 border-blue-300 shadow" />
-              <div className="flex-1">
-                <p className="font-bold text-lg">
-                  {i + 1}. {e.name}
-                </p>
-                <p className="text-xs text-gray-500 capitalize">{e.role}</p>
-              </div>
-              <div className="text-blue-700 font-extrabold text-xl">£{e.gross.toFixed(2)}</div>
-            </li>
-          ))}
-        </ul>
+        {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
+          <ul className="space-y-3 text-gray-800">
+            {dashboardStats.top5Employees.map((e, i) => (
+              <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
+                <div className="w-14 h-14 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xl border-2 border-blue-300 shadow">
+                  {i + 1}
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-lg">
+                    {e.name}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
+                  </p>
+                </div>
+                <div className="text-blue-700 font-extrabold text-xl">£{e.grossAmount.toFixed(2)}</div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500 italic text-center py-8">Nuk ka pagesa të regjistruara për këtë javë</p>
+        )}
       </div>
 
       {/* Faturat e papaguara */}

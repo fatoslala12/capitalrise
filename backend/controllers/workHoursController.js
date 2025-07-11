@@ -480,6 +480,97 @@ exports.debugManagerAccess = async (req, res) => {
   }
 };
 
+// Dashboard stats endpoint - optimized for dashboard display
+exports.getDashboardStats = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    // Helper function to get current week label
+    const getCurrentWeekLabel = () => {
+      const today = new Date();
+      const day = today.getDay();
+      const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(today);
+      monday.setDate(diff);
+      monday.setHours(0, 0, 0, 0);
+      
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      
+      const mondayStr = monday.toISOString().slice(0, 10);
+      const sundayStr = sunday.toISOString().slice(0, 10);
+      
+      return `${mondayStr} - ${sundayStr}`;
+    };
+    
+    const thisWeek = getCurrentWeekLabel();
+    
+    // 1. Get paid payments for this week
+    const paidThisWeek = await client.query(`
+      SELECT p.*, e.first_name, e.last_name, e.hourly_rate, e.label_type
+      FROM payments p
+      JOIN employees e ON p.employee_id = e.id
+      WHERE p.week_label = $1 AND p.is_paid = true
+    `, [thisWeek]);
+    
+    // 2. Get all work hours for this week
+    const workHoursThisWeek = await client.query(`
+      SELECT wh.*, e.first_name, e.last_name, e.hourly_rate, c.site_name
+      FROM work_hours wh
+      JOIN employees e ON wh.employee_id = e.id
+      JOIN contracts c ON wh.contract_id = c.id
+      WHERE wh.date >= $1 AND wh.date <= $2
+      ORDER BY wh.employee_id, wh.date
+    `, [thisWeek.split(' - ')[0], thisWeek.split(' - ')[1]]);
+    
+    // 3. Get all payments for this week (paid and unpaid)  
+    const allPaymentsThisWeek = await client.query(`
+      SELECT p.*, e.first_name, e.last_name, e.hourly_rate
+      FROM payments p
+      JOIN employees e ON p.employee_id = e.id
+      WHERE p.week_label = $1
+      ORDER BY p.gross_amount DESC
+    `, [thisWeek]);
+    
+    // Calculate totals
+    const totalPaid = paidThisWeek.rows.reduce((sum, p) => sum + parseFloat(p.gross_amount || 0), 0);
+    const totalProfit = totalPaid * 0.20;
+    
+    // Calculate work hours by site
+    const siteHours = {};
+    workHoursThisWeek.rows.forEach(wh => {
+      const site = wh.site_name || 'Unknown';
+      siteHours[site] = (siteHours[site] || 0) + parseFloat(wh.hours || 0);
+    });
+    
+    // Top 5 employees by gross amount
+    const top5Employees = allPaymentsThisWeek.rows.slice(0, 5).map(p => ({
+      id: p.employee_id,
+      name: `${p.first_name} ${p.last_name}`,
+      grossAmount: parseFloat(p.gross_amount || 0),
+      isPaid: p.is_paid
+    }));
+    
+    const dashboardData = {
+      thisWeek: thisWeek,
+      totalPaid: totalPaid,
+      totalProfit: totalProfit,
+      workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
+      top5Employees: top5Employees,
+      totalWorkHours: workHoursThisWeek.rows.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0),
+      paidEmployeesCount: paidThisWeek.rows.length,
+      totalEmployeesWithHours: [...new Set(workHoursThisWeek.rows.map(wh => wh.employee_id))].length
+    };
+    
+    res.json(dashboardData);
+    
+  } catch (err) {
+    console.error('[ERROR] Dashboard stats:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+};
+
 // Debug endpoint për të shikuar të gjithë statusin e databazës
 exports.debugDatabaseStatus = async (req, res) => {
   const client = await pool.connect();
