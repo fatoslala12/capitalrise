@@ -11,6 +11,10 @@ function verifyToken(req, res, next) {
   return origVerifyToken(req, res, next);
 }
 
+// Debug routes - duhet të jenë para route-ve me parametra
+router.get('/debug-manager', verifyToken, controller.debugManagerAccess);
+router.get('/debug-database', verifyToken, controller.debugDatabaseStatus);
+
 // /structured route must be before any parameterized routes!
 router.get('/structured', verifyToken, (req, res, next) => {
   console.log('[DEBUG] /api/work-hours/structured route hit - PARA next()');
@@ -22,13 +26,13 @@ router.get('/paid-status', verifyToken, controller.getPaidStatus);
 router.post('/paid-status', verifyToken, requireRole('admin'), controller.setPaidStatus);
 
 router.get('/', verifyToken, controller.getAllWorkHours);
-router.get('/:employeeId', verifyToken, controller.getWorkHoursByEmployee);
 router.post('/', verifyToken, controller.addWorkHours);
 router.put('/:id', verifyToken, requireRole('admin'), controller.updateWorkHours);
 router.delete('/:id', verifyToken, requireRole('admin'), controller.deleteWorkHours);
 router.get('/contract/:contract_number', controller.getWorkHoursByContract);
 router.get('/structured/:employeeId', controller.getStructuredWorkHoursForEmployee);
-router.get('/debug-manager', verifyToken, controller.debugManagerAccess);
-router.get('/debug-database', verifyToken, controller.debugDatabaseStatus);
+
+// Route me parametra duhet të jetë në fund
+router.get('/:employeeId', verifyToken, controller.getWorkHoursByEmployee);
 
 module.exports = router;
