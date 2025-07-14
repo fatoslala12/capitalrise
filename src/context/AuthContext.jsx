@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -15,13 +15,18 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const storedUser = localStorage.getItem("authUser");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Gabim në parsing e user data:", error);
+        localStorage.removeItem("authUser");
+      }
     }
     setLoading(false);
   }, []);
 
-  // Login me backend
-  const login = async (email, password) => {
+  // Login me backend - optimized me useCallback
+  const login = useCallback(async (email, password) => {
     try {
       const res = await axios.post("https://building-system.onrender.com/api/auth/login", {
         email: email.trim().toLowerCase(),
@@ -35,14 +40,14 @@ export function AuthProvider({ children }) {
     } catch (err) {
       alert("Email ose fjalëkalim i pasaktë!");
     }
-  };
+  }, [navigate]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem("authUser");
     localStorage.removeItem("token");
     navigate("/");
-  };
+  }, [navigate]);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
