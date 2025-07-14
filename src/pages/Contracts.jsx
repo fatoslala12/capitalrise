@@ -1,6 +1,6 @@
 // src/pages/Contracts.jsx
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useApi } from "../utils/useApi";
 import { useDebounce } from "../utils/useDebounce";
 import api from "../api";
@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import NotificationService from '../utils/notifications';
+import { StatusBadge } from "../components/ui/Badge";
 
 export default function Contracts() {
   const [contracts, setContracts] = useState([]);
@@ -904,6 +905,7 @@ export default function Contracts() {
               <tr>
                 <th className="py-4 px-4 text-left">Zgjidh</th>
                 <th className="py-4 px-4 text-left">Nr. Kontratës</th>
+                <th className="py-4 px-4 text-left">Vendodhja</th>
                 <th className="py-4 px-4 text-left">Kompania</th>
                 <th className="py-4 px-4 text-center">Vlera</th>
                 <th className="py-4 px-4 text-center">Shpenzuar</th>
@@ -916,8 +918,14 @@ export default function Contracts() {
             <tbody>
               {paginatedContracts.map((c, index) => {
                 const vlera = parseFloat(c.contract_value) || 0;
-                const shpenzuar = workHoursData?.filter(wh => wh.contract_id === c.id)
-                  .reduce((sum, wh) => sum + (parseFloat(wh.hours) * parseFloat(wh.hourly_rate)), 0) || 0;
+                const shpenzuar = (Array.isArray(workHoursData) && workHoursData.length > 0)
+                  ? workHoursData.filter(wh => wh.contract_id === c.id && wh.hours && wh.hourly_rate)
+                      .reduce((sum, wh) => sum + (parseFloat(wh.hours) * parseFloat(wh.hourly_rate)), 0)
+                  : 0;
+                if (shpenzuar === 0) {
+                  // Debug log
+                  // console.log('Shpenzuar bosh për kontratë', c.id, workHoursData);
+                }
                 const fitimi = vlera - shpenzuar;
                 const progres = calculateProgress(c.start_date, c.finish_date);
                 const { profit, profitMargin } = calculateContractProfit(c);
@@ -931,11 +939,13 @@ export default function Contracts() {
                         className="w-4 h-4"
                       />
                     </td>
-                    <td className="py-4 px-4 align-middle font-bold text-blue-900">{c.contract_number}</td>
-                    <td className="py-4 px-4 align-middle font-semibold text-blue-700 underline cursor-pointer hover:text-blue-900 transition"
-    onClick={() => navigate(`/contracts/${c.id}`)}>
-  {c.site_name}
-</td>
+                    <td className="py-4 px-4 align-middle font-bold text-blue-900">
+                      <Link to={`/contracts/${c.id}`} className="underline hover:text-purple-700 transition-colors">{c.contract_number}</Link>
+                    </td>
+                    <td className="py-4 px-4 align-middle font-semibold text-blue-700 underline cursor-pointer hover:text-blue-900 transition">
+                      <Link to={`/contracts/${c.id}`}>{c.site_name}</Link>
+                    </td>
+                    <td className="py-4 px-4 align-middle font-semibold text-gray-800">{c.company}</td>
                     <td className="py-4 px-4 align-middle font-bold text-blue-900">£{vlera.toFixed(2)}</td>
                     <td className="py-4 px-4 align-middle font-bold text-purple-700">£{shpenzuar.toFixed(2)}</td>
                     <td className={`py-4 px-4 align-middle font-bold ${getProfitColor(profit)}`}>
@@ -944,7 +954,8 @@ export default function Contracts() {
                         <div className="text-xs opacity-75">{profitMargin.toFixed(1)}%</div>
                       </div>
                     </td>
-                    <td className="py-4 px-4 align-middle">
+                    <td className="py-4 px-4 align-middle flex items-center gap-2 justify-center">
+                      <StatusBadge status={c.status} />
                       <select
                         value={c.status}
                         onChange={e => handleStatusChange(c.id, e.target.value)}
