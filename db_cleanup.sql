@@ -1,3 +1,30 @@
+-- Database cleanup and optimization scripts
+
+-- Rename company_no to contract_value in contracts table
+ALTER TABLE contracts RENAME COLUMN company_no TO contract_value;
+
+-- Add indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_contracts_contract_number ON contracts(contract_number);
+CREATE INDEX IF NOT EXISTS idx_contracts_status ON contracts(status);
+CREATE INDEX IF NOT EXISTS idx_contracts_start_date ON contracts(start_date);
+CREATE INDEX IF NOT EXISTS idx_work_hours_employee_id ON work_hours(employee_id);
+CREATE INDEX IF NOT EXISTS idx_work_hours_date ON work_hours(date);
+CREATE INDEX IF NOT EXISTS idx_work_hours_site ON work_hours(site);
+
+-- Add constraints for data integrity
+ALTER TABLE contracts ADD CONSTRAINT check_contract_value_positive CHECK (contract_value > 0);
+ALTER TABLE contracts ADD CONSTRAINT check_dates_valid CHECK (start_date < finish_date);
+
+-- Update existing data if needed
+UPDATE contracts SET contract_value = company_no WHERE contract_value IS NULL AND company_no IS NOT NULL;
+
+-- Clean up any duplicate contract numbers
+DELETE FROM contracts a USING contracts b 
+WHERE a.id > b.id AND a.contract_number = b.contract_number;
+
+-- Add unique constraint on contract_number
+ALTER TABLE contracts ADD CONSTRAINT unique_contract_number UNIQUE (contract_number);
+
 -- Script për pastrimin e të dhënave të gabuara në DB
 -- KUJDES: Bëj backup para se të ekzekutosh!
 

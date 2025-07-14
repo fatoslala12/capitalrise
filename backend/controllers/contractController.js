@@ -34,7 +34,7 @@ exports.createContract = async (req, res) => {
   const {
     contract_number,
     company,
-    company_no,
+    contract_value, // renamed from company_no
     site_name,
     start_date,
     finish_date,
@@ -45,28 +45,67 @@ exports.createContract = async (req, res) => {
     documents
   } = req.body;
 
+  // Enhanced validation
   if (!contract_number || contract_number === 'NaN') {
     return res.status(400).json({ error: "Numri i kontratës është i pavlefshëm!" });
   }
-  if (!company || !company_no || !site_name || !start_date || !finish_date || !status) {
-    return res.status(400).json({ error: "Ju lutem plotësoni të gjitha fushat e detyrueshme!" });
+  
+  if (!company || !company.trim()) {
+    return res.status(400).json({ error: "Emri i kompanisë është i detyrueshëm!" });
+  }
+  
+  if (!contract_value || isNaN(contract_value) || parseFloat(contract_value) <= 0) {
+    return res.status(400).json({ error: "Vlera e kontratës duhet të jetë një numër pozitiv!" });
+  }
+  
+  if (!site_name || !site_name.trim()) {
+    return res.status(400).json({ error: "Vendodhja është e detyrueshme!" });
+  }
+  
+  if (!start_date) {
+    return res.status(400).json({ error: "Data e fillimit është e detyrueshme!" });
+  }
+  
+  if (!finish_date) {
+    return res.status(400).json({ error: "Data e mbarimit është e detyrueshme!" });
+  }
+  
+  // Validate dates
+  const startDate = new Date(start_date);
+  const finishDate = new Date(finish_date);
+  if (startDate >= finishDate) {
+    return res.status(400).json({ error: "Data e mbarimit duhet të jetë pas datës së fillimit!" });
+  }
+
+  // Check for duplicate contract number
+  try {
+    const existingContract = await pool.query(
+      'SELECT id FROM contracts WHERE contract_number = $1',
+      [contract_number]
+    );
+    if (existingContract.rows.length > 0) {
+      return res.status(400).json({ error: "Numri i kontratës ekziston tashmë!" });
+    }
+  } catch (err) {
+    console.error('[ERROR] Kontrolli i numrit të kontratës:', err);
+    return res.status(500).json({ error: "Gabim në kontrollin e numrit të kontratës!" });
   }
 
   try {
     const result = await pool.query(`
       INSERT INTO contracts 
-      (contract_number, company, company_no, site_name, start_date, finish_date, status, address, closed_manually, closed_date, documents)
+      (contract_number, company, contract_value, site_name, start_date, finish_date, status, address, closed_manually, closed_date, documents)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *`,
       [
         contract_number,
-        company,
-        company_no,
-        site_name,
+        company.trim(),
+        contract_value,
+        site_name.trim(),
         start_date,
         finish_date,
         status,
-        address || null,
+        address ? address.trim() : null,
         closed_manually ?? false,
         closed_date || null,
         documents ? JSON.stringify(documents) : null
@@ -84,7 +123,7 @@ exports.createContract = async (req, res) => {
 exports.updateContract = async (req, res) => {
   const { id } = req.params;
   const fields = [
-    'company', 'company_no', 'site_name', 'start_date', 'finish_date',
+    'company', 'contract_value', 'site_name', 'start_date', 'finish_date',
     'status', 'address', 'closed_manually', 'closed_date', 'documents'
   ];
   
@@ -97,6 +136,8 @@ exports.updateContract = async (req, res) => {
       updates.push(`${field} = $${index}`);
       if (field === 'documents') {
         values.push(JSON.stringify(req.body[field]));
+      } else if (field === 'company' || field === 'site_name' || field === 'address') {
+        values.push(req.body[field] ? req.body[field].trim() : null);
       } else {
         values.push(req.body[field]);
       }
