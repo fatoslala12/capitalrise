@@ -940,10 +940,10 @@ export default function Contracts() {
                       />
                     </td>
                     <td className="py-4 px-4 align-middle font-bold text-blue-900">
-                      <Link to={`/contracts/${c.id}`} className="underline hover:text-purple-700 transition-colors">{c.contract_number}</Link>
+                      <Link to={`/admin/contracts/${c.contract_number}`} className="underline hover:text-purple-700 transition-colors">{c.contract_number}</Link>
                     </td>
                     <td className="py-4 px-4 align-middle font-semibold text-blue-700 underline cursor-pointer hover:text-blue-900 transition">
-                      <Link to={`/contracts/${c.id}`}>{c.site_name}</Link>
+                      <Link to={`/admin/contracts/${c.contract_number}`}>{c.site_name}</Link>
                     </td>
                     <td className="py-4 px-4 align-middle font-semibold text-gray-800">{c.company}</td>
                     <td className="py-4 px-4 align-middle font-bold text-blue-900">£{vlera.toFixed(2)}</td>
@@ -978,7 +978,7 @@ export default function Contracts() {
                     <td className="py-4 px-4 align-middle">
                       <div className="flex gap-2 justify-center">
                         <button
-                          onClick={() => navigate(`/contracts/${c.id}`)}
+                          onClick={() => navigate(`/admin/contracts/${c.contract_number}`)}
                           className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors text-sm"
                         >
                           👁️ Shiko
