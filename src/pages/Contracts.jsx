@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useApi } from "../utils/useApi";
 import { useDebounce } from "../utils/useDebounce";
 import api from "../api";
+import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import NotificationService from '../utils/notifications';
 
 export default function Contracts() {
   const [contracts, setContracts] = useState([]);
@@ -31,6 +35,8 @@ export default function Contracts() {
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const [selectedContracts, setSelectedContracts] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   // Use optimized API hook for contracts
   const { data: contractsData, loading: contractsLoading, error: contractsError, refetch: refetchContracts } = useApi("/api/contracts", {
@@ -177,12 +183,14 @@ export default function Contracts() {
       });
       
       showToastMessage("Kontrata u shtua me sukses!");
+      toast.success("Kontrata u krijua me sukses!");
       
       // Clear cache to refresh data
       refetchContracts();
     } catch (err) {
       console.error("Error creating contract:", err);
       showToastMessage(err.response?.data?.error || "Gabim gjatë shtimit të kontratës!", "error");
+      toast.error("Gabim gjatë krijimit të kontratës!");
     } finally {
       setIsSubmitting(false);
     }
@@ -263,6 +271,39 @@ export default function Contracts() {
     return Math.floor(((now - start) / (end - start)) * 100);
   }, []);
 
+  // Profit calculation
+  const calculateContractProfit = useCallback((contract) => {
+    const contractValue = parseFloat(contract.contract_value) || 0;
+    
+    // Get expenses for this contract
+    const contractExpenses = workHoursData?.filter(wh => 
+      wh.contract_id === contract.id
+    ) || [];
+    
+    const totalExpenses = contractExpenses.reduce((sum, expense) => {
+      const hours = parseFloat(expense.hours) || 0;
+      const rate = parseFloat(expense.hourly_rate) || 0;
+      return sum + (hours * rate);
+    }, 0);
+    
+    const profit = contractValue - totalExpenses;
+    const profitMargin = contractValue > 0 ? (profit / contractValue) * 100 : 0;
+    
+    return {
+      contractValue,
+      totalExpenses,
+      profit,
+      profitMargin,
+      expensesCount: contractExpenses.length
+    };
+  }, [workHoursData]);
+
+  const getProfitColor = (profit) => {
+    if (profit > 0) return 'text-green-700 bg-green-50';
+    if (profit < 0) return 'text-red-700 bg-red-50';
+    return 'text-gray-700 bg-gray-50';
+  };
+
   // Optimized filtering and sorting
   const filteredAndSortedContracts = useMemo(() => {
     let filtered = contracts;
@@ -317,6 +358,224 @@ export default function Contracts() {
     const d = new Date(dateStr);
     return d.toLocaleDateString("sq-AL");
   }, []);
+
+  // Bulk operations
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedContracts([]);
+      setSelectAll(false);
+    } else {
+      setSelectedContracts(contracts.map(c => c.id));
+      setSelectAll(true);
+    }
+  };
+
+  const handleSelectContract = (contractId) => {
+    setSelectedContracts(prev => 
+      prev.includes(contractId) 
+        ? prev.filter(id => id !== contractId)
+        : [...prev, contractId]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedContracts.length === 0) {
+      toast.error('Zgjidh kontratat për fshirje!');
+      return;
+    }
+    
+    if (!confirm(`A jeni të sigurt që dëshironi të fshini ${selectedContracts.length} kontrata?`)) {
+      return;
+    }
+    
+    try {
+      await Promise.all(selectedContracts.map(id => api.delete(`/api/contracts/${id}`)));
+      toast.success(`${selectedContracts.length} kontrata u fshinë me sukses!`);
+      setSelectedContracts([]);
+      setSelectAll(false);
+      // Refresh data
+      refetchContracts();
+    } catch (err) {
+      toast.error('Gabim gjatë fshirjes së kontratave!');
+    }
+  };
+
+  // Export functions
+  const exportToExcel = (data, filename = 'kontratat') => {
+    const ws = XLSX.utils.json_to_sheet(data.map(contract => ({
+      'ID': contract.id,
+      'Emri i Kontratës': contract.company, // Assuming company is the contract name
+      'Vendodhja': contract.site_name,
+      'Vlera (£)': contract.contract_value,
+      'Data e Fillimit': contract.start_date,
+      'Data e Mbarimit': contract.finish_date,
+      'Statusi': contract.status,
+      'Adresa': contract.address,
+      'Shpenzuar (£)': calculateSpentForSite(contract.site_name),
+      'Fitimi (£)': Number(contract.contract_value || 0) - calculateSpentForSite(contract.site_name)
+    })));
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Kontratat');
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const dataBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(dataBlob, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  const exportToPDF = (data, filename = 'kontratat') => {
+    // Simple PDF export using html2pdf
+    const element = document.createElement('div');
+    element.innerHTML = `
+      <h2>Lista e Kontratave</h2>
+      <table border="1" style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Emri i Kompanisë</th>
+            <th>Vendodhja</th>
+            <th>Vlera (£)</th>
+            <th>Data e Fillimit</th>
+            <th>Data e Mbarimit</th>
+            <th>Statusi</th>
+            <th>Adresa</th>
+            <th>Shpenzuar (£)</th>
+            <th>Fitimi (£)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map(contract => `
+            <tr>
+              <td>${contract.id}</td>
+              <td>${contract.company}</td>
+              <td>${contract.site_name}</td>
+              <td>${contract.contract_value}</td>
+              <td>${formatDate(contract.start_date)}</td>
+              <td>${formatDate(contract.finish_date)}</td>
+              <td>${contract.status}</td>
+              <td>${contract.address}</td>
+              <td>${calculateSpentForSite(contract.site_name)}</td>
+              <td>${Number(contract.contract_value || 0) - calculateSpentForSite(contract.site_name)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    
+    // Use html2pdf if available
+    if (window.html2pdf) {
+      window.html2pdf().from(element).save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
+    } else {
+      toast.error('PDF export nuk është i disponueshëm!');
+    }
+  };
+
+  const handleExport = (type) => {
+    const dataToExport = selectedContracts.length > 0 
+      ? contracts.filter(c => selectedContracts.includes(c.id))
+      : filteredAndSortedContracts;
+      
+    if (dataToExport.length === 0) {
+      toast.error('Nuk ka të dhëna për eksport!');
+      return;
+    }
+    
+    if (type === 'excel') {
+      exportToExcel(dataToExport);
+      toast.success('Eksporti në Excel u krye me sukses!');
+    } else if (type === 'pdf') {
+      exportToPDF(dataToExport);
+      toast.success('Eksporti në PDF u krye me sukses!');
+    }
+  };
+
+  // Workflow statuses and transitions
+  const CONTRACT_STATUSES = {
+    DRAFT: 'Draft',
+    ACTIVE: 'Aktive',
+    IN_PROGRESS: 'Në Progres',
+    COMPLETED: 'Përfunduar',
+    CANCELLED: 'Anuluar',
+    ON_HOLD: 'Në Pritje'
+  };
+
+  const STATUS_TRANSITIONS = {
+    [CONTRACT_STATUSES.DRAFT]: [CONTRACT_STATUSES.ACTIVE, CONTRACT_STATUSES.CANCELLED],
+    [CONTRACT_STATUSES.ACTIVE]: [CONTRACT_STATUSES.IN_PROGRESS, CONTRACT_STATUSES.ON_HOLD, CONTRACT_STATUSES.CANCELLED],
+    [CONTRACT_STATUSES.IN_PROGRESS]: [CONTRACT_STATUSES.COMPLETED, CONTRACT_STATUSES.ON_HOLD],
+    [CONTRACT_STATUSES.ON_HOLD]: [CONTRACT_STATUSES.ACTIVE, CONTRACT_STATUSES.IN_PROGRESS, CONTRACT_STATUSES.CANCELLED],
+    [CONTRACT_STATUSES.COMPLETED]: [],
+    [CONTRACT_STATUSES.CANCELLED]: []
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      [CONTRACT_STATUSES.DRAFT]: 'bg-gray-100 text-gray-800',
+      [CONTRACT_STATUSES.ACTIVE]: 'bg-green-100 text-green-800',
+      [CONTRACT_STATUSES.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
+      [CONTRACT_STATUSES.COMPLETED]: 'bg-purple-100 text-purple-800',
+      [CONTRACT_STATUSES.CANCELLED]: 'bg-red-100 text-red-800',
+      [CONTRACT_STATUSES.ON_HOLD]: 'bg-yellow-100 text-yellow-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  // Përditëso handleStatusChange për të përfshirë notifikimet
+  const handleStatusChange = async (contractId, newStatus) => {
+    try {
+      await api.put(`/api/contracts/${contractId}`, { status: newStatus });
+      
+      // Send notification
+      const contract = contracts.find(c => c.id === contractId);
+      if (contract) {
+        await NotificationService.notifyContractStatusChange(contract, newStatus, contract.id);
+        
+        // Special notification for completion
+        if (newStatus === CONTRACT_STATUSES.COMPLETED) {
+          await NotificationService.notifyContractCompletion(contract, contract.id);
+        }
+      }
+      
+      toast.success(`Statusi i kontratës u ndryshua në "${newStatus}"`);
+      refetchContracts();
+    } catch (err) {
+      toast.error('Gabim gjatë ndryshimit të statusit!');
+    }
+  };
+
+  // UI/UX improvements
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Loading states
+  const LoadingSpinner = () => (
+    <div className="flex items-center justify-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <span className="ml-2 text-gray-600">Duke ngarkuar...</span>
+    </div>
+  );
+
+  const ErrorMessage = ({ message }) => (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+      <div className="flex items-center">
+        <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+        </svg>
+        <span className="text-red-800">{message}</span>
+      </div>
+    </div>
+  );
+
+  // Success message
+  const SuccessMessage = ({ message }) => (
+    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+      <div className="flex items-center">
+        <svg className="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+        </svg>
+        <span className="text-green-800">{message}</span>
+      </div>
+    </div>
+  );
 
   if (loading || contractsLoading) {
     return (
@@ -452,53 +711,111 @@ export default function Contracts() {
             {formErrors.finish_date && <p className="text-red-500 text-sm mt-1">{formErrors.finish_date}</p>}
           </div>
           
-          <div className="col-span-2 lg:col-span-2">
-            <label className="block text-base font-medium text-blue-800 mb-1">Ngarko Dokument PDF</label>
-            <input 
-              type="file" 
-              name="documents" 
-              accept="application/pdf" 
+          <div className="col-span-1">
+            <select 
+              name="status" 
+              value={newContract.status} 
               onChange={handleChange} 
-              className="p-3 border border-blue-200 rounded-lg w-full text-base file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition-all duration-200" 
-            />
+              className="p-3 border border-purple-200 rounded-lg text-base focus:ring-2 focus:ring-purple-200 transition-all shadow-sm w-full"
+            >
+              <option value="Aktive">Aktive</option>
+              <option value="Mbyllur">Mbyllur</option>
+              <option value="Mbyllur me vonesë">Mbyllur me vonesë</option>
+            </select>
           </div>
           
-          <button 
-            type="submit" 
-            disabled={isSubmitting}
-            className="col-span-1 md:col-span-2 lg:col-span-4 bg-gradient-to-r from-green-300 to-blue-400 text-white px-6 py-3 rounded-lg font-semibold text-lg shadow hover:from-blue-500 hover:to-green-500 transition-all flex items-center gap-2 justify-center mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                Duke ruajtur...
-              </>
-            ) : (
-              <>
-                <span className="text-xl">💾</span> Shto Kontratë
-              </>
-            )}
-          </button>
+          <div className="col-span-1 md:col-span-2 lg:col-span-4 flex gap-4">
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "Duke shtuar..." : "➕ Shto Kontratë"}
+            </button>
+            
+            <button 
+              type="button" 
+              onClick={() => setNewContract({
+                company: "",
+                contract_value: "",
+                site_name: "",
+                contract_number: (parseInt(newContract.contract_number) + 1).toString(),
+                start_date: "",
+                finish_date: "",
+                address: "",
+                status: "Aktive",
+                closed_manually: false,
+                closed_date: null,
+                documents: []
+              })}
+              className="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all duration-200 shadow-lg"
+            >
+              🔄 Reset
+            </button>
+          </div>
         </form>
       </div>
 
-      {/* Search and Filter Controls */}
-      <div className="bg-white/80 px-8 py-6 rounded-2xl shadow-lg border border-blue-200">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
+      {/* LISTA E KONTRAVE */}
+      <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 px-8 py-6 rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold text-blue-900 flex items-center gap-2">
+            📋 Lista e Kontratave
+            <span className="text-lg text-gray-600">({filteredAndSortedContracts.length} kontrata)</span>
+          </h3>
+          
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={selectAll}
+                onChange={handleSelectAll}
+                className="w-4 h-4"
+              />
+              Zgjidh të gjitha
+            </label>
+            {selectedContracts.length > 0 && (
+              <>
+                <button
+                  onClick={handleBulkDelete}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
+                >
+                  Fshi të zgjedhurat ({selectedContracts.length})
+                </button>
+                <button
+                  onClick={() => handleExport('excel')}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200"
+                >
+                  Eksporto Excel
+                </button>
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                >
+                  Eksporto PDF
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="md:col-span-2">
             <input
               type="text"
               placeholder="🔍 Kërko kontrata..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-200"
+              className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
             />
           </div>
+          
           <div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-200"
+              className="w-full p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 shadow-sm"
             >
               <option value="all">Të gjitha statuset</option>
               <option value="Aktive">Aktive</option>
@@ -506,163 +823,140 @@ export default function Contracts() {
               <option value="Mbyllur me vonesë">Mbyllur me vonesë</option>
             </select>
           </div>
+          
           <div>
             <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-200"
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(e) => {
+                const [field, order] = e.target.value.split('-');
+                setSortBy(field);
+                setSortOrder(order);
+              }}
+              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
             >
-              <option value="start_date">Data e fillimit</option>
-              <option value="contract_value">Vlera</option>
-              <option value="company">Kompania</option>
-              <option value="site_name">Vendodhja</option>
+              <option value="start_date-desc">Data e fillimit (më e reja)</option>
+              <option value="start_date-asc">Data e fillimit (më e vjetra)</option>
+              <option value="contract_value-desc">Vlera (më e larta)</option>
+              <option value="contract_value-asc">Vlera (më e ulët)</option>
+              <option value="company-asc">Kompania (A-Z)</option>
+              <option value="company-desc">Kompania (Z-A)</option>
             </select>
           </div>
-          <div>
-            <button
-              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-              className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-200 hover:bg-blue-50"
-            >
-              {sortOrder === "asc" ? "↑ Rritës" : "↓ Zbritës"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Lista e kontratave */}
-      <div className="bg-white/80 px-16 py-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in w-full">
-        <h3 className="font-bold mb-8 text-3xl text-blue-900 flex items-center gap-3">
-          📋 Lista e Kontratave 
-          <span className="text-lg text-gray-600">({filteredAndSortedContracts.length} kontrata)</span>
-        </h3>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full text-lg bg-white shadow rounded-xl">
-            <thead className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-900 text-xl">
-              <tr>
-                <th className="py-5 px-4 text-center align-middle font-bold">Nr</th>
-                <th className="py-5 px-4 text-center align-middle font-bold">Kompania</th>
-                <th className="py-5 px-4 text-center align-middle font-bold">Vendodhja</th>
-                <th className="py-5 px-4 text-center align-middle font-bold">Datat</th>
-                <th className="py-5 px-4 text-center align-middle font-bold">⏳</th>
-                <th className="py-5 px-4 text-center align-middle font-bold">Vlera (£)</th>
-                <th className="py-5 px-4 text-center align-middle font-bold">Shpenzuar (£)</th>
-                <th className="py-5 px-4 text-center align-middle font-bold">Fitimi (£)</th>
-                <th className="py-5 px-4 text-center align-middle font-bold">Statusi</th>
-                <th className="py-5 px-4 text-center align-middle font-bold">Gjendja</th>
-                <th className="py-5 px-4 text-center align-middle font-bold">Veprime</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedContracts.length === 0 ? (
-                <tr>
-                  <td colSpan="11" className="py-8 text-center text-gray-500 italic">
-                                         {debouncedSearchTerm || filterStatus !== "all" 
-                       ? "Nuk u gjetën kontrata me këto kritere." 
-                       : "Nuk ka kontrata akoma. Krijoni të parën!"
-                     }
-                  </td>
-                </tr>
-              ) : (
-                paginatedContracts.map((c, index) => {
-                  const shpenzuar = calculateSpentForSite(c.site_name);
-                  const vlera = Number(c.contract_value || c.company_no || 0);
-                  const fitimi = vlera - shpenzuar;
-                  const progres = calculateProgress(c.start_date, c.finish_date);
-                  return (
-                    <tr key={c.id || index} className="text-center hover:bg-purple-50 transition-all">
-                      <td className="py-4 px-4 align-middle font-semibold">{c.contract_number}</td>
-                      <td className="py-4 px-4 align-middle">{c.company}</td>
-                      <td className="py-4 px-4 align-middle text-blue-700 underline cursor-pointer font-bold" onClick={() => navigate(`/admin/contracts/${c.contract_number}`)}>
-                        {c.site_name}
-                      </td>
-                      <td className="py-4 px-4 align-middle">{formatDate(c.start_date)} - {formatDate(c.finish_date)}</td>
-                      <td className="py-4 px-4 align-middle">
-                        <div className="w-full bg-gray-200 rounded-full h-4">
-                          <div className="bg-gradient-to-r from-green-400 to-blue-500 h-4 rounded-full transition-all" style={{ width: `${progres}%` }}></div>
-                        </div>
-                        <div className="text-base mt-1 font-semibold text-blue-800">{progres}%</div>
-                      </td>
-                      <td className="py-4 px-4 align-middle font-bold text-blue-900">£{vlera.toFixed(2)}</td>
-                      <td className="py-4 px-4 align-middle font-bold text-purple-700">£{shpenzuar.toFixed(2)}</td>
-                      <td className="py-4 px-4 align-middle font-bold text-green-700">£{fitimi.toFixed(2)}</td>
-                      <td className={`py-4 px-4 align-middle font-bold ${c.status === "Mbyllur" ? "text-green-600" : c.status === "Mbyllur me vonesë" ? "text-red-600" : "text-blue-600"}`}>
-                        <span className={`px-4 py-2 rounded-full text-base font-bold shadow-md ${c.status === "Mbyllur" ? "bg-green-100 text-green-600" : c.status === "Mbyllur me vonesë" ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"}`}>{c.status}</span>
-                      </td>
-                      <td className="py-4 px-4 align-middle">
-                        <div className="flex flex-col items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={c.closed_manually}
-                            onChange={() => handleToggleStatus(c.contract_number)}
-                            className="w-6 h-6 accent-green-500 cursor-pointer"
-                            title={c.closed_manually ? "Klik për ta riaktivizuar" : "Klik për ta mbyllur"}
-                          />
-                          <span className="text-xs text-gray-500">
-                            {c.closed_manually ? "Mbyllur" : "Aktive"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 align-middle flex justify-center gap-2">
-                        <button 
-                          className="px-5 py-3 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg text-lg font-semibold shadow hover:from-pink-600 hover:to-red-600 transition-all flex items-center gap-2" 
-                          onClick={() => handleDelete(c.contract_number)}
-                        >
-                          🗑 <span className="hidden md:inline">Fshi</span>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm text-gray-600">
+            Shfaq {((currentPage - 1) * 10) + 1} - {Math.min(currentPage * 10, filteredAndSortedContracts.length)} nga {filteredAndSortedContracts.length} kontrata
+          </div>
+          
+          <div className="flex gap-2">
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50"
             >
               ← Para
             </button>
-            
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-4 py-2 rounded-lg ${
-                  currentPage === page 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            
+            <span className="px-3 py-1 bg-blue-500 text-white rounded">
+              {currentPage}
+            </span>
             <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredAndSortedContracts.length / 10), prev + 1))}
+              disabled={currentPage >= Math.ceil(filteredAndSortedContracts.length / 10)}
+              className="px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50"
             >
               Pas →
             </button>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Animacion fade-in */}
-      <style jsx>{`
-      @keyframes fade-in {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: none; }
-      }
-      .animate-fade-in { animation: fade-in 0.7s cubic-bezier(.4,0,.2,1) both; }
-      `}</style>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white rounded-lg shadow-lg overflow-hidden">
+            <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-base font-bold">
+              <tr>
+                <th className="py-4 px-4 text-left">Zgjidh</th>
+                <th className="py-4 px-4 text-left">Nr. Kontratës</th>
+                <th className="py-4 px-4 text-left">Kompania</th>
+                <th className="py-4 px-4 text-center">Vlera</th>
+                <th className="py-4 px-4 text-center">Shpenzuar</th>
+                <th className="py-4 px-4 text-center">Fitimi</th>
+                <th className="py-4 px-4 text-center">Statusi</th>
+                <th className="py-4 px-4 text-center">Progresi</th>
+                <th className="py-4 px-4 text-center">Veprime</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedContracts.map((c, index) => {
+                const vlera = parseFloat(c.contract_value) || 0;
+                const shpenzuar = workHoursData?.filter(wh => wh.contract_id === c.id)
+                  .reduce((sum, wh) => sum + (parseFloat(wh.hours) * parseFloat(wh.hourly_rate)), 0) || 0;
+                const fitimi = vlera - shpenzuar;
+                const progres = calculateProgress(c.start_date, c.finish_date);
+                const { profit, profitMargin } = calculateContractProfit(c);
+                return (
+                  <tr key={c.id || index} className="text-center hover:bg-purple-50 transition-all duration-200 transform hover:scale-[1.01]">
+                    <td className="py-4 px-4 align-middle">
+                      <input
+                        type="checkbox"
+                        checked={selectedContracts.includes(c.id)}
+                        onChange={() => handleSelectContract(c.id)}
+                        className="w-4 h-4"
+                      />
+                    </td>
+                    <td className="py-4 px-4 align-middle font-bold text-blue-900">{c.contract_number}</td>
+                    <td className="py-4 px-4 align-middle font-semibold text-gray-800">{c.company}</td>
+                    <td className="py-4 px-4 align-middle font-bold text-blue-900">£{vlera.toFixed(2)}</td>
+                    <td className="py-4 px-4 align-middle font-bold text-purple-700">£{shpenzuar.toFixed(2)}</td>
+                    <td className={`py-4 px-4 align-middle font-bold ${getProfitColor(profit)}`}>
+                      <div className="text-center">
+                        <div className="text-lg">£{profit.toFixed(2)}</div>
+                        <div className="text-xs opacity-75">{profitMargin.toFixed(1)}%</div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 align-middle">
+                      <select
+                        value={c.status}
+                        onChange={(e) => handleStatusChange(c.id, e.target.value)}
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(c.status)}`}
+                      >
+                        {STATUS_TRANSITIONS[c.status]?.map(status => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="py-4 px-4 align-middle">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(100, Math.max(0, progres))}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-xs text-gray-600 mt-1">{progres.toFixed(0)}%</span>
+                    </td>
+                    <td className="py-4 px-4 align-middle">
+                      <div className="flex gap-2 justify-center">
+                        <button
+                          onClick={() => navigate(`/contracts/${c.id}`)}
+                          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors text-sm"
+                        >
+                          👁️ Shiko
+                        </button>
+                        <button
+                          onClick={() => handleToggleStatus(c.contract_number)}
+                          className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition-colors text-sm"
+                        >
+                          🔄 Toggle
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
