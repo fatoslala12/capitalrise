@@ -352,7 +352,13 @@ export default function ContractDetails() {
         <div className="space-y-3 text-lg">
           <p><span className="font-bold text-blue-800">🗓 Data e Fillimit:</span> {formatDate(contract.start_date)}</p>
           <p><span className="font-bold text-blue-800">🗓 Data e Mbarimit:</span> {formatDate(contract.finish_date)}</p>
-          <p><span className="font-bold text-blue-800">📊 Statusi:</span> <span className={contract.status.includes("Mbyllur") ? "text-red-600" : "text-green-600"}>{contract.status}</span></p>
+          <p><span className="font-bold text-blue-800">📊 Statusi:</span> <span className={
+            contract.status === "Mbyllur" || contract.status === "Mbyllur me vonese" ? "text-red-600" : 
+            contract.status === "Ne progres" ? "text-blue-600" : 
+            contract.status === "Draft" ? "text-gray-600" : 
+            contract.status === "Anulluar" ? "text-red-600" : 
+            contract.status === "Pezulluar" ? "text-yellow-600" : "text-green-600"
+          }>{contract.status}</span></p>
           {contract.closed_date && <p><span className="font-bold text-blue-800">🔒 Mbyllur më:</span> {formatDate(contract.closed_date)}</p>}
         </div>
       </div>

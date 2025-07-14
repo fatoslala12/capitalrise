@@ -50,9 +50,12 @@ export default function Payments() {
             className="border-2 border-blue-200 p-3 rounded-xl shadow focus:ring-2 focus:ring-blue-300 text-lg text-blue-800 bg-white/80"
           >
             <option value="All">Të gjitha kontratat</option>
-            <option value="Aktive">Aktive</option>
+            <option value="Draft">Draft</option>
+            <option value="Anulluar">Anulluar</option>
+            <option value="Ne progres">Ne progres</option>
+            <option value="Pezulluar">Pezulluar</option>
             <option value="Mbyllur">Mbyllur</option>
-            <option value="Mbyllur me vonesë">Mbyllur me vonesë</option>
+            <option value="Mbyllur me vonese">Mbyllur me vonese</option>
           </select>
         </div>
         {/* Lista e pagesave/kontratave */}
@@ -73,8 +76,12 @@ export default function Payments() {
                   </p>
                 </div>
                 <span className={`text-base font-bold px-4 py-2 rounded-full shadow-md border
-                  ${c.status === 'Aktive' ? 'bg-green-100 text-green-700 border-green-200' :
-                    c.status === 'Mbyllur me vonesë' ? 'bg-red-100 text-red-700 border-red-200' :
+                  ${c.status === 'Ne progres' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                    c.status === 'Draft' ? 'bg-gray-100 text-gray-700 border-gray-200' :
+                    c.status === 'Anulluar' ? 'bg-red-100 text-red-700 border-red-200' :
+                    c.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                    c.status === 'Mbyllur' ? 'bg-green-100 text-green-700 border-green-200' :
+                    c.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700 border-orange-200' :
                     'bg-gray-200 text-gray-700 border-gray-300'}
                 `}>
                   {c.status}

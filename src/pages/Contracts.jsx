@@ -27,7 +27,7 @@ export default function Contracts() {
     start_date: "",
     finish_date: "",
     address: "",
-    status: "Aktive",
+    status: "Ne progres",
     closed_manually: false,
     closed_date: null,
     documents: []
@@ -176,7 +176,7 @@ export default function Contracts() {
         start_date: "",
         finish_date: "",
         address: "",
-        status: "Aktive",
+        status: "Ne progres",
         closed_manually: false,
         closed_date: null,
         documents: []
@@ -210,9 +210,9 @@ export default function Contracts() {
     contract.closed_date = today.toISOString();
 
     if (contract.closed_manually) {
-      contract.status = today > finishDate ? "Mbyllur me vonesë" : "Mbyllur";
+      contract.status = today > finishDate ? "Mbyllur me vonese" : "Mbyllur";
     } else {
-      contract.status = "Aktive";
+      contract.status = "Ne progres";
       contract.closed_date = null;
     }
 
@@ -489,14 +489,14 @@ export default function Contracts() {
   };
 
   // Workflow statuses and transitions
-  const CONTRACT_STATUSES = {
-    DRAFT: 'Draft',
-    ACTIVE: 'Aktive',
-    IN_PROGRESS: 'Në Progres',
-    COMPLETED: 'Përfunduar',
-    CANCELLED: 'Anuluar',
-    ON_HOLD: 'Në Pritje'
-  };
+  const CONTRACT_STATUSES = [
+    "Draft",
+    "Anulluar",
+    "Ne progres",
+    "Pezulluar",
+    "Mbyllur",
+    "Mbyllur me vonese"
+  ];
 
   const STATUS_TRANSITIONS = {
     [CONTRACT_STATUSES.DRAFT]: [CONTRACT_STATUSES.ACTIVE, CONTRACT_STATUSES.CANCELLED],
@@ -509,14 +509,35 @@ export default function Contracts() {
 
   const getStatusColor = (status) => {
     const colors = {
-      [CONTRACT_STATUSES.DRAFT]: 'bg-gray-100 text-gray-800',
-      [CONTRACT_STATUSES.ACTIVE]: 'bg-green-100 text-green-800',
-      [CONTRACT_STATUSES.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
-      [CONTRACT_STATUSES.COMPLETED]: 'bg-purple-100 text-purple-800',
-      [CONTRACT_STATUSES.CANCELLED]: 'bg-red-100 text-red-800',
-      [CONTRACT_STATUSES.ON_HOLD]: 'bg-yellow-100 text-yellow-800'
+      'Draft': 'bg-gray-100 text-gray-800',
+      'Anulluar': 'bg-red-100 text-red-800',
+      'Ne progres': 'bg-blue-100 text-blue-800',
+      'Pezulluar': 'bg-yellow-100 text-yellow-800',
+      'Mbyllur': 'bg-green-100 text-green-800',
+      'Mbyllur me vonese': 'bg-orange-100 text-orange-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  // Llogarit statusin bazuar në datat
+  const calculateStatus = (contract) => {
+    const today = new Date();
+    const startDate = new Date(contract.start_date);
+    const finishDate = new Date(contract.finish_date);
+    
+    if (contract.closed_manually) {
+      return contract.closed_date ? "Mbyllur" : "Mbyllur me vonese";
+    }
+    
+    if (today < startDate) {
+      return "Draft";
+    } else if (today >= startDate && today <= finishDate) {
+      return "Ne progres";
+    } else if (today > finishDate) {
+      return "Mbyllur me vonese";
+    }
+    
+    return "Ne progres"; // default
   };
 
   // Përditëso handleStatusChange për të përfshirë notifikimet
@@ -718,9 +739,12 @@ export default function Contracts() {
               onChange={handleChange} 
               className="p-3 border border-purple-200 rounded-lg text-base focus:ring-2 focus:ring-purple-200 transition-all shadow-sm w-full"
             >
-              <option value="Aktive">Aktive</option>
+              <option value="Draft">Draft</option>
+              <option value="Anulluar">Anulluar</option>
+              <option value="Ne progres">Ne progres</option>
+              <option value="Pezulluar">Pezulluar</option>
               <option value="Mbyllur">Mbyllur</option>
-              <option value="Mbyllur me vonesë">Mbyllur me vonesë</option>
+              <option value="Mbyllur me vonese">Mbyllur me vonese</option>
             </select>
           </div>
           
@@ -743,7 +767,7 @@ export default function Contracts() {
                 start_date: "",
                 finish_date: "",
                 address: "",
-                status: "Aktive",
+                status: "Ne progres",
                 closed_manually: false,
                 closed_date: null,
                 documents: []
@@ -818,9 +842,12 @@ export default function Contracts() {
               className="w-full p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 shadow-sm"
             >
               <option value="all">Të gjitha statuset</option>
-              <option value="Aktive">Aktive</option>
+              <option value="Draft">Draft</option>
+              <option value="Anulluar">Anulluar</option>
+              <option value="Ne progres">Ne progres</option>
+              <option value="Pezulluar">Pezulluar</option>
               <option value="Mbyllur">Mbyllur</option>
-              <option value="Mbyllur me vonesë">Mbyllur me vonesë</option>
+              <option value="Mbyllur me vonese">Mbyllur me vonese</option>
             </select>
           </div>
           
@@ -905,7 +932,10 @@ export default function Contracts() {
                       />
                     </td>
                     <td className="py-4 px-4 align-middle font-bold text-blue-900">{c.contract_number}</td>
-                    <td className="py-4 px-4 align-middle font-semibold text-gray-800">{c.company}</td>
+                    <td className="py-4 px-4 align-middle font-semibold text-blue-700 underline cursor-pointer hover:text-blue-900 transition"
+    onClick={() => navigate(`/contracts/${c.id}`)}>
+  {c.site_name}
+</td>
                     <td className="py-4 px-4 align-middle font-bold text-blue-900">£{vlera.toFixed(2)}</td>
                     <td className="py-4 px-4 align-middle font-bold text-purple-700">£{shpenzuar.toFixed(2)}</td>
                     <td className={`py-4 px-4 align-middle font-bold ${getProfitColor(profit)}`}>
@@ -917,10 +947,10 @@ export default function Contracts() {
                     <td className="py-4 px-4 align-middle">
                       <select
                         value={c.status}
-                        onChange={(e) => handleStatusChange(c.id, e.target.value)}
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(c.status)}`}
+                        onChange={e => handleStatusChange(c.id, e.target.value)}
+                        className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white"
                       >
-                        {STATUS_TRANSITIONS[c.status]?.map(status => (
+                        {CONTRACT_STATUSES.map(status => (
                           <option key={status} value={status}>{status}</option>
                         ))}
                       </select>

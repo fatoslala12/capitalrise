@@ -276,8 +276,12 @@ export default function PaymentDetails() {
               <div className="text-base text-gray-600">Data fillimit: <span className="font-semibold">{contract.start_date}</span></div>
             </div>
             <span className={`text-lg font-bold px-5 py-2 rounded-full shadow border
-              ${contract.status === 'Aktive' ? 'bg-green-100 text-green-700 border-green-200' :
-                contract.status === 'Mbyllur me vonesë' ? 'bg-red-100 text-red-700 border-red-200' :
+              ${contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                contract.status === 'Draft' ? 'bg-gray-100 text-gray-700 border-gray-200' :
+                contract.status === 'Anulluar' ? 'bg-red-100 text-red-700 border-red-200' :
+                contract.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                contract.status === 'Mbyllur' ? 'bg-green-100 text-green-700 border-green-200' :
+                contract.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700 border-orange-200' :
                 'bg-gray-200 text-gray-700 border-gray-300'}
             `}>
               {contract.status}

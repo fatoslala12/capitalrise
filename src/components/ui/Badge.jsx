@@ -39,8 +39,13 @@ export default function Badge({
 // Specialized status badges
 export function StatusBadge({ status, ...props }) {
   const statusConfig = {
+    'Draft': { variant: 'default', icon: '📝' },
+    'Anulluar': { variant: 'danger', icon: '❌' },
+    'Ne progres': { variant: 'primary', icon: '🔄' },
+    'Pezulluar': { variant: 'warning', icon: '⏸️' },
+    'Mbyllur': { variant: 'success', icon: '✅' },
+    'Mbyllur me vonese': { variant: 'danger', icon: '⚠️' },
     'Aktive': { variant: 'success', icon: '✅' },
-    'Mbyllur': { variant: 'info', icon: '✔️' },
     'Mbyllur me vonesë': { variant: 'danger', icon: '⚠️' },
     'Active': { variant: 'success', icon: '✅' },
     'Closed': { variant: 'info', icon: '✔️' },

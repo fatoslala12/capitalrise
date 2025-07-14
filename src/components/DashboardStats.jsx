@@ -205,7 +205,7 @@ export default function DashboardStats() {
 
 
 
-  const activeSites = [...new Set(contracts.filter(c => c.status === "Aktive").map(c => c.siteName))];
+  const activeSites = [...new Set(contracts.filter(c => c.status === "Ne progres").map(c => c.siteName))];
   const activeEmployees = employees.filter(e => e.status === "Aktiv");
 
   // Filtrim i detyrave sipas statusit
