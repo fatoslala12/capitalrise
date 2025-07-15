@@ -29,13 +29,13 @@ exports.getTasksByEmployee = async (req, res) => {
 };
 
 exports.addTask = async (req, res) => {
-  const { assigned_to, title, description, status, site_name, due_date, assigned_by } = req.body;
+  const { assigned_to, title, description, status, site_name, due_date, assigned_by, priority, category } = req.body;
   console.log('[DEBUG] addTask payload:', req.body);
   try {
     const result = await pool.query(`
-      INSERT INTO tasks (assigned_to, title, description, status, site_name, due_date, assigned_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [assigned_to, title, description, status, site_name, due_date, assigned_by]
+      INSERT INTO tasks (assigned_to, title, description, status, site_name, due_date, assigned_by, priority, category)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [assigned_to, title, description, status, site_name, due_date, assigned_by, priority || 'medium', category || 'general']
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
