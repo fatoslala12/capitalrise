@@ -433,7 +433,25 @@ export default function PaymentDetails() {
                 <tbody>
                   {expensesInvoices.map((inv) => (
                     <tr key={inv.id} className="hover:bg-purple-50 transition-all">
-                      <td className="py-2 px-3 font-semibold">{inv.expense_type}</td>
+                      <td className="py-2 px-3 font-semibold">
+                        <button
+                          onClick={() => {
+                            if (inv.receipt_path || inv.file) {
+                              // Shkarko dokumentin
+                              const link = document.createElement('a');
+                              link.href = inv.receipt_path || inv.file;
+                              link.download = `${inv.expense_type}_${inv.date}.pdf`;
+                              link.click();
+                            } else {
+                              alert('Nuk ka dokument të bashkëngjitur për këtë shpenzim');
+                            }
+                          }}
+                          className="text-blue-600 hover:text-blue-800 underline cursor-pointer transition-colors"
+                          title="Klikoni për të shkarkuar dokumentin"
+                        >
+                          {inv.expense_type}
+                        </button>
+                      </td>
                       <td className="py-2 px-3 text-center">{formatDate(inv.date)}</td>
                       <td className="py-2 px-3 text-center font-bold text-blue-700">£{Number(inv.gross || 0).toFixed(2)}</td>
                       <td className="py-2 px-3 text-center font-bold text-green-700">£{Number(inv.net || 0).toFixed(2)}</td>
@@ -473,6 +491,13 @@ export default function PaymentDetails() {
                 Nuk ka expenses për këtë kontratë
               </div>
             )}
+            
+            {/* Note për shkarkimin */}
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-700 text-center">
+                💡 <strong>Shënim:</strong> Klikoni në llojin e shpenzimit për të shkarkuar dokumentin e bashkëngjitur
+              </p>
+            </div>
           </div>
         </div>
 
@@ -567,6 +592,41 @@ export default function PaymentDetails() {
               <span className="text-xl">💾</span> Shto Shpenzim
             </button>
           </form>
+        </div>
+
+        {/* Sugjerime për optimizim */}
+        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl shadow-lg border border-yellow-200 p-6 mb-4">
+          <h4 className="text-lg font-bold text-yellow-800 mb-3 flex items-center gap-2">💡 Sugjerime për Optimizim</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-blue-600">📊</span>
+                <span>Grafikë për trendin e shpenzimeve</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-green-600">📅</span>
+                <span>Filtra sipas datës</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-purple-600">🔍</span>
+                <span>Kërkim në shpenzime</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-red-600">📤</span>
+                <span>Eksport në Excel/PDF</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-indigo-600">🔔</span>
+                <span>Notifikime për pagesat</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-pink-600">📱</span>
+                <span>Drag & drop për files</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       {/* Animacion fade-in */}
