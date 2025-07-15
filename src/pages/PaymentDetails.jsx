@@ -2,6 +2,15 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 
 // Funksion për formatimin e datës
 const formatDate = (dateString) => {
@@ -33,6 +42,8 @@ export default function PaymentDetails() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
   const [newExpenseInvoice, setNewExpenseInvoice] = useState({
     companyName: "",
     expense_type: "",
@@ -125,23 +136,28 @@ export default function PaymentDetails() {
     }
 
     let fileContent = "";
+    let receiptPath = null;
+    
     if (newExpenseInvoice.file) {
       const reader = new FileReader();
       reader.onloadend = async () => {
         fileContent = reader.result;
-        await saveExpense(fileContent);
+        // Ruaj si receipt_path në vend të file
+        receiptPath = fileContent;
+        await saveExpense(receiptPath);
       };
       reader.readAsDataURL(newExpenseInvoice.file);
     } else {
-      await saveExpense("");
+      await saveExpense(null);
     }
 
-    async function saveExpense(fileContent) {
+    async function saveExpense(receiptPath) {
       const expenseInvoice = {
         ...newExpenseInvoice,
         contract_number,
         fileName: newExpenseInvoice.file?.name || "",
-        file: fileContent,
+        receipt_path: receiptPath, // Ruaj në receipt_path
+        file: null, // Mos ruaj në file
       };
       try {
         await axios.post(
@@ -296,6 +312,21 @@ export default function PaymentDetails() {
   const contractValue = parseFloat(contract?.contract_value || 0);
   const remainingAmount = contractValue - totalOverallGross;
 
+  // Filtro shpenzimet sipas kërkimit dhe datës
+  const filteredExpenses = expensesInvoices.filter(expense => {
+    const matchesSearch = expense.expense_type.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDateFilter = !dateFilter.start || !dateFilter.end || 
+      (expense.date >= dateFilter.start && expense.date <= dateFilter.end);
+    return matchesSearch && matchesDateFilter;
+  });
+
+  // Përgatit të dhënat për grafikun
+  const chartData = filteredExpenses.map(expense => ({
+    date: formatDate(expense.date),
+    amount: parseFloat(expense.gross || 0),
+    type: expense.expense_type
+  })).sort((a, b) => new Date(a.date) - new Date(b.date));
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
@@ -414,110 +445,154 @@ export default function PaymentDetails() {
             )}
           </div>
 
-          {/* Shpenzimet/Faturat */}
-          <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 overflow-x-auto">
-            <h4 className="text-xl font-bold text-blue-800 mb-2">🧾 Shpenzime & Fatura ({expensesInvoices.length} gjithsej)</h4>
-            {expensesInvoices.length > 0 ? (
-              <table className="w-full text-base text-blue-900">
-                <thead className="bg-gradient-to-r from-blue-100 to-purple-100">
-                  <tr>
-                    <th className="py-3 px-3 text-left">Lloji</th>
-                    <th className="py-3 px-3 text-center">Data</th>
-                    <th className="py-3 px-3 text-center">Bruto (£)</th>
-                    <th className="py-3 px-3 text-center">Neto (£)</th>
-                    <th className="py-3 px-3 text-center">TVSH (£)</th>
-                    <th className="py-3 px-3 text-center">Statusi</th>
-                    <th className="py-3 px-3 text-center">Fshi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {expensesInvoices.map((inv) => (
-                    <tr key={inv.id} className="hover:bg-purple-50 transition-all">
-                      <td className="py-2 px-3 font-semibold">
+          {/* Grafikë i trendit të shpenzimeve */}
+          <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4">
+            <h4 className="text-xl font-bold text-blue-800 mb-2">📊 Trendi i Shpenzimeve</h4>
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => [`£${value}`, 'Shuma']} />
+                  <Line type="monotone" dataKey="amount" stroke="#8884d8" strokeWidth={2} dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center py-8 text-gray-500 italic">
+                Nuk ka të dhëna për grafikun
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Totali i përgjithshëm - full row */}
+        <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="text-xl font-bold text-blue-900">Totali i Përgjithshëm:</div>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-10">
+            <div className="text-lg font-bold text-blue-700">Bruto: £{totalOverallGross.toFixed(2)}</div>
+            <div className="text-lg font-bold text-green-700">Neto: £{totalOverallNet.toFixed(2)}</div>
+          </div>
+        </div>
+
+        {/* Filtra dhe kërkim për shpenzimet */}
+        <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 mb-6">
+          <h4 className="text-xl font-bold text-blue-800 mb-4">🔍 Filtra dhe Kërkim</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input
+              type="text"
+              placeholder="Kërko në shpenzime..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
+            />
+            <input
+              type="date"
+              placeholder="Data fillimit"
+              value={dateFilter.start}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
+              className="p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
+            />
+            <input
+              type="date"
+              placeholder="Data fundit"
+              value={dateFilter.end}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
+              className="p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Shpenzimet/Faturat */}
+        <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 overflow-x-auto mb-10">
+          <h4 className="text-xl font-bold text-blue-800 mb-2">🧾 Shpenzime & Fatura ({filteredExpenses.length} gjithsej)</h4>
+          {filteredExpenses.length > 0 ? (
+            <table className="w-full text-base text-blue-900">
+              <thead className="bg-gradient-to-r from-blue-100 to-purple-100">
+                <tr>
+                  <th className="py-3 px-3 text-left">Lloji</th>
+                  <th className="py-3 px-3 text-center">Data</th>
+                  <th className="py-3 px-3 text-center">Bruto (£)</th>
+                  <th className="py-3 px-3 text-center">Neto (£)</th>
+                  <th className="py-3 px-3 text-center">TVSH (£)</th>
+                  <th className="py-3 px-3 text-center">Statusi</th>
+                  <th className="py-3 px-3 text-center">Fshi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredExpenses.map((inv) => (
+                  <tr key={inv.id} className="hover:bg-purple-50 transition-all">
+                    <td className="py-2 px-3 font-semibold">
+                      {(inv.receipt_path || inv.file) ? (
                         <button
                           onClick={() => {
-                            if (inv.receipt_path || inv.file) {
-                              // Shkarko dokumentin
-                              const link = document.createElement('a');
-                              link.href = inv.receipt_path || inv.file;
-                              link.download = `${inv.expense_type}_${inv.date}.pdf`;
-                              link.click();
-                            } else {
-                              alert('Nuk ka dokument të bashkëngjitur për këtë shpenzim');
-                            }
+                            const link = document.createElement('a');
+                            link.href = inv.receipt_path || inv.file;
+                            link.download = `${inv.expense_type}_${inv.date}.pdf`;
+                            link.click();
                           }}
                           className="text-blue-600 hover:text-blue-800 underline cursor-pointer transition-colors"
                           title="Klikoni për të shkarkuar dokumentin"
                         >
                           {inv.expense_type}
                         </button>
-                      </td>
-                      <td className="py-2 px-3 text-center">{formatDate(inv.date)}</td>
-                      <td className="py-2 px-3 text-center font-bold text-blue-700">£{Number(inv.gross || 0).toFixed(2)}</td>
-                      <td className="py-2 px-3 text-center font-bold text-green-700">£{Number(inv.net || 0).toFixed(2)}</td>
-                      <td className="py-2 px-3 text-center font-bold text-purple-700">£{Number(inv.tax || 0).toFixed(2)}</td>
-                      <td className="py-2 px-3 text-center">
-                        <button
-                          onClick={() => togglePaid(inv.id)}
-                          className={`px-3 py-1 rounded-full font-bold shadow border text-sm transition-all duration-200
-                            ${inv.paid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}
-                          `}
-                        >
-                          {inv.paid ? 'Paguar' : 'Jo i paguar'}
-                        </button>
-                      </td>
-                      <td className="py-2 px-3 text-center">
-                        <button
-                          onClick={() => handleDelete(inv.id)}
-                          className="px-3 py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg text-base font-semibold shadow hover:from-pink-600 hover:to-red-600 transition-all"
-                        >
-                          🗑
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-blue-50 font-bold">
-                    <td colSpan={2} className="py-2 px-3 text-right">Totali:</td>
-                    <td className="py-2 px-3 text-center text-blue-700">£{totalInvoicesGross.toFixed(2)}</td>
-                    <td className="py-2 px-3 text-center text-green-700">£{totalInvoicesNet.toFixed(2)}</td>
-                    <td colSpan={3}></td>
+                      ) : (
+                        <span className="text-gray-600">{inv.expense_type}</span>
+                      )}
+                    </td>
+                    <td className="py-2 px-3 text-center">{formatDate(inv.date)}</td>
+                    <td className="py-2 px-3 text-center font-bold text-blue-700">£{Number(inv.gross || 0).toFixed(2)}</td>
+                    <td className="py-2 px-3 text-center font-bold text-green-700">£{Number(inv.net || 0).toFixed(2)}</td>
+                    <td className="py-2 px-3 text-center font-bold text-purple-700">£{Number(inv.tax || 0).toFixed(2)}</td>
+                    <td className="py-2 px-3 text-center">
+                      <button
+                        onClick={() => togglePaid(inv.id)}
+                        className={`px-3 py-1 rounded-full font-bold shadow border text-sm transition-all duration-200
+                          ${inv.paid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}
+                        `}
+                      >
+                        {inv.paid ? 'Paguar' : 'Jo i paguar'}
+                      </button>
+                    </td>
+                    <td className="py-2 px-3 text-center">
+                      <button
+                        onClick={() => handleDelete(inv.id)}
+                        className="px-3 py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg text-base font-semibold shadow hover:from-pink-600 hover:to-red-600 transition-all"
+                      >
+                        🗑
+                      </button>
+                    </td>
                   </tr>
-                </tfoot>
-              </table>
-            ) : (
-              <div className="text-center py-8 text-gray-500 italic">
-                Nuk ka expenses për këtë kontratë
-              </div>
-            )}
-            
-            {/* Note për shkarkimin */}
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-700 text-center">
-                💡 <strong>Shënim:</strong> Klikoni në llojin e shpenzimit për të shkarkuar dokumentin e bashkëngjitur
-              </p>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-blue-50 font-bold">
+                  <td colSpan={2} className="py-2 px-3 text-right">Totali:</td>
+                  <td className="py-2 px-3 text-center text-blue-700">£{filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0).toFixed(2)}</td>
+                  <td className="py-2 px-3 text-center text-green-700">£{filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.net || 0), 0).toFixed(2)}</td>
+                  <td colSpan={3}></td>
+                </tr>
+              </tfoot>
+            </table>
+          ) : (
+            <div className="text-center py-8 text-gray-500 italic">
+              Nuk ka expenses për këtë kontratë
             </div>
+          )}
+          
+          {/* Note për shkarkimin */}
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-700 text-center">
+              💡 <strong>Shënim:</strong> Klikoni në llojin e shpenzimit për të shkarkuar dokumentin e bashkëngjitur
+            </p>
           </div>
         </div>
 
-        {/* Totali i përgjithshëm dhe Para të mbetura */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-          {/* Totali i përgjithshëm */}
-          <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="text-xl font-bold text-blue-900">Totali i Përgjithshëm:</div>
-            <div className="flex flex-col md:flex-row gap-4 md:gap-10">
-              <div className="text-lg font-bold text-blue-700">Bruto: £{totalOverallGross.toFixed(2)}</div>
-              <div className="text-lg font-bold text-green-700">Neto: £{totalOverallNet.toFixed(2)}</div>
-            </div>
-          </div>
-
-          {/* Para të mbetura */}
-          <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl shadow-xl border border-green-200 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="text-xl font-bold text-green-900">💰 Para të Mbetura:</div>
-            <div className={`text-2xl font-bold ${remainingAmount >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-              £{remainingAmount.toFixed(2)}
-            </div>
+        {/* Para të mbetura - zbrit një rresht më poshtë */}
+        <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl shadow-xl border border-green-200 p-6 mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="text-xl font-bold text-green-900">💰 Para të Mbetura:</div>
+          <div className={`text-2xl font-bold ${remainingAmount >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+            £{remainingAmount.toFixed(2)}
           </div>
         </div>
 
@@ -592,41 +667,6 @@ export default function PaymentDetails() {
               <span className="text-xl">💾</span> Shto Shpenzim
             </button>
           </form>
-        </div>
-
-        {/* Sugjerime për optimizim */}
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl shadow-lg border border-yellow-200 p-6 mb-4">
-          <h4 className="text-lg font-bold text-yellow-800 mb-3 flex items-center gap-2">💡 Sugjerime për Optimizim</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-blue-600">📊</span>
-                <span>Grafikë për trendin e shpenzimeve</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-green-600">📅</span>
-                <span>Filtra sipas datës</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-purple-600">🔍</span>
-                <span>Kërkim në shpenzime</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-red-600">📤</span>
-                <span>Eksport në Excel/PDF</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-indigo-600">🔔</span>
-                <span>Notifikime për pagesat</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-pink-600">📱</span>
-                <span>Drag & drop për files</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       {/* Animacion fade-in */}
