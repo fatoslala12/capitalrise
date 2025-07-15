@@ -23,19 +23,33 @@ exports.getAllExpenses = async (req, res) => {
 
 exports.getExpensesByContract = async (req, res) => {
   const { contract_number } = req.params;
+  console.log('[DEBUG] getExpensesByContract called with contract_number:', contract_number);
+  
   try {
     const contractRes = await pool.query(
       'SELECT id FROM contracts WHERE contract_number = $1',
       [contract_number]
     );
-    if (contractRes.rows.length === 0) return res.json([]);
+    console.log('[DEBUG] Contract query result:', contractRes.rows);
+    
+    if (contractRes.rows.length === 0) {
+      console.log('[DEBUG] No contract found for contract_number:', contract_number);
+      return res.json([]);
+    }
+    
     const contract_id = contractRes.rows[0].id;
+    console.log('[DEBUG] Found contract_id:', contract_id);
+    
     const result = await pool.query(
-      'SELECT * FROM expenses_invoices WHERE contract_id = $1',
+      'SELECT * FROM expenses_invoices WHERE contract_id = $1 ORDER BY date DESC',
       [contract_id]
     );
+    console.log('[DEBUG] Expenses query result:', result.rows);
+    console.log('[DEBUG] Number of expenses found:', result.rows.length);
+    
     res.json(result.rows);
   } catch (err) {
+    console.error('[ERROR] getExpensesByContract error:', err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -84,24 +98,41 @@ exports.deleteExpense = async (req, res) => {
 exports.addExpenseForContract = async (req, res) => {
   const { contract_number } = req.params;
   const fields = req.body;
+  console.log('[DEBUG] addExpenseForContract called with contract_number:', contract_number);
+  console.log('[DEBUG] Fields received:', fields);
+  
   try {
     const contractRes = await pool.query(
       'SELECT id FROM contracts WHERE contract_number = $1',
       [contract_number]
     );
-    if (contractRes.rows.length === 0) return res.status(400).json({ error: 'Kontrata nuk u gjet' });
+    console.log('[DEBUG] Contract query result:', contractRes.rows);
+    
+    if (contractRes.rows.length === 0) {
+      console.log('[DEBUG] No contract found for contract_number:', contract_number);
+      return res.status(400).json({ error: 'Kontrata nuk u gjet' });
+    }
+    
     const contract_id = contractRes.rows[0].id;
+    console.log('[DEBUG] Found contract_id:', contract_id);
+    
     const result = await pool.query(
       `INSERT INTO expenses_invoices (contract_id, expense_type, date, gross, net, tax, paid, receipt_path)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
       [contract_id, fields.expense_type, fields.date, fields.gross, fields.net, fields.tax, fields.paid, fields.receipt_path || null]
     );
+    console.log('[DEBUG] Insert result:', result.rows[0]);
+    
     const all = await pool.query(
-      'SELECT * FROM expenses_invoices WHERE contract_id = $1',
+      'SELECT * FROM expenses_invoices WHERE contract_id = $1 ORDER BY date DESC',
       [contract_id]
     );
+    console.log('[DEBUG] All expenses for contract:', all.rows);
+    console.log('[DEBUG] Total expenses found:', all.rows.length);
+    
     res.json(all.rows);
   } catch (err) {
+    console.error('[ERROR] addExpenseForContract error:', err);
     res.status(400).json({ error: err.message });
   }
 };

@@ -3,6 +3,28 @@ import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 
+// Funksion për formatimin e datës
+const formatDate = (dateString) => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('sq-AL', {
+    day: '2-digit',
+    month: '2-digit', 
+    year: 'numeric'
+  });
+};
+
+// Funksion për formatimin e datës së kontratës
+const formatContractDate = (dateString) => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('sq-AL', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+};
+
 export default function PaymentDetails() {
   const { contract_number } = useParams();
   const [contract, setContract] = useState(null);
@@ -270,6 +292,10 @@ export default function PaymentDetails() {
   const totalOverallGross = totalBruto + totalInvoicesGross;
   const totalOverallNet = totalNeto + totalInvoicesNet;
 
+  // Llogaritja e parave të mbetura
+  const contractValue = parseFloat(contract?.contract_value || 0);
+  const remainingAmount = contractValue - totalOverallGross;
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
@@ -316,12 +342,21 @@ export default function PaymentDetails() {
         <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-4 flex items-center gap-3">
           <span className="text-5xl">💼</span> Kontrata #{contract_number}
         </h2>
+        
+        {/* TITULLI I RI: Shpenzimet për kontratën */}
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-xl mb-6 shadow-lg">
+          <h3 className="text-2xl font-bold text-center">
+            💰 Shpenzimet për kontratën: <span className="text-yellow-300">{contract.site_name}</span>
+          </h3>
+        </div>
+
         {contract && (
           <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow p-6 mb-6 text-blue-900 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h3 className="text-2xl font-bold mb-1 flex items-center gap-2">📌 {contract.site_name}</h3>
               <div className="text-lg">Kompania: <span className="font-semibold text-blue-700">{contract.company}</span></div>
-              <div className="text-base text-gray-600">Data fillimit: <span className="font-semibold">{contract.start_date}</span></div>
+              <div className="text-base text-gray-600">Data fillimit: <span className="font-semibold">{formatContractDate(contract.start_date)}</span></div>
+              <div className="text-base text-gray-600">Vlera e kontratës: <span className="font-semibold text-green-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</span></div>
             </div>
             <span className={`text-lg font-bold px-5 py-2 rounded-full shadow border
               ${contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700 border-blue-200' :
@@ -399,7 +434,7 @@ export default function PaymentDetails() {
                   {expensesInvoices.map((inv) => (
                     <tr key={inv.id} className="hover:bg-purple-50 transition-all">
                       <td className="py-2 px-3 font-semibold">{inv.expense_type}</td>
-                      <td className="py-2 px-3 text-center">{inv.date ? new Date(inv.date).toLocaleDateString('en-GB') : '-'}</td>
+                      <td className="py-2 px-3 text-center">{formatDate(inv.date)}</td>
                       <td className="py-2 px-3 text-center font-bold text-blue-700">£{Number(inv.gross || 0).toFixed(2)}</td>
                       <td className="py-2 px-3 text-center font-bold text-green-700">£{Number(inv.net || 0).toFixed(2)}</td>
                       <td className="py-2 px-3 text-center font-bold text-purple-700">£{Number(inv.tax || 0).toFixed(2)}</td>
@@ -441,12 +476,23 @@ export default function PaymentDetails() {
           </div>
         </div>
 
-        {/* Totali i përgjithshëm */}
-        <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="text-xl font-bold text-blue-900">Totali i Përgjithshëm:</div>
-          <div className="flex flex-col md:flex-row gap-4 md:gap-10">
-            <div className="text-lg font-bold text-blue-700">Bruto: £{totalOverallGross.toFixed(2)}</div>
-            <div className="text-lg font-bold text-green-700">Neto: £{totalOverallNet.toFixed(2)}</div>
+        {/* Totali i përgjithshëm dhe Para të mbetura */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+          {/* Totali i përgjithshëm */}
+          <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="text-xl font-bold text-blue-900">Totali i Përgjithshëm:</div>
+            <div className="flex flex-col md:flex-row gap-4 md:gap-10">
+              <div className="text-lg font-bold text-blue-700">Bruto: £{totalOverallGross.toFixed(2)}</div>
+              <div className="text-lg font-bold text-green-700">Neto: £{totalOverallNet.toFixed(2)}</div>
+            </div>
+          </div>
+
+          {/* Para të mbetura */}
+          <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl shadow-xl border border-green-200 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="text-xl font-bold text-green-900">💰 Para të Mbetura:</div>
+            <div className={`text-2xl font-bold ${remainingAmount >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+              £{remainingAmount.toFixed(2)}
+            </div>
           </div>
         </div>
 
