@@ -76,7 +76,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6 text-center">📊 Paneli i Administrimit të Orëve</h2>
+      <h2 className="text-4xl font-extrabold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">📊 Paneli i Administrimit të Orëve</h2>
 
       <WorkHoursTable
         employees={employees}

@@ -30,6 +30,10 @@ export default function EmployeeDetails() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [searchDoc, setSearchDoc] = useState('');
   const [weekNotes, setWeekNotes] = useState({});
+  // Shto state për detyrat
+  const [tasks, setTasks] = useState([]);
+  const [taskStatusFilter, setTaskStatusFilter] = useState("all");
+  const [taskPriorityFilter, setTaskPriorityFilter] = useState("all");
 
   // Merr të gjithë punonjësit për workplace
   useEffect(() => {
@@ -90,6 +94,16 @@ export default function EmployeeDetails() {
     })
       .then(res => setAttachments(res.data))
       .catch(() => setAttachments([]));
+  }, [id, token]);
+
+  // Merr detyrat e punonjësit
+  useEffect(() => {
+    if (!id) return;
+    axios.get(`https://building-system.onrender.com/api/tasks?assignedTo=${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => setTasks(res.data || []))
+      .catch(() => setTasks([]));
   }, [id, token]);
 
   const handleChange = (e) => {
@@ -306,8 +320,11 @@ export default function EmployeeDetails() {
     datasets: [
       {
         data: Object.values(siteHours),
-        backgroundColor: Object.keys(siteHours).map(site => siteColors[site] || 'gray'),
-        borderWidth: 1,
+        backgroundColor: Object.keys(siteHours).map(site => getSiteColor(site)),
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverBorderWidth: 3,
+        hoverBorderColor: '#3b82f6',
       },
     ],
   };
@@ -331,6 +348,39 @@ export default function EmployeeDetails() {
     for (let i = 0; i < site.length; i++) hash = site.charCodeAt(i) + ((hash << 5) - hash);
     return `hsl(${hash % 360}, 70%, 80%)`;
   }
+
+  // Funksion për të marrë ngjyrën e prioritetit
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return 'text-red-600 bg-red-100 border-red-200';
+      case 'medium': return 'text-yellow-600 bg-yellow-100 border-yellow-200';
+      case 'low': return 'text-green-600 bg-green-100 border-green-200';
+      default: return 'text-gray-600 bg-gray-100 border-gray-200';
+    }
+  };
+
+  // Funksion për të marrë ikonën e prioritetit
+  const getPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'high': return '🔴';
+      case 'medium': return '🟡';
+      case 'low': return '🟢';
+      default: return '⚪';
+    }
+  };
+
+  // Funksion për të marrë emrin e kategorisë
+  const getCategoryName = (category) => {
+    const categories = {
+      'general': '📋 E Përgjithshme',
+      'construction': '🏗️ Ndërtim',
+      'maintenance': '🔧 Mirëmbajtje',
+      'cleaning': '🧹 Pastrim',
+      'safety': '🛡️ Siguri',
+      'admin': '📝 Administrativ'
+    };
+    return categories[category] || category;
+  };
 
   // Funksion për export PDF
   function exportProfileToPDF() {
@@ -537,7 +587,7 @@ export default function EmployeeDetails() {
                       </span>
                     </p>
                     <p><span className="font-bold">🏢 Vendet e punës:</span> {workplace?.join(", ") || <span className="italic text-gray-400">N/A</span>}</p>
-                    <p><span className="font-bold">👨‍👩‍�� Next of Kin:</span> {next_of_kin || <span className="italic text-gray-400">N/A</span>}</p>
+                    <p><span className="font-bold">👨‍👩‍👧 Next of Kin:</span> {next_of_kin || <span className="italic text-gray-400">N/A</span>}</p>
                     <p><span className="font-bold">👨‍👩‍👧 Next of Kin Tel:</span> {next_of_kin_phone || <span className="italic text-gray-400">N/A</span>}</p>
                     <p><span className="font-bold">🎓 Kualifikimi:</span> {qualification || <span className="italic text-gray-400">N/A</span>}</p>
                   </>
@@ -685,8 +735,12 @@ export default function EmployeeDetails() {
                       <span
                         key={idx}
                         title={`Site: ${entry.site}\nOrë: ${entry.hours}\nPagesë: £${(entry.hours * entry.rate).toFixed(2)}`}
-                        className="inline-block w-3 h-3 rounded-full border border-gray-200 shadow-md transition-all duration-300"
-                        style={{ background: siteColors[entry.site] || 'gray', opacity: 0.85 }}
+                        className="inline-block w-4 h-4 rounded-full border-2 border-white shadow-lg transition-all duration-300 hover:scale-125"
+                        style={{ 
+                          background: getSiteColor(entry.site), 
+                          opacity: 0.9,
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                        }}
                       />
                     ))}
                   </div>
@@ -694,13 +748,13 @@ export default function EmployeeDetails() {
               }
               return null;
             }}
-            className="border-2 border-blue-200 rounded-2xl shadow-xl w-full"
+            className="border-2 border-blue-200 rounded-2xl shadow-xl w-full text-lg"
           />
-          <div className="flex gap-4 mt-6 flex-wrap">
+          <div className="flex gap-4 mt-6 flex-wrap justify-center">
             {Object.entries(siteColors).map(([site, color]) => (
-              <div key={site} className="flex items-center gap-2">
-                <span className="inline-block w-4 h-4 rounded-full" style={{ background: color }}></span>
-                <span className="text-base font-semibold">{site}</span>
+              <div key={site} className="flex items-center gap-2 bg-white/80 rounded-xl px-4 py-2 shadow-md border border-blue-100">
+                <span className="inline-block w-5 h-5 rounded-full border-2 border-white shadow-md" style={{ background: getSiteColor(site) }}></span>
+                <span className="text-lg font-bold text-blue-800">{site}</span>
               </div>
             ))}
           </div>
@@ -782,9 +836,147 @@ export default function EmployeeDetails() {
 
         {/* Pie chart për ndarjen e orëve sipas site-ve */}
         <div className="w-full bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10 mt-10 flex flex-col items-center">
-          <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">📊 Ndarja e Orëve sipas Site-ve</h3>
-          <div className="w-full max-w-xs">
-            <Pie data={pieData} />
+          <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-6 flex items-center gap-2">📊 Ndarja e Orëve sipas Site-ve</h3>
+          <div className="w-full max-w-md">
+            <Pie data={pieData} options={{
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: {
+                    font: {
+                      size: 14,
+                      weight: 'bold'
+                    },
+                    padding: 20
+                  }
+                }
+              }
+            }} />
+          </div>
+        </div>
+
+        {/* Seksioni i Detyrave */}
+        <div className="w-full bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-8 mb-10 mt-10">
+          <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-6 flex items-center gap-2">📋 Detyrat e Mia</h3>
+          
+          {/* Filtra për detyrat */}
+          <div className="flex flex-wrap gap-4 mb-6 items-center">
+            <label className="font-semibold text-blue-700 text-lg">Filtro sipas statusit:</label>
+            <select 
+              value={taskStatusFilter} 
+              onChange={e => setTaskStatusFilter(e.target.value)} 
+              className="p-3 rounded-xl border-2 border-blue-200 text-lg"
+            >
+              <option value="all">Të gjitha</option>
+              <option value="pending">⏳ Në pritje</option>
+              <option value="in_progress">🔄 Në progres</option>
+              <option value="completed">✅ Përfunduar</option>
+              <option value="cancelled">❌ Anuluar</option>
+            </select>
+            
+            <label className="font-semibold text-blue-700 text-lg ml-4">Filtro sipas prioritetit:</label>
+            <select 
+              value={taskPriorityFilter} 
+              onChange={e => setTaskPriorityFilter(e.target.value)} 
+              className="p-3 rounded-xl border-2 border-blue-200 text-lg"
+            >
+              <option value="all">Të gjitha</option>
+              <option value="high">🔴 E lartë</option>
+              <option value="medium">🟡 Mesatare</option>
+              <option value="low">🟢 E ulët</option>
+            </select>
+          </div>
+
+          {/* Lista e detyrave */}
+          <div className="grid gap-4">
+            {tasks
+              .filter(task => taskStatusFilter === "all" || task.status === taskStatusFilter)
+              .filter(task => taskPriorityFilter === "all" || task.priority === taskPriorityFilter)
+              .map((task, index) => (
+                <div key={task.id || index} className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 shadow-lg border border-blue-200 hover:shadow-xl transition-all duration-300">
+                  <div className="flex flex-col md:flex-row md:items-start gap-4">
+                    {/* Prioriteti dhe statusi */}
+                    <div className="flex flex-col gap-2 min-w-[200px]">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{getPriorityIcon(task.priority)}</span>
+                        <span className={`px-3 py-1 rounded-full text-sm font-bold border ${getPriorityColor(task.priority)}`}>
+                          {task.priority === 'high' ? 'E lartë' : task.priority === 'medium' ? 'Mesatare' : 'E ulët'}
+                        </span>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold border ${
+                        task.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' :
+                        task.status === 'in_progress' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                        task.status === 'cancelled' ? 'bg-red-100 text-red-700 border-red-200' :
+                        'bg-yellow-100 text-yellow-700 border-yellow-200'
+                      }`}>
+                        {task.status === 'completed' ? '✅ Përfunduar' :
+                         task.status === 'in_progress' ? '🔄 Në progres' :
+                         task.status === 'cancelled' ? '❌ Anuluar' : '⏳ Në pritje'}
+                      </span>
+                    </div>
+
+                    {/* Detajet kryesore */}
+                    <div className="flex-1">
+                      <h4 className="text-xl font-bold text-blue-800 mb-2">{task.title}</h4>
+                      <p className="text-gray-700 mb-3 text-lg">{task.description}</p>
+                      
+                      <div className="flex flex-wrap gap-4 text-base">
+                        <span className="flex items-center gap-2">
+                          <span className="text-lg">📅</span>
+                          <span className="font-semibold">Data:</span>
+                          <span>{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</span>
+                        </span>
+                        
+                        <span className="flex items-center gap-2">
+                          <span className="text-lg">🏷️</span>
+                          <span className="font-semibold">Kategoria:</span>
+                          <span>{getCategoryName(task.category)}</span>
+                        </span>
+                        
+                        {task.site && (
+                          <span className="flex items-center gap-2">
+                            <span className="text-lg">🏗️</span>
+                            <span className="font-semibold">Site:</span>
+                            <span className="px-2 py-1 rounded-full text-sm font-bold" style={{ background: getSiteColor(task.site), color: '#222' }}>
+                              {task.site}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Butona e veprimeve */}
+                    <div className="flex flex-col gap-2 min-w-[120px]">
+                      <button 
+                        onClick={() => navigate(`/tasks/${task.id}`)}
+                        className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                      >
+                        👁️ Shiko
+                      </button>
+                      <button 
+                        onClick={() => navigate('/tasks')}
+                        className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-4 py-2 rounded-xl font-bold shadow hover:from-green-600 hover:to-blue-600 transition-all duration-300"
+                      >
+                        📋 Të gjitha
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            
+            {tasks.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📋</div>
+                <h4 className="text-xl font-bold text-gray-600 mb-2">Nuk ka detyra të caktuara</h4>
+                <p className="text-gray-500 text-lg">Ky punonjës nuk ka detyra të caktuara për momentin.</p>
+                <button 
+                  onClick={() => navigate('/tasks')}
+                  className="mt-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                >
+                  📋 Shiko të gjitha detyrat
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
