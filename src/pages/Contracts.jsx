@@ -54,8 +54,6 @@ export default function Contracts() {
   // Update contracts when data changes
   useEffect(() => {
     if (contractsData) {
-      console.log('📋 Contracts data received:', contractsData);
-      console.log('📊 Sample contract:', contractsData[0]);
       setContracts(contractsData);
       setLoading(false);
     }
@@ -546,16 +544,12 @@ export default function Contracts() {
 
   // Përditëso handleStatusChange për të përfshirë notifikimet
   const handleStatusChange = async (contractId, newStatus) => {
-    console.log('🔄 handleStatusChange called:', { contractId, newStatus });
-    
     try {
       const response = await api.put(`/api/contracts/${contractId}`, { status: newStatus });
-      console.log('✅ API response:', response.data);
       
       // Send notification
       const contract = contracts.find(c => c.id === contractId);
       if (contract) {
-        console.log('📧 Sending notification for contract:', contract);
         await NotificationService.notifyContractStatusChange(contract, newStatus, contract.id);
         
         // Special notification for completion
@@ -565,7 +559,6 @@ export default function Contracts() {
       }
       
       toast.success(`Statusi i kontratës u ndryshua në "${newStatus}"`);
-      console.log('🔄 Refetching contracts...');
       refetchContracts();
     } catch (err) {
       console.error('❌ Error updating status:', err);
@@ -926,7 +919,6 @@ export default function Contracts() {
             </thead>
             <tbody>
               {paginatedContracts.map((c, index) => {
-                console.log('🔍 Rendering contract:', { id: c.id, status: c.status, contract_number: c.contract_number });
                 const vlera = parseFloat(c.contract_value) || 0;
                 const shpenzuar = (Array.isArray(workHoursData) && workHoursData.length > 0)
                   ? workHoursData.filter(wh => wh.contract_id === c.id && wh.hours && wh.hourly_rate)
