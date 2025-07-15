@@ -69,6 +69,12 @@ export default function Contracts() {
     enableCache: true
   });
 
+  // Use optimized API hook for expenses
+  const { data: expensesData } = useApi("/api/expenses", {
+    cacheKey: "expenses",
+    enableCache: true
+  });
+
   // Update contracts when data changes
   useEffect(() => {
     if (contractsData) {
@@ -329,16 +335,20 @@ export default function Contracts() {
   const calculateContractProfit = useCallback((contract) => {
     const contractValue = parseFloat(contract.contract_value) || 0;
     
-    // Get expenses for this contract
-    const contractExpenses = workHoursData?.filter(wh => 
-      wh.contract_id === contract.id
-    ) || [];
+    // Llogarit shpenzimet nga orët e punës
+    const workHoursSpent = (Array.isArray(workHoursData) && workHoursData.length > 0)
+      ? workHoursData.filter(wh => wh.contract_id === contract.id && wh.hours && wh.hourly_rate)
+          .reduce((sum, wh) => sum + (parseFloat(wh.hours) * parseFloat(wh.hourly_rate)), 0)
+      : 0;
     
-    const totalExpenses = contractExpenses.reduce((sum, expense) => {
-      const hours = parseFloat(expense.hours) || 0;
-      const rate = parseFloat(expense.hourly_rate) || 0;
-      return sum + (hours * rate);
-    }, 0);
+    // Llogarit shpenzimet nga expenses/faturat
+    const expensesSpent = (Array.isArray(expensesData) && expensesData.length > 0)
+      ? expensesData.filter(exp => exp.contract_number === contract.contract_number)
+          .reduce((sum, exp) => sum + (parseFloat(exp.gross) || 0), 0)
+      : 0;
+    
+    // Totali i shpenzimeve
+    const totalExpenses = workHoursSpent + expensesSpent;
     
     const profit = contractValue - totalExpenses;
     const profitMargin = contractValue > 0 ? (profit / contractValue) * 100 : 0;
@@ -348,9 +358,11 @@ export default function Contracts() {
       totalExpenses,
       profit,
       profitMargin,
-      expensesCount: contractExpenses.length
+      workHoursSpent,
+      expensesSpent,
+      expensesCount: expensesData?.filter(exp => exp.contract_number === contract.contract_number).length || 0
     };
-  }, [workHoursData]);
+  }, [workHoursData, expensesData]);
 
   const getProfitColor = (profit) => {
     if (profit > 0) return 'text-green-700';
@@ -469,18 +481,34 @@ export default function Contracts() {
 
   // Export functions
   const exportToExcel = (data, filename = 'kontratat') => {
-    const ws = XLSX.utils.json_to_sheet(data.map(contract => ({
-      'ID': contract.id,
-      'Emri i Kontratës': contract.company, // Assuming company is the contract name
-      'Vendodhja': contract.site_name,
-      'Vlera (£)': contract.contract_value,
-      'Data e Fillimit': contract.start_date,
-      'Data e Mbarimit': contract.finish_date,
-      'Statusi': contract.status,
-      'Adresa': contract.address,
-      'Shpenzuar (£)': calculateSpentForSite(contract.site_name),
-      'Fitimi (£)': Number(contract.contract_value || 0) - calculateSpentForSite(contract.site_name)
-    })));
+    const ws = XLSX.utils.json_to_sheet(data.map(contract => {
+      // Llogarit shpenzimet për këtë kontratë
+      const workHoursSpent = (Array.isArray(workHoursData) && workHoursData.length > 0)
+        ? workHoursData.filter(wh => wh.contract_id === contract.id && wh.hours && wh.hourly_rate)
+            .reduce((sum, wh) => sum + (parseFloat(wh.hours) * parseFloat(wh.hourly_rate)), 0)
+        : 0;
+      
+      const expensesSpent = (Array.isArray(expensesData) && expensesData.length > 0)
+        ? expensesData.filter(exp => exp.contract_number === contract.contract_number)
+            .reduce((sum, exp) => sum + (parseFloat(exp.gross) || 0), 0)
+        : 0;
+      
+      const totalSpent = workHoursSpent + expensesSpent;
+      const profit = Number(contract.contract_value || 0) - totalSpent;
+      
+      return {
+        'ID': contract.id,
+        'Emri i Kontratës': contract.company,
+        'Vendodhja': contract.site_name,
+        'Vlera (£)': contract.contract_value,
+        'Data e Fillimit': contract.start_date,
+        'Data e Mbarimit': contract.finish_date,
+        'Statusi': contract.status,
+        'Adresa': contract.address,
+        'Shpenzuar (£)': totalSpent.toFixed(2),
+        'Fitimi (£)': profit.toFixed(2)
+      };
+    }));
     
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Kontratat');
@@ -510,20 +538,36 @@ export default function Contracts() {
           </tr>
         </thead>
         <tbody>
-          ${data.map(contract => `
-            <tr>
-              <td>${contract.id}</td>
-              <td>${contract.company}</td>
-              <td>${contract.site_name}</td>
-              <td>${contract.contract_value}</td>
-              <td>${formatDate(contract.start_date)}</td>
-              <td>${formatDate(contract.finish_date)}</td>
-              <td>${contract.status}</td>
-              <td>${contract.address}</td>
-              <td>${calculateSpentForSite(contract.site_name)}</td>
-              <td>${Number(contract.contract_value || 0) - calculateSpentForSite(contract.site_name)}</td>
-            </tr>
-          `).join('')}
+          ${data.map(contract => {
+            // Llogarit shpenzimet për këtë kontratë
+            const workHoursSpent = (Array.isArray(workHoursData) && workHoursData.length > 0)
+              ? workHoursData.filter(wh => wh.contract_id === contract.id && wh.hours && wh.hourly_rate)
+                  .reduce((sum, wh) => sum + (parseFloat(wh.hours) * parseFloat(wh.hourly_rate)), 0)
+              : 0;
+            
+            const expensesSpent = (Array.isArray(expensesData) && expensesData.length > 0)
+              ? expensesData.filter(exp => exp.contract_number === contract.contract_number)
+                  .reduce((sum, exp) => sum + (parseFloat(exp.gross) || 0), 0)
+              : 0;
+            
+            const totalSpent = workHoursSpent + expensesSpent;
+            const profit = Number(contract.contract_value || 0) - totalSpent;
+            
+            return `
+              <tr>
+                <td>${contract.id}</td>
+                <td>${contract.company}</td>
+                <td>${contract.site_name}</td>
+                <td>${contract.contract_value}</td>
+                <td>${formatDate(contract.start_date)}</td>
+                <td>${formatDate(contract.finish_date)}</td>
+                <td>${contract.status}</td>
+                <td>${contract.address}</td>
+                <td>${totalSpent.toFixed(2)}</td>
+                <td>${profit.toFixed(2)}</td>
+              </tr>
+            `;
+          }).join('')}
         </tbody>
       </table>
     `;
@@ -1059,14 +1103,22 @@ export default function Contracts() {
             <tbody>
               {paginatedContracts.map((c, index) => {
                 const vlera = parseFloat(c.contract_value) || 0;
-                const shpenzuar = (Array.isArray(workHoursData) && workHoursData.length > 0)
+                
+                // Llogarit shpenzimet nga orët e punës
+                const workHoursSpent = (Array.isArray(workHoursData) && workHoursData.length > 0)
                   ? workHoursData.filter(wh => wh.contract_id === c.id && wh.hours && wh.hourly_rate)
                       .reduce((sum, wh) => sum + (parseFloat(wh.hours) * parseFloat(wh.hourly_rate)), 0)
                   : 0;
-                if (shpenzuar === 0) {
-                  // Debug log
-                  // console.log('Shpenzuar bosh për kontratë', c.id, workHoursData);
-                }
+                
+                // Llogarit shpenzimet nga expenses/faturat
+                const expensesSpent = (Array.isArray(expensesData) && expensesData.length > 0)
+                  ? expensesData.filter(exp => exp.contract_number === c.contract_number)
+                      .reduce((sum, exp) => sum + (parseFloat(exp.gross) || 0), 0)
+                  : 0;
+                
+                // Totali i shpenzimeve
+                const shpenzuar = workHoursSpent + expensesSpent;
+                
                 const fitimi = vlera - shpenzuar;
                 const progres = calculateProgress(c.start_date, c.finish_date);
                 const { profit, profitMargin } = calculateContractProfit(c);
