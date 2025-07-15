@@ -300,9 +300,9 @@ export default function Contracts() {
   }, [workHoursData]);
 
   const getProfitColor = (profit) => {
-    if (profit > 0) return 'text-green-700 bg-green-50';
-    if (profit < 0) return 'text-red-700 bg-red-50';
-    return 'text-gray-700 bg-gray-50';
+    if (profit > 0) return 'text-green-700';
+    if (profit < 0) return 'text-red-700';
+    return 'text-gray-700';
   };
 
   // Optimized filtering and sorting
@@ -905,10 +905,10 @@ export default function Contracts() {
           <table className="min-w-full bg-white rounded-lg shadow-lg overflow-hidden">
             <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-base font-bold">
               <tr>
-                <th className="py-4 px-4 text-left">Zgjidh</th>
-                <th className="py-4 px-4 text-left">Nr. Kontratës</th>
-                <th className="py-4 px-4 text-left">Vendodhja</th>
-                <th className="py-4 px-4 text-left">Kompania</th>
+                <th className="py-4 px-4 text-center">Zgjidh</th>
+                <th className="py-4 px-4 text-center">Nr. Kontratës</th>
+                <th className="py-4 px-4 text-center">Vendodhja</th>
+                <th className="py-4 px-4 text-center">Kompania</th>
                 <th className="py-4 px-4 text-center">Vlera</th>
                 <th className="py-4 px-4 text-center">Shpenzuar</th>
                 <th className="py-4 px-4 text-center">Fitimi</th>
@@ -956,17 +956,19 @@ export default function Contracts() {
                         <div className="text-xs opacity-75">{profitMargin.toFixed(1)}%</div>
                       </div>
                     </td>
-                    <td className="py-4 px-4 align-middle flex items-center gap-2 justify-center">
-                      <StatusBadge status={c.status} />
-                      <select
-                        value={c.status}
-                        onChange={e => handleStatusChange(c.id, e.target.value)}
-                        className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white"
-                      >
-                        {CONTRACT_STATUSES.map(status => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
+                    <td className="py-4 px-4 align-middle">
+                      <div className="flex items-center gap-2 justify-center">
+                        <StatusBadge status={c.status} />
+                        <select
+                          value={c.status}
+                          onChange={e => handleStatusChange(c.id, e.target.value)}
+                          className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white"
+                        >
+                          {CONTRACT_STATUSES.map(status => (
+                            <option key={status} value={status}>{status}</option>
+                          ))}
+                        </select>
+                      </div>
                     </td>
                     <td className="py-4 px-4 align-middle">
                       <div className="w-full bg-gray-200 rounded-full h-2">
