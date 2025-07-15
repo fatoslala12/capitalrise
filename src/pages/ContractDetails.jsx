@@ -41,6 +41,13 @@ export default function ContractDetails() {
     notes: "",
     actions: []
   });
+  
+  // Search and filter states
+  const [workHoursSearch, setWorkHoursSearch] = useState("");
+  const [workHoursFilter, setWorkHoursFilter] = useState("all"); // all, NI, UTR
+  const [invoicesSearch, setInvoicesSearch] = useState("");
+  const [invoicesFilter, setInvoicesFilter] = useState("all"); // all, paid, unpaid
+  
   const token = localStorage.getItem("token");
 
   // Merr kontratën, faturat dhe orët e punës nga backend
@@ -257,7 +264,40 @@ export default function ContractDetails() {
     }
   };
 
-  // Ndrysho statusin e pagesës së faturës
+  // Filter work hours
+  const filteredWorkHours = workHours.filter(wh => {
+    const employee = employees.find(emp => emp.id === wh.employee_id);
+    const labelType = employee?.labelType || employee?.label_type || 'NI';
+    const employeeName = wh.employee_name || `Employee #${wh.employee_id}`;
+    
+    // Search filter
+    const matchesSearch = workHoursSearch === "" || 
+      employeeName.toLowerCase().includes(workHoursSearch.toLowerCase()) ||
+      wh.date.includes(workHoursSearch);
+    
+    // Type filter
+    const matchesType = workHoursFilter === "all" || labelType === workHoursFilter;
+    
+    return matchesSearch && matchesType;
+  });
+
+  // Filter invoices
+  const filteredInvoices = invoices.filter(inv => {
+    // Search filter
+    const matchesSearch = invoicesSearch === "" || 
+      inv.invoice_number.toLowerCase().includes(invoicesSearch.toLowerCase()) ||
+      inv.description.toLowerCase().includes(invoicesSearch.toLowerCase()) ||
+      inv.date.includes(invoicesSearch);
+    
+    // Status filter
+    const matchesStatus = invoicesFilter === "all" || 
+      (invoicesFilter === "paid" && inv.paid) ||
+      (invoicesFilter === "unpaid" && !inv.paid);
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  // Toggle paid status
   const handleTogglePaid = async (invoiceId, currentPaid) => {
     try {
       await axios.put(
@@ -265,7 +305,7 @@ export default function ContractDetails() {
         { paid: !currentPaid },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Refresh invoices after change
+      // Refresh invoices after toggle
       const invoicesRes = await axios.get(
         `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -416,89 +456,112 @@ export default function ContractDetails() {
       {/* Orët e Punës për këtë kontratë */}
       <div className="bg-white/70 p-10 rounded-3xl shadow-2xl border-2 border-green-200 animate-fade-in">
         <h3 className="text-2xl font-bold mb-4 text-green-800 flex items-center gap-2">⏰ Orët e Punës</h3>
+        
+        {/* Search and Filter for Work Hours */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="md:col-span-2">
+            <input
+              type="text"
+              placeholder="🔍 Kërko punonjës ose datë..."
+              value={workHoursSearch}
+              onChange={(e) => setWorkHoursSearch(e.target.value)}
+              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
+            />
+          </div>
+          <div>
+            <select
+              value={workHoursFilter}
+              onChange={(e) => setWorkHoursFilter(e.target.value)}
+              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
+            >
+              <option value="all">Të gjitha llojet</option>
+              <option value="NI">NI</option>
+              <option value="UTR">UTR</option>
+            </select>
+          </div>
+        </div>
+        
         {workHours.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm bg-white shadow rounded-xl">
-              <thead className="bg-gradient-to-r from-green-100 to-blue-100 text-green-900">
-                <tr>
-                  <th className="py-3 px-2 text-center font-semibold">Data</th>
-                  <th className="py-3 px-2 text-center font-semibold">Punonjësi</th>
-                  <th className="py-3 px-2 text-center font-semibold">Orë</th>
-                  <th className="py-3 px-2 text-center font-semibold">Tarifa/orë</th>
-                  <th className="py-3 px-2 text-center font-semibold">Bruto (£)</th>
-                  <th className="py-3 px-2 text-center font-semibold">Neto (£)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {workHours.map((wh, idx) => {
-                  const hours = parseFloat(wh.hours || 0);
-                  // Përdor tarifën nga databaza ose një tarifë default
-                  const rate = parseFloat(wh.rate || wh.hourly_rate || 15); // Default £15/orë
-                  const gross = hours * rate;
-                  
-                  // Gjej punonjësin për të marrë labelType (NI/UTR)
-                  const employee = employees.find(emp => emp.id === wh.employee_id);
-                  const labelType = employee?.labelType || employee?.label_type || 'NI';
-                  
-                  // Llogarit neto: 0.7 për NI, 0.8 për UTR
-                  const netRate = labelType === 'NI' ? 0.7 : 0.8;
-                  const net = gross * netRate;
-                  
-                  console.log('🔍 Work hour calculation:', {
-                    id: wh.id,
-                    hours,
-                    rate,
-                    gross,
-                    labelType,
-                    netRate,
-                    net
-                  });
-                  
-                  return (
-                    <tr key={idx} className="hover:bg-green-50 transition-all">
-                      <td className="py-2 px-2 text-center">{new Date(wh.date).toLocaleDateString('sq-AL')}</td>
-                      <td className="py-2 px-2 text-center font-medium">
-                        {wh.employee_name || `Employee #${wh.employee_id}`}
-                        <span className="text-xs ml-2 px-2 py-1 rounded bg-blue-100 text-blue-700 font-bold">
-                          {labelType}
-                        </span>
-                      </td>
-                      <td className="py-2 px-2 text-center font-bold text-blue-600">{hours}</td>
-                      <td className="py-2 px-2 text-center font-bold text-purple-600">£{rate.toFixed(2)}</td>
-                      <td className="py-2 px-2 text-center font-bold text-orange-600">£{gross.toFixed(2)}</td>
-                      <td className="py-2 px-2 text-center font-bold text-green-600">£{net.toFixed(2)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot className="bg-green-100">
-                <tr>
-                  <td colSpan="2" className="py-3 px-2 text-center font-bold text-green-800">TOTALET:</td>
-                  <td className="py-3 px-2 text-center font-bold text-blue-700">
-                    {workHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} orë
-                  </td>
-                  <td className="py-3 px-2 text-center">-</td>
-                  <td className="py-3 px-2 text-center font-bold text-orange-700 text-lg">
-                    £{workHours.reduce((sum, wh) => {
-                      const hours = parseFloat(wh.hours || 0);
-                      const rate = parseFloat(wh.rate || wh.hourly_rate || 15);
-                      return sum + (hours * rate);
-                    }, 0).toFixed(2)}
-                  </td>
-                  <td className="py-3 px-2 text-center font-bold text-green-700 text-lg">
-                    £{workHours.reduce((sum, wh) => {
-                      const hours = parseFloat(wh.hours || 0);
-                      const rate = parseFloat(wh.rate || wh.hourly_rate || 15);
-                      const gross = hours * rate;
-                      const employee = employees.find(emp => emp.id === wh.employee_id);
-                      const labelType = employee?.labelType || employee?.label_type || 'NI';
-                      const netRate = labelType === 'NI' ? 0.7 : 0.8;
-                      return sum + (gross * netRate);
-                    }, 0).toFixed(2)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+            {filteredWorkHours.length > 0 ? (
+              <table className="w-full text-sm bg-white shadow rounded-xl">
+                <thead className="bg-gradient-to-r from-green-100 to-blue-100 text-green-900">
+                  <tr>
+                    <th className="py-3 px-2 text-center font-semibold">Data</th>
+                    <th className="py-3 px-2 text-center font-semibold">Punonjësi</th>
+                    <th className="py-3 px-2 text-center font-semibold">Orë</th>
+                    <th className="py-3 px-2 text-center font-semibold">Tarifa/orë</th>
+                    <th className="py-3 px-2 text-center font-semibold">Bruto (£)</th>
+                    <th className="py-3 px-2 text-center font-semibold">Neto (£)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredWorkHours.map((wh, idx) => {
+                    const hours = parseFloat(wh.hours || 0);
+                    // Përdor tarifën nga databaza ose një tarifë default
+                    const rate = parseFloat(wh.rate || wh.hourly_rate || 15); // Default £15/orë
+                    const gross = hours * rate;
+                    
+                    // Gjej punonjësin për të marrë labelType (NI/UTR)
+                    const employee = employees.find(emp => emp.id === wh.employee_id);
+                    const labelType = employee?.labelType || employee?.label_type || 'NI';
+                    
+                    // Llogarit neto: 0.7 për NI, 0.8 për UTR
+                    const netRate = labelType === 'NI' ? 0.7 : 0.8;
+                    const net = gross * netRate;
+                    
+                    return (
+                      <tr key={idx} className="hover:bg-green-50 transition-all">
+                        <td className="py-2 px-2 text-center">{new Date(wh.date).toLocaleDateString('sq-AL')}</td>
+                        <td className="py-2 px-2 text-center font-medium">
+                          {wh.employee_name || `Employee #${wh.employee_id}`}
+                          <span className="text-xs ml-2 px-2 py-1 rounded bg-blue-100 text-blue-700 font-bold">
+                            {labelType}
+                          </span>
+                        </td>
+                        <td className="py-2 px-2 text-center font-bold text-blue-600">{hours}</td>
+                        <td className="py-2 px-2 text-center font-bold text-purple-600">£{rate.toFixed(2)}</td>
+                        <td className="py-2 px-2 text-center font-bold text-orange-600">£{gross.toFixed(2)}</td>
+                        <td className="py-2 px-2 text-center font-bold text-green-600">£{net.toFixed(2)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot className="bg-green-100">
+                  <tr>
+                    <td colSpan="2" className="py-3 px-2 text-center font-bold text-green-800">TOTALET:</td>
+                    <td className="py-3 px-2 text-center font-bold text-blue-700">
+                      {filteredWorkHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} orë
+                    </td>
+                    <td className="py-3 px-2 text-center">-</td>
+                    <td className="py-3 px-2 text-center font-bold text-orange-700 text-lg">
+                      £{filteredWorkHours.reduce((sum, wh) => {
+                        const hours = parseFloat(wh.hours || 0);
+                        const rate = parseFloat(wh.rate || wh.hourly_rate || 15);
+                        return sum + (hours * rate);
+                      }, 0).toFixed(2)}
+                    </td>
+                    <td className="py-3 px-2 text-center font-bold text-green-700 text-lg">
+                      £{filteredWorkHours.reduce((sum, wh) => {
+                        const hours = parseFloat(wh.hours || 0);
+                        const rate = parseFloat(wh.rate || wh.hourly_rate || 15);
+                        const gross = hours * rate;
+                        const employee = employees.find(emp => emp.id === wh.employee_id);
+                        const labelType = employee?.labelType || employee?.label_type || 'NI';
+                        const netRate = labelType === 'NI' ? 0.7 : 0.8;
+                        return sum + (gross * netRate);
+                      }, 0).toFixed(2)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 italic">
+                  Nuk u gjetën orë pune që përputhen me kërkimin tuaj
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-gray-500 italic text-center py-8">Nuk ka orë pune të regjistruara për këtë kontratë akoma</p>
@@ -537,59 +600,94 @@ export default function ContractDetails() {
       {/* Lista Faturave + Print */}
       <div className="bg-white/80 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
         <h3 className="font-bold mb-6 text-2xl text-blue-900 flex items-center gap-3">📋 Lista e Faturave</h3>
+        
+        {/* Search and Filter for Invoices */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="md:col-span-2">
+            <input
+              type="text"
+              placeholder="🔍 Kërko faturë, përshkrim ose datë..."
+              value={invoicesSearch}
+              onChange={(e) => setInvoicesSearch(e.target.value)}
+              className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
+            />
+          </div>
+          <div>
+            <select
+              value={invoicesFilter}
+              onChange={(e) => setInvoicesFilter(e.target.value)}
+              className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
+            >
+              <option value="all">Të gjitha faturat</option>
+              <option value="paid">Paguar</option>
+              <option value="unpaid">Pa paguar</option>
+            </select>
+          </div>
+        </div>
+        
         <div className="overflow-x-auto">
-          <table className="w-full text-base bg-white shadow rounded-xl">
-            <thead className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-900">
-              <tr>
-                <th className="py-4 px-2 text-center align-middle font-semibold">Nr</th>
-                <th className="py-4 px-2 text-center align-middle font-semibold">Data</th>
-                <th className="py-4 px-2 text-center align-middle font-semibold">Total</th>
-                <th className="py-4 px-2 text-center align-middle font-semibold">Status</th>
-                <th className="py-4 px-2 text-center align-middle font-semibold">Paguar</th>
-                <th className="py-4 px-2 text-center align-middle font-semibold">Veprime</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices
-                .slice()
-                .sort((a, b) => a.id - b.id)
-                .map((inv, index) => {
-                  const total = inv.items.reduce((a, i) => a + (i.amount || 0), 0) + parseFloat(inv.other || 0) + (inv.items.reduce((a, i) => a + (i.amount || 0), 0) * 0.2);
-                  const invoiceDate = new Date(inv.date);
-                  const paidDate = inv.paid ? new Date() : null;
-                  const oneMonth = 30 * 24 * 60 * 60 * 1000;
-                  const status = inv.paid
-                    ? paidDate - invoiceDate <= oneMonth
-                      ? "Paguar në kohë"
-                      : "Paguar me vonesë"
-                    : "Pa paguar";
-                  return (
-                    <tr key={inv.id} className="text-center hover:bg-purple-50 transition-all">
-                      <td className="py-3 px-2 align-middle font-semibold">{inv.invoice_number}</td>
-                      <td className="py-3 px-2 align-middle">{formatDate(inv.date)}</td>
-                      <td className="py-3 px-2 align-middle font-bold text-purple-700">£{total.toFixed(2)}</td>
-                      <td className="py-3 px-2 align-middle">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === "Pa paguar" ? "bg-red-100 text-red-600" : status === "Paguar në kohë" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{status}</span>
-                      </td>
-                      <td className="py-3 px-2 align-middle">
-                        <input
-                          type="checkbox"
-                          checked={inv.paid}
-                          onChange={() => handleTogglePaid(inv.id, inv.paid)}
-                          className="w-5 h-5 accent-green-500 cursor-pointer"
-                        />
-                      </td>
-                      <td className="py-3 px-2 align-middle flex justify-center gap-2">
-                        <button onClick={() => setInvoiceToPrint(inv)} className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-base font-semibold shadow hover:from-purple-600 hover:to-blue-600 transition-all flex items-center gap-1">
-                          🖨 <span className="hidden md:inline">Shiko / Printo</span>
-                        </button>
-                        <button onClick={() => handleDeleteInvoice(inv.id)} className="text-base text-red-600 ml-2 bg-red-100 px-3 py-2 rounded-lg font-semibold shadow hover:bg-red-200 transition-all flex items-center gap-1">🗑 <span className="hidden md:inline">Fshi</span></button>
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </table>
+          {filteredInvoices.length > 0 ? (
+            <table className="w-full text-base bg-white shadow rounded-xl">
+              <thead className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-900">
+                <tr>
+                  <th className="py-4 px-2 text-center align-middle font-semibold">Nr</th>
+                  <th className="py-4 px-2 text-center align-middle font-semibold">Data</th>
+                  <th className="py-4 px-2 text-center align-middle font-semibold">Total</th>
+                  <th className="py-4 px-2 text-center align-middle font-semibold">Status</th>
+                  <th className="py-4 px-2 text-center align-middle font-semibold">Paguar</th>
+                  <th className="py-4 px-2 text-center align-middle font-semibold">Veprime</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredInvoices
+                  .slice()
+                  .sort((a, b) => a.id - b.id)
+                  .map((inv, index) => {
+                    const total = inv.items.reduce((a, i) => a + (i.amount || 0), 0) + parseFloat(inv.other || 0) + (inv.items.reduce((a, i) => a + (i.amount || 0), 0) * 0.2);
+                    const invoiceDate = new Date(inv.date);
+                    const paidDate = inv.paid ? new Date() : null;
+                    const oneMonth = 30 * 24 * 60 * 60 * 1000;
+                    const status = inv.paid
+                      ? paidDate - invoiceDate <= oneMonth
+                        ? "Paguar në kohë"
+                        : "Paguar me vonesë"
+                      : "Pa paguar";
+                    return (
+                      <tr key={inv.id} className="text-center hover:bg-purple-50 transition-all">
+                        <td className="py-3 px-2 align-middle font-semibold">{inv.invoice_number}</td>
+                        <td className="py-3 px-2 align-middle">{formatDate(inv.date)}</td>
+                        <td className="py-3 px-2 align-middle font-bold text-purple-700">£{total.toFixed(2)}</td>
+                        <td className="py-3 px-2 align-middle">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === "Pa paguar" ? "bg-red-100 text-red-600" : status === "Paguar në kohë" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{status}</span>
+                        </td>
+                        <td className="py-3 px-2 align-middle">
+                          <input
+                            type="checkbox"
+                            checked={inv.paid}
+                            onChange={() => handleTogglePaid(inv.id, inv.paid)}
+                            className="w-5 h-5 accent-green-500 cursor-pointer"
+                          />
+                        </td>
+                        <td className="py-3 px-2 align-middle flex justify-center gap-2">
+                          <button onClick={() => setInvoiceToPrint(inv)} className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-base font-semibold shadow hover:from-purple-600 hover:to-blue-600 transition-all flex items-center gap-1">
+                            🖨 <span className="hidden md:inline">Shiko / Printo</span>
+                          </button>
+                          <button onClick={() => handleDeleteInvoice(inv.id)} className="text-base text-red-600 ml-2 bg-red-100 px-3 py-2 rounded-lg font-semibold shadow hover:bg-red-200 transition-all flex items-center gap-1">🗑 <span className="hidden md:inline">Fshi</span></button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500 italic">
+                {invoices.length === 0 
+                  ? "Nuk ka faturat për këtë kontratë akoma" 
+                  : "Nuk u gjetën faturat që përputhen me kërkimin tuaj"}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
