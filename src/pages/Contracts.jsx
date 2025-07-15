@@ -54,6 +54,8 @@ export default function Contracts() {
   // Update contracts when data changes
   useEffect(() => {
     if (contractsData) {
+      console.log('📋 Contracts data received:', contractsData);
+      console.log('📊 Sample contract:', contractsData[0]);
       setContracts(contractsData);
       setLoading(false);
     }
@@ -499,14 +501,15 @@ export default function Contracts() {
     "Mbyllur me vonese"
   ];
 
-  const STATUS_TRANSITIONS = {
-    [CONTRACT_STATUSES.DRAFT]: [CONTRACT_STATUSES.ACTIVE, CONTRACT_STATUSES.CANCELLED],
-    [CONTRACT_STATUSES.ACTIVE]: [CONTRACT_STATUSES.IN_PROGRESS, CONTRACT_STATUSES.ON_HOLD, CONTRACT_STATUSES.CANCELLED],
-    [CONTRACT_STATUSES.IN_PROGRESS]: [CONTRACT_STATUSES.COMPLETED, CONTRACT_STATUSES.ON_HOLD],
-    [CONTRACT_STATUSES.ON_HOLD]: [CONTRACT_STATUSES.ACTIVE, CONTRACT_STATUSES.IN_PROGRESS, CONTRACT_STATUSES.CANCELLED],
-    [CONTRACT_STATUSES.COMPLETED]: [],
-    [CONTRACT_STATUSES.CANCELLED]: []
-  };
+  // Remove broken STATUS_TRANSITIONS - not needed for now
+  // const STATUS_TRANSITIONS = {
+  //   [CONTRACT_STATUSES.DRAFT]: [CONTRACT_STATUSES.ACTIVE, CONTRACT_STATUSES.CANCELLED],
+  //   [CONTRACT_STATUSES.ACTIVE]: [CONTRACT_STATUSES.IN_PROGRESS, CONTRACT_STATUSES.ON_HOLD, CONTRACT_STATUSES.CANCELLED],
+  //   [CONTRACT_STATUSES.IN_PROGRESS]: [CONTRACT_STATUSES.COMPLETED, CONTRACT_STATUSES.ON_HOLD],
+  //   [CONTRACT_STATUSES.ON_HOLD]: [CONTRACT_STATUSES.ACTIVE, CONTRACT_STATUSES.IN_PROGRESS, CONTRACT_STATUSES.CANCELLED],
+  //   [CONTRACT_STATUSES.COMPLETED]: [],
+  //   [CONTRACT_STATUSES.CANCELLED]: []
+  // };
 
   const getStatusColor = (status) => {
     const colors = {
@@ -543,23 +546,29 @@ export default function Contracts() {
 
   // Përditëso handleStatusChange për të përfshirë notifikimet
   const handleStatusChange = async (contractId, newStatus) => {
+    console.log('🔄 handleStatusChange called:', { contractId, newStatus });
+    
     try {
-      await api.put(`/api/contracts/${contractId}`, { status: newStatus });
+      const response = await api.put(`/api/contracts/${contractId}`, { status: newStatus });
+      console.log('✅ API response:', response.data);
       
       // Send notification
       const contract = contracts.find(c => c.id === contractId);
       if (contract) {
+        console.log('📧 Sending notification for contract:', contract);
         await NotificationService.notifyContractStatusChange(contract, newStatus, contract.id);
         
         // Special notification for completion
-        if (newStatus === CONTRACT_STATUSES.COMPLETED) {
+        if (newStatus === "Mbyllur") {
           await NotificationService.notifyContractCompletion(contract, contract.id);
         }
       }
       
       toast.success(`Statusi i kontratës u ndryshua në "${newStatus}"`);
+      console.log('🔄 Refetching contracts...');
       refetchContracts();
     } catch (err) {
+      console.error('❌ Error updating status:', err);
       toast.error('Gabim gjatë ndryshimit të statusit!');
     }
   };
@@ -917,6 +926,7 @@ export default function Contracts() {
             </thead>
             <tbody>
               {paginatedContracts.map((c, index) => {
+                console.log('🔍 Rendering contract:', { id: c.id, status: c.status, contract_number: c.contract_number });
                 const vlera = parseFloat(c.contract_value) || 0;
                 const shpenzuar = (Array.isArray(workHoursData) && workHoursData.length > 0)
                   ? workHoursData.filter(wh => wh.contract_id === c.id && wh.hours && wh.hourly_rate)
