@@ -620,26 +620,6 @@ export default function PaymentDetails() {
           </div>
         </div>
 
-        {/* Grafikë i trendit të shpenzimeve - NË FUND */}
-        <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 mb-10">
-          <h4 className="text-xl font-bold text-blue-800 mb-2">📊 Trendi i Shpenzimeve</h4>
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip formatter={(value) => [`£${value}`, 'Shuma']} />
-                <Line type="monotone" dataKey="amount" stroke="#8884d8" strokeWidth={2} dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-center py-8 text-gray-500 italic">
-              Nuk ka të dhëna për grafikun
-            </div>
-          )}
-        </div>
-
         {/* Forma për shtim shpenzimi të ri */}
         <div className="bg-gradient-to-br from-blue-100 via-white to-purple-100 rounded-2xl shadow-lg border border-blue-100 p-6 mb-4">
           <h4 className="text-lg font-bold text-blue-800 mb-3 flex items-center gap-2">➕ Shto Shpenzim/Faturë</h4>
@@ -711,6 +691,26 @@ export default function PaymentDetails() {
               <span className="text-xl">💾</span> Shto Shpenzim
             </button>
           </form>
+        </div>
+
+        {/* Grafikë i trendit të shpenzimeve - FARE NË FUND */}
+        <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 mt-10">
+          <h4 className="text-xl font-bold text-blue-800 mb-2">📊 Trendi i Shpenzimeve</h4>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`£${value}`, 'Shuma']} />
+                <Line type="monotone" dataKey="amount" stroke="#8884d8" strokeWidth={2} dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-center py-8 text-gray-500 italic">
+              Nuk ka të dhëna për grafikun
+            </div>
+          )}
         </div>
       </div>
       {/* Animacion fade-in */}
