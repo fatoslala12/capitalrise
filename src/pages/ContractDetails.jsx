@@ -54,8 +54,8 @@ export default function ContractDetails() {
     documentDelete: false,
     addComment: false,
     saveInvoice: false,
-    deleteInvoice: false,
-    togglePaid: false,
+    deleteInvoice: {},
+    togglePaid: {},
     exportPDF: false
   });
   
@@ -324,7 +324,7 @@ export default function ContractDetails() {
       "Fshi Faturën",
       `Jeni i sigurt që doni të fshini faturën "${invoice?.invoice_number}"?`,
       async () => {
-        setLoadingStates(prev => ({ ...prev, deleteInvoice: true }));
+        setLoadingStates(prev => ({ ...prev, deleteInvoice: { ...prev.deleteInvoice, [invoiceId]: true } }));
         
         try {
           await axios.delete(
@@ -340,7 +340,7 @@ export default function ContractDetails() {
         } catch {
           alert("Gabim gjatë fshirjes së faturës!");
         } finally {
-          setLoadingStates(prev => ({ ...prev, deleteInvoice: false }));
+          setLoadingStates(prev => ({ ...prev, deleteInvoice: { ...prev.deleteInvoice, [invoiceId]: false } }));
         }
       }
     );
@@ -409,16 +409,50 @@ export default function ContractDetails() {
     );
   }
 
-  const netTotal = newInvoice.items.reduce((acc, i) => acc + (i.amount || 0), 0);
-  const vat = netTotal * 0.2;
-  const grandTotal = netTotal + parseFloat(newInvoice.other || 0) + vat;
-
   // Funksion për të formatuar datat në format të lexueshëm
   function formatDate(dateStr) {
     if (!dateStr) return "";
     const d = new Date(dateStr);
     return d.toLocaleDateString("sq-AL", { day: "2-digit", month: "2-digit", year: "numeric" });
   }
+
+  const netTotal = newInvoice.items.reduce((acc, i) => acc + (i.amount || 0), 0);
+  const vat = netTotal * 0.2;
+  const grandTotal = netTotal + parseFloat(newInvoice.other || 0) + vat;
+
+  // Filtered work hours based on search and filter
+  const filteredWorkHours = workHours.filter(wh => {
+    const employee = employees.find(emp => emp.id === wh.employee_id);
+    const labelType = employee?.labelType || employee?.label_type || 'NI';
+    const employeeName = wh.employee_name || `Employee #${wh.employee_id}`;
+    const date = new Date(wh.date).toLocaleDateString('sq-AL');
+    
+    const matchesSearch = workHoursSearch === "" || 
+      employeeName.toLowerCase().includes(workHoursSearch.toLowerCase()) ||
+      date.includes(workHoursSearch);
+    
+    const matchesFilter = workHoursFilter === "all" || labelType === workHoursFilter;
+    
+    return matchesSearch && matchesFilter;
+  });
+
+  // Filtered invoices based on search and filter
+  const filteredInvoices = invoices.filter(inv => {
+    const invoiceNumber = inv.invoice_number || "";
+    const description = inv.description || "";
+    const date = formatDate(inv.date);
+    
+    const matchesSearch = invoicesSearch === "" || 
+      invoiceNumber.toLowerCase().includes(invoicesSearch.toLowerCase()) ||
+      description.toLowerCase().includes(invoicesSearch.toLowerCase()) ||
+      date.includes(invoicesSearch);
+    
+    const matchesFilter = invoicesFilter === "all" || 
+      (invoicesFilter === "paid" && inv.paid) ||
+      (invoicesFilter === "unpaid" && !inv.paid);
+    
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="max-w-full xl:max-w-[90vw] mx-auto px-4 py-8 space-y-12 bg-gradient-to-br from-blue-100 via-white to-purple-100 min-h-screen">
@@ -813,10 +847,10 @@ export default function ContractDetails() {
                               </button>
                               <button 
                                 onClick={() => handleDeleteInvoice(inv.id)} 
-                                disabled={loadingStates.deleteInvoice}
+                                disabled={loadingStates.deleteInvoice[inv.id]}
                                 className="text-base text-red-600 ml-2 bg-red-100 px-3 py-2 rounded-lg font-semibold shadow hover:bg-red-200 transition-all flex items-center gap-1 disabled:opacity-50"
                               >
-                                {loadingStates.deleteInvoice ? (
+                                {loadingStates.deleteInvoice[inv.id] ? (
                                   <>
                                     <div className="w-4 h-4 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
                                     <span className="hidden md:inline">Duke fshirë...</span>
