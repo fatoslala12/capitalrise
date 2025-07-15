@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { format } from "date-fns";
 import axios from "axios";
+import toast from 'react-hot-toast';
 
 export default function Tasks() {
   const { user } = useAuth();
@@ -9,12 +10,26 @@ export default function Tasks() {
   const [contracts, setContracts] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState("table"); // "table" or "kanban"
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [siteFilter, setSiteFilter] = useState("all");
+  const [assignedFilter, setAssignedFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [newTask, setNewTask] = useState({
     description: "",
     assignedTo: "",
     siteName: "",
-    dueDate: ""
+    dueDate: "",
+    priority: "medium",
+    category: "general"
   });
+  
   const token = localStorage.getItem("token");
 
   // Merr të dhënat nga backend
@@ -41,6 +56,7 @@ export default function Tasks() {
         
       } catch (error) {
         console.error("Error fetching tasks data:", error);
+        toast.error("Gabim gjatë ngarkimit të të dhënave!");
         setEmployees([]);
         setContracts([]);
         setTasks([]);
@@ -71,7 +87,9 @@ export default function Tasks() {
       status: obj.status || 'ongoing',
       site_name: obj.siteName || null,
       due_date: obj.dueDate || null,
-      assigned_by: obj.assignedBy || obj.assigned_by || null
+      assigned_by: obj.assignedBy || obj.assigned_by || null,
+      priority: obj.priority || 'medium',
+      category: obj.category || 'general'
     };
   }
 
@@ -88,10 +106,11 @@ export default function Tasks() {
     }
 
     if (!newTask.description.trim() || receivers.length === 0) {
-      alert("Plotëso përshkrimin dhe zgjidh marrësit.");
+      toast.error("Plotëso përshkrimin dhe zgjidh marrësit!");
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const newEntries = await Promise.all(receivers.map(async (id) => {
         const entry = toSnakeCaseTask({
@@ -100,6 +119,8 @@ export default function Tasks() {
           status: "ongoing",
           siteName: newTask.siteName || null,
           dueDate: newTask.dueDate || null,
+          priority: newTask.priority,
+          category: newTask.category,
           assignedBy: user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.email
         });
         console.log('[DEBUG] Task payload:', entry);
@@ -109,21 +130,28 @@ export default function Tasks() {
         return res.data;
       }));
       setTasks((prev) => [...prev, ...newEntries]);
-      setNewTask({ description: "", assignedTo: "", siteName: "", dueDate: "" });
-    } catch {
-      alert("Gabim gjatë caktimit të detyrës!");
+      setNewTask({ description: "", assignedTo: "", siteName: "", dueDate: "", priority: "medium", category: "general" });
+      setShowForm(false);
+      toast.success(`${newEntries.length} detyrë u caktuan me sukses!`);
+    } catch (error) {
+      console.error('Error assigning task:', error);
+      toast.error("Gabim gjatë caktimit të detyrës!");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Fshi këtë detyrë?")) return;
+    if (!confirm("Jeni i sigurt që doni të fshini këtë detyrë?")) return;
     try {
       await axios.delete(`https://building-system.onrender.com/api/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks((prev) => prev.filter((t) => t.id !== id));
-    } catch {
-      alert("Gabim gjatë fshirjes së detyrës!");
+      toast.success("Detyra u fshi me sukses!");
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      toast.error("Gabim gjatë fshirjes së detyrës!");
     }
   };
 
@@ -134,8 +162,108 @@ export default function Tasks() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: newStatus } : t));
-    } catch {
-      alert("Gabim gjatë ndryshimit të statusit të detyrës!");
+      toast.success(`Statusi u ndryshua në "${newStatus === 'completed' ? 'Përfunduar' : 'Në vazhdim'}"`);
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      toast.error("Gabim gjatë ndryshimit të statusit!");
+    }
+  };
+
+  // Filtro dhe rendit detyrat
+  const filteredAndSortedTasks = useMemo(() => {
+    let filtered = tasks;
+
+    // Filtro sipas kërkimit
+    if (searchTerm) {
+      filtered = filtered.filter(task => 
+        task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        task.site_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        task.assigned_by?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filtro sipas statusit
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(task => task.status === statusFilter);
+    }
+
+    // Filtro sipas prioritetit
+    if (priorityFilter !== "all") {
+      filtered = filtered.filter(task => task.priority === priorityFilter);
+    }
+
+    // Filtro sipas site
+    if (siteFilter !== "all") {
+      filtered = filtered.filter(task => task.site_name === siteFilter);
+    }
+
+    // Filtro sipas punonjësit të caktuar
+    if (assignedFilter !== "all") {
+      filtered = filtered.filter(task => String(task.assigned_to) === assignedFilter);
+    }
+
+    // Rendit
+    filtered.sort((a, b) => {
+      let aValue = a[sortBy];
+      let bValue = b[sortBy];
+      
+      if (sortBy === "created_at" || sortBy === "due_date") {
+        aValue = new Date(aValue || 0);
+        bValue = new Date(bValue || 0);
+      }
+      
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    return filtered;
+  }, [tasks, searchTerm, statusFilter, priorityFilter, siteFilter, assignedFilter, sortBy, sortOrder]);
+
+  // Statistika
+  const stats = useMemo(() => {
+    const total = tasks.length;
+    const completed = tasks.filter(t => t.status === "completed").length;
+    const ongoing = tasks.filter(t => t.status === "ongoing").length;
+    const overdue = tasks.filter(t => {
+      if (!t.due_date || t.status === "completed") return false;
+      return new Date(t.due_date) < new Date();
+    }).length;
+    const highPriority = tasks.filter(t => t.priority === "high").length;
+    
+    return { total, completed, ongoing, overdue, highPriority };
+  }, [tasks]);
+
+  // Kategoritë unike
+  const uniqueCategories = [...new Set(tasks.map(t => t.category).filter(Boolean))];
+  const uniqueSites = [...new Set(tasks.map(t => t.site_name).filter(Boolean))];
+
+  // Funksion për të marrë emrin e punonjësit
+  const getEmployeeName = (assignedTo) => {
+    const emp = employees.find(e => String(e.id) === String(assignedTo));
+    return emp ? `${emp.first_name} ${emp.last_name}` : `ID: ${assignedTo}`;
+  };
+
+  // Funksion për të marrë ngjyrën e prioritetit
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return 'text-red-600 bg-red-100 border-red-200';
+      case 'medium': return 'text-yellow-600 bg-yellow-100 border-yellow-200';
+      case 'low': return 'text-green-600 bg-green-100 border-green-200';
+      default: return 'text-gray-600 bg-gray-100 border-gray-200';
+    }
+  };
+
+  // Funksion për të marrë ikonën e prioritetit
+  const getPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'high': return '🔴';
+      case 'medium': return '🟡';
+      case 'low': return '🟢';
+      default: return '⚪';
     }
   };
 
@@ -151,135 +279,560 @@ export default function Tasks() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold mb-4">📝 Menaxho Detyrat</h2>
+    <div className="max-w-full xl:max-w-[90vw] mx-auto px-4 py-8 space-y-8 bg-gradient-to-br from-blue-100 via-white to-purple-100 min-h-screen">
+      
+      {/* HEADER MODERN */}
+      <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50 to-purple-100 rounded-2xl shadow-lg px-8 py-4 mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
+        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-3 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-10 h-10">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Menaxhimi i Detyrave</h2>
+          <div className="text-lg font-medium text-purple-700">Cakto, shiko dhe menaxho detyrat</div>
+        </div>
+      </div>
 
-      {/* Shto Detyrë */}
-      <div className="bg-white rounded-2xl shadow p-6 space-y-4">
-        <h3 className="text-lg font-semibold">➕ Krijo Detyrë të Re</h3>
-
-        <input
-          type="text"
-          name="description"
-          placeholder="Përshkrimi i detyrës"
-          value={newTask.description}
-          onChange={handleChange}
-          className="w-full border p-2 rounded"
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm font-medium">📧 Zgjidh personin</label>
-            <select
-              name="assignedTo"
-              value={newTask.assignedTo}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
-            >
-              <option value="">-- Asnjë --</option>
-              {employees.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.first_name} {e.last_name} ({e.email})
-                </option>
-              ))}
-            </select>
+      {/* DASHBOARD STATS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-100 text-sm font-medium">Total Detyra</p>
+              <p className="text-3xl font-bold">{stats.total}</p>
+            </div>
+            <div className="text-4xl">📋</div>
           </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-100 text-sm font-medium">Përfunduara</p>
+              <p className="text-3xl font-bold">{stats.completed}</p>
+            </div>
+            <div className="text-4xl">✅</div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white p-6 rounded-2xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-100 text-sm font-medium">Në Vazhdim</p>
+              <p className="text-3xl font-bold">{stats.ongoing}</p>
+            </div>
+            <div className="text-4xl">🕒</div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-2xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-red-100 text-sm font-medium">Me Vonesë</p>
+              <p className="text-3xl font-bold">{stats.overdue}</p>
+            </div>
+            <div className="text-4xl">⚠️</div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-purple-100 text-sm font-medium">Prioritet i Lartë</p>
+              <p className="text-3xl font-bold">{stats.highPriority}</p>
+            </div>
+            <div className="text-4xl">🔴</div>
+          </div>
+        </div>
+      </div>
 
-          <div>
-            <label className="text-sm font-medium">🏗 Ose zgjidh site</label>
-            <select
-              name="siteName"
-              value={newTask.siteName}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
+      {/* KONTROLLET E KRYESORE */}
+      <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <h3 className="text-2xl font-bold text-blue-900">🎯 Kontrolli i Detyrave</h3>
+          
+          <div className="flex items-center gap-4">
+            {/* View Mode Toggle */}
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode("table")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  viewMode === "table" 
+                    ? "bg-white text-blue-600 shadow-sm" 
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                📊 Tabelë
+              </button>
+              <button
+                onClick={() => setViewMode("kanban")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  viewMode === "kanban" 
+                    ? "bg-white text-blue-600 shadow-sm" 
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                🎯 Kanban
+              </button>
+            </div>
+            
+            {/* Add Task Button */}
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              <option value="">-- Asnjë --</option>
-              {filteredSites.map((site) => (
+              {showForm ? "❌ Mbyll" : "➕ Shto Detyrë"}
+            </button>
+          </div>
+        </div>
+
+        {/* FORMA E SHTIMIT */}
+        {showForm && (
+          <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-2xl shadow-lg border border-blue-200 p-6 mb-6">
+            <h4 className="text-xl font-bold text-blue-900 mb-4">➕ Krijo Detyrë të Re</h4>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-blue-800 mb-2">📝 Përshkrimi i Detyrës</label>
+                  <textarea
+                    name="description"
+                    placeholder="Shkruani përshkrimin e detyrës..."
+                    value={newTask.description}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all resize-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">👤 Zgjidh Punonjësin</label>
+                    <select
+                      name="assignedTo"
+                      value={newTask.assignedTo}
+                      onChange={handleChange}
+                      className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
+                    >
+                      <option value="">-- Zgjidh punonjësin --</option>
+                      {employees.map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.first_name} {e.last_name} ({e.email})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">🏗 Ose Zgjidh Site</label>
+                    <select
+                      name="siteName"
+                      value={newTask.siteName}
+                      onChange={handleChange}
+                      className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
+                    >
+                      <option value="">-- Zgjidh site --</option>
+                      {filteredSites.map((site) => (
+                        <option key={site} value={site}>{site}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">📅 Afati</label>
+                    <input
+                      type="date"
+                      name="dueDate"
+                      value={newTask.dueDate}
+                      onChange={handleChange}
+                      className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">🔴 Prioriteti</label>
+                    <select
+                      name="priority"
+                      value={newTask.priority}
+                      onChange={handleChange}
+                      className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
+                    >
+                      <option value="low">🟢 I Ulët</option>
+                      <option value="medium">🟡 Mesatar</option>
+                      <option value="high">🔴 I Lartë</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-blue-800 mb-2">📂 Kategoria</label>
+                  <select
+                    name="category"
+                    value={newTask.category}
+                    onChange={handleChange}
+                    className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
+                  >
+                    <option value="general">📋 E Përgjithshme</option>
+                    <option value="construction">🏗️ Ndërtim</option>
+                    <option value="maintenance">🔧 Mirëmbajtje</option>
+                    <option value="cleaning">🧹 Pastrim</option>
+                    <option value="safety">🛡️ Siguri</option>
+                    <option value="admin">📝 Administrativ</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={handleAssign}
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg hover:from-green-600 hover:to-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Duke shtuar...
+                    </div>
+                  ) : (
+                    "📤 Cakto Detyrën"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* FILTRAT DHE KËRKIMI */}
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 mb-6">
+          <h4 className="text-lg font-semibold text-purple-800 mb-4">🔍 Filtra dhe Kërkim</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <input
+              type="text"
+              placeholder="🔍 Kërko në detyra..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="p-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-300 transition-all"
+            />
+            
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
+            >
+              <option value="all">📊 Të gjitha statuset</option>
+              <option value="ongoing">🕒 Në vazhdim</option>
+              <option value="completed">✅ Përfunduar</option>
+            </select>
+            
+            <select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              className="p-3 border-2 border-yellow-200 rounded-xl focus:ring-2 focus:ring-yellow-300 transition-all"
+            >
+              <option value="all">🔴 Të gjitha prioritetet</option>
+              <option value="high">🔴 I lartë</option>
+              <option value="medium">🟡 Mesatar</option>
+              <option value="low">🟢 I ulët</option>
+            </select>
+            
+            <select
+              value={siteFilter}
+              onChange={(e) => setSiteFilter(e.target.value)}
+              className="p-3 border-2 border-green-200 rounded-xl focus:ring-2 focus:ring-green-300 transition-all"
+            >
+              <option value="all">🏗️ Të gjitha site-t</option>
+              {uniqueSites.map((site) => (
                 <option key={site} value={site}>{site}</option>
               ))}
             </select>
           </div>
-
-          <div>
-            <label className="text-sm font-medium">📅 Afati</label>
-            <input
-              type="date"
-              name="dueDate"
-              value={newTask.dueDate}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
-            />
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <select
+              value={assignedFilter}
+              onChange={(e) => setAssignedFilter(e.target.value)}
+              className="p-3 border-2 border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-300 transition-all"
+            >
+              <option value="all">👤 Të gjithë punonjësit</option>
+              {employees.map((emp) => (
+                <option key={emp.id} value={emp.id}>
+                  {emp.first_name} {emp.last_name}
+                </option>
+              ))}
+            </select>
+            
+            <select
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(e) => {
+                const [field, order] = e.target.value.split('-');
+                setSortBy(field);
+                setSortOrder(order);
+              }}
+              className="p-3 border-2 border-orange-200 rounded-xl focus:ring-2 focus:ring-orange-300 transition-all"
+            >
+              <option value="created_at-desc">📅 Data (më e reja)</option>
+              <option value="created_at-asc">📅 Data (më e vjetra)</option>
+              <option value="due_date-asc">⏰ Afati (më i afërt)</option>
+              <option value="due_date-desc">⏰ Afati (më i largët)</option>
+            </select>
+            
+            <div className="text-sm text-gray-600 flex items-center justify-center">
+              📊 {filteredAndSortedTasks.length} detyra të gjetura
+            </div>
           </div>
         </div>
-
-        <button
-          onClick={handleAssign}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
-        >
-          📤 Cakto Detyrën
-        </button>
       </div>
 
-      {/* Lista e Detyrave */}
-      <div className="bg-white rounded-2xl shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">📋 Lista e Detyrave</h3>
-        {tasks.length === 0 ? (
-          <p className="italic text-gray-500">Nuk ka asnjë detyrë të regjistruar.</p>
-        ) : (
-          <table className="w-full text-sm border">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-2 border">Statusi</th>
-                <th className="p-2 border">Përshkrimi</th>
-                <th className="p-2 border">Për</th>
-                <th className="p-2 border">Site</th>
-                <th className="p-2 border">Afati</th>
-                <th className="p-2 border">Nga</th>
-                <th className="p-2 border">Data</th>
-                <th className="p-2 border">Veprime</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tasks.map((t) => (
-                <tr key={t.id} className="text-center">
-                  <td className={`p-2 border font-semibold ${t.status === "ongoing" ? "text-yellow-600" : "text-green-600"}`}>
-                    {t.status === "ongoing" ? "Në vazhdim" : "Përfunduar"}
-                    {t.status === "ongoing" && (
-                      <button
-                        onClick={() => handleStatusChange(t.id, "completed")}
-                        className="ml-2 px-2 py-1 bg-green-200 text-green-800 rounded text-xs hover:bg-green-400"
-                      >
-                        ✅ Përfundo
-                      </button>
-                    )}
-                  </td>
-                  <td className="p-2 border">{t.description}</td>
-                  <td className="p-2 border">{t.first_name ? `${t.first_name} ${t.last_name}` : t.assigned_to}</td>
-                  {/* Nëse nuk ka emër, kërko nga employees */}
-                  {!t.first_name && employees.length > 0 && (
-                    (() => {
-                      const emp = employees.find(e => String(e.id) === String(t.assigned_to));
-                      return emp ? `${emp.first_name} ${emp.last_name}` : t.assigned_to;
-                    })()
-                  )}
-                  <td className="p-2 border">{t.site_name || "-"}</td>
-                  <td className="p-2 border">{t.due_date ? format(new Date(t.due_date), "dd/MM/yyyy") : "-"}</td>
-                  <td className="p-2 border">{t.assigned_by || "-"}</td>
-                  <td className="p-2 border">
-                    {t.created_at ? format(new Date(t.created_at), "dd/MM/yyyy") : "-"}
-                  </td>
-                  <td className="p-2 border">
-                    <button
-                      onClick={() => handleDelete(t.id)}
-                      className="text-red-600 hover:underline text-sm"
-                    >
-                      🗑 Fshi
-                    </button>
-                  </td>
+      {/* LISTA E DETYRAVE */}
+      <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6">
+        <h3 className="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-2">
+          📋 Lista e Detyrave
+          <span className="text-lg text-gray-600">({filteredAndSortedTasks.length} detyra)</span>
+        </h3>
+        
+        {filteredAndSortedTasks.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">📝</div>
+            <p className="text-xl text-gray-600 mb-2">Nuk ka detyra të gjetura</p>
+            <p className="text-gray-500">Provoni të ndryshoni filtra ose shtoni detyra të reja</p>
+          </div>
+        ) : viewMode === "table" ? (
+          // TABLE VIEW
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gradient-to-r from-blue-100 via-purple-100 to-blue-100 text-blue-900 text-base font-bold">
+                <tr>
+                  <th className="py-4 px-4 text-center">Statusi</th>
+                  <th className="py-4 px-4 text-left">Përshkrimi</th>
+                  <th className="py-4 px-4 text-center">Për</th>
+                  <th className="py-4 px-4 text-center">Site</th>
+                  <th className="py-4 px-4 text-center">Prioriteti</th>
+                  <th className="py-4 px-4 text-center">Afati</th>
+                  <th className="py-4 px-4 text-center">Nga</th>
+                  <th className="py-4 px-4 text-center">Data</th>
+                  <th className="py-4 px-4 text-center">Veprime</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredAndSortedTasks.map((t) => {
+                  const isOverdue = t.due_date && new Date(t.due_date) < new Date() && t.status !== "completed";
+                  return (
+                    <tr key={t.id} className={`text-center hover:bg-purple-50 transition-all duration-200 ${isOverdue ? 'bg-red-50 border-l-4 border-red-500' : ''}`}>
+                      <td className="py-4 px-4 align-middle">
+                        <div className="flex flex-col items-center gap-2">
+                          <span className={`px-3 py-1 rounded-full font-bold text-sm ${
+                            t.status === "ongoing" 
+                              ? "bg-yellow-100 text-yellow-700 border border-yellow-200" 
+                              : "bg-green-100 text-green-700 border border-green-200"
+                          }`}>
+                            {t.status === "ongoing" ? "🕒 Në vazhdim" : "✅ Përfunduar"}
+                          </span>
+                          {t.status === "ongoing" && (
+                            <button
+                              onClick={() => handleStatusChange(t.id, "completed")}
+                              className="px-3 py-1 bg-green-500 text-white rounded-lg text-xs font-semibold hover:bg-green-600 transition-all transform hover:scale-105"
+                            >
+                              ✅ Përfundo
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 align-middle text-left">
+                        <div className="font-semibold text-blue-900">{t.description || t.title}</div>
+                        {t.category && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            📂 {t.category}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-4 px-4 align-middle font-semibold text-purple-700">
+                        {getEmployeeName(t.assigned_to)}
+                      </td>
+                      <td className="py-4 px-4 align-middle">
+                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
+                          {t.site_name || "-"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 align-middle">
+                        <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${getPriorityColor(t.priority)}`}>
+                          {getPriorityIcon(t.priority)} {t.priority === 'high' ? 'I Lartë' : t.priority === 'medium' ? 'Mesatar' : 'I Ulët'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 align-middle">
+                        {t.due_date ? (
+                          <div className={`px-3 py-1 rounded-lg text-sm font-semibold ${
+                            isOverdue 
+                              ? "bg-red-100 text-red-700 border border-red-200" 
+                              : "bg-green-100 text-green-700 border border-green-200"
+                          }`}>
+                            {format(new Date(t.due_date), "dd/MM/yyyy")}
+                            {isOverdue && <div className="text-xs">⚠️ Me vonesë!</div>}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500">-</span>
+                        )}
+                      </td>
+                      <td className="py-4 px-4 align-middle text-sm text-gray-600">
+                        {t.assigned_by || "-"}
+                      </td>
+                      <td className="py-4 px-4 align-middle text-sm text-gray-600">
+                        {t.created_at ? format(new Date(t.created_at), "dd/MM/yyyy") : "-"}
+                      </td>
+                      <td className="py-4 px-4 align-middle">
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => handleDelete(t.id)}
+                            className="px-3 py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg text-sm font-semibold shadow hover:from-pink-600 hover:to-red-600 transition-all transform hover:scale-105"
+                          >
+                            🗑️ Fshi
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          // KANBAN VIEW
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Në Vazhdim */}
+            <div className="bg-yellow-50 rounded-xl p-4 border-2 border-yellow-200">
+              <h4 className="text-lg font-bold text-yellow-800 mb-4 flex items-center gap-2">
+                🕒 Në Vazhdim
+                <span className="bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full text-sm">
+                  {filteredAndSortedTasks.filter(t => t.status === "ongoing").length}
+                </span>
+              </h4>
+              <div className="space-y-3">
+                {filteredAndSortedTasks
+                  .filter(t => t.status === "ongoing")
+                  .map((t) => (
+                    <div key={t.id} className="bg-white rounded-lg p-4 shadow-sm border border-yellow-200">
+                      <div className="flex items-start justify-between mb-2">
+                        <h5 className="font-semibold text-gray-900 text-sm">{t.description || t.title}</h5>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(t.priority)}`}>
+                          {getPriorityIcon(t.priority)}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-600 space-y-1">
+                        <div>👤 {getEmployeeName(t.assigned_to)}</div>
+                        {t.site_name && <div>🏗️ {t.site_name}</div>}
+                        {t.due_date && (
+                          <div className={new Date(t.due_date) < new Date() ? "text-red-600 font-semibold" : ""}>
+                            ⏰ {format(new Date(t.due_date), "dd/MM/yyyy")}
+                            {new Date(t.due_date) < new Date() && " ⚠️ Me vonesë!"}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() => handleStatusChange(t.id, "completed")}
+                          className="flex-1 px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all"
+                        >
+                          ✅ Përfundo
+                        </button>
+                        <button
+                          onClick={() => handleDelete(t.id)}
+                          className="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold hover:bg-red-600 transition-all"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Përfunduar */}
+            <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
+              <h4 className="text-lg font-bold text-green-800 mb-4 flex items-center gap-2">
+                ✅ Përfunduar
+                <span className="bg-green-200 text-green-800 px-2 py-1 rounded-full text-sm">
+                  {filteredAndSortedTasks.filter(t => t.status === "completed").length}
+                </span>
+              </h4>
+              <div className="space-y-3">
+                {filteredAndSortedTasks
+                  .filter(t => t.status === "completed")
+                  .map((t) => (
+                    <div key={t.id} className="bg-white rounded-lg p-4 shadow-sm border border-green-200 opacity-75">
+                      <div className="flex items-start justify-between mb-2">
+                        <h5 className="font-semibold text-gray-900 text-sm line-through">{t.description || t.title}</h5>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(t.priority)}`}>
+                          {getPriorityIcon(t.priority)}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-600 space-y-1">
+                        <div>👤 {getEmployeeName(t.assigned_to)}</div>
+                        {t.site_name && <div>🏗️ {t.site_name}</div>}
+                        {t.due_date && <div>⏰ {format(new Date(t.due_date), "dd/MM/yyyy")}</div>}
+                      </div>
+                      <div className="mt-3">
+                        <button
+                          onClick={() => handleDelete(t.id)}
+                          className="w-full px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold hover:bg-red-600 transition-all"
+                        >
+                          🗑️ Fshi
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Me Vonesë */}
+            <div className="bg-red-50 rounded-xl p-4 border-2 border-red-200">
+              <h4 className="text-lg font-bold text-red-800 mb-4 flex items-center gap-2">
+                ⚠️ Me Vonesë
+                <span className="bg-red-200 text-red-800 px-2 py-1 rounded-full text-sm">
+                  {filteredAndSortedTasks.filter(t => 
+                    t.due_date && new Date(t.due_date) < new Date() && t.status !== "completed"
+                  ).length}
+                </span>
+              </h4>
+              <div className="space-y-3">
+                {filteredAndSortedTasks
+                  .filter(t => t.due_date && new Date(t.due_date) < new Date() && t.status !== "completed")
+                  .map((t) => (
+                    <div key={t.id} className="bg-white rounded-lg p-4 shadow-sm border border-red-200">
+                      <div className="flex items-start justify-between mb-2">
+                        <h5 className="font-semibold text-gray-900 text-sm">{t.description || t.title}</h5>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(t.priority)}`}>
+                          {getPriorityIcon(t.priority)}
+                        </span>
+                      </div>
+                      <div className="text-xs text-red-600 space-y-1">
+                        <div>👤 {getEmployeeName(t.assigned_to)}</div>
+                        {t.site_name && <div>🏗️ {t.site_name}</div>}
+                        <div className="font-semibold">
+                          ⏰ {format(new Date(t.due_date), "dd/MM/yyyy")} ⚠️ Me vonesë!
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() => handleStatusChange(t.id, "completed")}
+                          className="flex-1 px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all"
+                        >
+                          ✅ Përfundo
+                        </button>
+                        <button
+                          onClick={() => handleDelete(t.id)}
+                          className="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold hover:bg-red-600 transition-all"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
