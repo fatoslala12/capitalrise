@@ -38,6 +38,24 @@ export default function Contracts() {
   const navigate = useNavigate();
   const [selectedContracts, setSelectedContracts] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
+  
+  // Loading states
+  const [loadingStates, setLoadingStates] = useState({
+    toggleStatus: {},
+    delete: {},
+    bulkDelete: false,
+    export: false,
+    statusChange: {}
+  });
+  
+  // Confirmation dialogs
+  const [confirmDialog, setConfirmDialog] = useState({
+    show: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+    onCancel: null
+  });
 
   // Use optimized API hook for contracts
   const { data: contractsData, loading: contractsLoading, error: contractsError, refetch: refetchContracts } = useApi("/api/contracts", {
@@ -113,6 +131,27 @@ export default function Contracts() {
   const showToastMessage = useCallback((message, type = "success") => {
     setShowToast({ show: true, message, type });
     setTimeout(() => setShowToast({ show: false, message: "", type: "success" }), 3000);
+  }, []);
+
+  // Confirmation dialog functions
+  const showConfirmDialog = useCallback((title, message, onConfirm, onCancel = null) => {
+    setConfirmDialog({
+      show: true,
+      title,
+      message,
+      onConfirm: () => {
+        setConfirmDialog({ show: false, title: "", message: "", onConfirm: null, onCancel: null });
+        onConfirm();
+      },
+      onCancel: () => {
+        setConfirmDialog({ show: false, title: "", message: "", onConfirm: null, onCancel: null });
+        if (onCancel) onCancel();
+      }
+    });
+  }, []);
+
+  const hideConfirmDialog = useCallback(() => {
+    setConfirmDialog({ show: false, title: "", message: "", onConfirm: null, onCancel: null });
   }, []);
 
   const handleChange = useCallback((e) => {
@@ -202,6 +241,9 @@ export default function Contracts() {
     const contractIndex = contracts.findIndex(c => c.contract_number === contract_number);
     if (contractIndex === -1) return;
 
+    // Set loading state
+    setLoadingStates(prev => ({ ...prev, toggleStatus: { ...prev.toggleStatus, [contract_number]: true } }));
+
     const updated = [...contracts];
     const contract = { ...updated[contractIndex] };
     const today = new Date();
@@ -225,30 +267,41 @@ export default function Contracts() {
     } catch (err) {
       console.error("Error updating contract status:", err);
       showToastMessage("Gabim gjatë ndryshimit të statusit!", "error");
+    } finally {
+      // Clear loading state
+      setLoadingStates(prev => ({ ...prev, toggleStatus: { ...prev.toggleStatus, [contract_number]: false } }));
     }
   }, [contracts, showToastMessage]);
 
   // Optimized delete with confirmation
   const handleDelete = useCallback(async (contract_number) => {
-    if (!window.confirm("Jeni i sigurt që doni të fshini këtë kontratë? Kjo veprim nuk mund të kthehet mbrapsht.")) {
-      return;
-    }
-    
     const contract = contracts.find(c => c.contract_number === contract_number);
     if (!contract) {
       showToastMessage("Kontrata nuk u gjet!", "error");
       return;
     }
     
-    try {
-      await api.delete(`/api/contracts/${contract.id}`);
-      setContracts(prev => prev.filter((c) => c.contract_number !== contract_number));
-      showToastMessage("Kontrata u fshi me sukses!");
-    } catch (err) {
-      console.error("Error deleting contract:", err);
-      showToastMessage("Gabim gjatë fshirjes!", "error");
-    }
-  }, [contracts, showToastMessage]);
+    showConfirmDialog(
+      "Fshi Kontratën",
+      `Jeni i sigurt që doni të fshini kontratën "${contract.company}" (${contract.site_name})? Kjo veprim nuk mund të kthehet mbrapsht.`,
+      async () => {
+        // Set loading state
+        setLoadingStates(prev => ({ ...prev, delete: { ...prev.delete, [contract_number]: true } }));
+        
+        try {
+          await api.delete(`/api/contracts/${contract.id}`);
+          setContracts(prev => prev.filter((c) => c.contract_number !== contract_number));
+          showToastMessage("Kontrata u fshi me sukses!");
+        } catch (err) {
+          console.error("Error deleting contract:", err);
+          showToastMessage("Gabim gjatë fshirjes!", "error");
+        } finally {
+          // Clear loading state
+          setLoadingStates(prev => ({ ...prev, delete: { ...prev.delete, [contract_number]: false } }));
+        }
+      }
+    );
+  }, [contracts, showToastMessage, showConfirmDialog]);
 
   // Optimized calculations with useMemo
   const calculateSpentForSite = useCallback((site_name) => {
@@ -385,20 +438,33 @@ export default function Contracts() {
       return;
     }
     
-    if (!confirm(`A jeni të sigurt që dëshironi të fshini ${selectedContracts.length} kontrata?`)) {
-      return;
-    }
+    const selectedContractNames = contracts
+      .filter(c => selectedContracts.includes(c.id))
+      .map(c => `${c.company} (${c.site_name})`)
+      .join(', ');
     
-    try {
-      await Promise.all(selectedContracts.map(id => api.delete(`/api/contracts/${id}`)));
-      toast.success(`${selectedContracts.length} kontrata u fshinë me sukses!`);
-      setSelectedContracts([]);
-      setSelectAll(false);
-      // Refresh data
-      refetchContracts();
-    } catch (err) {
-      toast.error('Gabim gjatë fshirjes së kontratave!');
-    }
+    showConfirmDialog(
+      "Fshi Kontratat e Zgjedhura",
+      `Jeni të sigurt që dëshironi të fshini ${selectedContracts.length} kontrata?\n\n${selectedContractNames}\n\nKy veprim nuk mund të kthehet mbrapsht.`,
+      async () => {
+        // Set loading state
+        setLoadingStates(prev => ({ ...prev, bulkDelete: true }));
+        
+        try {
+          await Promise.all(selectedContracts.map(id => api.delete(`/api/contracts/${id}`)));
+          toast.success(`${selectedContracts.length} kontrata u fshinë me sukses!`);
+          setSelectedContracts([]);
+          setSelectAll(false);
+          // Refresh data
+          refetchContracts();
+        } catch (err) {
+          toast.error('Gabim gjatë fshirjes së kontratave!');
+        } finally {
+          // Clear loading state
+          setLoadingStates(prev => ({ ...prev, bulkDelete: false }));
+        }
+      }
+    );
   };
 
   // Export functions
@@ -480,12 +546,22 @@ export default function Contracts() {
       return;
     }
     
-    if (type === 'excel') {
-      exportToExcel(dataToExport);
-      toast.success('Eksporti në Excel u krye me sukses!');
-    } else if (type === 'pdf') {
-      exportToPDF(dataToExport);
-      toast.success('Eksporti në PDF u krye me sukses!');
+    // Set loading state
+    setLoadingStates(prev => ({ ...prev, export: true }));
+    
+    try {
+      if (type === 'excel') {
+        exportToExcel(dataToExport);
+        toast.success('Eksporti në Excel u krye me sukses!');
+      } else if (type === 'pdf') {
+        exportToPDF(dataToExport);
+        toast.success('Eksporti në PDF u krye me sukses!');
+      }
+    } catch (err) {
+      toast.error('Gabim gjatë eksportit!');
+    } finally {
+      // Clear loading state
+      setLoadingStates(prev => ({ ...prev, export: false }));
     }
   };
 
@@ -544,6 +620,9 @@ export default function Contracts() {
 
   // Përditëso handleStatusChange për të përfshirë notifikimet
   const handleStatusChange = async (contractId, newStatus) => {
+    // Set loading state
+    setLoadingStates(prev => ({ ...prev, statusChange: { ...prev.statusChange, [contractId]: true } }));
+    
     try {
       const response = await api.put(`/api/contracts/${contractId}`, { status: newStatus });
       
@@ -563,6 +642,9 @@ export default function Contracts() {
     } catch (err) {
       console.error('❌ Error updating status:', err);
       toast.error('Gabim gjatë ndryshimit të statusit!');
+    } finally {
+      // Clear loading state
+      setLoadingStates(prev => ({ ...prev, statusChange: { ...prev.statusChange, [contractId]: false } }));
     }
   };
 
@@ -636,6 +718,37 @@ export default function Contracts() {
           showToast.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
         }`}>
           {showToast.message}
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {confirmDialog.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">{confirmDialog.title}</h3>
+            </div>
+            <p className="text-gray-600 mb-6 whitespace-pre-line">{confirmDialog.message}</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={confirmDialog.onCancel}
+                className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Anulo
+              </button>
+              <button
+                onClick={confirmDialog.onConfirm}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Konfirmo
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -805,21 +918,47 @@ export default function Contracts() {
               <>
                 <button
                   onClick={handleBulkDelete}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200"
+                  disabled={loadingStates.bulkDelete}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
                 >
-                  Fshi të zgjedhurat ({selectedContracts.length})
+                  {loadingStates.bulkDelete ? (
+                    <>
+                      <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
+                      Duke fshirë...
+                    </>
+                  ) : (
+                    <>
+                      🗑️ Fshi të zgjedhurat ({selectedContracts.length})
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={() => handleExport('excel')}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200"
+                  disabled={loadingStates.export}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
                 >
-                  Eksporto Excel
+                  {loadingStates.export ? (
+                    <>
+                      <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
+                      Duke eksportuar...
+                    </>
+                  ) : (
+                    '📊 Eksporto Excel'
+                  )}
                 </button>
                 <button
                   onClick={() => handleExport('pdf')}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                  disabled={loadingStates.export}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
                 >
-                  Eksporto PDF
+                  {loadingStates.export ? (
+                    <>
+                      <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
+                      Duke eksportuar...
+                    </>
+                  ) : (
+                    '📄 Eksporto PDF'
+                  )}
                 </button>
               </>
             )}
@@ -962,12 +1101,16 @@ export default function Contracts() {
                         <select
                           value={c.status}
                           onChange={e => handleStatusChange(c.id, e.target.value)}
-                          className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white"
+                          disabled={loadingStates.statusChange[c.id]}
+                          className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white disabled:opacity-50"
                         >
                           {CONTRACT_STATUSES.map(status => (
                             <option key={status} value={status}>{status}</option>
                           ))}
                         </select>
+                        {loadingStates.statusChange[c.id] && (
+                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        )}
                       </div>
                     </td>
                     <td className="py-4 px-4 align-middle">
@@ -989,9 +1132,31 @@ export default function Contracts() {
                         </button>
                         <button
                           onClick={() => handleToggleStatus(c.contract_number)}
-                          className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition-colors text-sm"
+                          disabled={loadingStates.toggleStatus[c.contract_number]}
+                          className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition-colors text-sm disabled:opacity-50 flex items-center gap-1"
                         >
-                          🔄 Toggle
+                          {loadingStates.toggleStatus[c.contract_number] ? (
+                            <>
+                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                              Duke u përditësuar...
+                            </>
+                          ) : (
+                            '🔄 Toggle'
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(c.contract_number)}
+                          disabled={loadingStates.delete[c.contract_number]}
+                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors text-sm disabled:opacity-50 flex items-center gap-1"
+                        >
+                          {loadingStates.delete[c.contract_number] ? (
+                            <>
+                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                              Duke fshirë...
+                            </>
+                          ) : (
+                            '🗑️ Fshi'
+                          )}
                         </button>
                       </div>
                     </td>
