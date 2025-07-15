@@ -66,6 +66,7 @@ export default function ContractDetails() {
           `https://building-system.onrender.com/api/work-hours/contract/${contract_number}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        console.log('🔍 Work hours data:', workHoursRes.data);
         setWorkHours(workHoursRes.data || []);
 
         // Merr listën e punonjësve për të marrë labelType (NI/UTR)
@@ -431,7 +432,8 @@ export default function ContractDetails() {
               <tbody>
                 {workHours.map((wh, idx) => {
                   const hours = parseFloat(wh.hours || 0);
-                  const rate = parseFloat(wh.rate || 0);
+                  // Përdor tarifën nga databaza ose një tarifë default
+                  const rate = parseFloat(wh.rate || wh.hourly_rate || 15); // Default £15/orë
                   const gross = hours * rate;
                   
                   // Gjej punonjësin për të marrë labelType (NI/UTR)
@@ -441,6 +443,16 @@ export default function ContractDetails() {
                   // Llogarit neto: 0.7 për NI, 0.8 për UTR
                   const netRate = labelType === 'NI' ? 0.7 : 0.8;
                   const net = gross * netRate;
+                  
+                  console.log('🔍 Work hour calculation:', {
+                    id: wh.id,
+                    hours,
+                    rate,
+                    gross,
+                    labelType,
+                    netRate,
+                    net
+                  });
                   
                   return (
                     <tr key={idx} className="hover:bg-green-50 transition-all">
@@ -469,14 +481,14 @@ export default function ContractDetails() {
                   <td className="py-3 px-2 text-center font-bold text-orange-700 text-lg">
                     £{workHours.reduce((sum, wh) => {
                       const hours = parseFloat(wh.hours || 0);
-                      const rate = parseFloat(wh.rate || 0);
+                      const rate = parseFloat(wh.rate || wh.hourly_rate || 15);
                       return sum + (hours * rate);
                     }, 0).toFixed(2)}
                   </td>
                   <td className="py-3 px-2 text-center font-bold text-green-700 text-lg">
                     £{workHours.reduce((sum, wh) => {
                       const hours = parseFloat(wh.hours || 0);
-                      const rate = parseFloat(wh.rate || 0);
+                      const rate = parseFloat(wh.rate || wh.hourly_rate || 15);
                       const gross = hours * rate;
                       const employee = employees.find(emp => emp.id === wh.employee_id);
                       const labelType = employee?.labelType || employee?.label_type || 'NI';
