@@ -4,11 +4,11 @@ import axios from "axios";
 import dayjs from "dayjs";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 export default function MyProfile() {
   const { user } = useAuth();
@@ -23,7 +23,9 @@ export default function MyProfile() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   const [selectedDate, setSelectedDate] = useState(null);
   const [filterSite, setFilterSite] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
+  const [uploadProgress, setUploadProgress] = useState(0);
   const token = localStorage.getItem("token");
 
   // Funksion për toast notifications
@@ -87,16 +89,80 @@ export default function MyProfile() {
       .catch(() => setAttachments([]));
   }, [user, token]);
 
-  // Merr detyrat
+  // Merr detyrat e përfunduara
   useEffect(() => {
     if (!user?.employee_id) return;
     
-    axios.get(`https://building-system.onrender.com/api/tasks?assignedTo=${user.employee_id}`, {
+    axios.get(`https://building-system.onrender.com/api/tasks?assignedTo=${user.employee_id}&status=completed`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setTasks(res.data || []))
       .catch(() => setTasks([]));
   }, [user, token]);
+
+  // Funksion për ndryshimin e password-it
+  const changePassword = async () => {
+    if (passwordData.new !== passwordData.confirm) {
+      showToast("Fjalëkalimet e reja nuk përputhen!", "error");
+      return;
+    }
+    
+    try {
+      await axios.put(`https://building-system.onrender.com/api/users/${user.id}/password`, {
+        current_password: passwordData.current,
+        new_password: passwordData.new
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      showToast("Fjalëkalimi u ndryshua me sukses!", "success");
+      setShowPasswordModal(false);
+      setPasswordData({ current: '', new: '', confirm: '' });
+    } catch (error) {
+      showToast("Gabim gjatë ndryshimit të fjalëkalimit!", "error");
+    }
+  };
+
+  // Funksion për ngarkimin e dokumenteve
+  const handleDocumentUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        setUploadProgress(10);
+        await axios.post(
+          `https://building-system.onrender.com/api/employees/${user.employee_id}/attachments`,
+          {
+            file_name: file.name,
+            file_path: reader.result,
+            uploaded_by: user.id
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            onUploadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                setUploadProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total));
+              }
+            }
+          }
+        );
+        setUploadProgress(0);
+        
+        // Rifresko attachments
+        const res = await axios.get(`https://building-system.onrender.com/api/employees/${user.employee_id}/attachments`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setAttachments(res.data);
+        showToast("Dokumenti u ngarkua me sukses!", "success");
+      } catch {
+        setUploadProgress(0);
+        showToast("Gabim gjatë ngarkimit të dokumentit!", "error");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   if (loading) {
     return (
@@ -154,6 +220,77 @@ export default function MyProfile() {
     currentSiteColors[site] = colors[index % colors.length];
   });
 
+  // Përgatis një strukturë për të mbledhur të gjitha ditët e punuara me site dhe orë
+  const workDays = {};
+  Object.entries(workHistory).forEach(([weekLabel, days]) => {
+    Object.entries(days).forEach(([dayName, val]) => {
+      if (val && val.hours > 0 && val.site) {
+        const [startStr] = weekLabel.split(' - ');
+        const startDate = new Date(startStr);
+        const dayNames = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"];
+        const dayIdx = dayNames.indexOf(dayName);
+        if (dayIdx !== -1) {
+          const date = new Date(startDate);
+          date.setDate(startDate.getDate() + dayIdx);
+          const key = date.toISOString().slice(0, 10);
+          workDays[key] = workDays[key] || [];
+          workDays[key].push({
+            site: val.site,
+            hours: val.hours,
+            rate: val.rate || employee.hourly_rate,
+          });
+        }
+      }
+    });
+  });
+
+  // Për filtrim sipas site-it
+  const filteredWorkDays = {};
+  Object.entries(workDays).forEach(([date, entries]) => {
+    filteredWorkDays[date] = filterSite
+      ? entries.filter(e => e.site === filterSite)
+      : entries;
+  });
+
+  // Përgatit të dhënat për grafikun e pagave
+  const weeklyPayData = Object.entries(workHistory).map(([weekLabel, days]) => {
+    let totalHours = 0;
+    let rate = 0;
+    Object.values(days).forEach(val => {
+      totalHours += Number(val.hours || 0);
+      rate = Number(val.rate || employee.hourly_rate || 0);
+    });
+    const gross = totalHours * rate;
+    const net = gross * (employee.label_type === "NI" ? 0.7 : 0.8);
+    
+    return {
+      week: weekLabel,
+      gross: gross,
+      net: net,
+      hours: totalHours
+    };
+  });
+
+  const barData = {
+    labels: weeklyPayData.map(d => d.week),
+    datasets: [
+      {
+        label: 'Paga Bruto (£)',
+        data: weeklyPayData.map(d => d.gross),
+        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2
+      },
+      {
+        label: 'Paga Neto (£)',
+        data: weeklyPayData.map(d => d.net),
+        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+        borderColor: 'rgba(34, 197, 94, 1)',
+        borderWidth: 2
+      }
+    ]
+  };
+
   // Funksion për të marrë inicialet dhe ngjyrë nga emri
   function getInitials(name, surname) {
     return `${(name || '').charAt(0)}${(surname || '').charAt(0)}`.toUpperCase();
@@ -191,7 +328,7 @@ export default function MyProfile() {
   };
 
   return (
-    <div className={darkMode ? "dark bg-gray-900 min-h-screen" : "bg-gray-50 min-h-screen"}>
+    <div className="bg-gray-50 min-h-screen">
       {/* Toast Notification */}
       {toast.show && (
         <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 ${
@@ -202,16 +339,6 @@ export default function MyProfile() {
           {toast.message}
         </div>
       )}
-      
-      {/* Buton dark mode toggle */}
-      <button
-        onClick={() => setDarkMode(v => !v)}
-        className="fixed top-4 right-4 z-50 bg-gradient-to-r from-gray-700 to-blue-700 text-white px-3 py-2 rounded-full shadow hover:scale-105 transition-all text-sm md:text-base md:px-4 md:py-2"
-        title={darkMode ? "Ndiz Light Mode" : "Ndiz Dark Mode"}
-      >
-        {darkMode ? "☀️" : "🌙"}
-        <span className="hidden md:inline ml-1">{darkMode ? "Light" : "Dark"}</span>
-      </button>
       
       <div className="w-full px-4 md:px-8 py-6 md:py-10 min-h-screen">
         {/* Quick Stats Cards - Mobile Optimized */}
@@ -261,10 +388,10 @@ export default function MyProfile() {
           <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-100 text-xs md:text-sm">Detyrat</p>
+                <p className="text-orange-100 text-xs md:text-sm">Detyrat e Përfunduara</p>
                 <p className="text-lg md:text-3xl font-bold">{tasks.length}</p>
               </div>
-              <div className="text-2xl md:text-4xl">📋</div>
+              <div className="text-2xl md:text-4xl">✅</div>
             </div>
           </div>
         </div>
@@ -302,7 +429,7 @@ export default function MyProfile() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 md:gap-x-12 gap-y-3 md:gap-y-4 text-sm md:text-base mb-6 md:mb-8">
-                <p><span className="font-bold">📧 Email:</span> {email || <span className="italic text-gray-400">N/A</span>}</p>
+                <p><span className="font-bold">📧 Email:</span> {email || user?.email || <span className="italic text-gray-400">N/A</span>}</p>
                 <p><span className="font-bold">📞 Tel:</span> {phone || <span className="italic text-gray-400">N/A</span>}</p>
                 <p><span className="font-bold">🆔 NID:</span> {nid || <span className="italic text-gray-400">N/A</span>}</p>
                 <p><span className="font-bold">🎂 Data lindjes:</span> {formatDate(dob)}</p>
@@ -317,13 +444,146 @@ export default function MyProfile() {
                 <p><span className="font-bold">👨‍👩‍👧 Next of Kin Tel:</span> {next_of_kin_phone || <span className="italic text-gray-400">N/A</span>}</p>
                 <p><span className="font-bold">🎓 Kualifikimi:</span> {qualification || <span className="italic text-gray-400">N/A</span>}</p>
               </div>
+
+              {/* Butona për ndryshimin e password-it */}
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-6 mt-6 md:mt-10">
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className="bg-gradient-to-r from-red-400 to-pink-500 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-pink-600 hover:to-red-600 transition text-sm md:text-lg"
+                >
+                  🔐 Ndrysho Fjalëkalimin
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Dokumentet */}
+        {/* Kalendar i orëve të punës */}
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-2xl border-2 border-blue-200 p-4 md:p-8 mb-6 md:mb-10">
+          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📅 Kalendar i Orëve të Punës</h3>
+          <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 mb-4 items-center">
+            <label className="font-semibold text-blue-700 text-sm md:text-base">Filtro sipas site-it:</label>
+            <select value={filterSite} onChange={e => setFilterSite(e.target.value)} className="p-2 rounded-xl border-2 border-blue-200 text-sm md:text-base">
+              <option value="">Të gjitha</option>
+              {employeeSites.map(site => (
+                <option key={site} value={site}>{site}</option>
+              ))}
+            </select>
+          </div>
+          <Calendar
+            onClickDay={date => setSelectedDate(date)}
+            tileContent={({ date }) => {
+              const key = date.toISOString().slice(0, 10);
+              if (filteredWorkDays[key] && filteredWorkDays[key].length > 0) {
+                return (
+                  <div className="flex gap-1 justify-center mt-1 animate-fade-in">
+                    {filteredWorkDays[key].map((entry, idx) => (
+                      <span
+                        key={idx}
+                        title={`Site: ${entry.site}\nOrë: ${entry.hours}\nPagesë: £${(entry.hours * entry.rate).toFixed(2)}`}
+                        className="inline-block w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-lg transition-all duration-300 hover:scale-125"
+                        style={{ 
+                          background: currentSiteColors[entry.site] || '#4ecdc4', 
+                          opacity: 0.9,
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                        }}
+                      />
+                    ))}
+                  </div>
+                );
+              }
+              return null;
+            }}
+            className="border-2 border-blue-200 rounded-xl md:rounded-2xl shadow-xl w-full text-sm md:text-lg"
+          />
+          <div className="flex gap-2 md:gap-4 mt-4 md:mt-6 flex-wrap justify-center">
+            {employeeSites.map((site) => (
+              <div key={site} className="flex items-center gap-2 bg-white/80 rounded-xl px-3 md:px-4 py-2 shadow-md border border-blue-100">
+                <span className="inline-block w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-white shadow-md" style={{ background: currentSiteColors[site] }}></span>
+                <span className="text-sm md:text-lg font-bold text-blue-800">{site}</span>
+              </div>
+            ))}
+          </div>
+          {/* Modal për detajet e ditës */}
+          {selectedDate && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8 min-w-[280px] md:min-w-[320px] max-w-md relative animate-fade-in">
+                <button onClick={() => setSelectedDate(null)} className="absolute top-2 right-2 text-xl md:text-2xl text-gray-400 hover:text-red-500">&times;</button>
+                <h4 className="text-lg md:text-xl font-bold mb-3 md:mb-4 text-blue-700">Detajet për {selectedDate.toLocaleDateString()}</h4>
+                {filteredWorkDays[selectedDate.toISOString().slice(0, 10)]?.length ? (
+                  <ul className="space-y-2 md:space-y-3">
+                    {filteredWorkDays[selectedDate.toISOString().slice(0, 10)].map((entry, idx) => (
+                      <li key={idx} className="flex flex-col gap-1 bg-blue-50 rounded-xl p-3 shadow">
+                        <span><b>Site:</b> <span className="font-semibold" style={{ color: currentSiteColors[entry.site] }}>{entry.site}</span></span>
+                        <span><b>Orë:</b> {entry.hours}</span>
+                        <span><b>Pagesë:</b> £{(entry.hours * entry.rate).toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 italic">Nuk ka orë të regjistruara për këtë ditë.</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Grafik i pagave */}
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
+          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📊 Grafik i Pagave për Javë</h3>
+          <div className="w-full max-w-4xl mx-auto">
+            <Bar data={barData} options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                  labels: {
+                    font: {
+                      size: 14,
+                      weight: 'bold'
+                    }
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Paga (£)'
+                  }
+                },
+                x: {
+                  title: {
+                    display: true,
+                    text: 'Java'
+                  }
+                }
+              }
+            }} />
+          </div>
+        </div>
+
+        {/* Dokumentet e Mia */}
         <div className="bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
           <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">📄 Dokumentet e Mia</h3>
+          
+          {/* Upload dokumenti */}
+          <div className="mb-4 p-4 bg-blue-50 rounded-xl border-2 border-dashed border-blue-200">
+            <input 
+              type="file" 
+              onChange={handleDocumentUpload} 
+              className="w-full p-2 border-2 border-blue-200 rounded-xl"
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            />
+            {uploadProgress > 0 && uploadProgress < 100 && (
+              <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
+                <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-3 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+              </div>
+            )}
+            <p className="text-sm text-gray-600 mt-2">Mund të ngarkoni dokumente në formate: PDF, DOC, DOCX, JPG, PNG</p>
+          </div>
+
           {attachments.length > 0 ? (
             <ul className="space-y-2">
               {attachments.map(doc => (
@@ -345,25 +605,18 @@ export default function MyProfile() {
           )}
         </div>
 
-        {/* Detyrat e Mia */}
+        {/* Detyrat e Përfunduara */}
         <div className="bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
-          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">📝 Detyrat e Mia</h3>
+          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">✅ Detyrat e Përfunduara</h3>
           {tasks.length > 0 ? (
             <div className="grid gap-3 md:gap-4">
-              {tasks.slice(0, 5).map((task, index) => (
-                <div key={task.id || index} className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 md:p-6 shadow-lg border border-blue-200">
+              {tasks.slice(0, 10).map((task, index) => (
+                <div key={task.id || index} className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 md:p-6 shadow-lg border border-green-200">
                   <h4 className="text-lg md:text-xl font-bold text-blue-800 mb-2">{task.title}</h4>
                   <p className="text-gray-700 mb-3 text-sm md:text-base">{task.description}</p>
                   <div className="flex flex-wrap gap-2 md:gap-4 text-xs md:text-sm">
-                    <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold border ${
-                      task.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' :
-                      task.status === 'in_progress' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                      task.status === 'cancelled' ? 'bg-red-100 text-red-700 border-red-200' :
-                      'bg-yellow-100 text-yellow-700 border-yellow-200'
-                    }">
-                      {task.status === 'completed' ? '✅ Përfunduar' :
-                       task.status === 'in_progress' ? '🔄 Në progres' :
-                       task.status === 'cancelled' ? '❌ Anuluar' : '⏳ Në pritje'}
+                    <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold border bg-green-100 text-green-700 border-green-200">
+                      ✅ Përfunduar
                     </span>
                     <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold border ${
                       task.priority === 'high' ? 'text-red-600 bg-red-100 border-red-200' :
@@ -372,12 +625,17 @@ export default function MyProfile() {
                     }">
                       {task.priority === 'high' ? '🔴 E lartë' : task.priority === 'medium' ? '🟡 Mesatare' : '🟢 E ulët'}
                     </span>
+                    {task.due_date && (
+                      <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold border bg-blue-100 text-blue-700 border-blue-200">
+                        📅 {new Date(task.due_date).toLocaleDateString()}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 italic">Nuk ka detyra të caktuara.</p>
+            <p className="text-gray-500 italic">Nuk ka detyra të përfunduara.</p>
           )}
         </div>
 
@@ -442,6 +700,70 @@ export default function MyProfile() {
           </div>
         </div>
       </div>
+
+      {/* Modal për ndryshimin e password-it */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl p-6 md:p-8 min-w-[320px] md:min-w-[400px] max-w-md relative animate-fade-in">
+            <button 
+              onClick={() => setShowPasswordModal(false)} 
+              className="absolute top-4 right-4 text-xl md:text-2xl text-gray-400 hover:text-red-500"
+            >
+              &times;
+            </button>
+            <h3 className="text-xl md:text-2xl font-bold text-blue-700 mb-6">🔐 Ndrysho Fjalëkalimin</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Fjalëkalimi Aktual</label>
+                <input
+                  type="password"
+                  value={passwordData.current}
+                  onChange={e => setPasswordData(prev => ({ ...prev, current: e.target.value }))}
+                  className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300"
+                  placeholder="Shkruaj fjalëkalimin aktual"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Fjalëkalimi i Ri</label>
+                <input
+                  type="password"
+                  value={passwordData.new}
+                  onChange={e => setPasswordData(prev => ({ ...prev, new: e.target.value }))}
+                  className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300"
+                  placeholder="Shkruaj fjalëkalimin e ri"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Konfirmo Fjalëkalimin e Ri</label>
+                <input
+                  type="password"
+                  value={passwordData.confirm}
+                  onChange={e => setPasswordData(prev => ({ ...prev, confirm: e.target.value }))}
+                  className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300"
+                  placeholder="Konfirmo fjalëkalimin e ri"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={changePassword}
+                  className="flex-1 bg-gradient-to-r from-green-500 to-blue-500 text-white px-4 py-3 rounded-xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition"
+                >
+                  💾 Ruaj
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPasswordModal(false);
+                    setPasswordData({ current: '', new: '', confirm: '' });
+                  }}
+                  className="flex-1 bg-gradient-to-r from-red-400 to-pink-500 text-white px-4 py-3 rounded-xl font-bold shadow hover:from-pink-600 hover:to-red-600 transition"
+                >
+                  Anulo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

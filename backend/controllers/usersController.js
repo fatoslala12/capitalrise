@@ -138,3 +138,40 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.changePassword = async (req, res) => {
+  const { id } = req.params;
+  const { current_password, new_password } = req.body;
+  
+  if (!current_password || !new_password) {
+    return res.status(400).json({ error: 'Fjalëkalimi aktual dhe i ri janë të detyrueshëm!' });
+  }
+
+  try {
+    // Merr fjalëkalimin aktual të përdoruesit
+    const userResult = await pool.query('SELECT password FROM users WHERE id = $1', [id]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Përdoruesi nuk u gjet!' });
+    }
+
+    const user = userResult.rows[0];
+    
+    // Kontrollo nëse fjalëkalimi aktual është i saktë
+    // Për momentin po kontrolloj si plain text pasi nuk kemi hash
+    if (user.password !== current_password) {
+      return res.status(400).json({ error: 'Fjalëkalimi aktual është i gabuar!' });
+    }
+
+    // Hash fjalëkalimin e ri dhe përditëso
+    const hashedNewPassword = await bcrypt.hash(new_password, 10);
+    await pool.query(
+      'UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2',
+      [hashedNewPassword, id]
+    );
+
+    res.json({ message: 'Fjalëkalimi u ndryshua me sukses!' });
+  } catch (err) {
+    console.error('Gabim gjatë ndryshimit të fjalëkalimit:', err);
+    res.status(500).json({ error: err.message });
+  }
+};

@@ -24,7 +24,7 @@ export default function WorkHours() {
   const isManager = user?.role === "manager";
   const isAdmin = user?.role === "admin";
   const isUser = user?.role === "user";
-  const isReadOnly = isUser || isManager; // Read-only për user dhe manager
+  const isReadOnly = isUser; // Read-only vetëm për user, jo për manager
   const token = localStorage.getItem("token");
 
   const [employees, setEmployees] = useState([]);
@@ -336,7 +336,7 @@ export default function WorkHours() {
         {isReadOnly ? "🕒 Orët e Mia të Punës" : "📋 Menaxho Orët e Punës"}
       </h2>
 
-      {/* Read-only view për user dhe manager */}
+      {/* Read-only view për user */}
       {isReadOnly && (
         <div className="mt-8 bg-white p-6 rounded-xl shadow-lg border border-blue-100">
           <h3 className="text-xl font-semibold mb-6 text-center text-blue-800">
@@ -452,8 +452,8 @@ export default function WorkHours() {
         </div>
       )}
 
-      {/* Admin view - existing code */}
-      {isAdmin && (
+      {/* Admin dhe Manager view - mund të editojnë */}
+      {(isAdmin || isManager) && (
         <>
           {isManager && employees.length === 0 && (
             <div className="bg-yellow-100 text-yellow-800 p-4 rounded text-center font-semibold mb-6">
