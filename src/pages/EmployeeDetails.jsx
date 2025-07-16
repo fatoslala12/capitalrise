@@ -63,6 +63,7 @@ export default function EmployeeDetails() {
   // Merr employee me workplace
   useEffect(() => {
     if (!id || allEmployees.length === 0) return;
+    setLoading(true);
     const emp = allEmployees.find(e => String(e.id) === String(id));
     if (emp) {
       setEmployee(emp);
@@ -71,7 +72,10 @@ export default function EmployeeDetails() {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => setWeekNotes(res.data || {}))
-        .catch(() => setWeekNotes({}));
+        .catch(() => setWeekNotes({}))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
   }, [id, allEmployees, token]);
 
@@ -537,72 +541,115 @@ export default function EmployeeDetails() {
       >
         {darkMode ? "☀️ Light" : "🌙 Dark"}
       </button>
-      {/* Sticky header për emrin dhe statusin */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl shadow-xl border-b border-blue-100 px-10 py-6 flex items-center gap-8">
-        {/* Avatar me iniciale ose foto - clickable për ndryshim */}
-        <div 
-          onClick={() => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = async (e) => {
-              const file = e.target.files[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onloadend = async () => {
-                  try {
-                    await axios.put(`https://building-system.onrender.com/api/employees/${id}`, {
-                      ...toSnakeCase(employee),
-                      photo: reader.result
-                    }, {
-                      headers: { Authorization: `Bearer ${token}` }
-                    });
-                    setEmployee(prev => ({ ...prev, photo: reader.result }));
-                    alert("Fotoja u ndryshua me sukses!");
-                  } catch {
-                    alert("Gabim gjatë ndryshimit të fotos!");
-                  }
-                };
-                reader.readAsDataURL(file);
-              }
-            };
-            input.click();
-          }}
-          className="cursor-pointer hover:scale-105 transition-all duration-300"
-          title="Kliko për të ndryshuar foton"
-        >
-          {photo ? (
-            <img
-              src={photo}
-              alt="Foto"
-              className="w-20 h-20 rounded-full object-cover border-4 border-blue-200 shadow-xl"
-            />
-          ) : (
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-extrabold shadow-xl border-4 border-blue-200"
-              style={{ background: getColorFromName(first_name + last_name), color: '#2d3748' }}
-            >
-              {getInitials(first_name, last_name)}
+      
+      <div className="w-full px-8 py-10 min-h-screen">
+        {/* Quick Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm">Total Orë</p>
+                <p className="text-3xl font-bold">
+                  {Object.values(workHistory).reduce((total, days) => {
+                    return total + Object.values(days).reduce((dayTotal, val) => {
+                      return dayTotal + Number(val.hours || 0);
+                    }, 0);
+                  }, 0)}
+                </p>
+              </div>
+              <div className="text-4xl">⏰</div>
             </div>
-          )}
-        </div>
-        <div>
-          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-2 dark:text-white">
-            {first_name} {last_name}
-          </h2>
-          <div className="flex gap-4 flex-wrap">
-            <span className={`px-4 py-1 rounded-full border text-base font-bold shadow-md transition-all duration-200 hover:scale-105 ${statusColor}`}>{status}</span>
-            <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-3 py-1 rounded-full shadow uppercase tracking-wide transition-all duration-200 hover:scale-105" title="Roli i punonjësit">{role}</span>
-            <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-3 py-1 rounded-full border border-blue-200 transition-all duration-200 hover:scale-105" title="Lloji i kontratës">{label_type}</span>
-            <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-3 py-1 rounded-full border border-purple-200 transition-all duration-200 hover:scale-105" title="Kualifikimi">{qualification}</span>
+          </div>
+          
+          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm">Paga Bruto</p>
+                <p className="text-3xl font-bold">
+                  £{Object.values(workHistory).reduce((total, days) => {
+                    return total + Object.values(days).reduce((dayTotal, val) => {
+                      return dayTotal + (Number(val.hours || 0) * Number(val.rate || hourly_rate || 0));
+                    }, 0);
+                  }, 0).toFixed(2)}
+                </p>
+              </div>
+              <div className="text-4xl">💰</div>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-100 text-sm">Site-t</p>
+                <p className="text-3xl font-bold">{employeeSites.length}</p>
+              </div>
+              <div className="text-4xl">🏗️</div>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-100 text-sm">Detyrat</p>
+                <p className="text-3xl font-bold">
+                  {tasks.filter(task => task.assignedTo === parseInt(id) || task.assigned_to === parseInt(id)).length}
+                </p>
+              </div>
+              <div className="text-4xl">📋</div>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="w-full px-8 py-10 min-h-screen mt-32">
-        {/* Hequr seksioni i duplikuar i detajeve të punonjësit */}
-        
+        {/* Seksioni i detajeve të punonjësit me imazh klikueshëm */}
         <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10">
           <div className="flex flex-col md:flex-row items-center gap-8">
+            {/* Avatar me iniciale ose foto - clickable për ndryshim */}
+            <div 
+              onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = async (e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = async () => {
+                      try {
+                        await axios.put(`https://building-system.onrender.com/api/employees/${id}`, {
+                          ...toSnakeCase(employee),
+                          photo: reader.result
+                        }, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                        setEmployee(prev => ({ ...prev, photo: reader.result }));
+                        showToast("Fotoja u ndryshua me sukses!", "success");
+                      } catch {
+                        showToast("Gabim gjatë ndryshimit të fotos!", "error");
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                };
+                input.click();
+              }}
+              className="cursor-pointer hover:scale-105 transition-all duration-300"
+              title="Kliko për të ndryshuar foton"
+            >
+              {photo ? (
+                <img
+                  src={photo}
+                  alt="Foto"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-blue-200 shadow-xl"
+                />
+              ) : (
+                <div
+                  className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-extrabold shadow-xl border-4 border-blue-200"
+                  style={{ background: getColorFromName(first_name + last_name), color: '#2d3748' }}
+                >
+                  {getInitials(first_name, last_name)}
+                </div>
+              )}
+            </div>
+            
             <div className="flex-1">
               <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4">
                 {editing ? (
@@ -766,6 +813,15 @@ export default function EmployeeDetails() {
                   disabled={!nextEmployee}
                 >
                   Next ➡️
+                </button>
+                <button
+                  onClick={() => {
+                    exportProfileToPDF();
+                    showToast("Raporti u eksportua me sukses!", "success");
+                  }}
+                  className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-8 py-3 rounded-2xl font-bold shadow hover:from-orange-600 hover:to-yellow-600 transition text-lg"
+                >
+                  📊 Export Raport
                 </button>
               </div>
             </div>
