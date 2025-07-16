@@ -36,6 +36,13 @@ export default function EmployeeDetails() {
   const [taskStatusFilter, setTaskStatusFilter] = useState("all");
   const [taskPriorityFilter, setTaskPriorityFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+
+  // Funksion për toast notifications
+  const showToast = (message, type = 'info') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 3000);
+  };
 
   // Merr të gjithë punonjësit për workplace
   useEffect(() => {
@@ -57,8 +64,16 @@ export default function EmployeeDetails() {
   useEffect(() => {
     if (!id || allEmployees.length === 0) return;
     const emp = allEmployees.find(e => String(e.id) === String(id));
-    if (emp) setEmployee(emp);
-  }, [id, allEmployees]);
+    if (emp) {
+      setEmployee(emp);
+      // Merr komentet e ruajtura për këtë punonjës
+      axios.get(`https://building-system.onrender.com/api/work-hours/notes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => setWeekNotes(res.data || {}))
+        .catch(() => setWeekNotes({}));
+    }
+  }, [id, allEmployees, token]);
 
   // Merr historikun e orëve të punës nga backend
   useEffect(() => {
@@ -146,9 +161,9 @@ export default function EmployeeDetails() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEditing(false);
-      alert("Të dhënat u ruajtën me sukses.");
+      showToast("Të dhënat u ruajtën me sukses!", "success");
     } catch {
-      alert("Gabim gjatë ruajtjes!");
+      showToast("Gabim gjatë ruajtjes!", "error");
     }
   };
 
@@ -181,9 +196,10 @@ export default function EmployeeDetails() {
           headers: { Authorization: `Bearer ${token}` }
         });
         setAttachments(res.data);
+        showToast("Dokumenti u ngarkua me sukses!", "success");
       } catch {
         setUploadProgress(0);
-        alert("Gabim gjatë ngarkimit të dokumentit!");
+        showToast("Gabim gjatë ngarkimit të dokumentit!", "error");
       }
     };
     reader.readAsDataURL(file);
@@ -201,8 +217,9 @@ export default function EmployeeDetails() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAttachments(res.data);
+      showToast("Dokumenti u fshi me sukses!", "success");
     } catch {
-      alert("Gabim gjatë fshirjes së dokumentit!");
+      showToast("Gabim gjatë fshirjes së dokumentit!", "error");
     }
   };
 
@@ -218,8 +235,9 @@ export default function EmployeeDetails() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAttachments(res.data);
+      showToast("Dokumenti u fshi me sukses!", "success");
     } catch {
-      alert("Gabim gjatë fshirjes së dokumentit!");
+      showToast("Gabim gjatë fshirjes së dokumentit!", "error");
     }
   };
 
@@ -229,11 +247,25 @@ export default function EmployeeDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-blue-800 mb-2">Duke ngarkuar të dhënat...</h2>
-          <p className="text-gray-600">Ju lutem prisni ndërsa marrim informacionet e punonjësit</p>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-32 w-32 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+            Duke ngarkuar detajet e punonjësit...
+          </h2>
+          <p className="text-gray-600 text-lg max-w-md mx-auto">
+            Ju lutem prisni ndërsa marrim informacionet e plota të punonjësit nga databaza
+          </p>
+          <div className="mt-6 flex justify-center space-x-2">
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"></div>
+            <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
         </div>
       </div>
     );
@@ -455,10 +487,15 @@ export default function EmployeeDetails() {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert("Komenti u ruajt me sukses!");
+      showToast("Komenti u ruajt me sukses!", "success");
+      // Rifresko komentet pas ruajtjes
+      const res = await axios.get(`https://building-system.onrender.com/api/work-hours/notes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setWeekNotes(res.data || {});
     } catch (error) {
       console.error('Error saving note:', error);
-      alert("Gabim gjatë ruajtjes së komentit!");
+      showToast("Gabim gjatë ruajtjes së komentit!", "error");
     } finally {
       setSubmittingNote(null);
     }
@@ -481,6 +518,17 @@ export default function EmployeeDetails() {
 
   return (
     <div className={darkMode ? "dark bg-gray-900 min-h-screen" : "bg-gray-50 min-h-screen"}>
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 ${
+          toast.type === 'success' ? 'bg-green-500' : 
+          toast.type === 'error' ? 'bg-red-500' : 
+          'bg-blue-500'
+        }`}>
+          {toast.message}
+        </div>
+      )}
+      
       {/* Buton dark mode toggle */}
       <button
         onClick={() => setDarkMode(v => !v)}
@@ -490,7 +538,7 @@ export default function EmployeeDetails() {
         {darkMode ? "☀️ Light" : "🌙 Dark"}
       </button>
       {/* Sticky header për emrin dhe statusin */}
-      <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-b-3xl shadow-xl border-b border-blue-100 px-10 py-6 flex items-center gap-8 mb-10 animate-fade-in">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl shadow-xl border-b border-blue-100 px-10 py-6 flex items-center gap-8">
         {/* Avatar me iniciale ose foto - clickable për ndryshim */}
         <div 
           onClick={() => {
@@ -550,7 +598,7 @@ export default function EmployeeDetails() {
           </div>
         </div>
       </div>
-      <div className="w-full px-8 py-10 min-h-screen">
+      <div className="w-full px-8 py-10 min-h-screen mt-32">
         {/* Hequr seksioni i duplikuar i detajeve të punonjësit */}
         
         <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10">
@@ -826,7 +874,7 @@ export default function EmployeeDetails() {
                         title={`Site: ${entry.site}\nOrë: ${entry.hours}\nPagesë: £${(entry.hours * entry.rate).toFixed(2)}`}
                         className="inline-block w-4 h-4 rounded-full border-2 border-white shadow-lg transition-all duration-300 hover:scale-125"
                         style={{ 
-                          background: getSiteColor(entry.site), 
+                          background: currentSiteColors[entry.site] || getSiteColor(entry.site), 
                           opacity: 0.9,
                           boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                         }}
@@ -893,7 +941,7 @@ export default function EmployeeDetails() {
                     <div className="text-lg font-semibold">Total orë: <span className="text-blue-900">{totalHours}</span></div>
                     <div className="flex flex-wrap gap-2 items-center">
                       {Object.entries(siteMap).map(([site, hours]) => (
-                        <span key={site} className="px-3 py-1 rounded-full text-sm font-bold shadow border" style={{ background: getSiteColor(site), color: '#222' }} title={`Site: ${site}`}>
+                        <span key={site} className="px-3 py-1 rounded-full text-sm font-bold shadow border" style={{ background: currentSiteColors[site] || getSiteColor(site), color: '#222' }} title={`Site: ${site}`}>
                           {site}: {hours} orë
                         </span>
                       ))}
@@ -988,6 +1036,7 @@ export default function EmployeeDetails() {
           {/* Lista e detyrave */}
           <div className="grid gap-4">
             {tasks
+              .filter(task => task.assignedTo === parseInt(id) || task.assigned_to === parseInt(id))
               .filter(task => taskStatusFilter === "all" || task.status === taskStatusFilter)
               .filter(task => taskPriorityFilter === "all" || task.priority === taskPriorityFilter)
               .map((task, index) => (
