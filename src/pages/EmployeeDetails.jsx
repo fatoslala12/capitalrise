@@ -8,6 +8,7 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import jsPDF from 'jspdf';
 import JSZip from 'jszip';
+import html2canvas from 'html2canvas';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const employeePlaceholder = "https://via.placeholder.com/100";
@@ -520,6 +521,74 @@ export default function EmployeeDetails() {
     link.click();
   }
 
+  // Funksion për export PDF të gjithë faqes
+  async function exportFullPageToPDF() {
+    try {
+      showToast("Duke krijuar raportin...", "info");
+      
+      // Krijo një div të përkohshëm për export
+      const exportDiv = document.createElement('div');
+      exportDiv.style.position = 'absolute';
+      exportDiv.style.left = '-9999px';
+      exportDiv.style.top = '0';
+      exportDiv.style.width = '1200px';
+      exportDiv.style.backgroundColor = 'white';
+      exportDiv.style.padding = '20px';
+      exportDiv.style.fontFamily = 'Arial, sans-serif';
+      
+      // Kopjo përmbajtjen e faqes
+      const mainContent = document.querySelector('.w-full.px-8.py-10');
+      if (mainContent) {
+        exportDiv.innerHTML = `
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1e40af; font-size: 32px; margin-bottom: 10px;">Alban Construction</h1>
+            <h2 style="color: #7c3aed; font-size: 24px;">Raport i Detajuar i Punonjësit</h2>
+          </div>
+          ${mainContent.innerHTML}
+        `;
+      }
+      
+      document.body.appendChild(exportDiv);
+      
+      // Përdor html2canvas për të kapur imazhin
+      const canvas = await html2canvas(exportDiv, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      // Krijo PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      pdf.save(`raport_i_plote_${first_name}_${last_name}.pdf`);
+      
+      // Pastro
+      document.body.removeChild(exportDiv);
+      showToast("Raporti u eksportua me sukses!", "success");
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      showToast("Gabim gjatë eksportit!", "error");
+    }
+  }
+
   return (
     <div className={darkMode ? "dark bg-gray-900 min-h-screen" : "bg-gray-50 min-h-screen"}>
       {/* Toast Notification */}
@@ -536,20 +605,21 @@ export default function EmployeeDetails() {
       {/* Buton dark mode toggle */}
       <button
         onClick={() => setDarkMode(v => !v)}
-        className="fixed top-6 right-8 z-50 bg-gradient-to-r from-gray-700 to-blue-700 text-white px-4 py-2 rounded-full shadow hover:scale-105 transition-all"
+        className="fixed top-4 right-4 z-50 bg-gradient-to-r from-gray-700 to-blue-700 text-white px-3 py-2 rounded-full shadow hover:scale-105 transition-all text-sm md:text-base md:px-4 md:py-2"
         title={darkMode ? "Ndiz Light Mode" : "Ndiz Dark Mode"}
       >
-        {darkMode ? "☀️ Light" : "🌙 Dark"}
+        {darkMode ? "☀️" : "🌙"}
+        <span className="hidden md:inline ml-1">{darkMode ? "Light" : "Dark"}</span>
       </button>
       
-      <div className="w-full px-8 py-10 min-h-screen">
-        {/* Quick Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl p-6 shadow-lg">
+      <div className="w-full px-4 md:px-8 py-6 md:py-10 min-h-screen">
+        {/* Quick Stats Cards - Mobile Optimized */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-10">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-100 text-sm">Total Orë</p>
-                <p className="text-3xl font-bold">
+                <p className="text-blue-100 text-xs md:text-sm">Total Orë</p>
+                <p className="text-lg md:text-3xl font-bold">
                   {Object.values(workHistory).reduce((total, days) => {
                     return total + Object.values(days).reduce((dayTotal, val) => {
                       return dayTotal + Number(val.hours || 0);
@@ -557,15 +627,15 @@ export default function EmployeeDetails() {
                   }, 0)}
                 </p>
               </div>
-              <div className="text-4xl">⏰</div>
+              <div className="text-2xl md:text-4xl">⏰</div>
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-100 text-sm">Paga Bruto</p>
-                <p className="text-3xl font-bold">
+                <p className="text-green-100 text-xs md:text-sm">Paga Bruto</p>
+                <p className="text-lg md:text-3xl font-bold">
                   £{Object.values(workHistory).reduce((total, days) => {
                     return total + Object.values(days).reduce((dayTotal, val) => {
                       return dayTotal + (Number(val.hours || 0) * Number(val.rate || hourly_rate || 0));
@@ -573,35 +643,35 @@ export default function EmployeeDetails() {
                   }, 0).toFixed(2)}
                 </p>
               </div>
-              <div className="text-4xl">💰</div>
+              <div className="text-2xl md:text-4xl">💰</div>
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-2xl p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-100 text-sm">Site-t</p>
-                <p className="text-3xl font-bold">{employeeSites.length}</p>
+                <p className="text-purple-100 text-xs md:text-sm">Site-t</p>
+                <p className="text-lg md:text-3xl font-bold">{employeeSites.length}</p>
               </div>
-              <div className="text-4xl">🏗️</div>
+              <div className="text-2xl md:text-4xl">🏗️</div>
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-100 text-sm">Detyrat</p>
-                <p className="text-3xl font-bold">
+                <p className="text-orange-100 text-xs md:text-sm">Detyrat</p>
+                <p className="text-lg md:text-3xl font-bold">
                   {tasks.filter(task => task.assignedTo === parseInt(id) || task.assigned_to === parseInt(id)).length}
                 </p>
               </div>
-              <div className="text-4xl">📋</div>
+              <div className="text-2xl md:text-4xl">📋</div>
             </div>
           </div>
         </div>
         {/* Seksioni i detajeve të punonjësit me imazh klikueshëm */}
-        <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10">
-          <div className="flex flex-col md:flex-row items-center gap-8">
+        <div className="bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
             {/* Avatar me iniciale ose foto - clickable për ndryshim */}
             <div 
               onClick={() => {
@@ -638,11 +708,11 @@ export default function EmployeeDetails() {
                 <img
                   src={photo}
                   alt="Foto"
-                  className="w-32 h-32 rounded-full object-cover border-4 border-blue-200 shadow-xl"
+                  className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-blue-200 shadow-xl"
                 />
               ) : (
                 <div
-                  className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-extrabold shadow-xl border-4 border-blue-200"
+                  className="w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center text-2xl md:text-4xl font-extrabold shadow-xl border-4 border-blue-200"
                   style={{ background: getColorFromName(first_name + last_name), color: '#2d3748' }}
                 >
                   {getInitials(first_name, last_name)}
@@ -650,22 +720,22 @@ export default function EmployeeDetails() {
               )}
             </div>
             
-            <div className="flex-1">
-              <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4">
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-2xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-3 md:mb-4">
                 {editing ? (
-                  <div className="flex gap-4">
+                  <div className="flex flex-col md:flex-row gap-2 md:gap-4">
                     <input
                       name="first_name"
                       value={employee.first_name}
                       onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-1/2"
+                      className="p-2 md:p-3 border-2 border-blue-200 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-full md:w-1/2"
                       placeholder="Emri"
                     />
                     <input
                       name="last_name"
                       value={employee.last_name}
                       onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-1/2"
+                      className="p-2 md:p-3 border-2 border-blue-200 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-full md:w-1/2"
                       placeholder="Mbiemri"
                     />
                   </div>
@@ -673,11 +743,11 @@ export default function EmployeeDetails() {
                   `${employee.first_name} ${employee.last_name}`
                 )}
               </h2>
-              <div className="flex flex-wrap gap-4 mb-8">
-                <span className={`px-4 py-1 rounded-full border text-base font-bold shadow-md ${statusColor}`}>{status}</span>
-                <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-3 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
-                <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-3 py-1 rounded-full border border-blue-200">{label_type}</span>
-                <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-3 py-1 rounded-full border border-purple-200">{qualification}</span>
+              <div className="flex flex-wrap gap-2 md:gap-4 mb-4 md:mb-8 justify-center md:justify-start">
+                <span className={`px-2 md:px-4 py-1 rounded-full border text-xs md:text-base font-bold shadow-md ${statusColor}`}>{status}</span>
+                <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-2 md:px-3 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
+                <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 md:px-3 py-1 rounded-full border border-blue-200">{label_type}</span>
+                <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 md:px-3 py-1 rounded-full border border-purple-200">{qualification}</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-base mb-8">
                 {editing ? (
@@ -777,10 +847,10 @@ export default function EmployeeDetails() {
                   </>
                 )}
               </div>
-              <div className="flex gap-6 mt-10">
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-6 mt-6 md:mt-10">
                 <button
                   onClick={() => navigate('/admin/employees-list')}
-                  className="bg-gradient-to-r from-gray-400 to-blue-400 text-white px-8 py-3 rounded-2xl font-bold shadow hover:from-blue-600 hover:to-gray-600 transition text-lg"
+                  className="bg-gradient-to-r from-gray-400 to-blue-400 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-blue-600 hover:to-gray-600 transition text-sm md:text-lg"
                 >
                   ⬅️ Kthehu
                 </button>
@@ -788,13 +858,13 @@ export default function EmployeeDetails() {
                   <>
                     <button
                       onClick={handleSave}
-                      className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-3 rounded-2xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-lg"
+                      className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm md:text-lg"
                     >
                       💾 Ruaj
                     </button>
                     <button
                       onClick={() => setEditing(false)}
-                      className="bg-gradient-to-r from-red-400 to-pink-500 text-white px-8 py-3 rounded-2xl font-bold shadow hover:from-pink-600 hover:to-red-600 transition text-lg"
+                      className="bg-gradient-to-r from-red-400 to-pink-500 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-pink-600 hover:to-red-600 transition text-sm md:text-lg"
                     >
                       Anulo
                     </button>
@@ -802,56 +872,55 @@ export default function EmployeeDetails() {
                 ) : (
                   <button
                     onClick={() => setEditing(true)}
-                    className="bg-gradient-to-r from-purple-400 to-blue-400 text-white px-8 py-3 rounded-2xl font-bold text-lg shadow hover:from-blue-600 hover:to-purple-600 transition"
+                    className="bg-gradient-to-r from-purple-400 to-blue-400 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold text-sm md:text-lg shadow hover:from-blue-600 hover:to-purple-600 transition"
                   >
                     ✏️ Edito
                   </button>
                 )}
                 <button
                   onClick={() => nextEmployee && navigate(`/admin/employee/${nextEmployee.id}`)}
-                  className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-8 py-3 rounded-2xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-lg disabled:opacity-50"
+                  className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm md:text-lg disabled:opacity-50"
                   disabled={!nextEmployee}
                 >
                   Next ➡️
                 </button>
                 <button
                   onClick={() => {
-                    exportProfileToPDF();
-                    showToast("Raporti u eksportua me sukses!", "success");
+                    exportFullPageToPDF();
                   }}
-                  className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-8 py-3 rounded-2xl font-bold shadow hover:from-orange-600 hover:to-yellow-600 transition text-lg"
+                  className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-orange-600 hover:to-yellow-600 transition text-sm md:text-lg"
                 >
-                  📊 Export Raport
+                  📊 Export Raport i Plotë
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10">
-          <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">📄 Dokumentet</h3>
-          <div className="flex flex-wrap gap-4 mb-4 items-center">
+        <div className="bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
+          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">📄 Dokumentet</h3>
+          <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 mb-4 items-center">
             <input
               type="text"
               value={searchDoc}
               onChange={e => setSearchDoc(e.target.value)}
               placeholder="Kërko dokument..."
-              className="p-2 rounded-xl border-2 border-blue-200"
+              className="p-2 rounded-xl border-2 border-blue-200 w-full md:w-auto"
             />
             <button
               onClick={exportProfileToPDF}
-              className="bg-gradient-to-r from-purple-400 to-blue-400 text-white px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition"
+              className="bg-gradient-to-r from-purple-400 to-blue-400 text-white px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition text-sm md:text-base"
             >
               ⬇️ Export PDF
             </button>
             <button
               onClick={downloadAllDocsZip}
-              className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition"
+              className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm md:text-base"
             >
               ⬇️ Shkarko të gjitha
             </button>
           </div>
-          <input type="file" onChange={handleDocumentUpload} className="mb-4" />
+          <input type="file" onChange={handleDocumentUpload} className="mb-4 w-full" />
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
               <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-3 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
@@ -860,19 +929,19 @@ export default function EmployeeDetails() {
           <ul className="space-y-2">
             {attachments.filter(doc => doc.file_name.toLowerCase().includes(searchDoc.toLowerCase())).map(doc => {
               return (
-                <li key={doc.id} className="flex items-center gap-4 bg-blue-50 rounded-xl p-3 shadow">
+                <li key={doc.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 bg-blue-50 rounded-xl p-3 shadow">
                   <a
                     href={doc.file_path}
                     download={doc.file_name}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-700 underline font-semibold flex items-center gap-2"
+                    className="text-blue-700 underline font-semibold flex items-center gap-2 text-sm md:text-base"
                   >
                     <span>⬇️</span>{doc.file_name}
                   </a>
                   <button
                     onClick={() => setPreviewDocId(previewDocId === doc.id ? null : doc.id)}
-                    className="px-2 py-1 bg-gradient-to-r from-blue-200 to-purple-200 text-blue-900 rounded shadow border hover:from-purple-300 hover:to-blue-300 transition-all"
+                    className="px-2 py-1 bg-gradient-to-r from-blue-200 to-purple-200 text-blue-900 rounded shadow border hover:from-purple-300 hover:to-blue-300 transition-all text-xs md:text-sm"
                   >
                     {previewDocId === doc.id ? "Mbyll Preview" : "Shfaq Preview"}
                   </button>
@@ -884,7 +953,7 @@ export default function EmployeeDetails() {
                   ) : null}
                   <button
                     onClick={() => handleDeleteAttachment(doc.id)}
-                    className="ml-auto px-3 py-1 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg shadow hover:from-pink-600 hover:to-red-600 transition-all"
+                    className="ml-auto px-3 py-1 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg shadow hover:from-pink-600 hover:to-red-600 transition-all text-xs md:text-sm"
                   >
                     🗑 Fshi
                   </button>
@@ -894,17 +963,19 @@ export default function EmployeeDetails() {
           </ul>
         </div>
 
-        <div className="w-full bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10">
-          <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 Historiku i Orëve të Punës</h3>
-          <EmployeeWorkHistory workHistory={workHistory} paidStatus={paidStatus} employee={employee} />
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
+          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 Historiku i Orëve të Punës</h3>
+          <div className="overflow-x-auto">
+            <EmployeeWorkHistory workHistory={workHistory} paidStatus={paidStatus} employee={employee} />
+          </div>
         </div>
 
         {/* Seksioni i kalendarit të orëve të punës */}
-        <div className="w-full bg-white/80 rounded-2xl shadow-2xl border-2 border-blue-200 p-8 mb-10 mt-10">
-          <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-6 flex items-center gap-2">📅 Kalendar i Orëve të Punës</h3>
-          <div className="flex flex-wrap gap-4 mb-4 items-center">
-            <label className="font-semibold text-blue-700">Filtro sipas site-it:</label>
-            <select value={filterSite} onChange={e => setFilterSite(e.target.value)} className="p-2 rounded-xl border-2 border-blue-200">
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-2xl border-2 border-blue-200 p-4 md:p-8 mb-6 md:mb-10 mt-6 md:mt-10">
+          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📅 Kalendar i Orëve të Punës</h3>
+          <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 mb-4 items-center">
+            <label className="font-semibold text-blue-700 text-sm md:text-base">Filtro sipas site-it:</label>
+            <select value={filterSite} onChange={e => setFilterSite(e.target.value)} className="p-2 rounded-xl border-2 border-blue-200 text-sm md:text-base">
               <option value="">Të gjitha</option>
               {employeeSites.map(site => (
                 <option key={site} value={site}>{site}</option>
@@ -912,7 +983,7 @@ export default function EmployeeDetails() {
             </select>
             <button
               onClick={() => exportMonthToCSV()}
-              className="ml-auto bg-gradient-to-r from-green-400 to-blue-400 text-white px-6 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition"
+              className="ml-auto bg-gradient-to-r from-green-400 to-blue-400 text-white px-4 md:px-6 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm md:text-base"
             >
               ⬇️ Export Muaji
             </button>
@@ -928,7 +999,7 @@ export default function EmployeeDetails() {
                       <span
                         key={idx}
                         title={`Site: ${entry.site}\nOrë: ${entry.hours}\nPagesë: £${(entry.hours * entry.rate).toFixed(2)}`}
-                        className="inline-block w-4 h-4 rounded-full border-2 border-white shadow-lg transition-all duration-300 hover:scale-125"
+                        className="inline-block w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-lg transition-all duration-300 hover:scale-125"
                         style={{ 
                           background: currentSiteColors[entry.site] || getSiteColor(entry.site), 
                           opacity: 0.9,
@@ -941,24 +1012,24 @@ export default function EmployeeDetails() {
               }
               return null;
             }}
-            className="border-2 border-blue-200 rounded-2xl shadow-xl w-full text-lg"
+            className="border-2 border-blue-200 rounded-xl md:rounded-2xl shadow-xl w-full text-sm md:text-lg"
           />
-          <div className="flex gap-4 mt-6 flex-wrap justify-center">
+          <div className="flex gap-2 md:gap-4 mt-4 md:mt-6 flex-wrap justify-center">
             {employeeSites.map((site) => (
-              <div key={site} className="flex items-center gap-2 bg-white/80 rounded-xl px-4 py-2 shadow-md border border-blue-100">
-                <span className="inline-block w-5 h-5 rounded-full border-2 border-white shadow-md" style={{ background: currentSiteColors[site] }}></span>
-                <span className="text-lg font-bold text-blue-800">{site}</span>
+              <div key={site} className="flex items-center gap-2 bg-white/80 rounded-xl px-3 md:px-4 py-2 shadow-md border border-blue-100">
+                <span className="inline-block w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-white shadow-md" style={{ background: currentSiteColors[site] }}></span>
+                <span className="text-sm md:text-lg font-bold text-blue-800">{site}</span>
               </div>
             ))}
           </div>
           {/* Modal për detajet e ditës */}
           {selectedDate && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 min-w-[320px] max-w-md relative animate-fade-in">
-                <button onClick={() => setSelectedDate(null)} className="absolute top-2 right-2 text-2xl text-gray-400 hover:text-red-500">&times;</button>
-                <h4 className="text-xl font-bold mb-4 text-blue-700">Detajet për {selectedDate.toLocaleDateString()}</h4>
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8 min-w-[280px] md:min-w-[320px] max-w-md relative animate-fade-in">
+                <button onClick={() => setSelectedDate(null)} className="absolute top-2 right-2 text-xl md:text-2xl text-gray-400 hover:text-red-500">&times;</button>
+                <h4 className="text-lg md:text-xl font-bold mb-3 md:mb-4 text-blue-700">Detajet për {selectedDate.toLocaleDateString()}</h4>
                 {filteredWorkDays[selectedDate.toISOString().slice(0, 10)]?.length ? (
-                  <ul className="space-y-3">
+                  <ul className="space-y-2 md:space-y-3">
                     {filteredWorkDays[selectedDate.toISOString().slice(0, 10)].map((entry, idx) => (
                       <li key={idx} className="flex flex-col gap-1 bg-blue-50 rounded-xl p-3 shadow">
                         <span><b>Site:</b> <span className="font-semibold" style={{ color: siteColors[entry.site] }}>{entry.site}</span></span>
@@ -976,9 +1047,9 @@ export default function EmployeeDetails() {
         </div>
 
         {/* Timeline vertikal poshtë kalendarit */}
-        <div className="w-full bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10 mt-10">
-          <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 Timeline i Orëve të Punës (Javë)</h3>
-          <div className="border-l-4 border-blue-200 pl-6 space-y-8">
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10 mt-6 md:mt-10">
+          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 Timeline i Orëve të Punës (Javë)</h3>
+          <div className="border-l-4 border-blue-200 pl-4 md:pl-6 space-y-4 md:space-y-8">
             {Object.entries(workHistory).map(([weekLabel, days], idx) => {
               let totalHours = 0;
               let siteMap = {};
@@ -991,36 +1062,36 @@ export default function EmployeeDetails() {
               const isPaid = paidStatus[weekLabel];
               return (
                 <div key={weekLabel} className="relative">
-                  <div className="absolute -left-7 top-2 w-4 h-4 rounded-full border-2" style={{ background: isPaid ? '#bbf7d0' : '#fecaca', borderColor: isPaid ? '#22c55e' : '#ef4444' }}></div>
-                  <div className="flex flex-col md:flex-row md:items-center gap-4 bg-blue-50 rounded-xl p-4 shadow border border-blue-100">
-                    <div className="font-bold text-blue-700 min-w-[160px]">{weekLabel}</div>
-                    <div className="text-lg font-semibold">Total orë: <span className="text-blue-900">{totalHours}</span></div>
-                    <div className="flex flex-wrap gap-2 items-center">
+                  <div className="absolute -left-5 md:-left-7 top-2 w-3 h-3 md:w-4 md:h-4 rounded-full border-2" style={{ background: isPaid ? '#bbf7d0' : '#fecaca', borderColor: isPaid ? '#22c55e' : '#ef4444' }}></div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 bg-blue-50 rounded-xl p-3 md:p-4 shadow border border-blue-100">
+                    <div className="font-bold text-blue-700 text-sm md:text-base min-w-[140px] md:min-w-[160px]">{weekLabel}</div>
+                    <div className="text-base md:text-lg font-semibold">Total orë: <span className="text-blue-900">{totalHours}</span></div>
+                    <div className="flex flex-wrap gap-1 md:gap-2 items-center">
                       {Object.entries(siteMap).map(([site, hours]) => (
-                        <span key={site} className="px-3 py-1 rounded-full text-sm font-bold shadow border" style={{ background: currentSiteColors[site] || getSiteColor(site), color: '#222' }} title={`Site: ${site}`}>
+                        <span key={site} className="px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold shadow border" style={{ background: currentSiteColors[site] || getSiteColor(site), color: '#222' }} title={`Site: ${site}`}>
                           {site}: {hours} orë
                         </span>
                       ))}
                     </div>
                     <div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md border ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
+                      <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold shadow-md border ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
                         {isPaid ? 'Paguar' : 'Pa paguar'}
                       </span>
                     </div>
                     {/* Koment/notes për këtë javë */}
-                    <div className="flex flex-col gap-1 ml-4">
+                    <div className="flex flex-col gap-1 ml-2 md:ml-4">
                       <div className="flex gap-2">
                         <input
                           type="text"
                           value={weekNotes[weekLabel] || ''}
                           onChange={e => setWeekNotes(prev => ({ ...prev, [weekLabel]: e.target.value }))}
                           placeholder="Shkruaj koment për këtë javë..."
-                          className="p-2 rounded-xl border-2 border-blue-200 text-sm flex-1"
+                          className="p-2 rounded-xl border-2 border-blue-200 text-xs md:text-sm flex-1"
                         />
                         <button
                           onClick={() => saveWeekNote(weekLabel, weekNotes[weekLabel] || '')}
                           disabled={submittingNote === weekLabel}
-                          className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm disabled:opacity-50"
+                          className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-xs md:text-sm disabled:opacity-50"
                         >
                           {submittingNote === weekLabel ? '⏳' : '💾'}
                         </button>
@@ -1037,19 +1108,19 @@ export default function EmployeeDetails() {
         </div>
 
         {/* Pie chart për ndarjen e orëve sipas site-ve */}
-        <div className="w-full bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10 mt-10 flex flex-col items-center">
-          <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-6 flex items-center gap-2">📊 Ndarja e Orëve sipas Site-ve</h3>
-          <div className="w-full max-w-md">
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10 mt-6 md:mt-10 flex flex-col items-center">
+          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📊 Ndarja e Orëve sipas Site-ve</h3>
+          <div className="w-full max-w-sm md:max-w-md">
             <Pie data={pieData} options={{
               plugins: {
                 legend: {
                   position: 'bottom',
                   labels: {
                     font: {
-                      size: 14,
+                      size: 12,
                       weight: 'bold'
                     },
-                    padding: 20
+                    padding: 15
                   }
                 }
               }
@@ -1058,16 +1129,16 @@ export default function EmployeeDetails() {
         </div>
 
         {/* Seksioni i Detyrave */}
-        <div className="w-full bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-8 mb-10 mt-10">
-          <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-6 flex items-center gap-2">📋 Detyrat e Mia</h3>
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-8 mb-6 md:mb-10 mt-6 md:mt-10">
+          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📋 Detyrat e Mia</h3>
           
           {/* Filtra për detyrat */}
-          <div className="flex flex-wrap gap-4 mb-6 items-center">
-            <label className="font-semibold text-blue-700 text-lg">Filtro sipas statusit:</label>
+          <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 mb-4 md:mb-6 items-center">
+            <label className="font-semibold text-blue-700 text-sm md:text-lg">Filtro sipas statusit:</label>
             <select 
               value={taskStatusFilter} 
               onChange={e => setTaskStatusFilter(e.target.value)} 
-              className="p-3 rounded-xl border-2 border-blue-200 text-lg"
+              className="p-2 md:p-3 rounded-xl border-2 border-blue-200 text-sm md:text-lg"
             >
               <option value="all">Të gjitha</option>
               <option value="pending">⏳ Në pritje</option>
@@ -1076,11 +1147,11 @@ export default function EmployeeDetails() {
               <option value="cancelled">❌ Anuluar</option>
             </select>
             
-            <label className="font-semibold text-blue-700 text-lg ml-4">Filtro sipas prioritetit:</label>
+            <label className="font-semibold text-blue-700 text-sm md:text-lg md:ml-4">Filtro sipas prioritetit:</label>
             <select 
               value={taskPriorityFilter} 
               onChange={e => setTaskPriorityFilter(e.target.value)} 
-              className="p-3 rounded-xl border-2 border-blue-200 text-lg"
+              className="p-2 md:p-3 rounded-xl border-2 border-blue-200 text-sm md:text-lg"
             >
               <option value="all">Të gjitha</option>
               <option value="high">🔴 E lartë</option>
@@ -1090,23 +1161,23 @@ export default function EmployeeDetails() {
           </div>
 
           {/* Lista e detyrave */}
-          <div className="grid gap-4">
+          <div className="grid gap-3 md:gap-4">
             {tasks
               .filter(task => task.assignedTo === parseInt(id) || task.assigned_to === parseInt(id))
               .filter(task => taskStatusFilter === "all" || task.status === taskStatusFilter)
               .filter(task => taskPriorityFilter === "all" || task.priority === taskPriorityFilter)
               .map((task, index) => (
-                <div key={task.id || index} className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 shadow-lg border border-blue-200 hover:shadow-xl transition-all duration-300">
-                  <div className="flex flex-col md:flex-row md:items-start gap-4">
+                <div key={task.id || index} className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 md:p-6 shadow-lg border border-blue-200 hover:shadow-xl transition-all duration-300">
+                  <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-4">
                     {/* Prioriteti dhe statusi */}
-                    <div className="flex flex-col gap-2 min-w-[200px]">
+                    <div className="flex flex-col gap-2 min-w-[180px] md:min-w-[200px]">
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl">{getPriorityIcon(task.priority)}</span>
-                        <span className={`px-3 py-1 rounded-full text-sm font-bold border ${getPriorityColor(task.priority)}`}>
+                        <span className="text-xl md:text-2xl">{getPriorityIcon(task.priority)}</span>
+                        <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold border ${getPriorityColor(task.priority)}`}>
                           {task.priority === 'high' ? 'E lartë' : task.priority === 'medium' ? 'Mesatare' : 'E ulët'}
                         </span>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-sm font-bold border ${
+                      <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold border ${
                         task.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' :
                         task.status === 'in_progress' ? 'bg-blue-100 text-blue-700 border-blue-200' :
                         task.status === 'cancelled' ? 'bg-red-100 text-red-700 border-red-200' :
@@ -1120,27 +1191,27 @@ export default function EmployeeDetails() {
 
                     {/* Detajet kryesore */}
                     <div className="flex-1">
-                      <h4 className="text-xl font-bold text-blue-800 mb-2">{task.title}</h4>
-                      <p className="text-gray-700 mb-3 text-lg">{task.description}</p>
+                      <h4 className="text-lg md:text-xl font-bold text-blue-800 mb-2">{task.title}</h4>
+                      <p className="text-gray-700 mb-3 text-sm md:text-lg">{task.description}</p>
                       
-                      <div className="flex flex-wrap gap-4 text-base">
+                      <div className="flex flex-col md:flex-row flex-wrap gap-2 md:gap-4 text-sm md:text-base">
                         <span className="flex items-center gap-2">
-                          <span className="text-lg">📅</span>
+                          <span className="text-base md:text-lg">📅</span>
                           <span className="font-semibold">Data:</span>
                           <span>{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</span>
                         </span>
                         
                         <span className="flex items-center gap-2">
-                          <span className="text-lg">🏷️</span>
+                          <span className="text-base md:text-lg">🏷️</span>
                           <span className="font-semibold">Kategoria:</span>
                           <span>{getCategoryName(task.category)}</span>
                         </span>
                         
                         {task.site && (
                           <span className="flex items-center gap-2">
-                            <span className="text-lg">🏗️</span>
+                            <span className="text-base md:text-lg">🏗️</span>
                             <span className="font-semibold">Site:</span>
-                            <span className="px-2 py-1 rounded-full text-sm font-bold" style={{ background: getSiteColor(task.site), color: '#222' }}>
+                            <span className="px-2 py-1 rounded-full text-xs font-bold" style={{ background: getSiteColor(task.site), color: '#222' }}>
                               {task.site}
                             </span>
                           </span>
@@ -1149,16 +1220,16 @@ export default function EmployeeDetails() {
                     </div>
 
                     {/* Butona e veprimeve */}
-                    <div className="flex flex-col gap-2 min-w-[120px]">
+                    <div className="flex flex-col gap-2 min-w-[100px] md:min-w-[120px]">
                       <button 
                         onClick={() => navigate(`/tasks/${task.id}`)}
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                        className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition-all duration-300 text-xs md:text-sm"
                       >
                         👁️ Shiko
                       </button>
                       <button 
                         onClick={() => navigate('/tasks')}
-                        className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-4 py-2 rounded-xl font-bold shadow hover:from-green-600 hover:to-blue-600 transition-all duration-300"
+                        className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-green-600 hover:to-blue-600 transition-all duration-300 text-xs md:text-sm"
                       >
                         📋 Të gjitha
                       </button>
@@ -1168,13 +1239,13 @@ export default function EmployeeDetails() {
               ))}
             
             {tasks.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">📋</div>
-                <h4 className="text-xl font-bold text-gray-600 mb-2">Nuk ka detyra të caktuara</h4>
-                <p className="text-gray-500 text-lg">Ky punonjës nuk ka detyra të caktuara për momentin.</p>
+              <div className="text-center py-8 md:py-12">
+                <div className="text-4xl md:text-6xl mb-4">📋</div>
+                <h4 className="text-lg md:text-xl font-bold text-gray-600 mb-2">Nuk ka detyra të caktuara</h4>
+                <p className="text-gray-500 text-sm md:text-lg">Ky punonjës nuk ka detyra të caktuara për momentin.</p>
                 <button 
                   onClick={() => navigate('/tasks')}
-                  className="mt-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                  className="mt-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition-all duration-300 text-sm md:text-base"
                 >
                   📋 Shiko të gjitha detyrat
                 </button>
@@ -1194,15 +1265,15 @@ function EmployeeWorkHistory({ workHistory, paidStatus, employee }) {
   }
 
   return (
-    <table className="w-full text-base border bg-white rounded-xl shadow">
+    <table className="w-full text-sm md:text-base border bg-white rounded-xl shadow min-w-[600px]">
       <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100">
         <tr>
-          <th className="p-2 border">Java</th>
-          <th className="p-2 border">Total Orë</th>
-          <th className="p-2 border">Bruto (£)</th>
-          <th className="p-2 border">Neto (£)</th>
-          <th className="p-2 border">Sipas Site-ve</th>
-          <th className="p-2 border">Statusi</th>
+          <th className="p-2 border text-xs md:text-sm">Java</th>
+          <th className="p-2 border text-xs md:text-sm">Total Orë</th>
+          <th className="p-2 border text-xs md:text-sm">Bruto (£)</th>
+          <th className="p-2 border text-xs md:text-sm">Neto (£)</th>
+          <th className="p-2 border text-xs md:text-sm">Sipas Site-ve</th>
+          <th className="p-2 border text-xs md:text-sm">Statusi</th>
         </tr>
       </thead>
       <tbody>
@@ -1226,13 +1297,13 @@ function EmployeeWorkHistory({ workHistory, paidStatus, employee }) {
 
           return (
             <tr key={idx} className="hover:bg-purple-50 transition-all">
-              <td className="p-2 border">{weekLabel}</td>
-              <td className="p-2 border">{totalHours}</td>
-              <td className="p-2 border text-green-700 font-bold">£{gross.toFixed(2)}</td>
-              <td className="p-2 border text-blue-700 font-bold">£{net.toFixed(2)}</td>
-              <td className="p-2 border">{siteBreakdown}</td>
+              <td className="p-2 border text-xs md:text-sm">{weekLabel}</td>
+              <td className="p-2 border text-xs md:text-sm">{totalHours}</td>
+              <td className="p-2 border text-green-700 font-bold text-xs md:text-sm">£{gross.toFixed(2)}</td>
+              <td className="p-2 border text-blue-700 font-bold text-xs md:text-sm">£{net.toFixed(2)}</td>
+              <td className="p-2 border text-xs md:text-sm">{siteBreakdown}</td>
               <td className="p-2 border">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
+                <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold shadow-md ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
                   {isPaid ? "Paguar" : "Pa paguar"}
                 </span>
               </td>

@@ -21,12 +21,14 @@ const managerMenu = [
   { path: "/manager/employees-list", label: "➕ Menaxho Punonjësit" },
   { path: "/manager/work-hours", label: "🕒 Orët e Punës" },
   { path: "/manager/payments", label: "💰 Pagesat" },
+  { path: "/manager/my-profile", label: "👤 Profili Im" },
 ];
 
 const userMenu = [
   { path: "/user/dashboard", label: "🏠 Dashboard" },
   { path: "/user/work-hours", label: "🕒 Orët e Punës" },
   { path: "/user/my-tasks", label: "📝 Detyrat e Mia" },
+  { path: "/user/my-profile", label: "👤 Profili Im" },
 ];
 
 export default function MainLayout() {
