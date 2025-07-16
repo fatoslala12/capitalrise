@@ -375,47 +375,76 @@ exports.getWorkHoursByContract = async (req, res) => {
 
 exports.getStructuredWorkHoursForEmployee = async (req, res) => {
   const { employeeId } = req.params;
+  
+  if (!employeeId) {
+    return res.status(400).json({ error: 'employeeId është i detyrueshëm' });
+  }
+  
+  const client = await pool.connect();
   try {
-    const result = await pool.query(`
-      SELECT wh.*, c.site_name
+    // Merr të gjitha orët e punës për këtë punonjës
+    const result = await client.query(`
+      SELECT 
+        wh.date,
+        wh.hours,
+        wh.site,
+        wh.rate,
+        c.site_name as contract_site
       FROM work_hours wh
-      JOIN contracts c ON wh.contract_id = c.id
+      LEFT JOIN contracts c ON wh.contract_id = c.id
       WHERE wh.employee_id = $1
       ORDER BY wh.date DESC
     `, [employeeId]);
-    // Strukturo të dhënat si më lart
-    const data = {};
+    
+    // Strukturo të dhënat sipas javëve
+    const structuredData = {};
+    
     result.rows.forEach(row => {
       const date = new Date(row.date);
+      const weekLabel = getWeekLabel(date);
       
-      // Use same week calculation as frontend (Monday to Sunday)
-      const weekDay = date.getDay();
-      const diff = date.getDate() - weekDay + (weekDay === 0 ? -6 : 1);
-      const weekStart = new Date(date);
-      weekStart.setDate(diff);
-      weekStart.setHours(0, 0, 0, 0);
+      if (!structuredData[weekLabel]) {
+        structuredData[weekLabel] = {};
+      }
       
-      const weekStartStr = weekStart.toISOString().slice(0, 10);
-      const weekEndStr = new Date(weekStart.getTime() + 6 * 86400000).toISOString().slice(0, 10);
-      const weekLabel = `${weekStartStr} - ${weekEndStr}`;
-      
-      const dayNames = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"];
-      const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
-      const dayName = dayNames[dayIndex];
-      
-      if (!data[weekLabel]) data[weekLabel] = {};
-      data[weekLabel][dayName] = {
-        hours: row.hours,
-        site: row.site_name,
-        rate: row.rate,
-        contract_id: row.contract_id
+      const dayName = getDayName(date);
+      structuredData[weekLabel][dayName] = {
+        hours: Number(row.hours || 0),
+        site: row.site || row.contract_site || '',
+        rate: Number(row.rate || 0)
       };
     });
-    res.json(data);
+    
+    res.json(structuredData);
+    
   } catch (err) {
+    console.error('[ERROR] Get structured work hours for employee:', err);
     res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
   }
 };
+
+// Helper functions
+function getWeekLabel(date) {
+  const startOfWeek = new Date(date);
+  const day = startOfWeek.getDay();
+  const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+  startOfWeek.setDate(diff);
+  
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  
+  const startStr = startOfWeek.toISOString().slice(0, 10);
+  const endStr = endOfWeek.toISOString().slice(0, 10);
+  
+  return `${startStr} - ${endStr}`;
+}
+
+function getDayName(date) {
+  const days = ["E diel", "E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë"];
+  return days[date.getDay()];
+}
 
 // Debug endpoint për të kontrolluar manager permissions
 exports.debugManagerAccess = async (req, res) => {
@@ -724,6 +753,124 @@ exports.getWeekNotes = async (req, res) => {
     
   } catch (err) {
     console.error('[ERROR] Get week notes:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+};
+
+exports.updatePaymentStatus = async (req, res) => {
+  const { updates } = req.body;
+  
+  if (!updates || !Array.isArray(updates)) {
+    return res.status(400).json({ error: 'Updates array is required' });
+  }
+  
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    for (const update of updates) {
+      const { employeeId, week, paid } = update;
+      
+      // Kontrollo nëse ekziston pagesa për këtë javë
+      const checkPay = await client.query(
+        `SELECT id FROM payments WHERE employee_id = $1 AND week_label = $2`,
+        [employeeId, week]
+      );
+      
+      if (checkPay.rows.length > 0) {
+        // Përditëso pagesën ekzistuese
+        await client.query(
+          `UPDATE payments SET is_paid = $1, updated_at = NOW() WHERE employee_id = $2 AND week_label = $3`,
+          [paid, employeeId, week]
+        );
+      } else {
+        // Krijo pagesë të re
+        await client.query(
+          `INSERT INTO payments (employee_id, week_label, is_paid, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW())`,
+          [employeeId, week, paid]
+        );
+      }
+    }
+    
+    await client.query('COMMIT');
+    res.json({ message: 'Payment status updated successfully' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error updating payment status:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+};
+
+exports.bulkUpdateWorkHours = async (req, res) => {
+  const { updates } = req.body;
+  
+  if (!updates || !Array.isArray(updates)) {
+    return res.status(400).json({ error: 'Updates array is required' });
+  }
+  
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    for (const update of updates) {
+      const { employeeId, week, day, hours, site, rate } = update;
+      
+      // Compose date from week and day
+      const [startStr] = week.split(' - ');
+      const startDate = new Date(startStr);
+      const dayIndex = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"].indexOf(day);
+      if (dayIndex === -1) {
+        console.log(`Invalid day: ${day}`);
+        continue;
+      }
+      
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + dayIndex);
+      const dateStr = date.toISOString().slice(0, 10);
+      
+      // Gjej contract_id për këtë employee dhe site
+      let contract_id = null;
+      if (site) {
+        const contractRes = await client.query(
+          `SELECT c.id FROM contracts c
+           JOIN employee_workplaces ew ON ew.contract_id = c.id
+           WHERE ew.employee_id = $1 AND c.site_name = $2 LIMIT 1`,
+          [employeeId, site]
+        );
+        contract_id = contractRes.rows[0]?.id || null;
+      }
+      
+      // Check if entry exists
+      const check = await client.query(
+        `SELECT id FROM work_hours WHERE employee_id = $1 AND date = $2`,
+        [employeeId, dateStr]
+      );
+      
+      if (check.rows.length > 0) {
+        // Update existing entry
+        await client.query(
+          `UPDATE work_hours SET hours = $1, site = $2, rate = $3, contract_id = $4, updated_at = NOW() WHERE id = $5`,
+          [hours, site || null, rate, contract_id, check.rows[0].id]
+        );
+      } else {
+        // Insert new entry
+        await client.query(
+          `INSERT INTO work_hours (employee_id, date, hours, site, rate, contract_id, created_at, updated_at) 
+           VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
+          [employeeId, dateStr, hours, site || null, rate, contract_id]
+        );
+      }
+    }
+    
+    await client.query('COMMIT');
+    res.json({ message: 'Work hours updated successfully' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error updating work hours:', err);
     res.status(500).json({ error: err.message });
   } finally {
     client.release();

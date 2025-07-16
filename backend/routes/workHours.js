@@ -24,6 +24,8 @@ router.get('/structured', verifyToken, (req, res, next) => {
 
 router.get('/paid-status', verifyToken, controller.getPaidStatus);
 router.post('/paid-status', verifyToken, requireRole('admin'), controller.setPaidStatus);
+router.post('/update-payment-status', verifyToken, requireRole('admin'), controller.updatePaymentStatus);
+router.post('/bulk-update', verifyToken, requireRole('manager'), controller.bulkUpdateWorkHours);
 router.get('/dashboard-stats', verifyToken, controller.getDashboardStats);
 router.post('/notes', verifyToken, controller.saveWeekNote);
 router.get('/notes/:employeeId', verifyToken, controller.getWeekNotes);

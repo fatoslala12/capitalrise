@@ -11,41 +11,9 @@ export default function WorkHoursTable({
   readOnly,
   showPaymentControl = false,
   siteOptions = [],
+  paidStatus = {},
+  setPaidStatus = () => {}
 }) {
-  const [paidStatus, setPaidStatus] = useState({});
-
-  useEffect(() => {
-    const fetchPaidStatus = async () => {
-      try {
-        const res = await api.get("/api/work-hours/paid-status", { params: { week: weekLabel } });
-        const transformed = {};
-        res.data.forEach(item => {
-          transformed[`${item.week}_${item.employeeId}`] = item.paid;
-        });
-        setPaidStatus(transformed);
-      } catch (err) {
-        console.error("Gabim në marrjen e statusit të pagesave", err);
-      }
-    };
-    fetchPaidStatus();
-  }, [weekLabel]);
-
-  const handleTick = useCallback(async (empId) => {
-    const key = `${weekLabel}_${empId}`;
-    const updated = { ...paidStatus, [key]: !paidStatus[key] };
-    setPaidStatus(updated);
-
-    try {
-      await api.post("/api/work-hours/paid-status", {
-        week: weekLabel,
-        employeeId: empId,
-        paid: updated[key],
-      });
-    } catch (err) {
-      console.error("Gabim në ruajtjen e statusit të pagesës", err);
-    }
-  }, [weekLabel, paidStatus]);
-
   // Optimized calculations me useMemo
   const employeeCalculations = useMemo(() => {
     return employees.map((emp) => {
@@ -129,6 +97,31 @@ export default function WorkHoursTable({
     return { totalHours, totalBruto, totalTVSH, totalNeto };
   }, [employees, weekLabel, data]);
 
+  const handlePaymentToggle = useCallback(async (empId) => {
+    const key = `${weekLabel}_${empId}`;
+    const newPaidStatus = !paidStatus[key];
+    
+    setPaidStatus(prev => ({
+      ...prev,
+      [key]: newPaidStatus
+    }));
+
+    try {
+      await api.post("/api/work-hours/paid-status", {
+        week: weekLabel,
+        employeeId: empId,
+        paid: newPaidStatus,
+      });
+    } catch (err) {
+      console.error("Gabim në ruajtjen e statusit të pagesës", err);
+      // Revert nëse ka gabim
+      setPaidStatus(prev => ({
+        ...prev,
+        [key]: !newPaidStatus
+      }));
+    }
+  }, [weekLabel, paidStatus, setPaidStatus]);
+
   return (
     <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-blue-100 p-6 mb-8 overflow-x-auto animate-fade-in">
       <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-6 text-center flex items-center gap-2 justify-center">
@@ -173,12 +166,16 @@ export default function WorkHoursTable({
                     step="0.25"
                     value={calc.hours[day]?.hours || ""}
                     onChange={e => onChange(calc.emp.id, day, "hours", e.target.value)}
-                    className="w-16 p-2 border-2 border-blue-200 rounded-xl text-center focus:ring-2 focus:ring-blue-400 bg-blue-50 shadow-sm text-base"
+                    className={`w-16 p-2 border-2 border-blue-200 rounded-xl text-center focus:ring-2 focus:ring-blue-400 shadow-sm text-base ${
+                      readOnly ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : 'bg-blue-50'
+                    }`}
                     disabled={readOnly}
                     placeholder="0"
                   />
                   <select
-                    className="mt-2 w-full border-2 border-blue-200 rounded-xl text-xs bg-blue-50 shadow-sm"
+                    className={`mt-2 w-full border-2 border-blue-200 rounded-xl text-xs shadow-sm ${
+                      readOnly ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : 'bg-blue-50'
+                    }`}
                     value={calc.hours[day]?.site || ""}
                     onChange={e => onChange(calc.emp.id, day, "site", e.target.value)}
                     disabled={readOnly}
@@ -200,38 +197,36 @@ export default function WorkHoursTable({
                   <input
                     type="checkbox"
                     checked={calc.paid || false}
-                    onChange={async () => {
-                      await handleTick(calc.emp.id);
-                      // Refresh paid status after change
-                      const res = await api.get("/api/work-hours/paid-status", { params: { week: weekLabel } });
-                      const transformed = {};
-                      res.data.forEach(item => {
-                        transformed[`${item.week}_${item.employeeId}`] = item.paid;
-                      });
-                      setPaidStatus(transformed);
-                    }}
-                    className="w-6 h-6 accent-green-600 rounded-full border-2 border-green-300 shadow"
+                    onChange={() => handlePaymentToggle(calc.emp.id)}
+                    className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                   />
                 </td>
               )}
               {showPaymentControl && (
                 <td className="py-2 px-2">
-                  <span className={`px-4 py-1 rounded-full border text-base font-bold shadow-md ${calc.statusClass} ${calc.statusBg}`}>{calc.statusText}</span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${calc.statusBg} ${calc.statusClass}`}>
+                    {calc.statusText}
+                  </span>
                 </td>
               )}
             </tr>
           ))}
-          {/* Llogarit totalet për këtë javë */}
-          <tr className="font-bold bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-lg rounded-xl shadow mt-2">
-            <td className="py-3 px-3 text-right" colSpan={days.length + 1}>Totali për javën:</td>
-            <td className="py-3 px-3"></td>
-            <td className="py-3 px-3">{weekTotals.totalHours}</td>
-            <td className="py-3 px-3">£{weekTotals.totalBruto.toFixed(2)}</td>
-            <td className="py-3 px-3">£{weekTotals.totalTVSH.toFixed(2)}</td>
-            <td className="py-3 px-3">£{weekTotals.totalNeto.toFixed(2)}</td>
-            {showPaymentControl && <td className="py-3 px-3" colSpan={2}></td>}
-          </tr>
         </tbody>
+        <tfoot className="bg-gradient-to-r from-gray-100 to-blue-100 font-bold">
+          <tr>
+            <td className="py-3 px-3 text-left font-bold text-lg">📊 TOTALI I JAVËS</td>
+            {days.map(() => (
+              <td key={Math.random()} className="py-2 px-2"></td>
+            ))}
+            <td className="py-2 px-2 font-bold text-blue-900 bg-blue-100 rounded-xl">-</td>
+            <td className="py-2 px-2 font-bold text-gray-900 bg-gray-100 rounded-xl">{weekTotals.totalHours.toFixed(2)}</td>
+            <td className="py-2 px-2 font-bold text-green-700 bg-green-100 rounded-xl">£{weekTotals.totalBruto.toFixed(2)}</td>
+            <td className="py-2 px-2 font-bold text-yellow-700 bg-yellow-100 rounded-xl">£{weekTotals.totalTVSH.toFixed(2)}</td>
+            <td className="py-2 px-2 font-bold text-blue-700 bg-blue-100 rounded-xl">£{weekTotals.totalNeto.toFixed(2)}</td>
+            {showPaymentControl && <td className="py-2 px-2"></td>}
+            {showPaymentControl && <td className="py-2 px-2"></td>}
+          </tr>
+        </tfoot>
       </table>
     </div>
   );
