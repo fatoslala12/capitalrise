@@ -79,6 +79,7 @@ export default function WorkHours() {
     })
       .then(async res => {
         const emps = res.data || [];
+        console.log("All employees:", emps);
         
         if (isAdmin) {
           // ADMIN: shfaq të gjithë punonjësit
@@ -100,14 +101,19 @@ export default function WorkHours() {
         
         if (isManager) {
           // MANAGER: shfaq punonjësit e site-ve të tij
+          console.log("Manager user:", user);
+          
           if (!user.employee_id) {
+            // Gjej employee_id nga email
             const selfEmployee = emps.find(emp => 
               emp.email && emp.email.toLowerCase() === user.email.toLowerCase()
             );
             if (selfEmployee) {
+              console.log("Found self employee:", selfEmployee);
               setEmployees([selfEmployee]);
               setUser(prev => ({ ...prev, employee_id: selfEmployee.id }));
             } else {
+              console.log("No employee found for manager email:", user.email);
               setEmployees([]);
             }
             return;
@@ -118,15 +124,24 @@ export default function WorkHours() {
             const managerRes = await axios.get(`https://building-system.onrender.com/api/employees/${user.employee_id}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
+            console.log("Manager data:", managerRes.data);
             const managerSites = managerRes.data.workplace || [];
+            console.log("Manager sites:", managerSites);
             
             // Filtro punonjësit që punojnë në site-t e menaxherit
             const filteredEmps = emps.filter(emp => {
               if (String(emp.id) === String(user.employee_id)) return true; // Gjithmonë përfshij veten
-              return emp.workplace && Array.isArray(emp.workplace) && 
-                     emp.workplace.some(site => managerSites.includes(site));
+              
+              // Kontrollo nëse punonjësi ka site-t e përbashkëta me menaxherin
+              if (emp.workplace && Array.isArray(emp.workplace)) {
+                const hasCommonSite = emp.workplace.some(site => managerSites.includes(site));
+                console.log(`Employee ${emp.first_name} ${emp.last_name} sites:`, emp.workplace, "Has common site:", hasCommonSite);
+                return hasCommonSite;
+              }
+              return false;
             });
             
+            console.log("Filtered employees for manager:", filteredEmps);
             setEmployees(filteredEmps);
           } catch (error) {
             console.error("Error fetching manager data:", error);
@@ -319,7 +334,7 @@ export default function WorkHours() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="w-full px-4 md:px-8 py-6 md:py-10">
       {/* Toast Notification */}
       {toast.show && (
         <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 ${
