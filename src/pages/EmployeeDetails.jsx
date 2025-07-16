@@ -27,7 +27,6 @@ export default function EmployeeDetails() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(null);
   const [filterSite, setFilterSite] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [searchDoc, setSearchDoc] = useState('');
   const [weekNotes, setWeekNotes] = useState({});
@@ -246,11 +245,33 @@ export default function EmployeeDetails() {
     }
   };
 
-  if (!employee) {
-    return <div className="p-8 text-center text-red-600 font-bold">Punonjësi nuk u gjet!</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-32 w-32 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+            Duke ngarkuar detajet e punonjësit...
+          </h2>
+          <p className="text-gray-600 text-lg max-w-md mx-auto">
+            Ju lutem prisni ndërsa marrim informacionet e plota të punonjësit nga databaza
+          </p>
+          <div className="mt-6 flex justify-center space-x-2">
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"></div>
+            <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  if (loading) {
+  if (!employee) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -535,17 +556,30 @@ export default function EmployeeDetails() {
       exportDiv.style.backgroundColor = 'white';
       exportDiv.style.padding = '20px';
       exportDiv.style.fontFamily = 'Arial, sans-serif';
+      exportDiv.style.color = '#000';
       
-      // Kopjo përmbajtjen e faqes
-      const mainContent = document.querySelector('.w-full.px-8.py-10');
+      // Kopjo të gjithë përmbajtjen e faqes
+      const mainContent = document.querySelector('.w-full.px-4.md\\:px-8.py-6.md\\:py-10');
       if (mainContent) {
-        exportDiv.innerHTML = `
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #1e40af; font-size: 32px; margin-bottom: 10px;">Alban Construction</h1>
-            <h2 style="color: #7c3aed; font-size: 24px;">Raport i Detajuar i Punonjësit</h2>
+        // Krijo një kopje të përmbajtjes me stilizim të plotë
+        const contentClone = mainContent.cloneNode(true);
+        
+        // Pastro elementet që nuk duan të shfaqen në export
+        const elementsToRemove = contentClone.querySelectorAll('button, input, select, .fixed');
+        elementsToRemove.forEach(el => el.remove());
+        
+        // Shto header për raportin
+        const header = document.createElement('div');
+        header.innerHTML = `
+          <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1e40af; padding-bottom: 20px;">
+            <h1 style="color: #1e40af; font-size: 32px; margin-bottom: 10px; font-weight: bold;">Alban Construction</h1>
+            <h2 style="color: #7c3aed; font-size: 24px; margin-bottom: 10px;">Raport i Detajuar i Punonjësit</h2>
+            <p style="color: #666; font-size: 16px;">Gjeneruar më: ${new Date().toLocaleDateString('sq-AL')}</p>
           </div>
-          ${mainContent.innerHTML}
         `;
+        
+        exportDiv.appendChild(header);
+        exportDiv.appendChild(contentClone);
       }
       
       document.body.appendChild(exportDiv);
@@ -555,7 +589,11 @@ export default function EmployeeDetails() {
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        width: 1200,
+        height: exportDiv.scrollHeight,
+        scrollX: 0,
+        scrollY: 0
       });
       
       // Krijo PDF
@@ -577,7 +615,7 @@ export default function EmployeeDetails() {
         heightLeft -= pageHeight;
       }
       
-      pdf.save(`raport_i_plote_${first_name}_${last_name}.pdf`);
+      pdf.save(`raport_i_plote_${first_name}_${last_name}_${new Date().toISOString().slice(0, 10)}.pdf`);
       
       // Pastro
       document.body.removeChild(exportDiv);
@@ -590,7 +628,7 @@ export default function EmployeeDetails() {
   }
 
   return (
-    <div className={darkMode ? "dark bg-gray-900 min-h-screen" : "bg-gray-50 min-h-screen"}>
+    <div className="bg-gray-50 min-h-screen">
       {/* Toast Notification */}
       {toast.show && (
         <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 ${
@@ -601,16 +639,6 @@ export default function EmployeeDetails() {
           {toast.message}
         </div>
       )}
-      
-      {/* Buton dark mode toggle */}
-      <button
-        onClick={() => setDarkMode(v => !v)}
-        className="fixed top-4 right-4 z-50 bg-gradient-to-r from-gray-700 to-blue-700 text-white px-3 py-2 rounded-full shadow hover:scale-105 transition-all text-sm md:text-base md:px-4 md:py-2"
-        title={darkMode ? "Ndiz Light Mode" : "Ndiz Dark Mode"}
-      >
-        {darkMode ? "☀️" : "🌙"}
-        <span className="hidden md:inline ml-1">{darkMode ? "Light" : "Dark"}</span>
-      </button>
       
       <div className="w-full px-4 md:px-8 py-6 md:py-10 min-h-screen">
         {/* Quick Stats Cards - Mobile Optimized */}
