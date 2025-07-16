@@ -631,3 +631,56 @@ exports.debugDatabaseStatus = async (req, res) => {
     client.release();
   }
 };
+
+// Funksion për ruajtjen e komenteve të javës
+exports.saveWeekNote = async (req, res) => {
+  const { employee_id, week_label, note } = req.body;
+  
+  if (!employee_id || !week_label) {
+    return res.status(400).json({ error: 'employee_id dhe week_label janë të detyrueshme' });
+  }
+  
+  const client = await pool.connect();
+  try {
+    // Krijo tabelën week_notes nëse nuk ekziston
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS week_notes (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        week_label VARCHAR(50) NOT NULL,
+        note TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(employee_id, week_label)
+      )
+    `);
+    
+    // Kontrollo nëse ekziston koment për këtë javë
+    const checkNote = await client.query(
+      `SELECT id FROM week_notes WHERE employee_id = $1 AND week_label = $2`,
+      [employee_id, week_label]
+    );
+    
+    if (checkNote.rows.length > 0) {
+      // Update existing note
+      await client.query(
+        `UPDATE week_notes SET note = $1, updated_at = NOW() WHERE employee_id = $2 AND week_label = $3`,
+        [note, employee_id, week_label]
+      );
+    } else {
+      // Insert new note
+      await client.query(
+        `INSERT INTO week_notes (employee_id, week_label, note, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW())`,
+        [employee_id, week_label, note]
+      );
+    }
+    
+    res.json({ success: true, message: 'Komenti u ruajt me sukses' });
+    
+  } catch (err) {
+    console.error('[ERROR] Save week note:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+};

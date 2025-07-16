@@ -30,18 +30,27 @@ export default function EmployeeDetails() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [searchDoc, setSearchDoc] = useState('');
   const [weekNotes, setWeekNotes] = useState({});
+  const [submittingNote, setSubmittingNote] = useState(null);
   // Shto state për detyrat
   const [tasks, setTasks] = useState([]);
   const [taskStatusFilter, setTaskStatusFilter] = useState("all");
   const [taskPriorityFilter, setTaskPriorityFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   // Merr të gjithë punonjësit për workplace
   useEffect(() => {
+    setLoading(true);
     axios.get("https://building-system.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(res => setAllEmployees(res.data))
-      .catch(() => setAllEmployees([]));
+      .then(res => {
+        setAllEmployees(res.data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setAllEmployees([]);
+        setLoading(false);
+      });
   }, [token]);
 
   // Merr employee me workplace
@@ -218,6 +227,18 @@ export default function EmployeeDetails() {
     return <div className="p-8 text-center text-red-600 font-bold">Punonjësi nuk u gjet!</div>;
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold text-blue-800 mb-2">Duke ngarkuar të dhënat...</h2>
+          <p className="text-gray-600">Ju lutem prisni ndërsa marrim informacionet e punonjësit</p>
+        </div>
+      </div>
+    );
+  }
+
   const {
     first_name, last_name, photo, email, phone, status, role, workplace,
     hourly_rate, label_type, qualification, dob, residence, nid, next_of_kin, next_of_kin_phone
@@ -245,6 +266,14 @@ export default function EmployeeDetails() {
     kot: 'orange',
     dsdsd: 'purple',
   };
+
+  // Merr site-et aktuale të punonjësit nga workplace
+  const employeeSites = workplace || [];
+  const currentSiteColors = {};
+  employeeSites.forEach((site, index) => {
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd'];
+    currentSiteColors[site] = colors[index % colors.length];
+  });
 
   // Përgatis një strukturë për të mbledhur të gjitha ditët e punuara me site dhe orë
   const workDays = {};
@@ -320,7 +349,13 @@ export default function EmployeeDetails() {
     datasets: [
       {
         data: Object.values(siteHours),
-        backgroundColor: Object.keys(siteHours).map(site => getSiteColor(site)),
+        backgroundColor: Object.keys(siteHours).map(site => {
+          // Përdor ngjyra të buta për pie chart
+          const softColors = ['#ffb3ba', '#baffc9', '#bae1ff', '#ffffba', '#ffb3d9', '#d4b3ff', '#b3ffd4', '#ffd4b3'];
+          let hash = 0;
+          for (let i = 0; i < site.length; i++) hash = site.charCodeAt(i) + ((hash << 5) - hash);
+          return softColors[Math.abs(hash) % softColors.length];
+        }),
         borderWidth: 2,
         borderColor: '#ffffff',
         hoverBorderWidth: 3,
@@ -409,6 +444,26 @@ export default function EmployeeDetails() {
     doc.save(`profili_${first_name}_${last_name}.pdf`);
   }
 
+  // Funksion për ruajtjen e komenteve të javës
+  const saveWeekNote = async (weekLabel, note) => {
+    try {
+      setSubmittingNote(weekLabel);
+      await axios.post(`https://building-system.onrender.com/api/work-hours/notes`, {
+        employee_id: id,
+        week_label: weekLabel,
+        note: note
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("Komenti u ruajt me sukses!");
+    } catch (error) {
+      console.error('Error saving note:', error);
+      alert("Gabim gjatë ruajtjes së komentit!");
+    } finally {
+      setSubmittingNote(null);
+    }
+  };
+
   // Funksion për shkarkim ZIP të dokumenteve
   async function downloadAllDocsZip() {
     const zip = new JSZip();
@@ -436,21 +491,53 @@ export default function EmployeeDetails() {
       </button>
       {/* Sticky header për emrin dhe statusin */}
       <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-b-3xl shadow-xl border-b border-blue-100 px-10 py-6 flex items-center gap-8 mb-10 animate-fade-in">
-        {/* Avatar me iniciale ose foto */}
-        {photo ? (
-          <img
-            src={photo}
-            alt="Foto"
-            className="w-20 h-20 rounded-full object-cover border-4 border-blue-200 shadow-xl"
-          />
-        ) : (
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-extrabold shadow-xl border-4 border-blue-200"
-            style={{ background: getColorFromName(first_name + last_name), color: '#2d3748' }}
-          >
-            {getInitials(first_name, last_name)}
-          </div>
-        )}
+        {/* Avatar me iniciale ose foto - clickable për ndryshim */}
+        <div 
+          onClick={() => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async (e) => {
+              const file = e.target.files[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                  try {
+                    await axios.put(`https://building-system.onrender.com/api/employees/${id}`, {
+                      ...toSnakeCase(employee),
+                      photo: reader.result
+                    }, {
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    setEmployee(prev => ({ ...prev, photo: reader.result }));
+                    alert("Fotoja u ndryshua me sukses!");
+                  } catch {
+                    alert("Gabim gjatë ndryshimit të fotos!");
+                  }
+                };
+                reader.readAsDataURL(file);
+              }
+            };
+            input.click();
+          }}
+          className="cursor-pointer hover:scale-105 transition-all duration-300"
+          title="Kliko për të ndryshuar foton"
+        >
+          {photo ? (
+            <img
+              src={photo}
+              alt="Foto"
+              className="w-20 h-20 rounded-full object-cover border-4 border-blue-200 shadow-xl"
+            />
+          ) : (
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-extrabold shadow-xl border-4 border-blue-200"
+              style={{ background: getColorFromName(first_name + last_name), color: '#2d3748' }}
+            >
+              {getInitials(first_name, last_name)}
+            </div>
+          )}
+        </div>
         <div>
           <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-2 dark:text-white">
             {first_name} {last_name}
@@ -464,7 +551,9 @@ export default function EmployeeDetails() {
         </div>
       </div>
       <div className="w-full px-8 py-10 min-h-screen">
-        <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-blue-100 p-10 mb-10 animate-fade-in">
+        {/* Hequr seksioni i duplikuar i detajeve të punonjësit */}
+        
+        <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1">
               <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4">
@@ -618,14 +707,14 @@ export default function EmployeeDetails() {
                 ) : (
                   <button
                     onClick={() => setEditing(true)}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-2xl font-bold text-lg shadow-xl transition-all"
+                    className="bg-gradient-to-r from-purple-400 to-blue-400 text-white px-8 py-3 rounded-2xl font-bold text-lg shadow hover:from-blue-600 hover:to-purple-600 transition"
                   >
                     ✏️ Edito
                   </button>
                 )}
                 <button
                   onClick={() => nextEmployee && navigate(`/admin/employee/${nextEmployee.id}`)}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-2xl font-bold shadow hover:from-pink-600 hover:to-purple-600 transition text-lg disabled:opacity-50"
+                  className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-8 py-3 rounded-2xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-lg disabled:opacity-50"
                   disabled={!nextEmployee}
                 >
                   Next ➡️
@@ -713,7 +802,7 @@ export default function EmployeeDetails() {
             <label className="font-semibold text-blue-700">Filtro sipas site-it:</label>
             <select value={filterSite} onChange={e => setFilterSite(e.target.value)} className="p-2 rounded-xl border-2 border-blue-200">
               <option value="">Të gjitha</option>
-              {Object.keys(siteColors).map(site => (
+              {employeeSites.map(site => (
                 <option key={site} value={site}>{site}</option>
               ))}
             </select>
@@ -751,9 +840,9 @@ export default function EmployeeDetails() {
             className="border-2 border-blue-200 rounded-2xl shadow-xl w-full text-lg"
           />
           <div className="flex gap-4 mt-6 flex-wrap justify-center">
-            {Object.entries(siteColors).map(([site, color]) => (
+            {employeeSites.map((site) => (
               <div key={site} className="flex items-center gap-2 bg-white/80 rounded-xl px-4 py-2 shadow-md border border-blue-100">
-                <span className="inline-block w-5 h-5 rounded-full border-2 border-white shadow-md" style={{ background: getSiteColor(site) }}></span>
+                <span className="inline-block w-5 h-5 rounded-full border-2 border-white shadow-md" style={{ background: currentSiteColors[site] }}></span>
                 <span className="text-lg font-bold text-blue-800">{site}</span>
               </div>
             ))}
@@ -816,13 +905,22 @@ export default function EmployeeDetails() {
                     </div>
                     {/* Koment/notes për këtë javë */}
                     <div className="flex flex-col gap-1 ml-4">
-                      <input
-                        type="text"
-                        value={weekNotes[weekLabel] || ''}
-                        onChange={e => setWeekNotes(prev => ({ ...prev, [weekLabel]: e.target.value }))}
-                        placeholder="Shkruaj koment për këtë javë..."
-                        className="p-2 rounded-xl border-2 border-blue-200 text-sm"
-                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={weekNotes[weekLabel] || ''}
+                          onChange={e => setWeekNotes(prev => ({ ...prev, [weekLabel]: e.target.value }))}
+                          placeholder="Shkruaj koment për këtë javë..."
+                          className="p-2 rounded-xl border-2 border-blue-200 text-sm flex-1"
+                        />
+                        <button
+                          onClick={() => saveWeekNote(weekLabel, weekNotes[weekLabel] || '')}
+                          disabled={submittingNote === weekLabel}
+                          className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm disabled:opacity-50"
+                        >
+                          {submittingNote === weekLabel ? '⏳' : '💾'}
+                        </button>
+                      </div>
                       {weekNotes[weekLabel] && (
                         <span className="text-xs text-blue-700 italic">{weekNotes[weekLabel]}</span>
                       )}
