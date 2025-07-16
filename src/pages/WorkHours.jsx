@@ -23,6 +23,8 @@ export default function WorkHours() {
   const { user, setUser } = useAuth();
   const isManager = user?.role === "manager";
   const isAdmin = user?.role === "admin";
+  const isUser = user?.role === "user";
+  const isReadOnly = isUser || isManager; // Read-only për user dhe manager
   const token = localStorage.getItem("token");
 
   const [employees, setEmployees] = useState([]);
@@ -331,74 +333,72 @@ export default function WorkHours() {
   return (
     <div className="overflow-x-auto p-6">
       <h2 className="text-2xl font-bold mb-4 text-center">
-        {isManager ? "🕒 Plotëso Orët për Javën" : "📋 Pagesat e marra  "}: {user?.firstName} {user?.lastName}
+        {isReadOnly ? "🕒 Orët e Mia të Punës" : "📋 Menaxho Orët e Punës"}
       </h2>
 
-      {isManager && employees.length === 0 && (
-        <div className="bg-yellow-100 text-yellow-800 p-4 rounded text-center font-semibold mb-6">
-          <p>Nuk keni asnjë punonjës aktiv të caktuar në site-t tuaj.</p>
-          {(() => {
-            if (!user.employee_id) {
-              return (
-                <div className="mt-2 text-blue-600">
-                  <p>Po përpiqem të gjej punonjësin tuaj në sistem...</p>
-                  <p className="text-sm">Kontrolloni në DB:</p>
-                  <code className="text-xs bg-blue-50 p-1 rounded">SELECT * FROM employees WHERE email = '{user.email}';</code>
-                  <p className="mt-2 text-sm">Ose kontrolloni lidhjen employee-user:</p>
-                  <code className="text-xs bg-blue-50 p-1 rounded">SELECT u.*, e.first_name, e.last_name FROM users u LEFT JOIN employees e ON u.employee_id = e.id WHERE u.email = '{user.email}';</code>
-                </div>
-              );
-            }
-            return (
-              <div className="mt-2 text-red-600">
-                <p>Nuk jeni të regjistruar si punonjës në sistem. Kontaktoni administratorin për t'u shtuar si punonjës.</p>
-                <p className="text-sm">Kontrolloni në DB:</p>
-                <code className="text-xs bg-red-50 p-1 rounded">SELECT * FROM employees WHERE id = '{user.employee_id}';</code>
-                <p className="mt-1 text-sm">Kontrolloni workplaces:</p>
-                <code className="text-xs bg-red-50 p-1 rounded">SELECT ew.*, c.site_name FROM employee_workplaces ew JOIN contracts c ON ew.contract_id = c.id WHERE ew.employee_id = '{user.employee_id}';</code>
-              </div>
-            );
-          })()}
-        </div>
-      )}
-
-      {isManager && employees.length > 0 && (
-        <div className="bg-green-100 text-green-800 p-4 rounded text-center mb-6">
-          <p>✅ U gjetën {employees.length} punonjës që mund të menaxhoni orët e tyre.</p>
-        </div>
-      )}
-
-      {["user", "manager"].includes(user?.role) && (
-        <div className="mt-12 bg-white p-6 rounded shadow">
-          <h3 className="text-xl font-semibold mb-4 text-center">🧾 Orët e Mia të Pagura – {currentWeekLabel}</h3>
+      {/* Read-only view për user dhe manager */}
+      {isReadOnly && (
+        <div className="mt-8 bg-white p-6 rounded-xl shadow-lg border border-blue-100">
+          <h3 className="text-xl font-semibold mb-6 text-center text-blue-800">
+            📊 Orët e Mia të Punës - {currentWeekLabel}
+          </h3>
+          
           {(() => {
             const myKey = `${currentWeekLabel}_${user.id}`;
             const isPaid = paidStatus[myKey];
-            const userHours = hourData[user.id] || {};
+            const userHours = hourData[user.employee_id] || {};
             const thisWeek = userHours[currentWeekLabel] || {};
 
-            if (!isPaid) {
-              return <p className="text-gray-500 italic text-sm text-center">Orët për këtë javë nuk janë paguar ende.</p>;
+            if (Object.keys(thisWeek).length === 0) {
+              return (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-4">📋</div>
+                  <p className="text-gray-500 text-lg">Nuk ka të dhëna për këtë javë.</p>
+                </div>
+              );
             }
 
             const entries = Object.entries(thisWeek).filter(([key]) => key !== "hourlyRate");
-            if (entries.length === 0) {
-              return <p className="text-gray-500 italic text-sm text-center">Nuk ka të dhëna për këtë javë.</p>;
-            }
-
             const rate = Number(thisWeek.hourlyRate || user.hourlyRate || 0);
             const labelType = user?.labelType || "UTR";
 
             return (
               <>
-                <table className="w-full text-sm border mt-4 shadow rounded overflow-hidden">
-                  <thead className="bg-blue-50 text-gray-800 font-semibold">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold">
+                      {entries.reduce((acc, [_, entry]) => acc + Number(entry.hours || 0), 0)}
+                    </div>
+                    <div className="text-sm">Total Orë</div>
+                  </div>
+                  <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold">
+                      £{(entries.reduce((acc, [_, entry]) => acc + Number(entry.hours || 0), 0) * rate).toFixed(2)}
+                    </div>
+                    <div className="text-sm">Bruto</div>
+                  </div>
+                  <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold">
+                      £{(entries.reduce((acc, [_, entry]) => acc + Number(entry.hours || 0), 0) * rate * (labelType === "UTR" ? 0.8 : 0.7)).toFixed(2)}
+                    </div>
+                    <div className="text-sm">Neto</div>
+                  </div>
+                  <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold">
+                      {isPaid ? "✅" : "⏳"}
+                    </div>
+                    <div className="text-sm">{isPaid ? "Paguar" : "Pa paguar"}</div>
+                  </div>
+                </div>
+
+                <table className="w-full text-sm border mt-4 shadow rounded-xl overflow-hidden">
+                  <thead className="bg-gradient-to-r from-blue-100 to-purple-100 text-gray-800 font-semibold">
                     <tr>
-                      <th className="p-2 border">📅 Dita</th>
-                      <th className="p-2 border">📍 Vendi</th>
-                      <th className="p-2 border">⏱ Orë</th>
-                      <th className="p-2 border">💷 Bruto</th>
-                      <th className="p-2 border">💰 Neto</th>
+                      <th className="p-3 border">📅 Dita</th>
+                      <th className="p-3 border">📍 Site</th>
+                      <th className="p-3 border">⏱ Orë</th>
+                      <th className="p-3 border">💷 Bruto</th>
+                      <th className="p-3 border">💰 Neto</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white">
@@ -408,22 +408,43 @@ export default function WorkHours() {
                       const neto = bruto * (labelType === "UTR" ? 0.8 : 0.7);
 
                       return (
-                        <tr key={day} className="hover:bg-gray-50 text-center">
-                          <td className="p-2 border">{day}</td>
-                          <td className="p-2 border">{entry.site || "-"}</td>
-                          <td className="p-2 border">{hours}</td>
-                          <td className="p-2 border text-green-700">£{bruto.toFixed(2)}</td>
-                          <td className="p-2 border text-blue-700">£{neto.toFixed(2)}</td>
+                        <tr key={day} className="hover:bg-gray-50 text-center border-b">
+                          <td className="p-3 border-r font-medium">{day}</td>
+                          <td className="p-3 border-r">
+                            <span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                              {entry.site || "-"}
+                            </span>
+                          </td>
+                          <td className="p-3 border-r font-bold">{hours}</td>
+                          <td className="p-3 border-r text-green-700 font-bold">£{bruto.toFixed(2)}</td>
+                          <td className="p-3 text-blue-700 font-bold">£{neto.toFixed(2)}</td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
 
-                <div className="mt-4 p-4 bg-gray-100 rounded-lg text-sm text-gray-800 shadow-inner text-center">
-                  <p><strong>🔢 Total orë:</strong> {entries.reduce((acc, [_, entry]) => acc + Number(entry.hours || 0), 0)}</p>
-                  <p><strong>💷 Total bruto:</strong> £{(entries.reduce((acc, [_, entry]) => acc + Number(entry.hours || 0), 0) * rate).toFixed(2)}</p>
-                  <p><strong>💰 Total neto:</strong> £{(entries.reduce((acc, [_, entry]) => acc + Number(entry.hours || 0), 0) * rate * (labelType === "UTR" ? 0.8 : 0.7)).toFixed(2)}</p>
+                <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl text-sm text-gray-800 shadow-inner">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="font-bold text-lg">🔢 Total orë</p>
+                      <p className="text-2xl font-bold text-blue-600">
+                        {entries.reduce((acc, [_, entry]) => acc + Number(entry.hours || 0), 0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-bold text-lg">💷 Total bruto</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        £{(entries.reduce((acc, [_, entry]) => acc + Number(entry.hours || 0), 0) * rate).toFixed(2)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-bold text-lg">💰 Total neto</p>
+                      <p className="text-2xl font-bold text-purple-600">
+                        £{(entries.reduce((acc, [_, entry]) => acc + Number(entry.hours || 0), 0) * rate * (labelType === "UTR" ? 0.8 : 0.7)).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </>
             );
@@ -431,56 +452,71 @@ export default function WorkHours() {
         </div>
       )}
 
-      {isManager && (
-        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-          <WorkHoursTable
-            employees={employees}
-            weekLabel={currentWeekLabel}
-            data={hourData}
-            onChange={handleChange}
-            readOnly={false}
-            showPaymentControl={isAdmin}
-            siteOptions={siteOptions}
-          />
-          <button type="submit" className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-            💾 Ruaj Orët e Kësaj Jave
-          </button>
-        </form>
-      )}
+      {/* Admin view - existing code */}
+      {isAdmin && (
+        <>
+          {isManager && employees.length === 0 && (
+            <div className="bg-yellow-100 text-yellow-800 p-4 rounded text-center font-semibold mb-6">
+              <p>Nuk keni asnjë punonjës aktiv të caktuar në site-t tuaj.</p>
+            </div>
+          )}
 
-      {(saved || isAdmin) && (
-        <div className="mt-12">
-          <h3 className="text-xl font-semibold mb-4 text-center">📊 Java Aktuale - {currentWeekLabel}</h3>
-          <WorkHoursTable
-            employees={employees}
-            weekLabel={currentWeekLabel}
-            data={hourData}
-            onChange={handleChange}
-            readOnly={true}
-            showPaymentControl={isAdmin}
-            siteOptions={siteOptions}
-          />
-        </div>
-      )}
+          {isManager && employees.length > 0 && (
+            <div className="bg-green-100 text-green-800 p-4 rounded text-center mb-6">
+              <p>✅ U gjetën {employees.length} punonjës që mund të menaxhoni orët e tyre.</p>
+            </div>
+          )}
 
-      {isAdmin && otherWeeks.map((weekLabel) => (
-        <div key={weekLabel} className="mt-6">
-          <button className="text-blue-600 underline mb-2" onClick={() => toggleWeek(weekLabel)}>
-            {expandedWeeks.includes(weekLabel) ? "▼ Fshih" : "▶ Shfaq"} {weekLabel}
-          </button>
-          {expandedWeeks.includes(weekLabel) && (
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
             <WorkHoursTable
               employees={employees}
-              weekLabel={weekLabel}
+              weekLabel={currentWeekLabel}
               data={hourData}
               onChange={handleChange}
-              readOnly={true}
+              readOnly={false}
               showPaymentControl={isAdmin}
               siteOptions={siteOptions}
             />
+            <button type="submit" className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+              💾 Ruaj Orët e Kësaj Jave
+            </button>
+          </form>
+
+          {(saved || isAdmin) && (
+            <div className="mt-12">
+              <h3 className="text-xl font-semibold mb-4 text-center">📊 Java Aktuale - {currentWeekLabel}</h3>
+              <WorkHoursTable
+                employees={employees}
+                weekLabel={currentWeekLabel}
+                data={hourData}
+                onChange={handleChange}
+                readOnly={true}
+                showPaymentControl={isAdmin}
+                siteOptions={siteOptions}
+              />
+            </div>
           )}
-        </div>
-      ))}
+
+          {isAdmin && otherWeeks.map((weekLabel) => (
+            <div key={weekLabel} className="mt-6">
+              <button className="text-blue-600 underline mb-2" onClick={() => toggleWeek(weekLabel)}>
+                {expandedWeeks.includes(weekLabel) ? "▼ Fshih" : "▶ Shfaq"} {weekLabel}
+              </button>
+              {expandedWeeks.includes(weekLabel) && (
+                <WorkHoursTable
+                  employees={employees}
+                  weekLabel={weekLabel}
+                  data={hourData}
+                  onChange={handleChange}
+                  readOnly={true}
+                  showPaymentControl={isAdmin}
+                  siteOptions={siteOptions}
+                />
+              )}
+            </div>
+          ))}
+        </>
+      )}
 
       {/* Debug section - vetëm për development */}
       {process.env.NODE_ENV === 'development' && (
