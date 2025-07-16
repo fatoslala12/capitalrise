@@ -43,6 +43,18 @@ export default function WorkHours() {
     setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 3000);
   };
 
+  // Shto showToast në window object për WorkHoursTable
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.showToast = showToast;
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.showToast;
+      }
+    };
+  }, []);
+
   // Shto këtë useEffect në fillim të komponentit
   useEffect(() => {
     if (user && user.role === "manager" && !user.workplace && user.employee_id) {

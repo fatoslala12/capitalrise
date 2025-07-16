@@ -114,6 +114,11 @@ export default function WorkHoursTable({
         employeeId: empId,
         paid: newPaidStatus,
       });
+      
+      // Toast notification për sukses
+      if (typeof window !== 'undefined' && window.showToast) {
+        window.showToast(`Pagesa u ${newPaidStatus ? 'shënua si të paguar' : 'shënua si pa paguar'} me sukses!`, 'success');
+      }
     } catch (err) {
       console.error("Gabim në ruajtjen e statusit të pagesës", err);
       // Revert nëse ka gabim
@@ -121,6 +126,11 @@ export default function WorkHoursTable({
         ...prev,
         [key]: !newPaidStatus
       }));
+      
+      // Toast notification për gabim
+      if (typeof window !== 'undefined' && window.showToast) {
+        window.showToast("Gabim gjatë ndryshimit të statusit të pagesës!", 'error');
+      }
     }
   }, [weekLabel, paidStatus, setPaidStatus]);
 
@@ -147,10 +157,21 @@ export default function WorkHoursTable({
       {isAdmin ? (
         // Admin view - kompakt me expand/collapse
         <div className="space-y-4">
+          {/* Headers për kolonat */}
+          <div className="grid grid-cols-7 gap-4 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900">
+            <div className="col-span-2 text-center">👤 Punonjësi</div>
+            <div className="text-center">💰 Rate</div>
+            <div className="text-center">⏰ Orë</div>
+            <div className="text-center">💷 Bruto</div>
+            <div className="text-center">📋 TVSH</div>
+            <div className="text-center">💰 Neto</div>
+            <div className="text-center">✅ Statusi</div>
+          </div>
+          
           {employeeCalculations.map((calc) => (
             <div key={calc.emp.id} className="bg-white rounded-xl shadow-lg border border-blue-200 overflow-hidden">
               {/* Rreshti kryesor - kompakt */}
-              <div className="grid grid-cols-8 gap-4 p-4 items-center bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="grid grid-cols-7 gap-4 p-4 items-center bg-gradient-to-r from-blue-50 to-purple-50">
                 {/* Punonjësi */}
                 <div className="flex items-center gap-3 col-span-2">
                   <button
@@ -207,16 +228,6 @@ export default function WorkHoursTable({
                   <div className="font-semibold text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
                     £{calc.neto.toFixed(2)}
                   </div>
-                </div>
-                
-                {/* Kontrolli i pagesës */}
-                <div className="text-center">
-                  <input
-                    type="checkbox"
-                    checked={calc.paid || false}
-                    onChange={() => handlePaymentToggle(calc.emp.id)}
-                    className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                  />
                 </div>
                 
                 {/* Statusi i pagesës */}
