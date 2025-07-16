@@ -334,7 +334,7 @@ export default function WorkHours() {
   }
 
   return (
-    <div className="w-full px-4 md:px-8 py-6 md:py-10">
+    <div className="w-full px-4 md:px-8 py-6 md:py-10 max-w-none">
       {/* Toast Notification */}
       {toast.show && (
         <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 ${
@@ -401,34 +401,19 @@ export default function WorkHours() {
         </div>
       )}
 
-      {/* Kontrolli i pagesës */}
-      {(isAdmin || isManager) && (
+      {/* Kontrolli i pagesës - HEQUR për admin */}
+      {isManager && (
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4 text-blue-800">
-            {isAdmin ? "💰 Kontrolli i Pagesës" : "💰 Ruaj Orët e Punës"}
+            💰 Ruaj Orët e Punës
           </h2>
           <div className="flex flex-wrap gap-4 items-center">
-            {isAdmin && (
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={paidStatus[currentWeekLabel] || false}
-                  onChange={(e) => setPaidStatus(prev => ({
-                    ...prev,
-                    [currentWeekLabel]: e.target.checked
-                  }))}
-                  className="w-4 h-4 text-blue-600"
-                />
-                <span className="text-sm font-medium">Shëno si të paguar për javën aktuale</span>
-              </label>
-            )}
-            
             <button
               onClick={handleSubmit}
               disabled={saved}
               className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-2 rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50"
             >
-              {saved ? "✅ U ruajt!" : isAdmin ? "💰 Ruaj Statusin e Pagesës" : "💾 Ruaj Orët e Punës"}
+              {saved ? "✅ U ruajt!" : "💾 Ruaj Orët e Punës"}
             </button>
           </div>
         </div>
@@ -452,7 +437,7 @@ export default function WorkHours() {
           weekLabel={currentWeekLabel}
           data={hourData}
           onChange={handleChange}
-          readOnly={isUser || isAdmin}
+          readOnly={isUser}
           showPaymentControl={isAdmin}
           paidStatus={paidStatus}
           setPaidStatus={setPaidStatus}
@@ -486,7 +471,7 @@ export default function WorkHours() {
                         weekLabel={weekLabel}
                         data={hourData}
                         onChange={handleChange}
-                        readOnly={isUser || isAdmin}
+                        readOnly={isUser}
                         showPaymentControl={isAdmin}
                         paidStatus={paidStatus}
                         setPaidStatus={setPaidStatus}

@@ -24,7 +24,14 @@ export default function WorkHoursTable({
       const rate = Number(emp.hourlyRate || emp.hourly_rate || 0);
       const labelType = emp.labelType || emp.label_type || 'UTR';
       const hours = data[emp.id]?.[weekLabel] || {};
-      const total = days.reduce((acc, day) => acc + parseFloat(hours[day]?.hours || 0), 0);
+      
+      // Fix TypeError by ensuring proper number conversion
+      const total = days.reduce((acc, day) => {
+        const dayHours = hours[day]?.hours;
+        const numHours = dayHours ? parseFloat(dayHours) : 0;
+        return acc + (isNaN(numHours) ? 0 : numHours);
+      }, 0);
+      
       const bruto = total * rate;
       const tvsh = labelType === 'UTR' ? bruto * 0.2 : bruto * 0.3;
       const neto = bruto - tvsh;
@@ -74,7 +81,7 @@ export default function WorkHoursTable({
     });
   }, [employees, weekLabel, data, paidStatus, siteOptions]);
 
-  // Optimized totals calculation
+  // Optimized totals calculation with error handling
   const weekTotals = useMemo(() => {
     let totalHours = 0;
     let totalBruto = 0;
@@ -85,13 +92,16 @@ export default function WorkHoursTable({
       const empData = data[emp.id]?.[weekLabel] || {};
       const empRate = Number(emp.hourlyRate || emp.hourly_rate || 0);
       const empLabelType = emp.labelType || emp.label_type || "UTR";
+      
       Object.values(empData).forEach(entry => {
         if (entry && entry.hours) {
-          const hours = Number(entry.hours);
-          totalHours += hours;
-          totalBruto += hours * empRate;
-          totalTVSH += empLabelType === "UTR" ? hours * empRate * 0.2 : hours * empRate * 0.3;
-          totalNeto += empLabelType === "UTR" ? hours * empRate * 0.8 : hours * empRate * 0.7;
+          const hours = parseFloat(entry.hours);
+          if (!isNaN(hours) && hours > 0) {
+            totalHours += hours;
+            totalBruto += hours * empRate;
+            totalTVSH += empLabelType === "UTR" ? hours * empRate * 0.2 : hours * empRate * 0.3;
+            totalNeto += empLabelType === "UTR" ? hours * empRate * 0.8 : hours * empRate * 0.7;
+          }
         }
       });
     });
@@ -205,28 +215,28 @@ export default function WorkHoursTable({
                 {/* Totali */}
                 <div className="text-center">
                   <div className="font-bold text-gray-900 bg-gray-100 rounded-lg px-3 py-2">
-                    {calc.total.toFixed(2)}
+                    {calc.total ? calc.total.toFixed(2) : '0.00'}
                   </div>
                 </div>
                 
                 {/* Bruto */}
                 <div className="text-center">
                   <div className="font-semibold text-green-700 bg-green-100 rounded-lg px-3 py-2">
-                    £{calc.bruto.toFixed(2)}
+                    £{calc.bruto ? calc.bruto.toFixed(2) : '0.00'}
                   </div>
                 </div>
                 
                 {/* TVSH */}
                 <div className="text-center">
                   <div className="font-semibold text-yellow-700 bg-yellow-100 rounded-lg px-3 py-2">
-                    £{calc.tvsh.toFixed(2)}
+                    £{calc.tvsh ? calc.tvsh.toFixed(2) : '0.00'}
                   </div>
                 </div>
                 
                 {/* Neto */}
                 <div className="text-center">
                   <div className="font-semibold text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
-                    £{calc.neto.toFixed(2)}
+                    £{calc.neto ? calc.neto.toFixed(2) : '0.00'}
                   </div>
                 </div>
                 
@@ -235,6 +245,14 @@ export default function WorkHoursTable({
                   <span className={`px-3 py-1 rounded-full text-xs font-bold border ${calc.statusBg} ${calc.statusClass}`}>
                     {calc.statusText}
                   </span>
+                  {isAdmin && (
+                    <button
+                      onClick={() => handlePaymentToggle(calc.emp.id)}
+                      className="ml-2 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                    >
+                      {calc.paid ? '❌ Shëno si pa paguar' : '✅ Shëno si të paguar'}
+                    </button>
+                  )}
                 </div>
               </div>
               
@@ -281,19 +299,19 @@ export default function WorkHoursTable({
             <div className="grid grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-lg text-gray-700">📊 Total Orë</div>
-                <div className="text-2xl text-gray-900">{weekTotals.totalHours.toFixed(2)}</div>
+                <div className="text-2xl text-gray-900">{weekTotals.totalHours ? weekTotals.totalHours.toFixed(2) : '0.00'}</div>
               </div>
               <div>
                 <div className="text-lg text-green-700">💷 Total Bruto</div>
-                <div className="text-2xl text-green-700">£{weekTotals.totalBruto.toFixed(2)}</div>
+                <div className="text-2xl text-green-700">£{weekTotals.totalBruto ? weekTotals.totalBruto.toFixed(2) : '0.00'}</div>
               </div>
               <div>
                 <div className="text-lg text-yellow-700">📋 Total TVSH</div>
-                <div className="text-2xl text-yellow-700">£{weekTotals.totalTVSH.toFixed(2)}</div>
+                <div className="text-2xl text-yellow-700">£{weekTotals.totalTVSH ? weekTotals.totalTVSH.toFixed(2) : '0.00'}</div>
               </div>
               <div>
                 <div className="text-lg text-blue-700">💰 Total Neto</div>
-                <div className="text-2xl text-blue-700">£{weekTotals.totalNeto.toFixed(2)}</div>
+                <div className="text-2xl text-blue-700">£{weekTotals.totalNeto ? weekTotals.totalNeto.toFixed(2) : '0.00'}</div>
               </div>
             </div>
           </div>
@@ -361,10 +379,10 @@ export default function WorkHoursTable({
                   </td>
                 ))}
                 <td className="py-2 px-2 font-semibold text-blue-900 bg-blue-50 rounded-xl">£{calc.rate.toFixed(2)}</td>
-                <td className="py-2 px-2 font-bold text-gray-900 bg-gray-50 rounded-xl">{calc.total.toFixed(2)}</td>
-                <td className="py-2 px-2 font-semibold text-green-700 bg-green-50 rounded-xl">£{calc.bruto.toFixed(2)}</td>
-                <td className="py-2 px-2 font-semibold text-yellow-700 bg-yellow-50 rounded-xl">£{calc.tvsh.toFixed(2)}</td>
-                <td className="py-2 px-2 font-semibold text-blue-700 bg-blue-50 rounded-xl">£{calc.neto.toFixed(2)}</td>
+                <td className="py-2 px-2 font-bold text-gray-900 bg-gray-50 rounded-xl">{calc.total ? calc.total.toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-2 font-semibold text-green-700 bg-green-50 rounded-xl">£{calc.bruto ? calc.bruto.toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-2 font-semibold text-yellow-700 bg-yellow-50 rounded-xl">£{calc.tvsh ? calc.tvsh.toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-2 font-semibold text-blue-700 bg-blue-50 rounded-xl">£{calc.neto ? calc.neto.toFixed(2) : '0.00'}</td>
                 {showPaymentControl && (
                   <td className="py-2 px-2">
                     <input
@@ -392,10 +410,10 @@ export default function WorkHoursTable({
                 <td key={Math.random()} className="py-2 px-2"></td>
               ))}
               <td className="py-2 px-2 font-bold text-blue-900 bg-blue-100 rounded-xl">-</td>
-              <td className="py-2 px-2 font-bold text-gray-900 bg-gray-100 rounded-xl">{weekTotals.totalHours.toFixed(2)}</td>
-              <td className="py-2 px-2 font-bold text-green-700 bg-green-100 rounded-xl">£{weekTotals.totalBruto.toFixed(2)}</td>
-              <td className="py-2 px-2 font-bold text-yellow-700 bg-yellow-100 rounded-xl">£{weekTotals.totalTVSH.toFixed(2)}</td>
-              <td className="py-2 px-2 font-bold text-blue-700 bg-blue-100 rounded-xl">£{weekTotals.totalNeto.toFixed(2)}</td>
+              <td className="py-2 px-2 font-bold text-gray-900 bg-gray-100 rounded-xl">{weekTotals.totalHours ? weekTotals.totalHours.toFixed(2) : '0.00'}</td>
+              <td className="py-2 px-2 font-bold text-green-700 bg-green-100 rounded-xl">£{weekTotals.totalBruto ? weekTotals.totalBruto.toFixed(2) : '0.00'}</td>
+              <td className="py-2 px-2 font-bold text-yellow-700 bg-yellow-100 rounded-xl">£{weekTotals.totalTVSH ? weekTotals.totalTVSH.toFixed(2) : '0.00'}</td>
+              <td className="py-2 px-2 font-bold text-blue-700 bg-blue-100 rounded-xl">£{weekTotals.totalNeto ? weekTotals.totalNeto.toFixed(2) : '0.00'}</td>
               {showPaymentControl && <td className="py-2 px-2"></td>}
               {showPaymentControl && <td className="py-2 px-2"></td>}
             </tr>
