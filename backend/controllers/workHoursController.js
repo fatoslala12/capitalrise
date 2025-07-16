@@ -684,3 +684,48 @@ exports.saveWeekNote = async (req, res) => {
     client.release();
   }
 };
+
+// Funksion për të marrë komentet e javës
+exports.getWeekNotes = async (req, res) => {
+  const { employeeId } = req.params;
+  
+  if (!employeeId) {
+    return res.status(400).json({ error: 'employeeId është i detyrueshëm' });
+  }
+  
+  const client = await pool.connect();
+  try {
+    // Krijo tabelën week_notes nëse nuk ekziston
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS week_notes (
+        id SERIAL PRIMARY KEY,
+        employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+        week_label VARCHAR(50) NOT NULL,
+        note TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(employee_id, week_label)
+      )
+    `);
+    
+    // Merr komentet për këtë punonjës
+    const notesRes = await client.query(
+      `SELECT week_label, note FROM week_notes WHERE employee_id = $1 ORDER BY week_label DESC`,
+      [employeeId]
+    );
+    
+    // Konverto në objekt për frontend
+    const notes = {};
+    notesRes.rows.forEach(row => {
+      notes[row.week_label] = row.note;
+    });
+    
+    res.json(notes);
+    
+  } catch (err) {
+    console.error('[ERROR] Get week notes:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+};
