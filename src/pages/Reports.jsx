@@ -20,6 +20,10 @@ import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { Container, Grid } from "../components/ui/Layout";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+import { ResponsiveContainer, CartesianGrid } from "recharts";
+
 // Funksion universal për të kthyer snake_case në camelCase
 function snakeToCamel(obj) {
   if (Array.isArray(obj)) {
@@ -36,6 +40,7 @@ function snakeToCamel(obj) {
 }
 
 export default function Reports() {
+  const { user } = useAuth();
   const [filteredHours, setFilteredHours] = useState([]);
   const [summary, setSummary] = useState({ totalHours: 0, totalPaid: 0 });
   const [monthlyExpenses, setMonthlyExpenses] = useState([]);
@@ -46,386 +51,576 @@ export default function Reports() {
   const [excludeWeekends, setExcludeWeekends] = useState(false);
   const [siteOptions, setSiteOptions] = useState([]);
   const [employeeOptions, setEmployeeOptions] = useState([]);
-  const [allWorkHours, setAllWorkHours] = useState([]);
-  const [allInvoices, setAllInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [managerSites, setManagerSites] = useState([]);
+  const [managerEmployees, setManagerEmployees] = useState([]);
+  const [managerStats, setManagerStats] = useState({
+    totalHours: 0,
+    totalPay: 0,
+    averageHoursPerEmployee: 0,
+    topPerformers: [],
+    siteBreakdown: []
+  });
   const token = localStorage.getItem("token");
 
-  // Merr të gjitha të dhënat nga backend
+  // Merr të dhënat e menaxherit nëse është manager
+  useEffect(() => {
+    if (user?.role === "manager" && user?.employee_id) {
+      axios.get(`https://building-system.onrender.com/api/employees/${user.employee_id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => {
+          const managerData = res.data;
+          const sites = managerData.workplace || [];
+          setManagerSites(sites);
+          
+          // Merr punonjësit që punojnë në site-t e menaxherit
+          axios.get("https://building-system.onrender.com/api/employees", {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+            .then(empRes => {
+              const allEmployees = empRes.data || [];
+              const filteredEmployees = allEmployees.filter(emp => 
+                emp.workplace && Array.isArray(emp.workplace) && 
+                emp.workplace.some(site => sites.includes(site))
+              );
+              setManagerEmployees(filteredEmployees);
+              setEmployeeOptions(filteredEmployees.map(emp => ({
+                value: emp.id,
+                label: `${emp.first_name} ${emp.last_name}`
+              })));
+            });
+        });
+    }
+  }, [user, token]);
+
+  // useEffect për të marrë të dhënat dhe llogaritë dashboard stats
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        console.log('[DEBUG] Reports: Fetching data...');
         
-        const [contractsRes, employeesRes, workHoursRes, invoicesRes, paymentsRes, expensesRes] = await Promise.all([
+        const [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
           api.get("/api/contracts"),
           api.get("/api/employees"),
-          api.get("/api/work-hours/"),
           api.get("/api/invoices"),
-          api.get("/api/payments"),
+          api.get("/api/tasks"),
           api.get("/api/expenses"),
+          api.get("/api/payments"),
+          api.get("/api/work-hours/structured"),
         ]);
         
         const contracts = snakeToCamel(contractsRes.data || []);
         const employees = snakeToCamel(employeesRes.data || []);
-        const workHours = snakeToCamel(workHoursRes.data || []);
         const invoices = snakeToCamel(invoicesRes.data || []);
-        const payments = snakeToCamel(paymentsRes.data || []);
-        const expenses = snakeToCamel(expensesRes.data || []);
-
-        console.log('[DEBUG] Reports: Data fetched', {
-          contracts: contracts.length,
-          employees: employees.length,
-          workHours: workHours.length,
-          invoices: invoices.length,
-          payments: payments.length,
-          expenses: expenses.length
-        });
-
-        // Site options from contracts
-        const sites = [...new Set(contracts.map(c => c.siteName || c.site_name).filter(Boolean))];
-        setSiteOptions(sites);
-
-        // Employee options
-        const employeeNames = employees.map(e => ({
-          id: e.id,
-          employeeName: `${e.firstName || e.first_name || ''} ${e.lastName || e.last_name || ''}`.trim()
-        }));
-        setEmployeeOptions(employeeNames);
-
-        // Process work hours for reporting
-        const allHours = [];
-        workHours.forEach((wh) => {
-          const emp = employees.find(e => String(e.id) === String(wh.employeeId || wh.employee_id));
-          const empName = emp ? `${emp.firstName || emp.first_name || ''} ${emp.lastName || emp.last_name || ''}`.trim() : `Punonjës ${wh.employeeId || wh.employee_id}`;
+        const allTasksData = snakeToCamel(tasksRes.data || []);
+        const allExpenses = snakeToCamel(expensesRes.data || []);
+        const allPayments = snakeToCamel(paymentsRes.data || []);
+        const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
+        
+        // Filtrim për menaxherin
+        let filteredContracts = contracts;
+        let filteredEmployees = employees;
+        let filteredWorkHours = structuredWorkHours;
+        
+        if (user?.role === "manager" && managerSites.length > 0) {
+          // Filtro kontratat sipas site-ve të menaxherit
+          filteredContracts = contracts.filter(c => 
+            c.siteName && managerSites.includes(c.siteName)
+          );
           
-          // Find contract/site info
-          const contract = contracts.find(c => String(c.id) === String(wh.contractId || wh.contract_id));
-          const siteName = contract ? (contract.siteName || contract.site_name) : (wh.site || 'Unknown Site');
+          // Filtro punonjësit sipas site-ve të menaxherit
+          filteredEmployees = employees.filter(emp => 
+            emp.workplace && Array.isArray(emp.workplace) && 
+            emp.workplace.some(site => managerSites.includes(site))
+          );
           
-          allHours.push({
-            employeeId: wh.employeeId || wh.employee_id,
-            employeeName: empName,
-            site: siteName,
-            date: wh.date,
-            hours: parseFloat(wh.hours || 0),
-            rate: parseFloat(wh.rate || emp?.hourlyRate || emp?.hourly_rate || 0)
+          // Filtro orët e punës për punonjësit e menaxherit
+          const managerEmployeeIds = filteredEmployees.map(emp => emp.id);
+          filteredWorkHours = {};
+          Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
+            if (managerEmployeeIds.includes(parseInt(empId))) {
+              filteredWorkHours[empId] = empData;
+            }
+          });
+        }
+        
+        // Llogarit statistika për menaxherin
+        if (user?.role === "manager") {
+          let totalHours = 0;
+          let totalPay = 0;
+          const siteHours = {};
+          const employeeHours = {};
+          
+          Object.entries(filteredWorkHours).forEach(([empId, empData]) => {
+            const emp = filteredEmployees.find(e => e.id === parseInt(empId));
+            if (!emp) return;
+            
+            let empTotalHours = 0;
+            Object.values(empData).forEach(weekData => {
+              Object.values(weekData).forEach(dayData => {
+                if (dayData?.hours) {
+                  const hours = parseFloat(dayData.hours);
+                  empTotalHours += hours;
+                  totalHours += hours;
+                  totalPay += hours * parseFloat(emp.hourlyRate || 0);
+                  
+                  if (dayData.site) {
+                    siteHours[dayData.site] = (siteHours[dayData.site] || 0) + hours;
+                  }
+                }
+              });
+            });
+            
+            if (empTotalHours > 0) {
+              employeeHours[empId] = {
+                name: `${emp.firstName} ${emp.lastName}`,
+                hours: empTotalHours,
+                pay: empTotalHours * parseFloat(emp.hourlyRate || 0)
+              };
+            }
+          });
+          
+          const topPerformers = Object.values(employeeHours)
+            .sort((a, b) => b.hours - a.hours)
+            .slice(0, 5);
+          
+          const siteBreakdown = Object.entries(siteHours).map(([site, hours]) => ({
+            site,
+            hours,
+            percentage: (hours / totalHours * 100).toFixed(1)
+          }));
+          
+          setManagerStats({
+            totalHours,
+            totalPay,
+            averageHoursPerEmployee: filteredEmployees.length > 0 ? totalHours / filteredEmployees.length : 0,
+            topPerformers,
+            siteBreakdown
+          });
+        }
+        
+        // Set site options
+        const uniqueSites = [...new Set(filteredContracts.map(c => c.siteName).filter(Boolean))];
+        setSiteOptions(uniqueSites);
+        
+        // Set employee options
+        setEmployeeOptions(filteredEmployees.map(emp => ({
+          value: emp.id,
+          label: `${emp.firstName} ${emp.lastName}`
+        })));
+        
+        // Process work hours data
+        const hoursData = [];
+        Object.entries(filteredWorkHours).forEach(([empId, empData]) => {
+          const emp = filteredEmployees.find(e => e.id === parseInt(empId));
+          if (!emp) return;
+          
+          Object.entries(empData).forEach(([weekLabel, weekData]) => {
+            Object.entries(weekData).forEach(([dayName, dayData]) => {
+              if (dayData?.hours && dayData?.site) {
+                const date = new Date(weekLabel.split(' - ')[0]);
+                const dayNames = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"];
+                const dayIdx = dayNames.indexOf(dayName);
+                if (dayIdx !== -1) {
+                  date.setDate(date.getDate() + dayIdx);
+                  
+                  if (excludeWeekends && (date.getDay() === 0 || date.getDay() === 6)) {
+                    return;
+                  }
+                  
+                  const record = {
+                    date: format(date, 'yyyy-MM-dd'),
+                    employee: `${emp.firstName} ${emp.lastName}`,
+                    site: dayData.site,
+                    hours: parseFloat(dayData.hours),
+                    pay: parseFloat(dayData.hours) * parseFloat(emp.hourlyRate || 0),
+                    rate: parseFloat(emp.hourlyRate || 0)
+                  };
+                  
+                  if ((!siteFilter || record.site === siteFilter) &&
+                      (!employeeFilter || record.employee === employeeFilter)) {
+                    hoursData.push(record);
+                  }
+                }
+              }
+            });
           });
         });
-        setAllWorkHours(allHours);
-
-        // Process invoices for reporting
-        const allInvs = [];
-        invoices.forEach(inv => {
-          if (!inv) return;
-          const items = inv.items || [];
-          const subtotal = items.length > 0
-            ? items.reduce((sum, i) => sum + (parseFloat(i.amount) || 0), 0)
-            : parseFloat(inv.gross || 0);
-          const vat = subtotal * 0.2;
-          const other = parseFloat(inv.other || 0);
-          const total = subtotal + vat + other;
+        
+        setFilteredHours(hoursData);
+        
+        // Calculate summary
+        const totalHours = hoursData.reduce((sum, record) => sum + record.hours, 0);
+        const totalPaid = hoursData.reduce((sum, record) => sum + record.pay, 0);
+        setSummary({ totalHours, totalPaid });
+        
+        // Calculate monthly expenses
+        const monthlyData = {};
+        allExpenses.forEach(expense => {
+          if (expense.date) {
+            const month = format(new Date(expense.date), 'yyyy-MM');
+            if (!monthlyData[month]) {
+              monthlyData[month] = { month, amount: 0 };
+            }
+            monthlyData[month].amount += parseFloat(expense.amount || 0);
+          }
+        });
+        setMonthlyExpenses(Object.values(monthlyData).sort((a, b) => a.month.localeCompare(b.month)));
+        
+        // Calculate employee efficiency
+        const efficiencyData = [];
+        Object.entries(filteredWorkHours).forEach(([empId, empData]) => {
+          const emp = filteredEmployees.find(e => e.id === parseInt(empId));
+          if (!emp) return;
           
-          const contract = contracts.find(c => c.contractNumber === inv.contractNumber || c.contract_number === inv.contract_number);
+          let totalHours = 0;
+          let totalPay = 0;
+          Object.values(empData).forEach(weekData => {
+            Object.values(weekData).forEach(dayData => {
+              if (dayData?.hours) {
+                totalHours += parseFloat(dayData.hours);
+                totalPay += parseFloat(dayData.hours) * parseFloat(emp.hourlyRate || 0);
+              }
+            });
+          });
           
-          allInvs.push({
-            ...inv,
-            total,
-            paid: inv.paid,
-            paidLate: !!inv.paidLate,
-            siteName: contract ? (contract.siteName || contract.site_name) : 'Unknown Site'
+          if (totalHours > 0) {
+            efficiencyData.push({
+              name: `${emp.firstName} ${emp.lastName}`,
+              hours: totalHours,
+              pay: totalPay,
+              efficiency: (totalHours / 40).toFixed(2) // Assuming 40 hours is standard
+            });
+          }
+        });
+        setEmployeeEfficiency(efficiencyData.sort((a, b) => b.hours - a.hours));
+        
+        // Calculate invoice status
+        const invoiceData = [];
+        const statusCounts = { paid: 0, unpaid: 0, overdue: 0 };
+        
+        filteredContracts.forEach(contract => {
+          const contractInvoices = invoices.filter(inv => inv.contractNumber === contract.contractNumber);
+          contractInvoices.forEach(invoice => {
+            const status = invoice.paid ? 'paid' : 
+                          new Date(invoice.dueDate) < new Date() ? 'overdue' : 'unpaid';
+            statusCounts[status]++;
+            
+            invoiceData.push({
+              contract: contract.contractNumber,
+              invoice: invoice.invoiceNumber,
+              amount: parseFloat(invoice.total || 0),
+              status: status
+            });
           });
         });
-        setAllInvoices(allInvs);
-
-      } catch (err) {
-        console.error('[ERROR] Reports: Failed to fetch data:', err);
-        setSiteOptions([]);
-        setEmployeeOptions([]);
-        setAllWorkHours([]);
-        setAllInvoices([]);
+        
+        setInvoiceStatus([
+          { name: 'Paguar', value: statusCounts.paid, fill: '#10B981' },
+          { name: 'Pa paguar', value: statusCounts.unpaid, fill: '#F59E0B' },
+          { name: 'Me vonesë', value: statusCounts.overdue, fill: '#EF4444' }
+        ]);
+        
+      } catch (error) {
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [token]);
+  }, [user, managerSites, siteFilter, employeeFilter, excludeWeekends]);
 
-  // Process filters and summaries
-  useEffect(() => {
-    console.log('[DEBUG] Reports: Processing filters...', {
-      workHours: allWorkHours.length,
-      invoices: allInvoices.length,
-      siteFilter,
-      employeeFilter,
-      excludeWeekends
-    });
-
-    const workHours = allWorkHours;
-    const invoices = allInvoices;
-
-    const filtered = workHours.filter(w => {
-      // Check if date is weekend
-      const date = new Date(w.date);
-      const dayOfWeek = date.getDay();
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday = 0, Saturday = 6
-      
-      return (!excludeWeekends || !isWeekend) &&
-        (!siteFilter || w.site === siteFilter) &&
-        (!employeeFilter || w.employeeName === employeeFilter);
-    });
-
-    console.log('[DEBUG] Reports: Filtered work hours:', filtered.length);
-
-    const totalHours = filtered.reduce((sum, w) => sum + (parseFloat(w.hours) || 0), 0);
-    const totalPaid = invoices
-      .filter(inv => inv.paid)
-      .reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
-
-    console.log('[DEBUG] Reports: Totals calculated:', { totalHours, totalPaid });
-
-    // Group by employee
-    const groupedByEmployee = {};
-    const groupedBySite = {};
-    
-    for (let w of filtered) {
-      const empName = w.employeeName || 'Unknown Employee';
-      const site = w.site || 'Unknown Site';
-      
-      if (!groupedByEmployee[empName]) groupedByEmployee[empName] = 0;
-      groupedByEmployee[empName] += parseFloat(w.hours || 0);
-
-      if (!groupedBySite[site]) groupedBySite[site] = 0;
-      groupedBySite[site] += parseFloat(w.hours || 0);
-    }
-
-    const barBySite = Object.entries(groupedBySite).map(([site, hours]) => ({
-      site,
-      hours,
-    }));
-
-    const barByEmployee = Object.entries(groupedByEmployee).map(([employeeName, hours]) => ({
-      employeeName,
-      hours,
-    }));
-
-    // Invoice status pie chart
-    const statusCounts = {};
-    for (let inv of invoices) {
-      const status = inv.paid
-        ? (inv.paidLate ? "Paguar me vonesë" : "Paguar në kohë")
-        : "Pa paguar";
-      if (!statusCounts[status]) statusCounts[status] = 0;
-      statusCounts[status]++;
-    }
-    const pie = Object.entries(statusCounts).map(([status, value]) => ({
-      status,
-      value,
-    }));
-
-    console.log('[DEBUG] Reports: Charts data prepared:', {
-      barBySite: barBySite.length,
-      barByEmployee: barByEmployee.length,
-      pie: pie.length
-    });
-
-    setFilteredHours(filtered);
-    setSummary({ totalHours, totalPaid });
-    setMonthlyExpenses(barBySite);
-    setEmployeeEfficiency(barByEmployee);
-    setInvoiceStatus(pie);
-  }, [siteFilter, employeeFilter, excludeWeekends, allWorkHours, allInvoices]);
-
-  const pieColors = ["#28a745", "#ffc107", "#dc3545"];
-
-  const handleExportPDF = () => {
-    const input = document.getElementById("report-content");
-    html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF();
-      pdf.addImage(imgData, "PNG", 10, 10);
-      pdf.save("raporti.pdf");
-    });
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(filteredHours);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Work Hours");
+    XLSX.writeFile(wb, "work_hours_report.xlsx");
   };
 
-  const handleExportExcel = () => {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(filteredHours);
-    XLSX.utils.book_append_sheet(wb, ws, "Raporti");
-    XLSX.writeFile(wb, "raporti.xlsx");
+  const exportToPDF = async () => {
+    const element = document.getElementById('reports-container');
+    const canvas = await html2canvas(element);
+    const imgData = canvas.toDataURL('image/png');
+    
+    const pdf = new jsPDF();
+    const imgWidth = 210;
+    const pageHeight = 295;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    
+    pdf.save("work_hours_report.pdf");
   };
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar raportet..." />;
+    return <LoadingSpinner />;
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">📊 Raportim & Analiza</h1>
+    <Container>
+      <div id="reports-container">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            {user?.role === "manager" ? "📊 Raportet e Menaxherit" : "📊 Raportet"}
+          </h1>
+          
+          {user?.role === "manager" && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">ℹ️ Informacion për Menaxherin</h3>
+              <p className="text-blue-700">
+                Këto raporte shfaqin vetëm të dhënat për site-t që menaxhoni: <strong>{managerSites.join(", ")}</strong>
+              </p>
+            </div>
+          )}
 
-      <div className="flex gap-3 mb-4 flex-wrap">
-        <select value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)} className="border p-2 rounded">
-          <option value="">Të gjitha site-t</option>
-          {siteOptions.map(site => <option key={site} value={site}>{site}</option>)}
-        </select>
-        <select value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)} className="border p-2 rounded">
-          <option value="">Të gjithë punonjësit</option>
-          {employeeOptions.map(emp => <option key={emp.id} value={emp.employeeName}>{emp.employeeName}</option>)}
-        </select>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={excludeWeekends} onChange={() => setExcludeWeekends(!excludeWeekends)} />
-          Përjashto fundjavat
-        </label>
-      </div>
+          {/* Filtra */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>🔍 Filtra</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Grid cols={3} gap={4}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Site</label>
+                  <select
+                    value={siteFilter}
+                    onChange={(e) => setSiteFilter(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">Të gjitha</option>
+                    {siteOptions.map((site) => (
+                      <option key={site} value={site}>{site}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Punonjësi</label>
+                  <select
+                    value={employeeFilter}
+                    onChange={(e) => setEmployeeFilter(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">Të gjithë</option>
+                    {employeeOptions.map((emp) => (
+                      <option key={emp.value} value={emp.label}>{emp.label}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="flex items-center">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={excludeWeekends}
+                      onChange={(e) => setExcludeWeekends(e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-700">Përjashto fundjavët</span>
+                  </label>
+                </div>
+              </Grid>
+            </CardContent>
+          </Card>
 
-      <div className="text-right mb-6 flex gap-3 justify-end">
-        <button onClick={handleExportPDF} className="bg-green-600 text-white px-4 py-2 rounded">
-          📄 Eksporto PDF
-        </button>
-        <button onClick={handleExportExcel} className="bg-yellow-500 text-white px-4 py-2 rounded">
-          📊 Shkarko Excel
-        </button>
-      </div>
+          {/* Statistika për Menaxherin */}
+          {user?.role === "manager" && (
+            <Grid cols={4} gap={6} className="mb-8">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-600">{managerStats.totalHours.toFixed(1)}</div>
+                    <div className="text-sm text-gray-600">Total Orë</div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-600">£{managerStats.totalPay.toFixed(2)}</div>
+                    <div className="text-sm text-gray-600">Total Paga</div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-purple-600">{managerStats.averageHoursPerEmployee.toFixed(1)}</div>
+                    <div className="text-sm text-gray-600">Mesatarja/Punonjës</div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-orange-600">{managerEmployees.length}</div>
+                    <div className="text-sm text-gray-600">Punonjës</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
 
-      <div id="report-content">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-4 shadow rounded">
-            <h2 className="text-lg font-semibold">Orë totale të punuara</h2>
-            <p className="text-xl font-bold">{summary.totalHours}</p>
+          {/* Përmbledhja */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>📈 Përmbledhja</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Grid cols={2} gap={4}>
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">{summary.totalHours.toFixed(1)}</div>
+                  <div className="text-sm text-gray-600">Total Orë</div>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">£{summary.totalPaid.toFixed(2)}</div>
+                  <div className="text-sm text-gray-600">Total Paga</div>
+                </div>
+              </Grid>
+            </CardContent>
+          </Card>
+
+          {/* Top Performers për Menaxherin */}
+          {user?.role === "manager" && managerStats.topPerformers.length > 0 && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>🏆 Top Performers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {managerStats.topPerformers.map((performer, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <div className="font-semibold">{performer.name}</div>
+                          <div className="text-sm text-gray-600">{performer.hours.toFixed(1)} orë</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-green-600">£{performer.pay.toFixed(2)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Breakdown sipas Site-ve për Menaxherin */}
+          {user?.role === "manager" && managerStats.siteBreakdown.length > 0 && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>🏗️ Breakdown sipas Site-ve</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {managerStats.siteBreakdown.map((site, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="font-semibold">{site.site}</div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm text-gray-600">{site.hours.toFixed(1)} orë</div>
+                        <div className="text-sm text-blue-600">{site.percentage}%</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Grafikët */}
+          <Grid cols={2} gap={6} className="mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>📊 Orët e Punës sipas Muajit</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={monthlyExpenses}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="amount" fill="#3B82F6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>📈 Efikasiteti i Punonjësve</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={employeeEfficiency}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="hours" fill="#10B981" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Statusi i Faturave */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>📄 Statusi i Faturave</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={invoiceStatus}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {invoiceStatus.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Butona për Export */}
+          <div className="flex gap-4 mb-8">
+            <Button onClick={exportToExcel} variant="primary">
+              📊 Export Excel
+            </Button>
+            <Button onClick={exportToPDF} variant="secondary">
+              📄 Export PDF
+            </Button>
           </div>
-          <div className="bg-white p-4 shadow rounded">
-            <h2 className="text-lg font-semibold">Pagesa totale</h2>
-            <p className="text-xl font-bold">£{summary.totalPaid.toFixed(2)}</p>
-          </div>
-        </div>
-
-        <div className="bg-white p-4 shadow rounded mb-6">
-          <h2 className="text-lg font-semibold mb-2">📊 Orë sipas punonjësve</h2>
-          {employeeEfficiency && employeeEfficiency.length > 0 ? (
-            <BarChart width={700} height={300} data={employeeEfficiency}>
-              <XAxis dataKey="employeeName" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="hours" fill="#8884d8" />
-            </BarChart>
-          ) : (
-            <p className="text-gray-500 italic py-8">Nuk ka të dhëna për të shfaqur</p>
-          )}
-        </div>
-
-        <div className="bg-white p-4 shadow rounded mb-6">
-          <h2 className="text-lg font-semibold mb-2">🏗️ Orë pune sipas site-it</h2>
-          {monthlyExpenses && monthlyExpenses.length > 0 ? (
-            <BarChart
-              width={800}
-              height={350}
-              data={monthlyExpenses}
-            >
-              <XAxis dataKey="site" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="hours" fill="#3498db" />
-            </BarChart>
-          ) : (
-            <p className="text-gray-500 italic py-8">Nuk ka të dhëna për të shfaqur</p>
-          )}
-        </div>
-
-        {/* Faturat e papaguara - dizajn i ri */}
-        <div className="bg-white p-4 shadow rounded mb-6">
-          <h2 className="text-lg font-semibold mb-2">📌 Faturat e Papaguara</h2>
-          {allInvoices.filter(inv => !inv.paid).length === 0 ? (
-            <p className="text-gray-500 italic">Të gjitha faturat janë të paguara ✅</p>
-          ) : (
-            <ul className="space-y-2 text-red-700 text-base">
-              {allInvoices.filter(inv => !inv.paid).map((inv, idx) => (
-                <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                  <span className="font-bold">🔴 Kontrata #{inv.contractNumber || ''}</span>
-                  <span className="font-bold text-black">Nr. Fature: <b>{inv.invoiceNumber || ''}</b></span>
-                  <span className="font-bold text-black flex items-center gap-1">🏢 Site: <b>{inv.siteName || ''}</b></span>
-                  <span className="font-bold text-lg flex items-center gap-1">💷 {inv.total !== undefined ? `£${inv.total.toFixed(2)}` : ''}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* Shpenzimet e papaguara - dizajn i ri */}
-        <div className="bg-white p-4 shadow rounded mb-6">
-          <h2 className="text-lg font-semibold mb-2">📂 Shpenzimet e Papaguara</h2>
-          {allInvoices.filter(inv => !inv.paid).length === 0 ? (
-            <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
-          ) : (
-            <ul className="space-y-2 text-red-700 text-base">
-              {allInvoices.filter(inv => !inv.paid).map((inv, idx) => (
-                <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                  <span className="font-bold flex items-center gap-1">📅 {inv.date ? new Date(inv.date).toLocaleDateString() : ''}</span>
-                  <span className="font-bold text-lg">{inv.invoiceNumber || ''}</span>
-                  <span className="font-bold text-lg flex items-center gap-1">💷 {inv.total !== undefined ? `£${inv.total.toFixed(2)}` : ''}</span>
-                  <span className="font-bold text-blue-700 flex items-center gap-1">🏢 {inv.siteName || ''}</span>
-                  <span className="text-gray-700">{inv.description || ''}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="bg-white p-4 shadow rounded mb-6">
-          <h2 className="text-lg font-semibold mb-2">📍 Orë dhe Fitim Neto sipas site-it të punës</h2>
-          {filteredHours && filteredHours.length > 0 ? (
-            <BarChart
-              width={800}
-              height={350}
-              data={Object.entries(
-                filteredHours.reduce((acc, curr) => {
-                  const site = curr.site || "Pa site";
-                  const rate = curr.rate || 15; // Use actual rate from data or default to 15
-                  const bruto = curr.hours * rate;
-                  const neto = bruto * 0.2; // Company profit (20%)
-
-                  if (!acc[site]) acc[site] = { site, hours: 0, profit: 0 };
-                  acc[site].hours += curr.hours;
-                  acc[site].profit += neto;
-                  return acc;
-                }, {})
-              ).map(([_, value]) => value)}
-            >
-              <XAxis dataKey="site" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="hours" fill="#3498db" name="Orë totale" />
-              <Bar dataKey="profit" fill="#2ecc71" name="Fitim Neto (20%)" />
-            </BarChart>
-          ) : (
-            <p className="text-gray-500 italic py-8">Nuk ka të dhëna për të shfaqur</p>
-          )}
-        </div>
-
-        <div className="bg-white p-4 shadow rounded mb-6">
-          <h2 className="text-lg font-semibold mb-2">🧾 Statusi i faturave</h2>
-          {invoiceStatus && invoiceStatus.length > 0 ? (
-            <PieChart width={400} height={300}>
-              <Pie
-                data={invoiceStatus}
-                dataKey="value"
-                nameKey="status"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                label
-              >
-                {invoiceStatus.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          ) : (
-            <p className="text-gray-500 italic py-8">Nuk ka të dhëna për fatura</p>
-          )}
         </div>
       </div>
-    </div>
+    </Container>
   );
 }

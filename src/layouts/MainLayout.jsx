@@ -21,7 +21,8 @@ const managerMenu = [
   { path: "/manager/employees-list", label: "➕ Menaxho Punonjësit" },
   { path: "/manager/work-hours", label: "🕒 Orët e Punës" },
   { path: "/manager/payments", label: "💰 Pagesat" },
-  { path: "/manager/my-profile", label: "👤 Profili Im" },
+  { path: "/manager/reports", label: "📊 Raportet" },
+  { path: "/manager/my-profile", label: "�� Profili Im" },
 ];
 
 const userMenu = [

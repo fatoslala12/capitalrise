@@ -331,10 +331,90 @@ export default function WorkHours() {
   }
 
   return (
-    <div className="overflow-x-auto p-6">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        {isReadOnly ? "🕒 Orët e Mia të Punës" : "📋 Menaxho Orët e Punës"}
-      </h2>
+    <div className="max-w-7xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+        {isManager ? "🕒 Menaxhimi i Orëve të Punës" : 
+         isAdmin ? "🕒 Paneli i Administrimit të Orëve" : 
+         "🕒 Orët e Mia të Punës"}
+      </h1>
+
+      {/* Përmbledhje për Menaxherin */}
+      {isManager && employees.length > 0 && (
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-4 text-blue-800">📊 Përmbledhje e Orëve të Punës</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-4">
+              <div className="text-2xl font-bold">
+                {employees.length}
+              </div>
+              <div className="text-sm opacity-90">Punonjës</div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-4">
+              <div className="text-2xl font-bold">
+                {Object.values(hourData).reduce((total, empData) => {
+                  return total + Object.values(empData).reduce((weekTotal, weekData) => {
+                    return weekTotal + Object.values(weekData).reduce((dayTotal, dayData) => {
+                      return dayTotal + (dayData?.hours || 0);
+                    }, 0);
+                  }, 0);
+                }, 0).toFixed(1)}
+              </div>
+              <div className="text-sm opacity-90">Total Orë</div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-4">
+              <div className="text-2xl font-bold">
+                £{Object.values(hourData).reduce((total, empData) => {
+                  return total + Object.values(empData).reduce((weekTotal, weekData) => {
+                    return weekTotal + Object.values(weekData).reduce((dayTotal, dayData) => {
+                      const emp = employees.find(e => e.id === parseInt(Object.keys(hourData).find(key => hourData[key] === empData)));
+                      return dayTotal + ((dayData?.hours || 0) * (emp?.hourly_rate || 0));
+                    }, 0);
+                  }, 0);
+                }, 0).toFixed(2)}
+              </div>
+              <div className="text-sm opacity-90">Total Paga</div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg p-4">
+              <div className="text-2xl font-bold">
+                {Object.keys(hourData).length}
+              </div>
+              <div className="text-sm opacity-90">Javë Aktive</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Kontrolli i pagesës */}
+      {!isReadOnly && (
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-4 text-blue-800">💰 Kontrolli i Pagesës</h2>
+          <div className="flex flex-wrap gap-4 items-center">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={paidStatus[currentWeekLabel] || false}
+                onChange={(e) => setPaidStatus(prev => ({
+                  ...prev,
+                  [currentWeekLabel]: e.target.checked
+                }))}
+                className="w-4 h-4 text-blue-600"
+              />
+              <span className="text-sm font-medium">Shëno si të paguar për javën aktuale</span>
+            </label>
+            
+            <button
+              onClick={handleSubmit}
+              disabled={saved}
+              className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-2 rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50"
+            >
+              {saved ? "✅ U ruajt!" : "💾 Ruaj Ndryshimet"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Read-only view për user */}
       {isReadOnly && (

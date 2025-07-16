@@ -69,8 +69,10 @@ export default function AppRouter() {
               <Route path="work-hours" element={<WorkHours />} />
               <Route path="payments" element={<Payments />} />
               <Route path="employees-list" element={<EmployeesList />} />
+              <Route path="employee/:id" element={<EmployeeDetails />} />
               <Route path="my-tasks" element={<MyTasks />} />
               <Route path="my-profile" element={<MyProfile />} />
+              <Route path="reports" element={<Reports />} />
             </Route>
 
             <Route path="/user" element={<MainLayout />}>
