@@ -625,17 +625,17 @@ export default function EmployeesList() {
                     </td>
                     <td className="py-3 px-3 font-semibold text-blue-700">{emp.labelType || emp.label_type || ""}</td>
                     <td className="py-3 px-3 flex items-center gap-2 justify-center">
-                      <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 bg-gradient-to-r from-blue-400 to-purple-400 text-white rounded-full shadow hover:scale-110 hover:from-purple-600 hover:to-blue-600 transition-all text-xl" title="Shiko Detaje">
+                      <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl" title="Shiko Detaje">
                         <FaEye />
                       </button>
                       <button
                         onClick={() => handleExtract(emp)}
-                        className="p-2 bg-gradient-to-r from-green-400 to-blue-400 text-white rounded-full shadow hover:scale-110 hover:from-blue-600 hover:to-green-600 transition-all text-xl"
+                        className="p-2 text-green-600 hover:text-green-800 hover:scale-110 transition-all text-xl"
                         title="Eksporto të dhënat"
                       >
                         📥
                       </button>
-                      <button onClick={() => handleDelete(emp.id)} className="p-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-full shadow hover:scale-110 hover:from-pink-600 hover:to-red-600 transition-all text-xl" title="Fshi">
+                      <button onClick={() => handleDelete(emp.id)} className="p-2 text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl" title="Fshi">
                         🗑
                       </button>
                     </td>
