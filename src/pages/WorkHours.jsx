@@ -194,30 +194,36 @@ export default function WorkHours() {
 
   // Merr orët e punës nga backend
   useEffect(() => {
-    if (employees.length === 0) return;
+    if (!user || !currentWeekLabel) return;
     
-    if (isUser) {
-      // USER: merr vetëm orët e veta
-      axios.get(`https://building-system.onrender.com/api/work-hours/structured/${user.employee_id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+    setLoading(true);
+    
+    axios.get("https://building-system.onrender.com/api/work-hours/structured", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        console.log('[DEBUG] WorkHours API response:', res);
+        console.log('[DEBUG] WorkHours API data:', res.data);
+        console.log('[DEBUG] WorkHours API data type:', typeof res.data);
+        console.log('[DEBUG] WorkHours API data keys:', Object.keys(res.data || {}));
+        
+        const data = res.data || {};
+        setHourData(data);
+        
+        // Debug: shfaq disa shembuj të të dhënave
+        Object.entries(data).forEach(([empId, empData]) => {
+          console.log(`[DEBUG] Employee ${empId} data:`, empData);
+          Object.entries(empData).forEach(([week, weekData]) => {
+            console.log(`[DEBUG] Employee ${empId} week ${week}:`, weekData);
+          });
+        });
       })
-        .then(res => {
-          const userData = {};
-          userData[user.employee_id] = res.data || {};
-          setHourData(userData);
-        })
-        .catch(() => setHourData({}));
-    } else {
-      // ADMIN & MANAGER: merr të gjitha orët
-      axios.get("https://building-system.onrender.com/api/work-hours/structured", {
-        headers: { Authorization: `Bearer ${token}` }
+      .catch(err => {
+        console.error('[DEBUG] WorkHours API error:', err);
+        setHourData({});
       })
-        .then(res => {
-          setHourData(res.data || {});
-        })
-        .catch(() => setHourData({}));
-    }
-  }, [employees, token, isUser, user.employee_id]);
+      .finally(() => setLoading(false));
+  }, [token, currentWeekLabel, user]);
 
   // Merr kontratat për site options
   useEffect(() => {
