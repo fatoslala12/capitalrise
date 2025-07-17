@@ -179,8 +179,8 @@ export default function WorkHoursTable({
             <div className="text-center">💷 Bruto</div>
             <div className="text-center">📋 TVSH</div>
             <div className="text-center">💰 Neto</div>
-            <div className="text-center">✅ Statusi</div>
             <div className="text-center">💸 Veprime</div>
+            <div className="text-center">✅ Statusi</div>
           </div>
           
           {employeeCalculations.map((calc) => (
@@ -244,13 +244,6 @@ export default function WorkHoursTable({
                     £{calc.neto && !isNaN(calc.neto) ? Number(calc.neto).toFixed(2) : '0.00'}
                   </div>
                 </div>
-                
-                {/* Statusi i pagesës */}
-                <div className="text-center">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${calc.statusBg} ${calc.statusClass}`}>
-                    {calc.statusText}
-                  </span>
-                </div>
 
                 {/* Butoni për ndryshimin e statusit - inline, jo poshtë */}
                 <div className="text-center flex justify-center items-center">
@@ -262,6 +255,13 @@ export default function WorkHoursTable({
                       {calc.paid ? '❌ Pa paguar' : '✅ Të paguar'}
                     </button>
                   )}
+                </div>
+                
+                {/* Statusi i pagesës */}
+                <div className="text-center">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${calc.statusBg} ${calc.statusClass}`}>
+                    {calc.statusText}
+                  </span>
                 </div>
               </div>
               

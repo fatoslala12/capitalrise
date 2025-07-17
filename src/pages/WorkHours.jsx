@@ -500,15 +500,11 @@ export default function WorkHours() {
             <h3 className="text-xl font-semibold text-gray-800">📅 Javët e Kaluara</h3>
             {(() => {
               const allWeeks = Object.keys(hourData);
-              console.log("All weeks in hourData:", allWeeks);
-              
+              // Filtrimi i javëve të kaluara: vetëm week labels në format date range
               const pastWeeks = allWeeks.filter(weekLabel => {
-                // Accept both date range format and numeric format for backward compatibility
                 const isValidDateRange = /^\d{4}-\d{2}-\d{2} - \d{4}-\d{2}-\d{2}$/.test(weekLabel);
-                const isValidNumeric = /^\d+$/.test(weekLabel);
                 const isNotCurrentWeek = weekLabel !== currentWeekLabel;
-                console.log(`Week ${weekLabel}: isValidDateRange=${isValidDateRange}, isValidNumeric=${isValidNumeric}, isNotCurrentWeek=${isNotCurrentWeek}`);
-                return (isValidDateRange || isValidNumeric) && isNotCurrentWeek;
+                return isValidDateRange && isNotCurrentWeek;
               });
               
               console.log("Filtered past weeks:", pastWeeks);
