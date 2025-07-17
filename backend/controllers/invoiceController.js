@@ -1,5 +1,5 @@
 const pool = require('../db');
-const { sendInvoiceEmail } = require('../services/emailService');
+const { sendInvoiceEmail, sendContractDetailsEmail } = require('../services/emailService');
 
 exports.getInvoicesByContract = async (req, res) => {
   const { contract_number } = req.params;
@@ -170,6 +170,48 @@ exports.sendInvoiceEmail = async (req, res) => {
     
   } catch (error) {
     console.error('Error sending invoice email:', error);
+    res.status(500).json({ 
+      error: 'Gabim gjatë dërgimit të email-it',
+      details: error.message 
+    });
+  }
+};
+
+// Dërgo contract details në email
+exports.sendContractDetailsEmail = async (req, res) => {
+  const { contract_number } = req.params;
+  
+  try {
+    // Merr kontratën
+    const contractResult = await pool.query(
+      'SELECT * FROM contracts WHERE contract_number = $1',
+      [contract_number]
+    );
+    
+    if (contractResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Kontrata nuk u gjet' });
+    }
+    
+    const contract = contractResult.rows[0];
+    
+    // Kontrollo nëse ka email të kompanisë
+    if (!contract.company_email) {
+      return res.status(400).json({ 
+        error: 'Kompania nuk ka email të konfiguruar. Ju lutem shtoni email-in e kompanisë në detajet e kontratës.' 
+      });
+    }
+    
+    // Dërgo email-in
+    const result = await sendContractDetailsEmail(contract, contract.company_email);
+    
+    res.json({ 
+      success: true, 
+      message: 'Detajet e kontratës u dërguan me sukses në email!',
+      messageId: result.messageId 
+    });
+    
+  } catch (error) {
+    console.error('Error sending contract details email:', error);
     res.status(500).json({ 
       error: 'Gabim gjatë dërgimit të email-it',
       details: error.message 

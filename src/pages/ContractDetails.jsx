@@ -57,7 +57,8 @@ export default function ContractDetails() {
     deleteInvoice: {},
     togglePaid: {},
     exportPDF: false,
-    sendEmail: {}
+    sendEmail: {},
+    sendContractEmail: false
   });
   
   // Confirmation dialogs
@@ -423,6 +424,28 @@ export default function ContractDetails() {
     }
   };
 
+  // Dërgo contract details në email
+  const handleSendContractEmail = async () => {
+    setLoadingStates(prev => ({ ...prev, sendContractEmail: true }));
+    
+    try {
+      const response = await axios.post(
+        `https://building-system.onrender.com/api/invoices/${contract.contract_number}/send-contract-details`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (response.data.success) {
+        alert("✅ Detajet e kontratës u dërguan me sukses në email!");
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || "Gabim gjatë dërgimit të email-it!";
+      alert(`❌ ${errorMessage}`);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, sendContractEmail: false }));
+    }
+  };
+
   const exportToPDF = () => {
     const element = document.getElementById("invoice-area");
     const opt = {
@@ -551,16 +574,38 @@ export default function ContractDetails() {
       ) : (
         <div className="max-w-6xl mx-auto p-6 space-y-10 bg-gradient-to-br from-blue-100 via-white to-purple-100 min-h-screen">
           {/* HEADER MODERN GLASSMORPHISM */}
-          <div className="flex items-center gap-6 bg-white/60 backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-10 border-b-4 border-blue-400 animate-fade-in">
-            <div className="flex-shrink-0 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full p-4 shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-14 h-14">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
-              </svg>
+          <div className="flex items-center justify-between bg-white/60 backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-10 border-b-4 border-blue-400 animate-fade-in">
+            <div className="flex items-center gap-6">
+              <div className="flex-shrink-0 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full p-4 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-14 h-14">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-2 drop-shadow-lg">Detajet e Kontratës</h2>
+                <div className="text-2xl font-bold text-purple-600 drop-shadow">{contract?.site_name ? contract.site_name : "-"}</div>
+              </div>
             </div>
-            <div>
-              <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-2 drop-shadow-lg">Detajet e Kontratës</h2>
-              <div className="text-2xl font-bold text-purple-600 drop-shadow">{contract?.site_name ? contract.site_name : "-"}</div>
-            </div>
+            
+            {/* Butoni për dërgimin e contract details në email */}
+            <button
+              onClick={handleSendContractEmail}
+              disabled={loadingStates.sendContractEmail || !contract.company_email}
+              className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={!contract.company_email ? "Kompania nuk ka email të konfiguruar" : "Dërgo detajet e kontratës në email"}
+            >
+              {loadingStates.sendContractEmail ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Duke dërguar...
+                </>
+              ) : (
+                <>
+                  <span className="text-xl">📧</span>
+                  Dërgo në Email
+                </>
+              )}
+            </button>
           </div>
 
           {/* Info */}
