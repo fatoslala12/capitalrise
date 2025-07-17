@@ -21,7 +21,8 @@ export default function WorkHoursTable({
     return employees.map((emp) => {
       const firstName = emp.firstName || emp.first_name || '';
       const lastName = emp.lastName || emp.last_name || '';
-      const rate = Number(emp.hourlyRate || emp.hourly_rate || 0);
+      // Fix rate calculation - use employee's hourly_rate as fallback when rate is null from database
+      const employeeRate = Number(emp.hourlyRate || emp.hourly_rate || 0);
       const labelType = emp.labelType || emp.label_type || 'UTR';
       const hours = data[emp.id]?.[weekLabel] || {};
       
@@ -32,6 +33,8 @@ export default function WorkHoursTable({
         return acc + (isNaN(numHours) ? 0 : numHours);
       }, 0);
       
+      // Use employee's hourly_rate as fallback when rate from database is null
+      const rate = employeeRate || 0;
       const bruto = total * rate;
       const tvsh = labelType === 'UTR' ? bruto * 0.2 : bruto * 0.3;
       const neto = bruto - tvsh;
@@ -90,6 +93,7 @@ export default function WorkHoursTable({
 
     employees.forEach(emp => {
       const empData = data[emp.id]?.[weekLabel] || {};
+      // Use employee's hourly_rate as fallback when rate from database is null
       const empRate = Number(emp.hourlyRate || emp.hourly_rate || 0);
       const empLabelType = emp.labelType || emp.label_type || "UTR";
       
@@ -168,7 +172,7 @@ export default function WorkHoursTable({
         // Admin view - kompakt me expand/collapse
         <div className="space-y-4">
           {/* Headers për kolonat */}
-          <div className="grid grid-cols-8 gap-4 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900">
+          <div className="grid grid-cols-8 gap-2 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900">
             <div className="col-span-2 text-center">👤 Punonjësi</div>
             <div className="text-center">💰 Rate</div>
             <div className="text-center">⏰ Orë</div>
@@ -182,7 +186,7 @@ export default function WorkHoursTable({
           {employeeCalculations.map((calc) => (
             <div key={calc.emp.id} className="bg-white rounded-xl shadow-lg border border-blue-200 overflow-hidden">
               {/* Rreshti kryesor - kompakt */}
-              <div className="grid grid-cols-8 gap-4 p-4 items-center bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="grid grid-cols-8 gap-2 p-4 items-center bg-gradient-to-r from-blue-50 to-purple-50">
                 {/* Punonjësi */}
                 <div className="flex items-center gap-3 col-span-2">
                   <button
@@ -253,9 +257,9 @@ export default function WorkHoursTable({
                   {isAdmin && (
                     <button
                       onClick={() => handlePaymentToggle(calc.emp.id)}
-                      className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                      className="px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 whitespace-nowrap"
                     >
-                      {calc.paid ? '❌ Shëno si pa paguar' : '✅ Shëno si të paguar'}
+                      {calc.paid ? '❌ Pa paguar' : '✅ Të paguar'}
                     </button>
                   )}
                 </div>
