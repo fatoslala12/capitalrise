@@ -8,5 +8,6 @@ router.get('/:contract_number', verifyToken, invoiceController.getInvoicesByCont
 router.post('/:contract_number', verifyToken, invoiceController.addInvoice);
 router.put('/:id/toggle-paid', verifyToken, invoiceController.togglePaid);
 router.delete('/:id', verifyToken, invoiceController.deleteInvoice);
+router.post('/:invoiceId/send-email', verifyToken, invoiceController.sendInvoiceEmail);
 
 module.exports = router;

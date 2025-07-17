@@ -56,7 +56,8 @@ export default function ContractDetails() {
     saveInvoice: false,
     deleteInvoice: {},
     togglePaid: {},
-    exportPDF: false
+    exportPDF: false,
+    sendEmail: {}
   });
   
   // Confirmation dialogs
@@ -397,6 +398,28 @@ export default function ContractDetails() {
       alert("Gabim gjatë ndryshimit të statusit të pagesës!");
     } finally {
       setLoadingStates(prev => ({ ...prev, togglePaid: { ...prev.togglePaid, [invoiceId]: false } }));
+    }
+  };
+
+  // Dërgo faturë në email
+  const handleSendEmail = async (invoiceId) => {
+    setLoadingStates(prev => ({ ...prev, sendEmail: { ...prev.sendEmail, [invoiceId]: true } }));
+    
+    try {
+      const response = await axios.post(
+        `https://building-system.onrender.com/api/invoices/${invoiceId}/send-email`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (response.data.success) {
+        alert("✅ Fatura u dërgua me sukses në email!");
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || "Gabim gjatë dërgimit të email-it!";
+      alert(`❌ ${errorMessage}`);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, sendEmail: { ...prev.sendEmail, [invoiceId]: false } }));
     }
   };
 
@@ -848,6 +871,18 @@ export default function ContractDetails() {
                                 title="Shiko / Printo"
                               >
                                 🖨
+                              </button>
+                              <button 
+                                onClick={() => handleSendEmail(inv.id)} 
+                                disabled={loadingStates.sendEmail[inv.id]}
+                                className="text-green-600 hover:text-green-800 hover:scale-110 transition-all text-xl disabled:opacity-50"
+                                title="Dërgo në Email"
+                              >
+                                {loadingStates.sendEmail[inv.id] ? (
+                                  <div className="w-4 h-4 border border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                  '📧'
+                                )}
                               </button>
                               <button 
                                 onClick={() => handleDeleteInvoice(inv.id)} 

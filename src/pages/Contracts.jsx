@@ -38,6 +38,7 @@ export default function Contracts() {
     start_date: "",
     finish_date: "",
     address: "",
+    company_email: "",
     status: "Ne progres",
     closed_manually: false,
     closed_date: null,
@@ -1211,6 +1212,17 @@ export default function Contracts() {
                     placeholder="Adresa" 
                     value={newContract.address} 
                     onChange={handleChange} 
+                    className="p-3 border border-blue-200 rounded-lg text-base focus:ring-2 focus:ring-blue-200 transition-all shadow-sm w-full"
+                  />
+                </div>
+                
+                <div className="col-span-1">
+                  <input 
+                    name="company_email" 
+                    placeholder="Email i Kompanisë" 
+                    value={newContract.company_email} 
+                    onChange={handleChange} 
+                    type="email"
                     className="p-3 border border-blue-200 rounded-lg text-base focus:ring-2 focus:ring-blue-200 transition-all shadow-sm w-full"
                   />
                 </div>
