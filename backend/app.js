@@ -19,6 +19,11 @@ app.options('*', cors());
 // Add logger middleware
 app.use(logger);
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'Server is running' });
+});
+
 // Middleware për JSON me limit të optimizuar
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

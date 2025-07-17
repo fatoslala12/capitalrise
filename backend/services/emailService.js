@@ -1,5 +1,5 @@
 const { Resend } = require('resend');
-const html2pdf = require('html2pdf.js');
+const puppeteer = require('puppeteer');
 
 // Inicializo Resend me API key
 const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789');
@@ -73,7 +73,18 @@ const generateInvoicePDF = async (invoice, contract) => {
   `;
 
   try {
-    const pdfBuffer = await html2pdf().from(htmlContent).outputPdf('datauristring');
+    const browser = await puppeteer.launch({ 
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    const page = await browser.newPage();
+    await page.setContent(htmlContent);
+    const pdfBuffer = await page.pdf({ 
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
+    });
+    await browser.close();
     return pdfBuffer;
   } catch (error) {
     console.error('Error generating PDF:', error);
@@ -92,7 +103,7 @@ const sendInvoiceEmail = async (invoice, contract, recipientEmail) => {
     
     // Përgatit email-in me Resend
     const { data, error } = await resend.emails.send({
-      from: 'Alban Construction <noreply@albancosntruction.co.uk>',
+      from: 'Alban Construction <onboarding@resend.dev>',
       to: [recipientEmail],
       subject: `Fatura #${invoice.invoice_number} - ${contract.site_name}`,
       html: `
@@ -143,7 +154,7 @@ const sendInvoiceEmail = async (invoice, contract, recipientEmail) => {
 const sendContractDetailsEmail = async (contract, recipientEmail) => {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Alban Construction <noreply@albancosntruction.co.uk>',
+      from: 'Alban Construction <onboarding@resend.dev>',
       to: [recipientEmail],
       subject: `Detajet e Kontratës #${contract.contract_number} - ${contract.site_name}`,
       html: `

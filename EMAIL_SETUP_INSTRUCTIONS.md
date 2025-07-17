@@ -1,17 +1,13 @@
 # 📧 Udhëzime për Konfigurimin e Email-it
 
-## Hapat për të aktivizuar dërgimin e faturëve në email:
+## Hapat për të aktivizuar dërgimin e faturëve dhe contract details në email:
 
-### 1. **Krijo App Password për Gmail:**
+### 1. **Krijo Resend Account:**
 
-1. Shko në [Google Account Settings](https://myaccount.google.com/)
-2. Kliko "Security" në menunë e majtë
-3. Në seksionin "Signing in to Google", kliko "2-Step Verification"
-4. Në fund të faqes, kliko "App passwords"
-5. Zgjidh "Mail" dhe "Other (Custom name)"
-6. Jep një emër si "Building System"
-7. Kliko "Generate"
-8. Kopjo password-in e gjeneruar (16 karaktere)
+1. Shko në [Resend.com](https://resend.com)
+2. Krijo një llogari të re (falas për 100 email/ditë)
+3. Verifiko domain-in tuaj ose përdor domain-in e Resend
+4. Kopjo API key-n nga dashboard
 
 ### 2. **Shto variablat në .env file:**
 
@@ -24,33 +20,54 @@ DATABASE_URL=your_database_url_here
 # JWT
 JWT_SECRET=your_jwt_secret_here
 
-# Gmail SMTP Configuration
-GMAIL_APP_PASSWORD=your_16_character_app_password_here
+# Resend Email Configuration
+RESEND_API_KEY=re_your_resend_api_key_here
 
 # Other configurations
 NODE_ENV=production
 ```
 
-### 3. **Testo funksionalitetin:**
+### 3. **Konfigurimi i Domain-it:**
+
+Nëse keni domain tuaj:
+1. Shtoni DNS records në domain provider
+2. Verifikoni domain-in në Resend dashboard
+3. Përdorni `noreply@yourdomain.com` si from address
+
+Nëse nuk keni domain:
+1. Përdorni domain-in e Resend: `onboarding@resend.dev`
+2. Ose verifikoni një domain personal
+
+### 4. **Testo funksionalitetin:**
 
 1. Shto email-in e kompanisë në formën e kontratës
-2. Kliko butonin "📧" në tabelën e faturëve
-3. Kontrollo nëse email-i u dërgua
+2. Kliko butonin "📧 Dërgo në Email" në header-in e kontratës
+3. Kliko butonin "📧" në tabelën e faturëve
+4. Kontrollo nëse email-i u dërgua
 
-### 4. **Troubleshooting:**
+### 5. **Troubleshooting:**
 
-- **Gabim "Invalid login"**: Kontrollo App Password
-- **Gabim "Authentication failed"**: Sigurohu që 2FA është aktivizuar
-- **Email nuk dërgohet**: Kontrollo internet connection dhe Gmail settings
+- **Gabim "Invalid API key"**: Kontrollo Resend API key
+- **Gabim "Domain not verified"**: Verifiko domain-in në Resend
+- **Email nuk dërgohet**: Kontrollo internet connection dhe Resend settings
 
-### 5. **Siguria:**
+### 6. **Siguria:**
 
-- Mos nda App Password me askënd
+- Mos nda API key me askënd
 - Përdor vetëm për këtë aplikacion
-- Ndrysho password-in nëse dyshon për sigurinë
+- Ndrysho API key nëse dyshon për sigurinë
 
-### 6. **Limitet e Gmail:**
+### 7. **Limitet e Resend:**
 
-- Maksimum 500 email/ditë
-- Maksimum 100 email/orë
-- Rekomandohet përdorimi i SendGrid për vëllime të mëdha 
+- **Plan Falas**: 100 email/ditë
+- **Plan Pro**: 50,000 email/muaj
+- **Plan Business**: 500,000 email/muaj
+
+### 8. **Përfitimet e Resend:**
+
+- ✅ Nuk kërkon app passwords
+- ✅ Setup i thjeshtë
+- ✅ Deliverability e lartë
+- ✅ Analytics dhe tracking
+- ✅ API moderne
+- ✅ Dokumentim i mirë 
