@@ -22,6 +22,12 @@ export default function WorkHoursTable({
     console.log('[DEBUG] employeeCalculations - data:', data);
     console.log('[DEBUG] employeeCalculations - weekLabel:', weekLabel);
     
+    // Return empty array if employees is empty or not an array
+    if (!Array.isArray(employees) || employees.length === 0) {
+      console.log('[DEBUG] employeeCalculations - employees array is empty, returning empty array');
+      return [];
+    }
+    
     return employees.map((emp) => {
       const firstName = emp.firstName || emp.first_name || '';
       const lastName = emp.lastName || emp.last_name || '';
@@ -107,6 +113,17 @@ export default function WorkHoursTable({
     let totalTVSH = 0;
     let totalNeto = 0;
 
+    // Return zeros if employees is empty or not an array
+    if (!Array.isArray(employees) || employees.length === 0) {
+      console.log('[DEBUG] weekTotals - employees array is empty, returning zeros');
+      return { 
+        totalHours: 0, 
+        totalBruto: 0, 
+        totalTVSH: 0, 
+        totalNeto: 0 
+      };
+    }
+
     employees.forEach(emp => {
       const empData = data[emp.id]?.[weekLabel] || {};
       // Use employee's hourly_rate as fallback when rate from database is null
@@ -190,7 +207,25 @@ export default function WorkHoursTable({
         <span className="text-3xl">🕒</span> Java: {weekLabel}
       </h3>
       
-      {isAdmin ? (
+      {/* Show message when no employees */}
+      {(!Array.isArray(employees) || employees.length === 0) && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <h4 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Nuk ka punonjës për të shfaqur</h4>
+          <p className="text-yellow-700">
+            Nuk u gjetën punonjës për këtë javë. Kjo mund të ndodhë nëse:
+          </p>
+          <ul className="text-yellow-700 list-disc list-inside mt-2 space-y-1">
+            <li>Nuk ka punonjës të caktuar për site-t tuaja</li>
+            <li>Punonjësit nuk kanë orë të punës për këtë javë</li>
+            <li>Ka problem me të dhënat e databazës</li>
+          </ul>
+        </div>
+      )}
+      
+      {/* Only render table content if there are employees */}
+      {Array.isArray(employees) && employees.length > 0 && (
+        <>
+          {isAdmin ? (
         // Admin view - kompakt me expand/collapse
         <div className="space-y-4">
           {/* Headers për kolonat */}
@@ -450,6 +485,8 @@ export default function WorkHoursTable({
             </tr>
           </tfoot>
         </table>
+      )}
+        </>
       )}
     </div>
   );

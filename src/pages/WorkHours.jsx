@@ -405,27 +405,43 @@ export default function WorkHours() {
             
             <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-4">
               <div className="text-2xl font-bold">
-                {Object.values(hourData).reduce((total, empData) => {
-                  return total + Object.values(empData).reduce((weekTotal, weekData) => {
-                    return weekTotal + Object.values(weekData).reduce((dayTotal, dayData) => {
-                      return dayTotal + (dayData?.hours || 0);
+                {(() => {
+                  try {
+                    const total = Object.values(hourData || {}).reduce((total, empData) => {
+                      return total + Object.values(empData || {}).reduce((weekTotal, weekData) => {
+                        return weekTotal + Object.values(weekData || {}).reduce((dayTotal, dayData) => {
+                          return dayTotal + (parseFloat(dayData?.hours) || 0);
+                        }, 0);
+                      }, 0);
                     }, 0);
-                  }, 0);
-                }, 0).toFixed(1)}
+                    return (total || 0).toFixed(1);
+                  } catch (error) {
+                    console.error('Error calculating total hours:', error);
+                    return '0.0';
+                  }
+                })()}
               </div>
               <div className="text-sm opacity-90">Total Orë</div>
             </div>
             
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-4">
               <div className="text-2xl font-bold">
-                £{Object.values(hourData).reduce((total, empData) => {
-                  return total + Object.values(empData).reduce((weekTotal, weekData) => {
-                    return weekTotal + Object.values(weekData).reduce((dayTotal, dayData) => {
-                      const emp = employees.find(e => e.id === parseInt(Object.keys(hourData).find(key => hourData[key] === empData)));
-                      return dayTotal + ((dayData?.hours || 0) * (emp?.hourly_rate || 0));
+                £{(() => {
+                  try {
+                    const total = Object.values(hourData || {}).reduce((total, empData) => {
+                      return total + Object.values(empData || {}).reduce((weekTotal, weekData) => {
+                        return weekTotal + Object.values(weekData || {}).reduce((dayTotal, dayData) => {
+                          const emp = employees.find(e => e.id === parseInt(Object.keys(hourData || {}).find(key => hourData[key] === empData)));
+                          return dayTotal + ((parseFloat(dayData?.hours) || 0) * (parseFloat(emp?.hourly_rate) || 0));
+                        }, 0);
+                      }, 0);
                     }, 0);
-                  }, 0);
-                }, 0).toFixed(2)}
+                    return (total || 0).toFixed(2);
+                  } catch (error) {
+                    console.error('Error calculating total pay:', error);
+                    return '0.00';
+                  }
+                })()}
               </div>
               <div className="text-sm opacity-90">Total Paga</div>
             </div>
