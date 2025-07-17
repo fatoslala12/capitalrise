@@ -168,7 +168,7 @@ export default function WorkHoursTable({
         // Admin view - kompakt me expand/collapse
         <div className="space-y-4">
           {/* Headers për kolonat */}
-          <div className="grid grid-cols-7 gap-4 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900">
+          <div className="grid grid-cols-8 gap-4 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900">
             <div className="col-span-2 text-center">👤 Punonjësi</div>
             <div className="text-center">💰 Rate</div>
             <div className="text-center">⏰ Orë</div>
@@ -176,12 +176,13 @@ export default function WorkHoursTable({
             <div className="text-center">📋 TVSH</div>
             <div className="text-center">💰 Neto</div>
             <div className="text-center">✅ Statusi</div>
+            <div className="text-center">💸 Veprime</div>
           </div>
           
           {employeeCalculations.map((calc) => (
             <div key={calc.emp.id} className="bg-white rounded-xl shadow-lg border border-blue-200 overflow-hidden">
               {/* Rreshti kryesor - kompakt */}
-              <div className="grid grid-cols-7 gap-4 p-4 items-center bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="grid grid-cols-8 gap-4 p-4 items-center bg-gradient-to-r from-blue-50 to-purple-50">
                 {/* Punonjësi */}
                 <div className="flex items-center gap-3 col-span-2">
                   <button
@@ -245,10 +246,14 @@ export default function WorkHoursTable({
                   <span className={`px-3 py-1 rounded-full text-xs font-bold border ${calc.statusBg} ${calc.statusClass}`}>
                     {calc.statusText}
                   </span>
+                </div>
+
+                {/* Butoni për ndryshimin e statusit */}
+                <div className="text-center">
                   {isAdmin && (
                     <button
                       onClick={() => handlePaymentToggle(calc.emp.id)}
-                      className="ml-2 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                      className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
                     >
                       {calc.paid ? '❌ Shëno si pa paguar' : '✅ Shëno si të paguar'}
                     </button>
@@ -371,7 +376,7 @@ export default function WorkHoursTable({
                       onChange={e => onChange(calc.emp.id, day, "site", e.target.value)}
                       disabled={readOnly}
                     >
-                      <option value="">Zgjidh vendin</option>
+                      <option value="">{calc.hours[day]?.hours > 0 ? "Zgjidh vendin" : "Pushim"}</option>
                       {calc.empSites.map(site => (
                         <option key={site} value={site}>{site}</option>
                       ))}

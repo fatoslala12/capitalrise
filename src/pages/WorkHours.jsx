@@ -505,44 +505,50 @@ export default function WorkHours() {
           setPaidStatus={setPaidStatus}
         />
 
-        {/* Javët e kaluara */}
-        {Object.keys(hourData).length > 0 && (
+        {/* Javët e kaluara - vetëm për admin */}
+        {isAdmin && Object.keys(hourData).length > 0 && (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-gray-800">📅 Javët e Kaluara</h3>
-            {Object.keys(hourData).slice(0, 5).map((weekLabel) => {
-              if (weekLabel === currentWeekLabel) return null;
-              
-              return (
-                <div key={weekLabel} className="bg-white rounded-lg shadow-md">
-                  <button
-                    onClick={() => toggleWeek(weekLabel)}
-                    className="w-full p-4 text-left bg-gray-50 hover:bg-gray-100 rounded-t-lg transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-gray-800">{weekLabel}</span>
-                      <span className="text-gray-500">
-                        {expandedWeeks.includes(weekLabel) ? "▼" : "▶"}
-                      </span>
-                    </div>
-                  </button>
-                  
-                  {expandedWeeks.includes(weekLabel) && (
-                    <div className="p-4">
-                      <WorkHoursTable
-                        employees={employees}
-                        weekLabel={weekLabel}
-                        data={hourData}
-                        onChange={handleChange}
-                        readOnly={isUser}
-                        showPaymentControl={isAdmin}
-                        paidStatus={paidStatus}
-                        setPaidStatus={setPaidStatus}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {Object.keys(hourData)
+              .filter(weekLabel => {
+                // Filtro vetëm javët që kanë formatin e duhur (YYYY-MM-DD - YYYY-MM-DD)
+                const isValidFormat = /^\d{4}-\d{2}-\d{2} - \d{4}-\d{2}-\d{2}$/.test(weekLabel);
+                const isNotCurrentWeek = weekLabel !== currentWeekLabel;
+                return isValidFormat && isNotCurrentWeek;
+              })
+              .slice(0, 5)
+              .map((weekLabel) => {
+                return (
+                  <div key={weekLabel} className="bg-white rounded-lg shadow-md">
+                    <button
+                      onClick={() => toggleWeek(weekLabel)}
+                      className="w-full p-4 text-left bg-gray-50 hover:bg-gray-100 rounded-t-lg transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-gray-800">{weekLabel}</span>
+                        <span className="text-gray-500">
+                          {expandedWeeks.includes(weekLabel) ? "▼" : "▶"}
+                        </span>
+                      </div>
+                    </button>
+                    
+                    {expandedWeeks.includes(weekLabel) && (
+                      <div className="p-4">
+                        <WorkHoursTable
+                          employees={employees}
+                          weekLabel={weekLabel}
+                          data={hourData}
+                          onChange={handleChange}
+                          readOnly={isUser}
+                          showPaymentControl={isAdmin}
+                          paidStatus={paidStatus}
+                          setPaidStatus={setPaidStatus}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>
