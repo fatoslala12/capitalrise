@@ -514,6 +514,67 @@ exports.debugManagerAccess = async (req, res) => {
   }
 };
 
+// Endpoint për të kontrolluar nëse manager ka akses në WorkHours
+exports.checkManagerAccess = async (req, res) => {
+  const { employee_id } = req.query;
+  const client = await pool.connect();
+  try {
+    console.log('[DEBUG] Checking manager access for employee_id:', employee_id);
+    
+    // Kontrollo nëse employee ekziston
+    const empRes = await client.query(
+      'SELECT id, first_name, last_name, workplace FROM employees WHERE id = $1',
+      [employee_id]
+    );
+    
+    if (empRes.rows.length === 0) {
+      return res.json({
+        hasAccess: false,
+        message: 'Employee nuk u gjet',
+        employee: null,
+        sites: []
+      });
+    }
+    
+    const employee = empRes.rows[0];
+    const sites = employee.workplace || [];
+    
+    // Kontrollo nëse ka site-t
+    if (sites.length === 0) {
+      return res.json({
+        hasAccess: true,
+        message: 'Manager ka akses por nuk ka site-t',
+        employee: employee,
+        sites: []
+      });
+    }
+    
+    // Gjej punonjësit që punojnë në site-t e menaxherit
+    const coworkersRes = await client.query(
+      `SELECT DISTINCT e.id, e.first_name, e.last_name, e.workplace
+       FROM employees e 
+       WHERE e.workplace && $1::text[]
+       ORDER BY e.id`,
+      [sites]
+    );
+    
+    res.json({
+      hasAccess: true,
+      message: 'Manager ka akses',
+      employee: employee,
+      sites: sites,
+      coworkers: coworkersRes.rows,
+      totalCoworkers: coworkersRes.rows.length
+    });
+    
+  } catch (err) {
+    console.error('[ERROR] Check manager access:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+};
+
 // Dashboard stats endpoint - optimized for dashboard display
 exports.getDashboardStats = async (req, res) => {
   const client = await pool.connect();

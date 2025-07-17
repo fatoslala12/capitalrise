@@ -14,6 +14,7 @@ function verifyToken(req, res, next) {
 // Debug routes - duhet të jenë para route-ve me parametra
 router.get('/debug-manager', verifyToken, controller.debugManagerAccess);
 router.get('/debug-database', verifyToken, controller.debugDatabaseStatus);
+router.get('/check-manager-access', verifyToken, controller.checkManagerAccess);
 
 // /structured route must be before any parameterized routes!
 router.get('/structured', verifyToken, (req, res, next) => {

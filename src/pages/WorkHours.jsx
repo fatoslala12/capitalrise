@@ -68,6 +68,20 @@ export default function WorkHours() {
     }
   }, [user, token]);
 
+  // Kontrollo aksesin e manager
+  useEffect(() => {
+    if (user && user.role === "manager" && user.employee_id) {
+      console.log("Checking manager access for employee_id:", user.employee_id);
+      axios.get(`https://building-system.onrender.com/api/work-hours/check-manager-access?employee_id=${user.employee_id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => {
+        console.log("Manager access check result:", res.data);
+      }).catch(err => {
+        console.error("Error checking manager access:", err);
+      });
+    }
+  }, [user, token]);
+
   // Merr punonjësit nga backend
   useEffect(() => {
     if (!user) return;
