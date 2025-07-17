@@ -376,7 +376,7 @@ export default function WorkHoursTable({
                       onChange={e => onChange(calc.emp.id, day, "site", e.target.value)}
                       disabled={readOnly}
                     >
-                      <option value="">{calc.hours[day]?.hours > 0 ? "Zgjidh vendin" : "Pushim"}</option>
+                      <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? "Zgjidh vendin" : "Pushim"}</option>
                       {calc.empSites.map(site => (
                         <option key={site} value={site}>{site}</option>
                       ))}

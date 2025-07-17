@@ -130,7 +130,6 @@ export default function WorkHours() {
               setUser(prev => ({ ...prev, employee_id: selfEmployee.id }));
             } else {
               console.log("No employee found for manager email:", user.email);
-              // Shfaq mesazh për manager
               setEmployees([]);
             }
             return;
@@ -144,53 +143,43 @@ export default function WorkHours() {
             return;
           }
           
-          try {
-            // Merr site-t e menaxherit
-            const managerRes = await axios.get(`https://building-system.onrender.com/api/employees/${user.employee_id}`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            console.log("Manager data:", managerRes.data);
-            const managerSites = managerRes.data.workplace || [];
-            console.log("Manager sites:", managerSites);
-            
-            // Nëse manager nuk ka site-t, shfaq vetëm veten
-            if (managerSites.length === 0) {
-              console.log("Manager has no sites, showing only self");
-              setEmployees([managerEmployee]);
-              return;
-            }
-            
-            // Filtro punonjësit që punojnë në site-t e menaxherit
-            const filteredEmps = emps.filter(emp => {
-              if (String(emp.id) === String(user.employee_id)) {
-                console.log(`Including manager self: ${emp.first_name} ${emp.last_name}`);
-                return true; // Gjithmonë përfshij veten
-              }
-              
-              // Kontrollo nëse punonjësi ka site-t e përbashkëta me menaxherin
-              if (emp.workplace && Array.isArray(emp.workplace)) {
-                const hasCommonSite = emp.workplace.some(site => managerSites.includes(site));
-                console.log(`Employee ${emp.first_name} ${emp.last_name} sites:`, emp.workplace, "Manager sites:", managerSites, "Has common site:", hasCommonSite);
-                return hasCommonSite;
-              }
-              
-              console.log(`Employee ${emp.first_name} ${emp.last_name} has no workplace or not array`);
-              return false;
-            });
-            
-            console.log("Filtered employees for manager:", filteredEmps);
-            
-            // Nëse nuk gjej asnjë punonjës, shfaq vetëm menaxherin
-            if (filteredEmps.length === 0) {
-              console.log("No employees found for manager sites, showing only manager");
-              setEmployees([managerEmployee]);
-            } else {
-              setEmployees(filteredEmps);
-            }
-          } catch (error) {
-            console.error("Error fetching manager data:", error);
-            // Në rast gabimi, shfaq vetëm menaxherin
+          // Përdor workplace nga managerEmployee nëse user.workplace është bosh
+          const managerSites = user.workplace || managerEmployee.workplace || [];
+          console.log("Manager sites:", managerSites);
+          
+          // Nëse manager nuk ka site-t, shfaq vetëm veten
+          if (managerSites.length === 0) {
+            console.log("Manager has no sites, showing only self");
             setEmployees([managerEmployee]);
+            return;
+          }
+          
+          // Filtro punonjësit që punojnë në site-t e menaxherit
+          const filteredEmps = emps.filter(emp => {
+            if (String(emp.id) === String(user.employee_id)) {
+              console.log(`Including manager self: ${emp.first_name} ${emp.last_name}`);
+              return true; // Gjithmonë përfshij veten
+            }
+            
+            // Kontrollo nëse punonjësi ka site-t e përbashkëta me menaxherin
+            if (emp.workplace && Array.isArray(emp.workplace)) {
+              const hasCommonSite = emp.workplace.some(site => managerSites.includes(site));
+              console.log(`Employee ${emp.first_name} ${emp.last_name} sites:`, emp.workplace, "Manager sites:", managerSites, "Has common site:", hasCommonSite);
+              return hasCommonSite;
+            }
+            
+            console.log(`Employee ${emp.first_name} ${emp.last_name} has no workplace or not array`);
+            return false;
+          });
+          
+          console.log("Filtered employees for manager:", filteredEmps);
+          
+          // Nëse nuk gjej asnjë punonjës, shfaq vetëm menaxherin
+          if (filteredEmps.length === 0) {
+            console.log("No employees found for manager sites, showing only manager");
+            setEmployees([managerEmployee]);
+          } else {
+            setEmployees(filteredEmps);
           }
         }
       })
@@ -505,19 +494,24 @@ export default function WorkHours() {
           setPaidStatus={setPaidStatus}
         />
 
-        {/* Javët e kaluara - vetëm për admin */}
-        {isAdmin && Object.keys(hourData).length > 0 && (
+        {/* Javët e kaluara - për admin dhe manager */}
+        {(isAdmin || isManager) && Object.keys(hourData).length > 0 && (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-gray-800">📅 Javët e Kaluara</h3>
-            {Object.keys(hourData)
-              .filter(weekLabel => {
-                // Filtro vetëm javët që kanë formatin e duhur (YYYY-MM-DD - YYYY-MM-DD)
+            {(() => {
+              const allWeeks = Object.keys(hourData);
+              console.log("All weeks in hourData:", allWeeks);
+              
+              const pastWeeks = allWeeks.filter(weekLabel => {
                 const isValidFormat = /^\d{4}-\d{2}-\d{2} - \d{4}-\d{2}-\d{2}$/.test(weekLabel);
                 const isNotCurrentWeek = weekLabel !== currentWeekLabel;
+                console.log(`Week ${weekLabel}: isValidFormat=${isValidFormat}, isNotCurrentWeek=${isNotCurrentWeek}`);
                 return isValidFormat && isNotCurrentWeek;
-              })
-              .slice(0, 5)
-              .map((weekLabel) => {
+              });
+              
+              console.log("Filtered past weeks:", pastWeeks);
+              
+              return pastWeeks.slice(0, 5).map((weekLabel) => {
                 return (
                   <div key={weekLabel} className="bg-white rounded-lg shadow-md">
                     <button
@@ -548,7 +542,8 @@ export default function WorkHours() {
                     )}
                   </div>
                 );
-              })}
+              });
+            })()}
           </div>
         )}
       </div>
