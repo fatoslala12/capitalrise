@@ -102,20 +102,31 @@ export default function WorkHours() {
         if (isManager) {
           // MANAGER: shfaq punonjësit e site-ve të tij
           console.log("Manager user:", user);
+          console.log("Manager employee_id:", user.employee_id);
           
+          // Fallback: nëse nuk ka employee_id, gjej nga email
           if (!user.employee_id) {
-            // Gjej employee_id nga email
+            console.log("Manager has no employee_id, searching by email:", user.email);
             const selfEmployee = emps.find(emp => 
               emp.email && emp.email.toLowerCase() === user.email.toLowerCase()
             );
             if (selfEmployee) {
-              console.log("Found self employee:", selfEmployee);
+              console.log("Found self employee by email:", selfEmployee);
               setEmployees([selfEmployee]);
               setUser(prev => ({ ...prev, employee_id: selfEmployee.id }));
             } else {
               console.log("No employee found for manager email:", user.email);
+              // Shfaq mesazh për manager
               setEmployees([]);
             }
+            return;
+          }
+          
+          // Gjej menaxherin në listën e punonjësve
+          const managerEmployee = emps.find(emp => String(emp.id) === String(user.employee_id));
+          if (!managerEmployee) {
+            console.log("Manager employee not found in employees list");
+            setEmployees([]);
             return;
           }
           
@@ -128,25 +139,44 @@ export default function WorkHours() {
             const managerSites = managerRes.data.workplace || [];
             console.log("Manager sites:", managerSites);
             
+            // Nëse manager nuk ka site-t, shfaq vetëm veten
+            if (managerSites.length === 0) {
+              console.log("Manager has no sites, showing only self");
+              setEmployees([managerEmployee]);
+              return;
+            }
+            
             // Filtro punonjësit që punojnë në site-t e menaxherit
             const filteredEmps = emps.filter(emp => {
-              if (String(emp.id) === String(user.employee_id)) return true; // Gjithmonë përfshij veten
+              if (String(emp.id) === String(user.employee_id)) {
+                console.log(`Including manager self: ${emp.first_name} ${emp.last_name}`);
+                return true; // Gjithmonë përfshij veten
+              }
               
               // Kontrollo nëse punonjësi ka site-t e përbashkëta me menaxherin
               if (emp.workplace && Array.isArray(emp.workplace)) {
                 const hasCommonSite = emp.workplace.some(site => managerSites.includes(site));
-                console.log(`Employee ${emp.first_name} ${emp.last_name} sites:`, emp.workplace, "Has common site:", hasCommonSite);
+                console.log(`Employee ${emp.first_name} ${emp.last_name} sites:`, emp.workplace, "Manager sites:", managerSites, "Has common site:", hasCommonSite);
                 return hasCommonSite;
               }
+              
+              console.log(`Employee ${emp.first_name} ${emp.last_name} has no workplace or not array`);
               return false;
             });
             
             console.log("Filtered employees for manager:", filteredEmps);
-            setEmployees(filteredEmps);
+            
+            // Nëse nuk gjej asnjë punonjës, shfaq vetëm menaxherin
+            if (filteredEmps.length === 0) {
+              console.log("No employees found for manager sites, showing only manager");
+              setEmployees([managerEmployee]);
+            } else {
+              setEmployees(filteredEmps);
+            }
           } catch (error) {
             console.error("Error fetching manager data:", error);
-            const selfEmployee = emps.find(emp => String(emp.id) === String(user.employee_id));
-            setEmployees(selfEmployee ? [selfEmployee] : []);
+            // Në rast gabimi, shfaq vetëm menaxherin
+            setEmployees([managerEmployee]);
           }
         }
       })
@@ -425,6 +455,24 @@ export default function WorkHours() {
           <h2 className="text-lg font-semibold text-blue-800 mb-2">ℹ️ Informacion</h2>
           <p className="text-blue-700">
             Kjo faqe shfaq vetëm orët tuaja të punës. Për ndryshime, kontaktoni menaxherin tuaj.
+          </p>
+        </div>
+      )}
+
+      {/* Mesazh për manager kur nuk ka punonjës */}
+      {isManager && employees.length === 0 && !loading && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+          <h2 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Informacion për Menaxherin</h2>
+          <p className="text-yellow-700 mb-4">
+            Nuk u gjetën punonjës për site-t tuaja. Kjo mund të ndodhë për arsyet e mëposhtme:
+          </p>
+          <ul className="text-yellow-700 list-disc list-inside space-y-2">
+            <li>Nuk jeni caktuar në asnjë site</li>
+            <li>Punonjësit nuk janë caktuar në site-t tuaja</li>
+            <li>Ka problem me të dhënat e databazës</li>
+          </ul>
+          <p className="text-yellow-700 mt-4">
+            Kontaktoni administratorin për të rregulluar këtë problem.
           </p>
         </div>
       )}
