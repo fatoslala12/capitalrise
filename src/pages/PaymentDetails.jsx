@@ -420,7 +420,7 @@ export default function PaymentDetails() {
       <div className="bg-gradient-to-br from-purple-100 via-white to-blue-100 rounded-3xl shadow-2xl border border-blue-100 p-8 md:p-12 mb-10 animate-fade-in">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-3">
-            <span className="text-5xl">💼</span> Kontrata #{contract_number}
+            <span className="text-5xl">💼</span> Detajet e Kontratës
           </h2>
           <button
             onClick={openAddModal}
@@ -429,18 +429,14 @@ export default function PaymentDetails() {
             <span className="text-xl">➕</span> Shto Shpenzim/Faturë
           </button>
         </div>
-        
-        {/* TITULLI I RI: Shpenzimet për kontratën */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-xl mb-6 shadow-lg">
-          <h3 className="text-2xl font-bold text-center">
-            💰 Shpenzimet për kontratën: <span className="text-yellow-300">{contract.site_name}</span>
-          </h3>
-        </div>
 
         {contract && (
           <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow p-6 mb-6 text-blue-900 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold mb-1 flex items-center gap-2">📌 {contract.site_name}</h3>
+              <h3 className="text-2xl font-bold mb-1 flex items-center gap-2">
+                📌 {contract.site_name}
+                <span className="text-lg font-normal text-blue-600">(Kontrata #{contract_number})</span>
+              </h3>
               <div className="text-lg">Kompania: <span className="font-semibold text-blue-700">{contract.company}</span></div>
               <div className="text-base text-gray-600">Data fillimit: <span className="font-semibold">{formatContractDate(contract.start_date)}</span></div>
               <div className="text-base text-gray-600">Vlera e kontratës: <span className="font-semibold text-green-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</span></div>
@@ -462,11 +458,11 @@ export default function PaymentDetails() {
         {/* Modal për shtimin e shpenzimit */}
         {showAddModal && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 pt-8"
             onClick={closeAddModal}
           >
             <div 
-              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6">
@@ -638,7 +634,15 @@ export default function PaymentDetails() {
 
           {/* Shpenzimet/Faturat */}
           <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 overflow-x-auto">
-            <h4 className="text-xl font-bold text-blue-800 mb-2">🧾 Shpenzime & Fatura ({filteredExpenses.length} gjithsej)</h4>
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-xl font-bold text-blue-800">🧾 Shpenzime & Fatura ({filteredExpenses.length} gjithsej)</h4>
+              <button
+                onClick={openAddModal}
+                className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-lg transition-all flex items-center gap-2 text-sm"
+              >
+                <span className="text-lg">➕</span> Shto Shpenzim/Faturë
+              </button>
+            </div>
             
             {/* Filtra për shpenzimet */}
             <div className="bg-purple-50 p-4 rounded-xl border border-purple-200 mb-4">
@@ -719,7 +723,7 @@ export default function PaymentDetails() {
                       <td className="py-2 px-3 text-center">
                         <button
                           onClick={() => handleDelete(inv.id)}
-                          className="p-2 text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl"
+                          className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl"
                           title="Fshi"
                         >
                           🗑
