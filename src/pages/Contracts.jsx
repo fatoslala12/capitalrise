@@ -10,6 +10,16 @@ import { saveAs } from 'file-saver';
 import NotificationService from '../utils/notifications';
 import { StatusBadge } from "../components/ui/Badge";
 
+// Konstante për statuset e kontratave
+const CONTRACT_STATUSES = [
+  "Draft",
+  "Anulluar", 
+  "Ne progres",
+  "Pezulluar",
+  "Mbyllur",
+  "Mbyllur me vonese"
+];
+
 export default function Contracts() {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +48,7 @@ export default function Contracts() {
   const navigate = useNavigate();
   const [selectedContracts, setSelectedContracts] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   
   // Loading states
   const [loadingStates, setLoadingStates] = useState({
@@ -74,6 +85,25 @@ export default function Contracts() {
     cacheKey: "expenses",
     enableCache: true
   });
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && showAddModal) {
+        closeAddModal();
+      }
+    };
+
+    if (showAddModal) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddModal]);
 
   // Update contracts when data changes
   useEffect(() => {
@@ -160,6 +190,15 @@ export default function Contracts() {
     setConfirmDialog({ show: false, title: "", message: "", onConfirm: null, onCancel: null });
   }, []);
 
+  // Modal functions
+  const openAddModal = useCallback(() => {
+    setShowAddModal(true);
+  }, []);
+
+  const closeAddModal = useCallback(() => {
+    setShowAddModal(false);
+  }, []);
+
   const handleChange = useCallback((e) => {
     const { name, value, files } = e.target;
     
@@ -233,6 +272,7 @@ export default function Contracts() {
       
       // Clear cache to refresh data
       refetchContracts();
+      closeAddModal();
     } catch (err) {
       console.error("Error creating contract:", err);
       showToastMessage(err.response?.data?.error || "Gabim gjatë shtimit të kontratës!", "error");
@@ -809,135 +849,14 @@ export default function Contracts() {
         </div>
       </div>
 
-      {/* Forma për shtim kontrate */}
-      <div className="bg-gradient-to-br from-purple-100 via-white to-blue-100 px-12 py-6 rounded-2xl shadow-lg border border-purple-100 animate-fade-in w-full">
-        <h3 className="font-bold mb-6 text-2xl text-blue-900 flex items-center gap-2">➕ Shto Kontratë të Re</h3>
-        <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4 w-full" onSubmit={handleSubmit}>
-          <label className="col-span-1 md:col-span-2 lg:col-span-4 text-lg font-semibold text-purple-700">Nr. Kontratës: {newContract.contract_number}</label>
-          
-          <div className="col-span-1">
-            <input 
-              name="company" 
-              placeholder="Emri i Kompanisë" 
-              value={newContract.company} 
-              onChange={handleChange} 
-              className={`p-3 border rounded-lg text-base focus:ring-2 transition-all shadow-sm w-full ${
-                formErrors.company ? 'border-red-500 focus:ring-red-200' : 'border-blue-200 focus:ring-blue-200'
-              }`}
-            />
-            {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
-          </div>
-          
-          <div className="col-span-1">
-            <input 
-              name="contract_value" 
-              placeholder="Vlera e Kontratës (£)" 
-              value={newContract.contract_value} 
-              onChange={handleChange} 
-              className={`p-3 border rounded-lg text-base focus:ring-2 transition-all shadow-sm w-full ${
-                formErrors.contract_value ? 'border-red-500 focus:ring-red-200' : 'border-blue-200 focus:ring-blue-200'
-              }`}
-            />
-            {formErrors.contract_value && <p className="text-red-500 text-sm mt-1">{formErrors.contract_value}</p>}
-          </div>
-          
-          <div className="col-span-1">
-            <input 
-              name="site_name" 
-              placeholder="Vendodhja" 
-              value={newContract.site_name} 
-              onChange={handleChange} 
-              className={`p-3 border rounded-lg text-base focus:ring-2 transition-all shadow-sm w-full ${
-                formErrors.site_name ? 'border-red-500 focus:ring-red-200' : 'border-blue-200 focus:ring-blue-200'
-              }`}
-            />
-            {formErrors.site_name && <p className="text-red-500 text-sm mt-1">{formErrors.site_name}</p>}
-          </div>
-          
-          <div className="col-span-1">
-            <input 
-              name="address" 
-              placeholder="Adresa" 
-              value={newContract.address} 
-              onChange={handleChange} 
-              className="p-3 border border-blue-200 rounded-lg text-base focus:ring-2 focus:ring-blue-200 transition-all shadow-sm w-full"
-            />
-          </div>
-          
-          <div className="col-span-1">
-            <label className="block text-base font-medium mb-1 text-blue-800">Data e Fillimit</label>
-            <input 
-              type="date" 
-              name="start_date" 
-              value={newContract.start_date} 
-              onChange={handleChange} 
-              className={`p-3 border rounded-lg w-full text-base focus:ring-2 transition-all shadow-sm ${
-                formErrors.start_date ? 'border-red-500 focus:ring-red-200' : 'border-purple-200 focus:ring-purple-200'
-              }`}
-            />
-            {formErrors.start_date && <p className="text-red-500 text-sm mt-1">{formErrors.start_date}</p>}
-          </div>
-          
-          <div className="col-span-1">
-            <label className="block text-base font-medium mb-1 text-blue-800">Data e Mbarimit</label>
-            <input 
-              type="date" 
-              name="finish_date" 
-              value={newContract.finish_date} 
-              onChange={handleChange} 
-              className={`p-3 border rounded-lg w-full text-base focus:ring-2 transition-all shadow-sm ${
-                formErrors.finish_date ? 'border-red-500 focus:ring-red-200' : 'border-purple-200 focus:ring-purple-200'
-              }`}
-            />
-            {formErrors.finish_date && <p className="text-red-500 text-sm mt-1">{formErrors.finish_date}</p>}
-          </div>
-          
-          <div className="col-span-1">
-            <select 
-              name="status" 
-              value={newContract.status} 
-              onChange={handleChange} 
-              className="p-3 border border-purple-200 rounded-lg text-base focus:ring-2 focus:ring-purple-200 transition-all shadow-sm w-full"
-            >
-              <option value="Draft">Draft</option>
-              <option value="Anulluar">Anulluar</option>
-              <option value="Ne progres">Ne progres</option>
-              <option value="Pezulluar">Pezulluar</option>
-              <option value="Mbyllur">Mbyllur</option>
-              <option value="Mbyllur me vonese">Mbyllur me vonese</option>
-            </select>
-          </div>
-          
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 flex gap-4">
-            <button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "Duke shtuar..." : "➕ Shto Kontratë"}
-            </button>
-            
-            <button 
-              type="button" 
-              onClick={() => setNewContract({
-                company: "",
-                contract_value: "",
-                site_name: "",
-                contract_number: (parseInt(newContract.contract_number) + 1).toString(),
-                start_date: "",
-                finish_date: "",
-                address: "",
-                status: "Ne progres",
-                closed_manually: false,
-                closed_date: null,
-                documents: []
-              })}
-              className="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-all duration-200 shadow-lg"
-            >
-              🔄 Reset
-            </button>
-          </div>
-        </form>
+      {/* Butoni për shtim kontrate */}
+      <div className="flex justify-end mb-6">
+        <button
+          onClick={openAddModal}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
+        >
+          <span className="text-xl">➕</span> Shto Kontratë të Re
+        </button>
       </div>
 
       {/* LISTA E KONTRAVE */}
@@ -1178,36 +1097,37 @@ export default function Contracts() {
                       <div className="flex gap-2 justify-center">
                         <button
                           onClick={() => navigate(`/admin/contracts/${c.contract_number}`)}
-                          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors text-sm"
+                          className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl"
+                          title="Shiko"
                         >
-                          👁️ Shiko
+                          👁️
                         </button>
                         <button
                           onClick={() => handleToggleStatus(c.contract_number)}
                           disabled={loadingStates.toggleStatus[c.contract_number]}
-                          className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition-colors text-sm disabled:opacity-50 flex items-center gap-1"
+                          className="text-purple-600 hover:text-purple-800 hover:scale-110 transition-all text-xl disabled:opacity-50 flex items-center gap-1"
+                          title="Toggle"
                         >
                           {loadingStates.toggleStatus[c.contract_number] ? (
                             <>
-                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
-                              Duke u përditësuar...
+                              <div className="w-3 h-3 border border-purple-600 border-t-transparent rounded-full animate-spin"></div>
                             </>
                           ) : (
-                            '🔄 Toggle'
+                            '🔄'
                           )}
                         </button>
                         <button
                           onClick={() => handleDelete(c.contract_number)}
                           disabled={loadingStates.delete[c.contract_number]}
-                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors text-sm disabled:opacity-50 flex items-center gap-1"
+                          className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl disabled:opacity-50 flex items-center gap-1"
+                          title="Fshi"
                         >
                           {loadingStates.delete[c.contract_number] ? (
                             <>
-                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
-                              Duke fshirë...
+                              <div className="w-3 h-3 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
                             </>
                           ) : (
-                            '🗑️ Fshi'
+                            '🗑️'
                           )}
                         </button>
                       </div>
@@ -1219,6 +1139,157 @@ export default function Contracts() {
           </table>
         </div>
       </div>
+
+      {/* Modal për shtimin e kontratës */}
+      {showAddModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 pt-8"
+          onClick={closeAddModal}
+        >
+          <div 
+            className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
+                  <span className="text-3xl">➕</span> Shto Kontratë të Re
+                </h3>
+                <button
+                  onClick={closeAddModal}
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4 w-full" onSubmit={handleSubmit}>
+                <label className="col-span-1 md:col-span-2 lg:col-span-4 text-lg font-semibold text-purple-700">Nr. Kontratës: {newContract.contract_number}</label>
+                
+                <div className="col-span-1">
+                  <input 
+                    name="company" 
+                    placeholder="Emri i Kompanisë" 
+                    value={newContract.company} 
+                    onChange={handleChange} 
+                    className={`p-3 border rounded-lg text-base focus:ring-2 transition-all shadow-sm w-full ${
+                      formErrors.company ? 'border-red-500 focus:ring-red-200' : 'border-blue-200 focus:ring-blue-200'
+                    }`}
+                  />
+                  {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
+                </div>
+                
+                <div className="col-span-1">
+                  <input 
+                    name="contract_value" 
+                    placeholder="Vlera e Kontratës (£)" 
+                    value={newContract.contract_value} 
+                    onChange={handleChange} 
+                    className={`p-3 border rounded-lg text-base focus:ring-2 transition-all shadow-sm w-full ${
+                      formErrors.contract_value ? 'border-red-500 focus:ring-red-200' : 'border-blue-200 focus:ring-blue-200'
+                    }`}
+                  />
+                  {formErrors.contract_value && <p className="text-red-500 text-sm mt-1">{formErrors.contract_value}</p>}
+                </div>
+                
+                <div className="col-span-1">
+                  <input 
+                    name="site_name" 
+                    placeholder="Vendodhja" 
+                    value={newContract.site_name} 
+                    onChange={handleChange} 
+                    className={`p-3 border rounded-lg text-base focus:ring-2 transition-all shadow-sm w-full ${
+                      formErrors.site_name ? 'border-red-500 focus:ring-red-200' : 'border-blue-200 focus:ring-blue-200'
+                    }`}
+                  />
+                  {formErrors.site_name && <p className="text-red-500 text-sm mt-1">{formErrors.site_name}</p>}
+                </div>
+                
+                <div className="col-span-1">
+                  <input 
+                    name="address" 
+                    placeholder="Adresa" 
+                    value={newContract.address} 
+                    onChange={handleChange} 
+                    className="p-3 border border-blue-200 rounded-lg text-base focus:ring-2 focus:ring-blue-200 transition-all shadow-sm w-full"
+                  />
+                </div>
+                
+                <div className="col-span-1">
+                  <label className="block text-base font-medium mb-1 text-blue-800">Data e Fillimit</label>
+                  <input 
+                    type="date" 
+                    name="start_date" 
+                    value={newContract.start_date} 
+                    onChange={handleChange} 
+                    className={`p-3 border rounded-lg w-full text-base focus:ring-2 transition-all shadow-sm ${
+                      formErrors.start_date ? 'border-red-500 focus:ring-red-200' : 'border-purple-200 focus:ring-purple-200'
+                    }`}
+                  />
+                  {formErrors.start_date && <p className="text-red-500 text-sm mt-1">{formErrors.start_date}</p>}
+                </div>
+                
+                <div className="col-span-1">
+                  <label className="block text-base font-medium mb-1 text-blue-800">Data e Mbarimit</label>
+                  <input 
+                    type="date" 
+                    name="finish_date" 
+                    value={newContract.finish_date} 
+                    onChange={handleChange} 
+                    className={`p-3 border rounded-lg w-full text-base focus:ring-2 transition-all shadow-sm ${
+                      formErrors.finish_date ? 'border-red-500 focus:ring-red-200' : 'border-purple-200 focus:ring-purple-200'
+                    }`}
+                  />
+                  {formErrors.finish_date && <p className="text-red-500 text-sm mt-1">{formErrors.finish_date}</p>}
+                </div>
+                
+                <div className="col-span-1">
+                  <select 
+                    name="status" 
+                    value={newContract.status} 
+                    onChange={handleChange} 
+                    className="p-3 border border-purple-200 rounded-lg text-base focus:ring-2 focus:ring-purple-200 transition-all shadow-sm w-full"
+                  >
+                    <option value="Draft">Draft</option>
+                    <option value="Anulluar">Anulluar</option>
+                    <option value="Ne progres">Ne progres</option>
+                    <option value="Pezulluar">Pezulluar</option>
+                    <option value="Mbyllur">Mbyllur</option>
+                    <option value="Mbyllur me vonese">Mbyllur me vonese</option>
+                  </select>
+                </div>
+                
+                <div className="col-span-1 md:col-span-2 lg:col-span-4 flex gap-4 mt-4">
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Duke shtuar...
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-2xl">💾</span> Shto Kontratë
+                      </>
+                    )}
+                  </button>
+                  
+                  <button 
+                    type="button"
+                    onClick={closeAddModal}
+                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                  >
+                    <span className="text-2xl">✕</span> Anulo
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

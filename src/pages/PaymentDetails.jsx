@@ -422,12 +422,6 @@ export default function PaymentDetails() {
           <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-3">
             <span className="text-5xl">💼</span> Detajet e Kontratës
           </h2>
-          <button
-            onClick={openAddModal}
-            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
-          >
-            <span className="text-xl">➕</span> Shto Shpenzim/Faturë
-          </button>
         </div>
 
         {contract && (
