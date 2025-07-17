@@ -29,6 +29,7 @@ export default function EmployeesList() {
   const [workHours, setWorkHours] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [newEmployee, setNewEmployee] = useState({
     id: 1000,
     firstName: "",
@@ -102,7 +103,24 @@ export default function EmployeesList() {
     });
   }, [token]);
 
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && showAddModal) {
+        closeAddModal();
+      }
+    };
 
+    if (showAddModal) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddModal]);
 
   useEffect(() => {
     setNewEmployee((prev) => ({
@@ -199,34 +217,59 @@ export default function EmployeesList() {
       const res = await axios.post("https://building-system.onrender.com/api/employees", payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setEmployees([...employees, res.data.employee]);
-      setNewEmployee({
-        id: getNextId(),
-        firstName: "",
-        lastName: "",
-        dob: "",
-        pob: "",
-        residence: "",
-        nid: "",
-        workplace: [],
-        startDate: "",
-        email: "",
-        phone: "",
-        role: "user",
-        hourlyRate: "",
-        status: "Aktiv",
-        qualification: "CSS",
-        photo: employeePlaceholder,
-        username: "",
-        password: "12345678",
-        documents: [],
-        nextOfKin: "",
-        nextOfKinPhone: ""
-      });
-    } catch (err) {
-      console.error("Gabim gjatë shtimit të punonjësit:", err);
-      alert("Gabim gjatë shtimit të punonjësit!");
+
+      if (res.status === 201) {
+        // 2. Merr punonjësin e ri nga response
+        const newEmp = snakeToCamel(res.data);
+        
+        // 3. Përditëso listën lokale
+        setEmployees(prev => [...prev, newEmp]);
+        
+        // 4. Reset forma dhe mbyll modalit
+        resetForm();
+        setShowAddModal(false);
+        
+        alert("Punonjësi u shtua me sukses!");
+      }
+    } catch (error) {
+      console.error("Gabim në shtimin e punonjësit:", error);
+      alert("Gabim në shtimin e punonjësit. Provoni përsëri.");
     }
+  };
+
+  const resetForm = () => {
+    setNewEmployee({
+      id: 1000,
+      firstName: "",
+      lastName: "",
+      dob: "",
+      pob: "",
+      residence: "",
+      nid: "",
+      workplace: [],
+      startDate: "",
+      email: "",
+      phone: "",
+      role: "user",
+      hourlyRate: "",
+      status: "Aktiv",
+      qualification: "CSS",
+      photo: employeePlaceholder,
+      username: "",
+      password: "12345678",
+      documents: [],
+      nextOfKin: "",
+      nextOfKinPhone: ""
+    });
+  };
+
+  const openAddModal = () => {
+    setShowAddModal(true);
+  };
+
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    resetForm();
   };
 
   const handleDelete = async (id) => {
@@ -367,89 +410,139 @@ export default function EmployeesList() {
 
   return (
     <div className="p-4">
-      <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-6 flex items-center gap-2">
-        <span className="text-4xl">➕</span> Shto Punonjës
-      </h2>
-      <form
-        className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-blue-100 p-8 mb-10 animate-fade-in"
-        onSubmit={handleSubmit}
-      >
-        <label className="col-span-2 text-blue-700 italic mb-2">Lutem plotësoni të gjithë fushat e nevojshme</label>
-        <input type="text" name="firstName" placeholder="Emri *" required value={newEmployee.firstName} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        <input type="text" name="lastName" placeholder="Mbiemri *" required value={newEmployee.lastName} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        <div>
-          <label className="block text-blue-800 font-semibold mb-1">Data e Fillimit *</label>
-          <input type="date" name="startDate" required value={newEmployee.startDate} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl w-full text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        </div>
-        <div>
-          <label className="block text-blue-800 font-semibold mb-1">Datëlindja</label>
-          <input type="date" name="dob" value={newEmployee.dob} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl w-full text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        </div>
-        <input type="text" name="pob" placeholder="Shtetësia" value={newEmployee.pob} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        <input type="text" name="residence" placeholder="Vendbanimi" value={newEmployee.residence} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        <input type="email" name="email" placeholder="Email *" required value={newEmployee.email} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        <input type="text" name="nid" placeholder="NID *" required value={newEmployee.nid} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        <label className="col-span-2 text-blue-800 font-semibold mt-2">Zgjidh Vendet e Punës *</label>
-        <div className="col-span-2 flex flex-wrap gap-3 mb-2">
-          {siteOptions.map((siteName) => {
-            const canSelect = !isManager || managerSites.includes(siteName);
-            if (!canSelect) return null;
-            return (
-              <label key={siteName} className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-xl border border-blue-200 shadow-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="workplace"
-                  value={siteName}
-                  onChange={handleChange}
-                  checked={newEmployee.workplace.includes(siteName)}
-                  className="accent-blue-600 w-5 h-5"
-                /> {siteName}
-              </label>
-            );
-          })}
-        </div>
-        <input type="text" name="phone" placeholder="Telefoni *" required value={newEmployee.phone} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        <input type="text" name="nextOfKin" placeholder="Next of Kin" value={newEmployee.nextOfKin || ""} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        <input type="text" name="nextOfKinPhone" placeholder="Next of Kin Phone" value={newEmployee.nextOfKinPhone || ""} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        <div>
-          <label className="block font-semibold mb-1 text-blue-800">Label Type</label>
-          <select
-            name="labelType"
-            value={newEmployee.labelType}
-            onChange={handleChange}
-            className="border-2 border-blue-200 p-4 w-full rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
-          >
-            <option value="NI">NI</option>
-            <option value="UTR">UTR</option>
-          </select>
-        </div>
-        <select
-          name="role"
-          value={newEmployee.role}
-          onChange={handleChange}
-          className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
+      {/* Header me butonin për të hapur modalit */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
+          <span className="text-4xl">👥</span> Lista e Punonjësve
+        </h2>
+        <button
+          onClick={openAddModal}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
         >
-          <option value="user">Punonjës</option>
-          <option value="manager">Menaxher</option>
-        </select>
-        <input type="number" name="hourlyRate" placeholder="Paga / Orë (£)" value={newEmployee.hourlyRate} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-        <select name="qualification" value={newEmployee.qualification} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm">
-          <option value="CSS">CSS</option>
-          <option value="NVQ">NVQ</option>
-          <option value="Blue Card">Blue Card</option>
-        </select>
-        <select name="status" required value={newEmployee.status} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm">
-          <option value="Aktiv">Aktiv</option>
-          <option value="Joaktiv">Joaktiv</option>
-        </select>
-        <label className="col-span-2 text-blue-800 font-semibold mt-2">Ngarko Foto</label>
-        <input type="file" name="photo" accept="image/*" onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl col-span-2 bg-blue-50 shadow-sm" />
-        <label className="col-span-2 text-blue-800 font-semibold mt-2">Ngarko Dokument PDF</label>
-        <input type="file" name="documents" accept="application/pdf" onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl col-span-2 bg-blue-50 shadow-sm" />
-        <button type="submit" className="col-span-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl mt-4 transition-all flex items-center gap-3 justify-center">
-          <span className="text-2xl">➕</span> Shto Punonjës
+          <span className="text-xl">➕</span> Shto Punonjës
         </button>
-      </form>
+      </div>
+
+      {/* Modal për shtimin e punonjësit */}
+      {showAddModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={closeAddModal}
+        >
+          <div 
+            className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
+                  <span className="text-3xl">➕</span> Shto Punonjës të Ri
+                </h3>
+                <button
+                  onClick={closeAddModal}
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <form
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                onSubmit={handleSubmit}
+              >
+                <label className="col-span-2 text-blue-700 italic mb-2">Lutem plotësoni të gjithë fushat e nevojshme</label>
+                <input type="text" name="firstName" placeholder="Emri *" required value={newEmployee.firstName} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <input type="text" name="lastName" placeholder="Mbiemri *" required value={newEmployee.lastName} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <div>
+                  <label className="block text-blue-800 font-semibold mb-1">Data e Fillimit *</label>
+                  <input type="date" name="startDate" required value={newEmployee.startDate} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl w-full text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                </div>
+                <div>
+                  <label className="block text-blue-800 font-semibold mb-1">Datëlindja</label>
+                  <input type="date" name="dob" value={newEmployee.dob} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl w-full text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                </div>
+                <input type="text" name="pob" placeholder="Shtetësia" value={newEmployee.pob} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <input type="text" name="residence" placeholder="Vendbanimi" value={newEmployee.residence} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <input type="email" name="email" placeholder="Email *" required value={newEmployee.email} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <input type="text" name="nid" placeholder="NID *" required value={newEmployee.nid} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <label className="col-span-2 text-blue-800 font-semibold mt-2">Zgjidh Vendet e Punës *</label>
+                <div className="col-span-2 flex flex-wrap gap-3 mb-2">
+                  {siteOptions.map((siteName) => {
+                    const canSelect = !isManager || managerSites.includes(siteName);
+                    if (!canSelect) return null;
+                    return (
+                      <label key={siteName} className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-xl border border-blue-200 shadow-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="workplace"
+                          value={siteName}
+                          onChange={handleChange}
+                          checked={newEmployee.workplace.includes(siteName)}
+                          className="accent-blue-600 w-5 h-5"
+                        /> {siteName}
+                      </label>
+                    );
+                  })}
+                </div>
+                <input type="text" name="phone" placeholder="Telefoni *" required value={newEmployee.phone} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <input type="text" name="nextOfKin" placeholder="Next of Kin" value={newEmployee.nextOfKin || ""} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <input type="text" name="nextOfKinPhone" placeholder="Next of Kin Phone" value={newEmployee.nextOfKinPhone || ""} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <div>
+                  <label className="block font-semibold mb-1 text-blue-800">Label Type</label>
+                  <select
+                    name="labelType"
+                    value={newEmployee.labelType}
+                    onChange={handleChange}
+                    className="border-2 border-blue-200 p-4 w-full rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
+                  >
+                    <option value="NI">NI</option>
+                    <option value="UTR">UTR</option>
+                  </select>
+                </div>
+                <select
+                  name="role"
+                  value={newEmployee.role}
+                  onChange={handleChange}
+                  className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
+                >
+                  <option value="user">Punonjës</option>
+                  <option value="manager">Menaxher</option>
+                </select>
+                <input type="number" name="hourlyRate" placeholder="Paga / Orë (£)" value={newEmployee.hourlyRate} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <select name="qualification" value={newEmployee.qualification} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm">
+                  <option value="CSS">CSS</option>
+                  <option value="NVQ">NVQ</option>
+                  <option value="Blue Card">Blue Card</option>
+                </select>
+                <select name="status" required value={newEmployee.status} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm">
+                  <option value="Aktiv">Aktiv</option>
+                  <option value="Joaktiv">Joaktiv</option>
+                </select>
+                <label className="col-span-2 text-blue-800 font-semibold mt-2">Ngarko Foto</label>
+                <input type="file" name="photo" accept="image/*" onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl col-span-2 bg-blue-50 shadow-sm" />
+                <label className="col-span-2 text-blue-800 font-semibold mt-2">Ngarko Dokument PDF</label>
+                <input type="file" name="documents" accept="application/pdf" onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl col-span-2 bg-blue-50 shadow-sm" />
+                
+                <div className="col-span-2 flex gap-4 mt-4">
+                  <button 
+                    type="submit" 
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                  >
+                    <span className="text-2xl">➕</span> Shto Punonjës
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={closeAddModal}
+                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                  >
+                    <span className="text-2xl">✕</span> Anulo
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-6">
         <div className="flex gap-4 mb-4 flex-wrap">
@@ -482,7 +575,7 @@ export default function EmployeesList() {
 
         <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-blue-100 p-6 mb-8 overflow-x-auto animate-fade-in">
           <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-6 text-center flex items-center gap-2 justify-center">
-            <span className="text-3xl">👥</span> Lista e Punonjësve
+            <span className="text-3xl">📋</span> Tabela e Punonjësve
           </h3>
           <table className="min-w-full text-base text-blue-900 rounded-2xl overflow-hidden shadow-xl">
             <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-base font-bold">
