@@ -1,95 +1,44 @@
 const { Resend } = require('resend');
-const puppeteer = require('puppeteer');
+const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 
 // Inicializo Resend me API key
 const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789');
 
-// Funksion për të gjeneruar PDF nga faturë
+// Funksion për të gjeneruar PDF nga faturë me pdf-lib
 const generateInvoicePDF = async (invoice, contract) => {
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Fatura ${invoice.invoice_number}</title>
-      <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .logo { max-width: 150px; }
-        .invoice-details { margin-bottom: 20px; }
-        .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .items-table th { background-color: #f2f2f2; }
-        .total { text-align: right; font-weight: bold; font-size: 18px; margin-top: 20px; }
-        .footer { margin-top: 40px; text-align: center; color: #666; }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>🧾 FATURË</h1>
-        <p>Kontrata #${contract.contract_number} – ${contract.site_name}</p>
-      </div>
-      
-      <div class="invoice-details">
-        <p><strong>Data:</strong> ${invoice.date}</p>
-        <p><strong>Kompania:</strong> ${contract.company}</p>
-        <p><strong>Adresa:</strong> ${contract.address || 'N/A'}</p>
-        <p><strong>Përshkrimi:</strong> ${invoice.description || 'N/A'}</p>
-      </div>
-      
-      <table class="items-table">
-        <thead>
-          <tr>
-            <th>Përshkrimi</th>
-            <th>Shifts</th>
-            <th>Rate</th>
-            <th>Shuma</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${invoice.items ? invoice.items.map(item => `
-            <tr>
-              <td>${item.description || ''}</td>
-              <td>${item.shifts || ''}</td>
-              <td>£${item.rate || '0.00'}</td>
-              <td>£${item.amount ? item.amount.toFixed(2) : '0.00'}</td>
-            </tr>
-          `).join('') : ''}
-        </tbody>
-      </table>
-      
-      <div class="total">
-        <p>Të tjera: £${invoice.other || '0.00'}</p>
-        <p>TVSH (20%): £${invoice.vat || '0.00'}</p>
-        <p><strong>TOTALI: £${invoice.total || '0.00'}</strong></p>
-      </div>
-      
-      <div class="footer">
-        <p>Falënderojmë për besimin tuaj!</p>
-        <p>Alban Construction</p>
-      </div>
-    </body>
-    </html>
-  `;
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([595, 842]); // A4 size
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  try {
-    const browser = await puppeteer.launch({ 
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-    const page = await browser.newPage();
-    await page.setContent(htmlContent);
-    const pdfBuffer = await page.pdf({ 
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
-    });
-    await browser.close();
-    return pdfBuffer;
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    throw error;
-  }
+  let y = 800;
+  const drawText = (text, size = 14, color = rgb(0,0,0), x = 50) => {
+    page.drawText(text, { x, y, size, font, color });
+    y -= size + 8;
+  };
+
+  drawText(`🧾 FATURË`, 22, rgb(0.2,0.2,0.7));
+  drawText(`Kontrata #${contract.contract_number} – ${contract.site_name}`, 14);
+  drawText(`Data: ${invoice.date}`);
+  drawText(`Kompania: ${contract.company}`);
+  drawText(`Adresa: ${contract.address || 'N/A'}`);
+  drawText(`Përshkrimi: ${invoice.description || 'N/A'}`);
+  y -= 10;
+  drawText('---------------------------------------------', 10);
+  drawText('Përshkrimi   Shifts   Rate   Shuma', 12, rgb(0.1,0.1,0.1));
+  (invoice.items || []).forEach(item => {
+    drawText(`${item.description || ''}   ${item.shifts || ''}   £${item.rate || '0.00'}   £${item.amount ? item.amount.toFixed(2) : '0.00'}`, 12);
+  });
+  y -= 10;
+  drawText('---------------------------------------------', 10);
+  drawText(`Të tjera: £${invoice.other || '0.00'}`);
+  drawText(`TVSH (20%): £${invoice.vat || '0.00'}`);
+  drawText(`TOTALI: £${invoice.total || '0.00'}`, 16, rgb(0,0.5,0));
+  y -= 20;
+  drawText('Falënderojmë për besimin tuaj!', 12, rgb(0.2,0.5,0.2));
+  drawText('Alban Construction', 12, rgb(0.2,0.5,0.2));
+
+  const pdfBytes = await pdfDoc.save();
+  return Buffer.from(pdfBytes);
 };
 
 // Funksion kryesor për dërgimin e email-it
