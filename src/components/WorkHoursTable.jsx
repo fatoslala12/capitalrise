@@ -309,7 +309,7 @@ export default function WorkHoursTable({
                       onClick={() => handlePaymentToggle(calc.emp.id)}
                       className="px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 whitespace-nowrap"
                     >
-                      {calc.paid ? '❌ Pa paguar' : '✅ Të paguar'}
+                      {calc.paid ? '❌ Fshi pagesen' : '✅ Paguaj'}
                     </button>
                   )}
                 </div>
