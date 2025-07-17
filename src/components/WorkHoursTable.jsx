@@ -228,19 +228,17 @@ export default function WorkHoursTable({
           {isAdmin ? (
         // Admin view - kompakt me expand/collapse
         <div className="space-y-4">
-        {/* Headers për kolonat */}
-        <div className="grid grid-cols-9 gap-2 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900">
-          <div className="col-span-2 text-center">👤 Punonjësi</div>
-          <div className="text-center">💰 Rate</div>
-          <div className="text-center">⏰ Orë</div>
-          <div className="text-center">💷 Bruto</div>
-          <div className="text-center">📋 TVSH</div>
-          <div className="text-center">💰 Neto</div>
-          <div className="text-center">💸 Veprime</div>
-          <div className="text-center">✅ Statusi</div>
-        </div>
-      </div>
-      
+          {/* Headers për kolonat */}
+          <div className="grid grid-cols-9 gap-2 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900">
+            <div className="col-span-2 text-center">👤 Punonjësi</div>
+            <div className="text-center">💰 Rate</div>
+            <div className="text-center">⏰ Orë</div>
+            <div className="text-center">💷 Bruto</div>
+            <div className="text-center">📋 TVSH</div>
+            <div className="text-center">💰 Neto</div>
+            <div className="text-center">💸 Veprime</div>
+            <div className="text-center">✅ Statusi</div>
+          </div>
           
           {employeeCalculations.map((calc) => (
             <div key={calc.emp.id} className="bg-white rounded-xl shadow-lg border border-blue-200 overflow-hidden">
