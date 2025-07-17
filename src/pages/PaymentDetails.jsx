@@ -47,6 +47,7 @@ export default function PaymentDetails() {
   // Filtra të rinj për orët e punës
   const [workHoursSearchTerm, setWorkHoursSearchTerm] = useState("");
   const [workHoursDateFilter, setWorkHoursDateFilter] = useState({ start: "", end: "" });
+  const [showAddModal, setShowAddModal] = useState(false);
   const [newExpenseInvoice, setNewExpenseInvoice] = useState({
     companyName: "",
     expense_type: "",
@@ -106,6 +107,25 @@ export default function PaymentDetails() {
     
     fetchData();
   }, [contract_number, token]);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && showAddModal) {
+        closeAddModal();
+      }
+    };
+
+    if (showAddModal) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddModal]);
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -177,15 +197,9 @@ export default function PaymentDetails() {
         console.log('Expenses pas shtimit:', expensesRes.data);
         setExpensesInvoices(expensesRes.data || []);
         
-        setNewExpenseInvoice((prev) => ({
-          ...prev,
-          expense_type: "",
-          gross: "",
-          net: "",
-          tax: "",
-          paid: false,
-          file: null,
-        }));
+        // Reset forma dhe mbyll modalit
+        resetForm();
+        setShowAddModal(false);
         
         alert("Shpenzimi u shtua me sukses!");
       } catch (error) {
@@ -193,6 +207,28 @@ export default function PaymentDetails() {
         alert("Gabim gjatë shtimit të shpenzimit: " + (error.response?.data?.error || error.message));
       }
     }
+  };
+
+  const resetForm = () => {
+    setNewExpenseInvoice({
+      companyName: contract?.company || "",
+      expense_type: "",
+      date: new Date().toISOString().split("T")[0],
+      net: "",
+      gross: "",
+      tax: "",
+      paid: false,
+      file: null,
+    });
+  };
+
+  const openAddModal = () => {
+    setShowAddModal(true);
+  };
+
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    resetForm();
   };
 
   // Fshi shpenzim nga backend
@@ -382,9 +418,17 @@ export default function PaymentDetails() {
     <div className="max-w-full xl:max-w-[90vw] mx-auto px-2 py-8 min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100">
       {/* HEADER & KONTRATA */}
       <div className="bg-gradient-to-br from-purple-100 via-white to-blue-100 rounded-3xl shadow-2xl border border-blue-100 p-8 md:p-12 mb-10 animate-fade-in">
-        <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-4 flex items-center gap-3">
-          <span className="text-5xl">💼</span> Kontrata #{contract_number}
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-3">
+            <span className="text-5xl">💼</span> Kontrata #{contract_number}
+          </h2>
+          <button
+            onClick={openAddModal}
+            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
+          >
+            <span className="text-xl">➕</span> Shto Shpenzim/Faturë
+          </button>
+        </div>
         
         {/* TITULLI I RI: Shpenzimet për kontratën */}
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-xl mb-6 shadow-lg">
@@ -412,6 +456,112 @@ export default function PaymentDetails() {
             `}>
               {contract.status}
             </span>
+          </div>
+        )}
+
+        {/* Modal për shtimin e shpenzimit */}
+        {showAddModal && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={closeAddModal}
+          >
+            <div 
+              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
+                    <span className="text-3xl">➕</span> Shto Shpenzim/Faturë të Ri
+                  </h3>
+                  <button
+                    onClick={closeAddModal}
+                    className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+                
+                <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleAddExpenseInvoice}>
+                  <input 
+                    name="expense_type" 
+                    placeholder="Lloji i shpenzimit/faturës" 
+                    value={newExpenseInvoice.expense_type} 
+                    onChange={handleChange} 
+                    className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" 
+                    required
+                  />
+                  <input 
+                    type="date" 
+                    name="date" 
+                    value={newExpenseInvoice.date} 
+                    onChange={handleChange} 
+                    className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" 
+                    required
+                  />
+                  <input 
+                    name="gross" 
+                    placeholder="Shuma Bruto (£)" 
+                    value={newExpenseInvoice.gross} 
+                    onChange={handleChange} 
+                    className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" 
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                  />
+                  <input 
+                    name="net" 
+                    placeholder="Shuma Neto (£)" 
+                    value={newExpenseInvoice.net} 
+                    onChange={handleChange} 
+                    className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm bg-gray-50" 
+                    readOnly 
+                  />
+                  <input 
+                    name="tax" 
+                    placeholder="TVSH (£)" 
+                    value={newExpenseInvoice.tax} 
+                    onChange={handleChange} 
+                    className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm bg-gray-50" 
+                    readOnly 
+                  />
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="checkbox" 
+                      name="paid" 
+                      checked={newExpenseInvoice.paid} 
+                      onChange={handleChange} 
+                      className="w-5 h-5 accent-green-500" 
+                    />
+                    <label className="text-base font-medium text-blue-800">Paguar</label>
+                  </div>
+                  <input 
+                    type="file" 
+                    name="file" 
+                    accept="application/pdf,image/*" 
+                    onChange={handleChange} 
+                    className="p-3 border-2 border-blue-200 rounded-xl text-base file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition-all duration-200" 
+                  />
+                  
+                  <div className="col-span-2 flex gap-4 mt-4">
+                    <button 
+                      type="submit" 
+                      className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                    >
+                      <span className="text-2xl">💾</span> Shto Shpenzim
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={closeAddModal}
+                      className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                    >
+                      <span className="text-2xl">✕</span> Anulo
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
         )}
 
@@ -569,7 +719,8 @@ export default function PaymentDetails() {
                       <td className="py-2 px-3 text-center">
                         <button
                           onClick={() => handleDelete(inv.id)}
-                          className="px-3 py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg text-base font-semibold shadow hover:from-pink-600 hover:to-red-600 transition-all"
+                          className="p-2 text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl"
+                          title="Fshi"
                         >
                           🗑
                         </button>
@@ -618,79 +769,6 @@ export default function PaymentDetails() {
           <div className={`text-2xl font-bold ${remainingAmount >= 0 ? 'text-green-700' : 'text-red-700'}`}>
             £{remainingAmount.toFixed(2)}
           </div>
-        </div>
-
-        {/* Forma për shtim shpenzimi të ri */}
-        <div className="bg-gradient-to-br from-blue-100 via-white to-purple-100 rounded-2xl shadow-lg border border-blue-100 p-6 mb-4">
-          <h4 className="text-lg font-bold text-blue-800 mb-3 flex items-center gap-2">➕ Shto Shpenzim/Faturë</h4>
-          <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleAddExpenseInvoice}>
-            <input 
-              name="expense_type" 
-              placeholder="Lloji i shpenzimit/faturës" 
-              value={newExpenseInvoice.expense_type} 
-              onChange={handleChange} 
-              className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" 
-              required
-            />
-            <input 
-              type="date" 
-              name="date" 
-              value={newExpenseInvoice.date} 
-              onChange={handleChange} 
-              className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" 
-              required
-            />
-            <input 
-              name="gross" 
-              placeholder="Shuma Bruto (£)" 
-              value={newExpenseInvoice.gross} 
-              onChange={handleChange} 
-              className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" 
-              type="number"
-              step="0.01"
-              min="0"
-              required
-            />
-            <input 
-              name="net" 
-              placeholder="Shuma Neto (£)" 
-              value={newExpenseInvoice.net} 
-              onChange={handleChange} 
-              className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm bg-gray-50" 
-              readOnly 
-            />
-            <input 
-              name="tax" 
-              placeholder="TVSH (£)" 
-              value={newExpenseInvoice.tax} 
-              onChange={handleChange} 
-              className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm bg-gray-50" 
-              readOnly 
-            />
-            <div className="flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                name="paid" 
-                checked={newExpenseInvoice.paid} 
-                onChange={handleChange} 
-                className="w-5 h-5 accent-green-500" 
-              />
-              <label className="text-base font-medium text-blue-800">Paguar</label>
-            </div>
-            <input 
-              type="file" 
-              name="file" 
-              accept="application/pdf,image/*" 
-              onChange={handleChange} 
-              className="p-3 border-2 border-blue-200 rounded-xl text-base file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition-all duration-200" 
-            />
-            <button 
-              type="submit" 
-              className="md:col-span-2 bg-gradient-to-r from-green-400 to-blue-500 text-white px-6 py-3 rounded-lg font-bold text-lg shadow-lg hover:from-blue-600 hover:to-green-600 transition-all flex items-center gap-2 justify-center"
-            >
-              <span className="text-xl">💾</span> Shto Shpenzim
-            </button>
-          </form>
         </div>
 
         {/* Grafikë i trendit të shpenzimeve - FARE NË FUND */}
