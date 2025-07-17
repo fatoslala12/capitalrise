@@ -18,6 +18,10 @@ export default function WorkHoursTable({
 
   // Optimized calculations me useMemo
   const employeeCalculations = useMemo(() => {
+    console.log('[DEBUG] employeeCalculations - employees:', employees);
+    console.log('[DEBUG] employeeCalculations - data:', data);
+    console.log('[DEBUG] employeeCalculations - weekLabel:', weekLabel);
+    
     return employees.map((emp) => {
       const firstName = emp.firstName || emp.first_name || '';
       const lastName = emp.lastName || emp.last_name || '';
@@ -25,6 +29,13 @@ export default function WorkHoursTable({
       const employeeRate = Number(emp.hourlyRate || emp.hourly_rate || 0);
       const labelType = emp.labelType || emp.label_type || 'UTR';
       const hours = data[emp.id]?.[weekLabel] || {};
+      
+      console.log(`[DEBUG] Employee ${emp.id} (${firstName} ${lastName}):`, {
+        employeeRate,
+        labelType,
+        hours,
+        empData: data[emp.id]
+      });
       
       // Fix TypeError by ensuring proper number conversion and handling null values
       const total = days.reduce((acc, day) => {
@@ -65,7 +76,7 @@ export default function WorkHoursTable({
         statusBg = 'bg-red-100 border-red-200';
       }
 
-      return {
+      const result = {
         emp,
         firstName,
         lastName,
@@ -82,6 +93,10 @@ export default function WorkHoursTable({
         statusClass,
         statusBg
       };
+      
+      console.log(`[DEBUG] Employee ${emp.id} calculation result:`, result);
+      
+      return result;
     });
   }, [employees, weekLabel, data, paidStatus, siteOptions]);
 

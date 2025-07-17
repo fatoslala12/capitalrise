@@ -340,12 +340,16 @@ exports.getStructuredWorkHours = async (req, res) => {
       
       if (!data[empId]) data[empId] = {};
       if (!data[empId][weekLabel]) data[empId][weekLabel] = {};
-      data[empId][weekLabel][day] = {
+      const dayData = {
         hours: row.hours,
         site: row.site_name, // përdor vetëm site_name si site
         rate: row.hourly_rate,
         contract_id: row.contract_id
       };
+      
+      console.log(`[DEBUG] Structuring data for empId: ${empId}, weekLabel: ${weekLabel}, day: ${day}`, dayData);
+      
+      data[empId][weekLabel][day] = dayData;
     });
     res.json(data);
   } catch (err) {
