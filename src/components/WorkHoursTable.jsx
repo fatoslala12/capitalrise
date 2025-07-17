@@ -26,10 +26,11 @@ export default function WorkHoursTable({
       const labelType = emp.labelType || emp.label_type || 'UTR';
       const hours = data[emp.id]?.[weekLabel] || {};
       
-      // Fix TypeError by ensuring proper number conversion
+      // Fix TypeError by ensuring proper number conversion and handling null values
       const total = days.reduce((acc, day) => {
         const dayHours = hours[day]?.hours;
-        const numHours = dayHours ? parseFloat(dayHours) : 0;
+        if (!dayHours) return acc;
+        const numHours = parseFloat(dayHours);
         return acc + (isNaN(numHours) ? 0 : numHours);
       }, 0);
       
@@ -102,15 +103,21 @@ export default function WorkHoursTable({
           const hours = parseFloat(entry.hours);
           if (!isNaN(hours) && hours > 0) {
             totalHours += hours;
-            totalBruto += hours * empRate;
-            totalTVSH += empLabelType === "UTR" ? hours * empRate * 0.2 : hours * empRate * 0.3;
-            totalNeto += empLabelType === "UTR" ? hours * empRate * 0.8 : hours * empRate * 0.7;
+            const entryBruto = hours * empRate;
+            totalBruto += entryBruto;
+            totalTVSH += empLabelType === "UTR" ? entryBruto * 0.2 : entryBruto * 0.3;
+            totalNeto += empLabelType === "UTR" ? entryBruto * 0.8 : entryBruto * 0.7;
           }
         }
       });
     });
 
-    return { totalHours, totalBruto, totalTVSH, totalNeto };
+    return { 
+      totalHours: totalHours || 0, 
+      totalBruto: totalBruto || 0, 
+      totalTVSH: totalTVSH || 0, 
+      totalNeto: totalNeto || 0 
+    };
   }, [employees, weekLabel, data]);
 
   const handlePaymentToggle = useCallback(async (empId) => {
@@ -213,7 +220,7 @@ export default function WorkHoursTable({
                 {/* Rate */}
                 <div className="text-center">
                   <div className="font-semibold text-blue-900 bg-blue-100 rounded-lg px-3 py-2">
-                    £{!isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}
+                    £{calc.rate && !isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}
                   </div>
                 </div>
                 
@@ -308,19 +315,19 @@ export default function WorkHoursTable({
             <div className="grid grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-lg text-gray-700">📊 Total Orë</div>
-                <div className="text-2xl text-gray-900">{weekTotals.totalHours && !isNaN(weekTotals.totalHours) ? Number(weekTotals.totalHours).toFixed(2) : '0.00'}</div>
+                <div className="text-2xl text-gray-900">{weekTotals.totalHours ? Number(weekTotals.totalHours).toFixed(2) : '0.00'}</div>
               </div>
               <div>
                 <div className="text-lg text-green-700">💷 Total Bruto</div>
-                <div className="text-2xl text-green-700">£{weekTotals.totalBruto && !isNaN(weekTotals.totalBruto) ? Number(weekTotals.totalBruto).toFixed(2) : '0.00'}</div>
+                <div className="text-2xl text-green-700">£{weekTotals.totalBruto ? Number(weekTotals.totalBruto).toFixed(2) : '0.00'}</div>
               </div>
               <div>
                 <div className="text-lg text-yellow-700">📋 Total TVSH</div>
-                <div className="text-2xl text-yellow-700">£{weekTotals.totalTVSH && !isNaN(weekTotals.totalTVSH) ? Number(weekTotals.totalTVSH).toFixed(2) : '0.00'}</div>
+                <div className="text-2xl text-yellow-700">£{weekTotals.totalTVSH ? Number(weekTotals.totalTVSH).toFixed(2) : '0.00'}</div>
               </div>
               <div>
                 <div className="text-lg text-blue-700">💰 Total Neto</div>
-                <div className="text-2xl text-blue-700">£{weekTotals.totalNeto && !isNaN(weekTotals.totalNeto) ? Number(weekTotals.totalNeto).toFixed(2) : '0.00'}</div>
+                <div className="text-2xl text-blue-700">£{weekTotals.totalNeto ? Number(weekTotals.totalNeto).toFixed(2) : '0.00'}</div>
               </div>
             </div>
           </div>
@@ -387,7 +394,7 @@ export default function WorkHoursTable({
                     </select>
                   </td>
                 ))}
-                <td className="py-2 px-2 font-semibold text-blue-900 bg-blue-50 rounded-xl">£{!isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-2 font-semibold text-blue-900 bg-blue-50 rounded-xl">£{calc.rate && !isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}</td>
                 <td className="py-2 px-2 font-bold text-gray-900 bg-gray-50 rounded-xl">{calc.total && !isNaN(calc.total) ? Number(calc.total).toFixed(2) : '0.00'}</td>
                 <td className="py-2 px-2 font-semibold text-green-700 bg-green-50 rounded-xl">£{calc.bruto && !isNaN(calc.bruto) ? Number(calc.bruto).toFixed(2) : '0.00'}</td>
                 <td className="py-2 px-2 font-semibold text-yellow-700 bg-yellow-50 rounded-xl">£{calc.tvsh && !isNaN(calc.tvsh) ? Number(calc.tvsh).toFixed(2) : '0.00'}</td>

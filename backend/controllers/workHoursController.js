@@ -119,8 +119,13 @@ exports.addWorkHours = async (req, res) => {
           }
         }
 
-        const rate = entry.rate || null;
-        console.log(`[DEBUG] contract_id: ${contract_id}, rate: ${rate}`);
+        // Get employee's hourly_rate for calculations
+        const empRateRes = await client.query(
+          `SELECT hourly_rate FROM employees WHERE id = $1`,
+          [employeeId]
+        );
+        const rate = empRateRes.rows[0]?.hourly_rate || 0;
+        console.log(`[DEBUG] contract_id: ${contract_id}, hourly_rate: ${rate}`);
         
         // Check if entry exists
         const check = await client.query(
@@ -131,19 +136,19 @@ exports.addWorkHours = async (req, res) => {
         if (check.rows.length > 0) {
           console.log(`[DEBUG] Updating work_hours for ${employeeId} ${dateStr}`);
           await client.query(
-            `UPDATE work_hours SET hours = $1, site = $2, rate = $3, contract_id = $4, updated_at = NOW() WHERE id = $5`,
-            [entry.hours, entry.site || null, rate, contract_id, check.rows[0].id]
+            `UPDATE work_hours SET hours = $1, site = $2, contract_id = $3, updated_at = NOW() WHERE id = $4`,
+            [entry.hours, entry.site || null, contract_id, check.rows[0].id]
           );
         } else {
           console.log(`[DEBUG] Inserting work_hours for ${employeeId} ${dateStr}`);
           await client.query(
-            `INSERT INTO work_hours (employee_id, date, hours, site, rate, contract_id, created_at, updated_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
-            [employeeId, dateStr, entry.hours, entry.site || null, rate, contract_id]
+            `INSERT INTO work_hours (employee_id, date, hours, site, contract_id, created_at, updated_at) 
+             VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
+            [employeeId, dateStr, entry.hours, entry.site || null, contract_id]
           );
         }
         
-        saved.push({ employeeId, date: dateStr, hours: entry.hours, site: entry.site || null, contract_id, rate });
+        saved.push({ employeeId, date: dateStr, hours: entry.hours, site: entry.site || null, contract_id, hourly_rate: rate });
       }
       
       // Kontrollo nëse ka të paktën një ditë me orë > 0
@@ -213,13 +218,13 @@ exports.addWorkHours = async (req, res) => {
 
 exports.updateWorkHours = async (req, res) => {
   const { id } = req.params;
-  const { date, hours, rate } = req.body;
+  const { date, hours } = req.body;
   try {
     const result = await pool.query(`
       UPDATE work_hours
-      SET date = $1, hours = $2, rate = $3, updated_at = NOW()
-      WHERE id = $4 RETURNING *`,
-      [date, hours, rate, id]
+      SET date = $1, hours = $2, updated_at = NOW()
+      WHERE id = $3 RETURNING *`,
+      [date, hours, id]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -298,7 +303,7 @@ exports.getStructuredWorkHours = async (req, res) => {
   try {
     try {
       result = await pool.query(`
-        SELECT wh.*, e.id as employee_id, c.site_name
+        SELECT wh.*, e.id as employee_id, e.hourly_rate, c.site_name
         FROM work_hours wh
         JOIN employees e ON wh.employee_id = e.id
         JOIN contracts c ON wh.contract_id = c.id
@@ -338,7 +343,7 @@ exports.getStructuredWorkHours = async (req, res) => {
       data[empId][weekLabel][day] = {
         hours: row.hours,
         site: row.site_name, // përdor vetëm site_name si site
-        rate: row.rate,
+        rate: row.hourly_rate,
         contract_id: row.contract_id
       };
     });
@@ -388,9 +393,10 @@ exports.getStructuredWorkHoursForEmployee = async (req, res) => {
         wh.date,
         wh.hours,
         wh.site,
-        wh.rate,
+        e.hourly_rate,
         c.site_name as contract_site
       FROM work_hours wh
+      LEFT JOIN employees e ON wh.employee_id = e.id
       LEFT JOIN contracts c ON wh.contract_id = c.id
       WHERE wh.employee_id = $1
       ORDER BY wh.date DESC
@@ -411,7 +417,7 @@ exports.getStructuredWorkHoursForEmployee = async (req, res) => {
       structuredData[weekLabel][dayName] = {
         hours: Number(row.hours || 0),
         site: row.site || row.contract_site || '',
-        rate: Number(row.rate || 0)
+        rate: Number(row.hourly_rate || 0)
       };
     });
     
