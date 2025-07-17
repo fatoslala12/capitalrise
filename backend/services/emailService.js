@@ -16,25 +16,25 @@ const generateInvoicePDF = async (invoice, contract) => {
     y -= size + 8;
   };
 
-  drawText(`🧾 FATURË`, 22, rgb(0.2,0.2,0.7));
+  drawText(`FATURA`, 22, rgb(0.2,0.2,0.7));
   drawText(`Kontrata #${contract.contract_number} – ${contract.site_name}`, 14);
   drawText(`Data: ${invoice.date}`);
   drawText(`Kompania: ${contract.company}`);
   drawText(`Adresa: ${contract.address || 'N/A'}`);
-  drawText(`Përshkrimi: ${invoice.description || 'N/A'}`);
+  drawText(`Pershkrimi: ${invoice.description || 'N/A'}`);
   y -= 10;
   drawText('---------------------------------------------', 10);
-  drawText('Përshkrimi   Shifts   Rate   Shuma', 12, rgb(0.1,0.1,0.1));
+  drawText('Pershkrimi   Shifts   Rate   Shuma', 12, rgb(0.1,0.1,0.1));
   (invoice.items || []).forEach(item => {
     drawText(`${item.description || ''}   ${item.shifts || ''}   £${item.rate || '0.00'}   £${item.amount ? item.amount.toFixed(2) : '0.00'}`, 12);
   });
   y -= 10;
   drawText('---------------------------------------------', 10);
-  drawText(`Të tjera: £${invoice.other || '0.00'}`);
+  drawText(`Te tjera: £${invoice.other || '0.00'}`);
   drawText(`TVSH (20%): £${invoice.vat || '0.00'}`);
   drawText(`TOTALI: £${invoice.total || '0.00'}`, 16, rgb(0,0.5,0));
   y -= 20;
-  drawText('Falënderojmë për besimin tuaj!', 12, rgb(0.2,0.5,0.2));
+  drawText('Faleminderit per besimin tuaj!', 12, rgb(0.2,0.5,0.2));
   drawText('Alban Construction', 12, rgb(0.2,0.5,0.2));
 
   const pdfBytes = await pdfDoc.save();
