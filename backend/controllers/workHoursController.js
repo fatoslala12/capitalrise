@@ -514,16 +514,22 @@ exports.debugManagerAccess = async (req, res) => {
   }
 };
 
-// Endpoint për të kontrolluar nëse manager ka akses në WorkHours
+// Kontrollo aksesin e manager-it
 exports.checkManagerAccess = async (req, res) => {
   const { employee_id } = req.query;
   const client = await pool.connect();
   try {
     console.log('[DEBUG] Checking manager access for employee_id:', employee_id);
     
-    // Kontrollo nëse employee ekziston
+    // Kontrollo nëse employee ekziston dhe merr workplace-at nga employee_workplaces
     const empRes = await client.query(
-      'SELECT id, first_name, last_name, workplace FROM employees WHERE id = $1',
+      `SELECT e.id, e.first_name, e.last_name, 
+              array_agg(c.site_name) as workplace
+       FROM employees e
+       LEFT JOIN employee_workplaces ew ON e.id = ew.employee_id
+       LEFT JOIN contracts c ON ew.contract_id = c.id
+       WHERE e.id = $1
+       GROUP BY e.id, e.first_name, e.last_name`,
       [employee_id]
     );
     
@@ -551,9 +557,13 @@ exports.checkManagerAccess = async (req, res) => {
     
     // Gjej punonjësit që punojnë në site-t e menaxherit
     const coworkersRes = await client.query(
-      `SELECT DISTINCT e.id, e.first_name, e.last_name, e.workplace
+      `SELECT DISTINCT e.id, e.first_name, e.last_name, 
+              array_agg(c.site_name) as workplace
        FROM employees e 
-       WHERE e.workplace && $1::text[]
+       LEFT JOIN employee_workplaces ew ON e.id = ew.employee_id
+       LEFT JOIN contracts c ON ew.contract_id = c.id
+       WHERE c.site_name = ANY($1::text[])
+       GROUP BY e.id, e.first_name, e.last_name
        ORDER BY e.id`,
       [sites]
     );
