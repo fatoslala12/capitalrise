@@ -503,10 +503,12 @@ export default function WorkHours() {
               console.log("All weeks in hourData:", allWeeks);
               
               const pastWeeks = allWeeks.filter(weekLabel => {
-                const isValidFormat = /^\d{4}-\d{2}-\d{2} - \d{4}-\d{2}-\d{2}$/.test(weekLabel);
+                // Accept both date range format and numeric format for backward compatibility
+                const isValidDateRange = /^\d{4}-\d{2}-\d{2} - \d{4}-\d{2}-\d{2}$/.test(weekLabel);
+                const isValidNumeric = /^\d+$/.test(weekLabel);
                 const isNotCurrentWeek = weekLabel !== currentWeekLabel;
-                console.log(`Week ${weekLabel}: isValidFormat=${isValidFormat}, isNotCurrentWeek=${isNotCurrentWeek}`);
-                return isValidFormat && isNotCurrentWeek;
+                console.log(`Week ${weekLabel}: isValidDateRange=${isValidDateRange}, isValidNumeric=${isValidNumeric}, isNotCurrentWeek=${isNotCurrentWeek}`);
+                return (isValidDateRange || isValidNumeric) && isNotCurrentWeek;
               });
               
               console.log("Filtered past weeks:", pastWeeks);

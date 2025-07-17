@@ -216,28 +216,28 @@ export default function WorkHoursTable({
                 {/* Totali */}
                 <div className="text-center">
                   <div className="font-bold text-gray-900 bg-gray-100 rounded-lg px-3 py-2">
-                    {calc.total ? calc.total.toFixed(2) : '0.00'}
+                    {calc.total && !isNaN(calc.total) ? calc.total.toFixed(2) : '0.00'}
                   </div>
                 </div>
                 
                 {/* Bruto */}
                 <div className="text-center">
                   <div className="font-semibold text-green-700 bg-green-100 rounded-lg px-3 py-2">
-                    £{calc.bruto ? calc.bruto.toFixed(2) : '0.00'}
+                    £{calc.bruto && !isNaN(calc.bruto) ? calc.bruto.toFixed(2) : '0.00'}
                   </div>
                 </div>
                 
                 {/* TVSH */}
                 <div className="text-center">
                   <div className="font-semibold text-yellow-700 bg-yellow-100 rounded-lg px-3 py-2">
-                    £{calc.tvsh ? calc.tvsh.toFixed(2) : '0.00'}
+                    £{calc.tvsh && !isNaN(calc.tvsh) ? calc.tvsh.toFixed(2) : '0.00'}
                   </div>
                 </div>
                 
                 {/* Neto */}
                 <div className="text-center">
                   <div className="font-semibold text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
-                    £{calc.neto ? calc.neto.toFixed(2) : '0.00'}
+                    £{calc.neto && !isNaN(calc.neto) ? calc.neto.toFixed(2) : '0.00'}
                   </div>
                 </div>
                 
@@ -286,7 +286,7 @@ export default function WorkHoursTable({
                           onChange={e => onChange(calc.emp.id, day, "site", e.target.value)}
                           disabled={readOnly}
                         >
-                          <option value="">Zgjidh vendin</option>
+                          <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? "Zgjidh vendin" : "Pushim"}</option>
                           {calc.empSites.map(site => (
                             <option key={site} value={site}>{site}</option>
                           ))}
@@ -304,19 +304,19 @@ export default function WorkHoursTable({
             <div className="grid grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-lg text-gray-700">📊 Total Orë</div>
-                <div className="text-2xl text-gray-900">{weekTotals.totalHours ? weekTotals.totalHours.toFixed(2) : '0.00'}</div>
+                <div className="text-2xl text-gray-900">{weekTotals.totalHours && !isNaN(weekTotals.totalHours) ? weekTotals.totalHours.toFixed(2) : '0.00'}</div>
               </div>
               <div>
                 <div className="text-lg text-green-700">💷 Total Bruto</div>
-                <div className="text-2xl text-green-700">£{weekTotals.totalBruto ? weekTotals.totalBruto.toFixed(2) : '0.00'}</div>
+                <div className="text-2xl text-green-700">£{weekTotals.totalBruto && !isNaN(weekTotals.totalBruto) ? weekTotals.totalBruto.toFixed(2) : '0.00'}</div>
               </div>
               <div>
                 <div className="text-lg text-yellow-700">📋 Total TVSH</div>
-                <div className="text-2xl text-yellow-700">£{weekTotals.totalTVSH ? weekTotals.totalTVSH.toFixed(2) : '0.00'}</div>
+                <div className="text-2xl text-yellow-700">£{weekTotals.totalTVSH && !isNaN(weekTotals.totalTVSH) ? weekTotals.totalTVSH.toFixed(2) : '0.00'}</div>
               </div>
               <div>
                 <div className="text-lg text-blue-700">💰 Total Neto</div>
-                <div className="text-2xl text-blue-700">£{weekTotals.totalNeto ? weekTotals.totalNeto.toFixed(2) : '0.00'}</div>
+                <div className="text-2xl text-blue-700">£{weekTotals.totalNeto && !isNaN(weekTotals.totalNeto) ? weekTotals.totalNeto.toFixed(2) : '0.00'}</div>
               </div>
             </div>
           </div>
@@ -384,10 +384,10 @@ export default function WorkHoursTable({
                   </td>
                 ))}
                 <td className="py-2 px-2 font-semibold text-blue-900 bg-blue-50 rounded-xl">£{calc.rate.toFixed(2)}</td>
-                <td className="py-2 px-2 font-bold text-gray-900 bg-gray-50 rounded-xl">{calc.total ? calc.total.toFixed(2) : '0.00'}</td>
-                <td className="py-2 px-2 font-semibold text-green-700 bg-green-50 rounded-xl">£{calc.bruto ? calc.bruto.toFixed(2) : '0.00'}</td>
-                <td className="py-2 px-2 font-semibold text-yellow-700 bg-yellow-50 rounded-xl">£{calc.tvsh ? calc.tvsh.toFixed(2) : '0.00'}</td>
-                <td className="py-2 px-2 font-semibold text-blue-700 bg-blue-50 rounded-xl">£{calc.neto ? calc.neto.toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-2 font-bold text-gray-900 bg-gray-50 rounded-xl">{calc.total && !isNaN(calc.total) ? calc.total.toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-2 font-semibold text-green-700 bg-green-50 rounded-xl">£{calc.bruto && !isNaN(calc.bruto) ? calc.bruto.toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-2 font-semibold text-yellow-700 bg-yellow-50 rounded-xl">£{calc.tvsh && !isNaN(calc.tvsh) ? calc.tvsh.toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-2 font-semibold text-blue-700 bg-blue-50 rounded-xl">£{calc.neto && !isNaN(calc.neto) ? calc.neto.toFixed(2) : '0.00'}</td>
                 {showPaymentControl && (
                   <td className="py-2 px-2">
                     <input
@@ -415,10 +415,10 @@ export default function WorkHoursTable({
                 <td key={Math.random()} className="py-2 px-2"></td>
               ))}
               <td className="py-2 px-2 font-bold text-blue-900 bg-blue-100 rounded-xl">-</td>
-              <td className="py-2 px-2 font-bold text-gray-900 bg-gray-100 rounded-xl">{weekTotals.totalHours ? weekTotals.totalHours.toFixed(2) : '0.00'}</td>
-              <td className="py-2 px-2 font-bold text-green-700 bg-green-100 rounded-xl">£{weekTotals.totalBruto ? weekTotals.totalBruto.toFixed(2) : '0.00'}</td>
-              <td className="py-2 px-2 font-bold text-yellow-700 bg-yellow-100 rounded-xl">£{weekTotals.totalTVSH ? weekTotals.totalTVSH.toFixed(2) : '0.00'}</td>
-              <td className="py-2 px-2 font-bold text-blue-700 bg-blue-100 rounded-xl">£{weekTotals.totalNeto ? weekTotals.totalNeto.toFixed(2) : '0.00'}</td>
+              <td className="py-2 px-2 font-bold text-gray-900 bg-gray-100 rounded-xl">{weekTotals.totalHours && !isNaN(weekTotals.totalHours) ? weekTotals.totalHours.toFixed(2) : '0.00'}</td>
+              <td className="py-2 px-2 font-bold text-green-700 bg-green-100 rounded-xl">£{weekTotals.totalBruto && !isNaN(weekTotals.totalBruto) ? weekTotals.totalBruto.toFixed(2) : '0.00'}</td>
+              <td className="py-2 px-2 font-bold text-yellow-700 bg-yellow-100 rounded-xl">£{weekTotals.totalTVSH && !isNaN(weekTotals.totalTVSH) ? weekTotals.totalTVSH.toFixed(2) : '0.00'}</td>
+              <td className="py-2 px-2 font-bold text-blue-700 bg-blue-100 rounded-xl">£{weekTotals.totalNeto && !isNaN(weekTotals.totalNeto) ? weekTotals.totalNeto.toFixed(2) : '0.00'}</td>
               {showPaymentControl && <td className="py-2 px-2"></td>}
               {showPaymentControl && <td className="py-2 px-2"></td>}
             </tr>
