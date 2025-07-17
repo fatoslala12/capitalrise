@@ -68,6 +68,8 @@ export default function ContractDetails() {
     onCancel: null
   });
   
+  const [showAddModal, setShowAddModal] = useState(false);
+  
   const token = localStorage.getItem("token");
 
   // Confirmation dialog functions
@@ -89,6 +91,15 @@ export default function ContractDetails() {
 
   const hideConfirmDialog = useCallback(() => {
     setConfirmDialog({ show: false, title: "", message: "", onConfirm: null, onCancel: null });
+  }, []);
+
+  // Modal functions
+  const openAddModal = useCallback(() => {
+    setShowAddModal(true);
+  }, []);
+
+  const closeAddModal = useCallback(() => {
+    setShowAddModal(false);
   }, []);
 
   // Merr kontratën, faturat dhe orët e punës nga backend
@@ -136,6 +147,25 @@ export default function ContractDetails() {
     };
     fetchData();
   }, [contract_number, token]);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && showAddModal) {
+        closeAddModal();
+      }
+    };
+
+    if (showAddModal) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddModal]);
 
   // Ngarko dokument PDF
   const handleDocumentUpload = async (e) => {
@@ -308,6 +338,7 @@ export default function ContractDetails() {
       });
       
       alert("Fatura u ruajt me sukses!");
+      closeAddModal();
     } catch (err) {
       console.error("Error saving invoice:", err);
       alert("Gabim gjatë ruajtjes së faturës!");
@@ -728,41 +759,13 @@ export default function ContractDetails() {
             )}
           </div>
 
-          {/* Forma Fature */}
-          <div className="bg-gradient-to-br from-purple-100 via-white to-blue-100 p-10 rounded-3xl shadow-2xl mb-10 border-2 border-purple-200 animate-fade-in">
-            <h3 className="font-bold mb-6 text-2xl text-blue-900 flex items-center gap-3">
-              <span className="text-purple-700 text-3xl">🧾</span> Shto Faturë
-            </h3>
-            <input
-              placeholder="Përshkrimi i faturës"
-              className="p-4 border-2 border-blue-200 rounded-xl mb-4 w-full text-lg focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
-              value={newInvoice.description}
-              onChange={e => setNewInvoice({ ...newInvoice, description: e.target.value })}
-            />
-            {newInvoice.items.map((item, index) => (
-              <div key={index} className="grid grid-cols-4 gap-4 mb-3">
-                <input placeholder="Përshkrimi" className="p-3 border-2 border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-300 transition-all" value={item.description} onChange={(e) => handleItemChange(index, "description", e.target.value)} />
-                <input type="number" placeholder="Shifts" className="p-3 border-2 border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-300 transition-all" value={item.shifts} onChange={(e) => handleItemChange(index, "shifts", e.target.value)} />
-                <input type="number" placeholder="Rate" className="p-3 border-2 border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-300 transition-all" value={item.rate} onChange={(e) => handleItemChange(index, "rate", e.target.value)} />
-                <input disabled className="p-3 border-2 border-gray-200 rounded-xl bg-gray-100 text-base" value={`£${item.amount.toFixed(2)}`} />
-              </div>
-            ))}
-            <button onClick={handleAddItem} className="text-base text-blue-700 mb-4 font-semibold hover:underline transition-all">➕ Rresht i Ri</button>
-            <div className="flex items-center gap-6 mt-4">
-              <input type="number" placeholder="Të tjera" className="border-2 border-blue-200 py-3 px-4 text-center align-middle rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all" value={newInvoice.other} onChange={(e) => setNewInvoice({ ...newInvoice, other: e.target.value })} />
-              <span className="font-bold text-xl">Total: <span className="text-purple-700">£{grandTotal.toFixed(2)}</span></span>
-            </div>
-            <button onClick={handleSaveInvoice} className="mt-8 bg-gradient-to-r from-green-400 to-blue-500 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-3 text-lg shadow-lg hover:from-blue-600 hover:to-green-600 transition-all" disabled={loadingStates.saveInvoice}>
-              {loadingStates.saveInvoice ? (
-                <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <>
-                  <span className="text-2xl">💾</span> Ruaj Faturën
-                </>
-              )}
+          {/* Butoni për shtim fature */}
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={openAddModal}
+              className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
+            >
+              <span className="text-xl">🧾</span> Shto Faturë
             </button>
           </div>
 
@@ -841,24 +844,21 @@ export default function ContractDetails() {
                             <td className="py-3 px-2 align-middle flex justify-center gap-2">
                               <button 
                                 onClick={() => setInvoiceToPrint(inv)} 
-                                className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-base font-semibold shadow hover:from-purple-600 hover:to-blue-600 transition-all flex items-center gap-1"
+                                className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl"
+                                title="Shiko / Printo"
                               >
-                                🖨 <span className="hidden md:inline">Shiko / Printo</span>
+                                🖨
                               </button>
                               <button 
                                 onClick={() => handleDeleteInvoice(inv.id)} 
                                 disabled={loadingStates.deleteInvoice[inv.id]}
-                                className="text-base text-red-600 ml-2 bg-red-100 px-3 py-2 rounded-lg font-semibold shadow hover:bg-red-200 transition-all flex items-center gap-1 disabled:opacity-50"
+                                className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl disabled:opacity-50"
+                                title="Fshi"
                               >
                                 {loadingStates.deleteInvoice[inv.id] ? (
-                                  <>
-                                    <div className="w-4 h-4 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                                    <span className="hidden md:inline">Duke fshirë...</span>
-                                  </>
+                                  <div className="w-4 h-4 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
                                 ) : (
-                                  <>
-                                    🗑 <span className="hidden md:inline">Fshi</span>
-                                  </>
+                                  '🗑️'
                                 )}
                               </button>
                             </td>
@@ -956,6 +956,119 @@ export default function ContractDetails() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Modal për shtimin e faturës */}
+      {showAddModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 pt-8"
+          onClick={closeAddModal}
+        >
+          <div 
+            className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
+                  <span className="text-3xl">🧾</span> Shto Faturë të Re
+                </h3>
+                <button
+                  onClick={closeAddModal}
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                <input
+                  placeholder="Përshkrimi i faturës"
+                  className="p-4 border-2 border-blue-200 rounded-xl w-full text-lg focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
+                  value={newInvoice.description}
+                  onChange={e => setNewInvoice({ ...newInvoice, description: e.target.value })}
+                />
+                
+                {newInvoice.items.map((item, index) => (
+                  <div key={index} className="grid grid-cols-4 gap-4">
+                    <input 
+                      placeholder="Përshkrimi" 
+                      className="p-3 border-2 border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-300 transition-all" 
+                      value={item.description} 
+                      onChange={(e) => handleItemChange(index, "description", e.target.value)} 
+                    />
+                    <input 
+                      type="number" 
+                      placeholder="Shifts" 
+                      className="p-3 border-2 border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-300 transition-all" 
+                      value={item.shifts} 
+                      onChange={(e) => handleItemChange(index, "shifts", e.target.value)} 
+                    />
+                    <input 
+                      type="number" 
+                      placeholder="Rate" 
+                      className="p-3 border-2 border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-300 transition-all" 
+                      value={item.rate} 
+                      onChange={(e) => handleItemChange(index, "rate", e.target.value)} 
+                    />
+                    <input 
+                      disabled 
+                      className="p-3 border-2 border-gray-200 rounded-xl bg-gray-100 text-base" 
+                      value={`£${item.amount.toFixed(2)}`} 
+                    />
+                  </div>
+                ))}
+                
+                <button 
+                  onClick={handleAddItem} 
+                  className="text-base text-blue-700 font-semibold hover:underline transition-all"
+                >
+                  ➕ Rresht i Ri
+                </button>
+                
+                <div className="flex items-center gap-6">
+                  <input 
+                    type="number" 
+                    placeholder="Të tjera" 
+                    className="border-2 border-blue-200 py-3 px-4 text-center align-middle rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all" 
+                    value={newInvoice.other} 
+                    onChange={(e) => setNewInvoice({ ...newInvoice, other: e.target.value })} 
+                  />
+                  <span className="font-bold text-xl">
+                    Total: <span className="text-purple-700">£{grandTotal.toFixed(2)}</span>
+                  </span>
+                </div>
+                
+                <div className="flex gap-4 mt-6">
+                  <button 
+                    onClick={handleSaveInvoice} 
+                    className="flex-1 bg-gradient-to-r from-green-400 to-blue-500 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center disabled:opacity-50 disabled:cursor-not-allowed" 
+                    disabled={loadingStates.saveInvoice}
+                  >
+                    {loadingStates.saveInvoice ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Duke ruajtur...
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-2xl">💾</span> Ruaj Faturën
+                      </>
+                    )}
+                  </button>
+                  
+                  <button 
+                    type="button"
+                    onClick={closeAddModal}
+                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                  >
+                    <span className="text-2xl">✕</span> Anulo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
