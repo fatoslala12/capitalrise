@@ -1,24 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useNotifications } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Search, Filter, Trash2, Check, ArrowLeft } from 'lucide-react';
 
 const NotificationsPage = () => {
-  const { 
-    notifications, 
-    loading, 
-    markAsRead, 
-    deleteNotification, 
-    markAllAsRead,
-    fetchNotifications 
-  } = useNotifications();
-  
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterRead, setFilterRead] = useState('all');
+  
+  // Të dhëna të thjeshta për testim - pa kontekst
+  const [notifications] = useState([]);
+  const [loading] = useState(false);
 
   // Filtro njoftimet
   const filteredNotifications = notifications.filter(notification => {
@@ -90,10 +84,6 @@ const NotificationsPage = () => {
   };
 
   const handleNotificationClick = (notification) => {
-    if (!notification.isRead) {
-      markAsRead(notification.id);
-    }
-    
     // Navigo në faqen e duhur bazuar në rolin e përdoruesit
     const basePath = `/${user?.role}`;
     switch (notification.type) {
@@ -150,7 +140,7 @@ const NotificationsPage = () => {
         
         {unreadCount > 0 && (
           <button
-            onClick={markAllAsRead}
+            onClick={() => {}}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
             Shëno të gjitha si të lexuara
@@ -262,7 +252,7 @@ const NotificationsPage = () => {
                   <div className="flex items-center gap-2">
                     {!notification.isRead && (
                       <button
-                        onClick={() => markAsRead(notification.id)}
+                        onClick={() => {}}
                         className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors"
                         title="Shëno si të lexuar"
                       >
@@ -278,7 +268,7 @@ const NotificationsPage = () => {
                     </button>
                     
                     <button
-                      onClick={() => deleteNotification(notification.id)}
+                      onClick={() => {}}
                       className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
                       title="Fshi njoftimin"
                     >
