@@ -36,11 +36,16 @@ class NotificationService {
     try {
       if (global.notificationStreams && global.notificationStreams.has(userId)) {
         const response = global.notificationStreams.get(userId);
-        response.write(`data: ${JSON.stringify(notification)}\n\n`);
-        console.log(`Real-time notification sent to user ${userId}: ${notification.title}`);
+        response.write(`data: ${JSON.stringify({ 
+          type: 'notification', 
+          notification: notification 
+        })}\n\n`);
+        console.log(`[SUCCESS] Real-time notification sent to user ${userId}: ${notification.title}`);
+      } else {
+        console.log(`[DEBUG] No active stream for user ${userId}`);
       }
     } catch (error) {
-      console.error('Error sending real-time notification:', error);
+      console.error('[ERROR] Error sending real-time notification:', error);
     }
   }
 
@@ -274,7 +279,19 @@ class NotificationService {
         'UPDATE notifications SET is_read = TRUE WHERE id = $1 AND user_id = $2 RETURNING *',
         [notificationId, userId]
       );
-      return result.rows[0];
+      
+      if (result.rows.length > 0) {
+        const notification = result.rows[0];
+        
+        // Dërgo real-time update për mark as read
+        this.sendRealTimeNotification(userId, {
+          ...notification,
+          action: 'markAsRead'
+        });
+        
+        return notification;
+      }
+      return null;
     } catch (error) {
       console.error('Error marking notification as read:', error);
       throw error;
@@ -302,7 +319,19 @@ class NotificationService {
         'DELETE FROM notifications WHERE id = $1 AND user_id = $2 RETURNING *',
         [notificationId, userId]
       );
-      return result.rows[0];
+      
+      if (result.rows.length > 0) {
+        const notification = result.rows[0];
+        
+        // Dërgo real-time update për delete
+        this.sendRealTimeNotification(userId, {
+          ...notification,
+          action: 'delete'
+        });
+        
+        return notification;
+      }
+      return null;
     } catch (error) {
       console.error('Error deleting notification:', error);
       throw error;

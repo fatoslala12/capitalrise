@@ -16,15 +16,13 @@ const NotificationBell = () => {
   
 
 
-  // Real-time notification listener
+  // Real-time notification listener - tani nga NotificationContext
   useEffect(() => {
     if (!user) return;
 
-    // Krijo EventSource për real-time notifications
-    const eventSource = new EventSource(`/api/notifications/stream?userId=${user.id}`);
-    
-    eventSource.onmessage = (event) => {
-      const notification = JSON.parse(event.data);
+    // Dëgjo për njoftime të reja nga NotificationContext
+    const handleNewNotification = (event) => {
+      const notification = event.detail;
       
       // Shfaq toast notification
       setNewNotification(notification);
@@ -46,13 +44,11 @@ const NotificationBell = () => {
       }, 5000);
     };
 
-    eventSource.onerror = (error) => {
-      console.error('EventSource error:', error);
-      eventSource.close();
-    };
+    // Shto listener për njoftime të reja
+    window.addEventListener('newNotification', handleNewNotification);
 
     return () => {
-      eventSource.close();
+      window.removeEventListener('newNotification', handleNewNotification);
     };
   }, [user]);
 
