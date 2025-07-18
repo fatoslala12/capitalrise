@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { Bell, X, Check, Trash2 } from 'lucide-react';
 
@@ -9,9 +10,15 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   
-  // Të dhëna të thjeshta për testim
-  const [notifications] = useState([]);
-  const [unreadCount] = useState(0);
+  // Përdor kontekstin e njoftimeve
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    deleteNotification, 
+    markAllAsRead,
+    loading 
+  } = useNotifications();
 
   // Nëse përdoruesi nuk është i loguar, mos shfaq asgjë
   if (!user) {
@@ -31,6 +38,9 @@ const NotificationBell = () => {
   }, []);
 
   const handleNotificationClick = (notification) => {
+    if (!notification.isRead) {
+      markAsRead(notification.id);
+    }
     setIsOpen(false);
     
     // Navigo në faqen e duhur bazuar në tipin e njoftimit dhe rolin e përdoruesit
@@ -109,11 +119,12 @@ const NotificationBell = () => {
       {/* Bell Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+        className="relative p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 group"
+        title="Njoftimet"
       >
-        <Bell size={20} />
+        <Bell size={20} className="group-hover:scale-110 transition-transform duration-200" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-pulse">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -121,14 +132,30 @@ const NotificationBell = () => {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-96 overflow-hidden animate-in slide-in-from-top-2 duration-200">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h3 className="font-semibold text-gray-900">Njoftimet</h3>
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
             <div className="flex items-center gap-2">
+              <Bell size={18} className="text-blue-600" />
+              <h3 className="font-semibold text-gray-900">Njoftimet</h3>
+              {unreadCount > 0 && (
+                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button
+                  onClick={markAllAsRead}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-100 px-2 py-1 rounded transition-colors"
+                >
+                  Shëno të gjitha
+                </button>
+              )}
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded transition-colors"
               >
                 <X size={16} />
               </button>
@@ -137,33 +164,71 @@ const NotificationBell = () => {
 
           {/* Notifications List */}
           <div className="max-h-64 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
-                Nuk ka njoftime
+            {loading ? (
+              <div className="p-6 text-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                <p className="text-sm text-gray-500">Duke ngarkuar...</p>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="p-6 text-center">
+                <Bell size={32} className="text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-500 font-medium">Nuk ka njoftime</p>
+                <p className="text-xs text-gray-400 mt-1">Ju do të njoftoheni kur të ketë diçka të re</p>
               </div>
             ) : (
               notifications.slice(0, 5).map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                    !notification.isRead ? 'bg-blue-50' : ''
+                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-all duration-200 group ${
+                    !notification.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
                   }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-lg">{getNotificationIcon(notification.type)}</span>
+                    <div className={`p-2 rounded-lg ${!notification.isRead ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                      <span className="text-lg">{getNotificationIcon(notification.type)}</span>
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${
-                        !notification.isRead ? 'text-gray-900' : 'text-gray-700'
-                      }`}>
-                        {notification.title}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className={`text-sm font-medium ${
+                          !notification.isRead ? 'text-gray-900' : 'text-gray-700'
+                        }`}>
+                          {notification.title}
+                        </p>
+                        {!notification.isRead && (
+                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 mb-1 line-clamp-2">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-400">
                         {formatTimeAgo(notification.createdAt)}
                       </p>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {!notification.isRead && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(notification.id);
+                          }}
+                          className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
+                          title="Shëno si të lexuar"
+                        >
+                          <Check size={14} />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notification.id);
+                        }}
+                        className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                        title="Fshi njoftimin"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -173,10 +238,10 @@ const NotificationBell = () => {
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="p-3 border-t border-gray-200">
+            <div className="p-3 border-t border-gray-100 bg-gray-50">
               <button
                 onClick={handleViewAll}
-                className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-100 py-2 rounded-lg transition-colors"
               >
                 Shiko të gjitha njoftimet ({notifications.length})
               </button>
