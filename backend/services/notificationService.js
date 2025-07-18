@@ -60,33 +60,42 @@ class NotificationService {
       const { data, error } = await resend.emails.send({
         from: 'Alban Construction <onboarding@resend.dev>',
         to: [user.email],
-        subject: `🔔 Njoftim i ri - ${title}`,
+        subject: `Ju keni një njoftim të ri në Alban Construction`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px;">
             <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
               <div style="text-align: center; margin-bottom: 30px;">
                 <h1 style="color: #2563eb; margin: 0; font-size: 24px;">🏗️ Alban Construction</h1>
-                <p style="color: #666; margin: 10px 0 0 0;">Sistemi i Menaxhimit të Ndërtimit</p>
               </div>
               
               <div style="background-color: #f1f5f9; border-left: 4px solid #2563eb; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                  <span style="font-size: 24px; margin-right: 10px;">${getNotificationIcon(type)}</span>
-                  <h2 style="margin: 0; color: #1e293b; font-size: 18px;">${title}</h2>
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <span style="font-size: 32px; display: block; margin-bottom: 10px;">📢</span>
+                  <h2 style="margin: 0; color: #1e293b; font-size: 18px;">Ju keni një njoftim të ri në sistem!</h2>
                 </div>
-                <p style="margin: 0; color: #475569; line-height: 1.6;">${message}</p>
+                
+                <div style="background-color: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                  <p style="margin: 0 0 10px 0; color: #1e293b; font-weight: bold;">Titulli: ${title}</p>
+                  <p style="margin: 0; color: #475569; line-height: 1.6;">Mesazhi: ${message}</p>
+                </div>
               </div>
               
               <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
                 <p style="color: #64748b; margin: 0; font-size: 14px;">
-                  Mirë se vini, ${user.first_name || user.email}
+                  Mirë se vini, ${user.first_name || user.email},
                 </p>
                 <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
-                  Ky email u dërgua automatikisht nga sistemi i njoftimeve.
+                  Ky është një njoftim automatik i dërguar nga sistemi ynë i menaxhimit.
                 </p>
-                <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
-                  Për të parë të gjitha njoftimet, vizitoni aplikacionin tuaj.
+                <p style="color: #64748b; margin: 15px 0 0 0; font-size: 12px;">
+                  Për të parë të gjitha njoftimet dhe detajet e mëtejshme, ju lutemi:
                 </p>
+                <div style="margin-top: 15px;">
+                  <a href="https://building-system-seven.vercel.app/admin/notifications" 
+                     style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                    🔗 Kliko këtu për të aksesuar njoftimin
+                  </a>
+                </div>
               </div>
             </div>
           </div>

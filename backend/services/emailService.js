@@ -55,26 +55,45 @@ const sendInvoiceEmail = async (invoice, contract, recipientEmail) => {
     const { data, error } = await resend.emails.send({
       from: 'Alban Construction <onboarding@resend.dev>',
       to: [recipientEmail],
-      subject: `Fatura #${invoice.invoice_number} - ${contract.site_name}`,
+      subject: `Faturë për Punimet e Kryera – ${contract.site_name} – Kontrata #${contract.contract_number}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2563eb;">🧾 FATURË</h1>
-            <p style="color: #666;">Kontrata #${contract.contract_number} – ${contract.site_name}</p>
-          </div>
-          
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h3 style="margin-top: 0;">Detajet e Faturës</h3>
-            <p><strong>Numri i Faturës:</strong> ${invoice.invoice_number}</p>
-            <p><strong>Data:</strong> ${invoice.date}</p>
-            <p><strong>Kompania:</strong> ${contract.company}</p>
-            <p><strong>Përshkrimi:</strong> ${invoice.description || 'N/A'}</p>
-            <p><strong>Totali:</strong> £${invoice.total || '0.00'}</p>
-          </div>
-          
-          <div style="text-align: center; margin-top: 30px;">
-            <p style="color: #666;">Fatura është bashkëngjitur në këtë email.</p>
-            <p style="color: #666;">Falënderojmë për besimin tuaj!</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px;">
+          <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2563eb; margin: 0; font-size: 24px;">🏗️ Alban Construction</h1>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+              <p style="color: #475569; font-size: 16px; margin: 0;">Përshëndetje,</p>
+              <p style="color: #475569; font-size: 16px; margin: 10px 0 0 0;">
+                Ju dërgojmë më poshtë detajet e faturës të lëshuar për punimet e kryera në kuadër të kontratës #${contract.contract_number} – ${contract.site_name}:
+              </p>
+            </div>
+            
+            <div style="background-color: #f1f5f9; border-left: 4px solid #2563eb; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+              <div style="text-align: center; margin-bottom: 15px;">
+                <span style="font-size: 24px;">🧾</span>
+                <h3 style="margin: 10px 0 0 0; color: #1e293b;">Detajet e Faturës:</h3>
+              </div>
+              <div style="background-color: white; padding: 15px; border-radius: 5px;">
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Numri i Faturës:</strong> ${invoice.invoice_number}</p>
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Data e Lëshimit:</strong> ${invoice.date}</p>
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Kompania:</strong> ${contract.company}</p>
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Përshkrimi i Punimeve:</strong> ${invoice.description || 'N/A'}</p>
+                <p style="margin: 0; color: #475569;"><strong>• Shuma Totale:</strong> £${invoice.total || '0.00'}</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+              <p style="color: #64748b; margin: 0 0 10px 0; font-size: 14px;">📎 Fatura është bashkëngjitur në këtë email.</p>
+              <p style="color: #64748b; margin: 0; font-size: 14px;">
+                Faleminderit për bashkëpunimin dhe besimin tuaj të vazhdueshëm.
+              </p>
+              <p style="color: #64748b; margin: 10px 0 0 0; font-size: 14px;">
+                Me respekt,<br>
+                Alban Construction Ltd
+              </p>
+            </div>
           </div>
         </div>
       `,
@@ -110,29 +129,60 @@ const sendContractDetailsEmail = async (contract, recipientEmail) => {
     const { data, error } = await resend.emails.send({
       from: 'Alban Construction <onboarding@resend.dev>',
       to: [recipientEmail],
-      subject: `Detajet e Kontratës #${contract.contract_number} - ${contract.site_name}`,
+      subject: `Informacion mbi Kontratën #${contract.contract_number} – ${contract.site_name}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2563eb;">📋 DETAJET E KONTRATËS</h1>
-            <p style="color: #666;">Kontrata #${contract.contract_number}</p>
-          </div>
-          
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h3 style="margin-top: 0;">Informacioni i Kontratës</h3>
-            <p><strong>Emri i Kompanisë:</strong> ${contract.company}</p>
-            <p><strong>Vendodhja:</strong> ${contract.site_name}</p>
-            <p><strong>Vlera e Kontratës:</strong> £${contract.contract_value || '0.00'}</p>
-            <p><strong>Data e Fillimit:</strong> ${contract.start_date || 'N/A'}</p>
-            <p><strong>Data e Mbarimit:</strong> ${contract.end_date || 'N/A'}</p>
-            <p><strong>Statusi:</strong> ${contract.status || 'N/A'}</p>
-            <p><strong>Adresa:</strong> ${contract.address || 'N/A'}</p>
-            <p><strong>Përshkrimi:</strong> ${contract.description || 'N/A'}</p>
-          </div>
-          
-          <div style="text-align: center; margin-top: 30px;">
-            <p style="color: #666;">Faleminderit për bashkëpunimin!</p>
-            <p style="color: #666;">Alban Construction Ltd</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px;">
+          <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2563eb; margin: 0; font-size: 24px;">🏗️ Alban Construction</h1>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+              <p style="color: #475569; font-size: 16px; margin: 0;">Përshëndetje,</p>
+              <p style="color: #475569; font-size: 16px; margin: 10px 0 0 0;">
+                Ju informojmë se është lidhur me sukses kontrata e re me detajet si më poshtë:
+              </p>
+            </div>
+            
+            <div style="background-color: #f1f5f9; border-left: 4px solid #2563eb; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+              <div style="text-align: center; margin-bottom: 15px;">
+                <span style="font-size: 24px;">🧾</span>
+                <h3 style="margin: 10px 0 0 0; color: #1e293b;">Informacion mbi Kontratën:</h3>
+              </div>
+              <div style="background-color: white; padding: 15px; border-radius: 5px;">
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Numri i Kontratës:</strong> #${contract.contract_number}</p>
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Emri i Kompanisë:</strong> ${contract.company}</p>
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Vendodhja e Punimeve:</strong> ${contract.site_name}</p>
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Vlera Totale e Kontratës:</strong> £${contract.contract_value || '0.00'}</p>
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Data e Fillimit:</strong> ${contract.start_date || 'N/A'}</p>
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Data e Mbarimit:</strong> ${contract.finish_date || 'N/A'}</p>
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Statusi Aktual:</strong> ${contract.status || 'N/A'}</p>
+                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Adresa:</strong> ${contract.address || 'N/A'}</p>
+                <p style="margin: 0; color: #475569;"><strong>• Përshkrim i Punimeve:</strong> ${contract.description || 'N/A'}</p>
+              </div>
+            </div>
+            
+            <div style="background-color: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+              <p style="color: #0c4a6e; margin: 0; font-size: 14px; line-height: 1.6;">
+                Kjo kontratë shënon një tjetër hap të rëndësishëm në ndërtimin e marrëdhënieve të qëndrueshme dhe profesionale midis palëve.
+              </p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+              <p style="color: #166534; margin: 0; font-size: 14px; line-height: 1.6;">
+                Ne mbetemi të angazhuar për realizimin e suksesshëm të projektit, duke ofruar cilësi të lartë, respektim të afateve, dhe bashkëpunim të hapur në çdo fazë të zbatimit.
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+              <p style="color: #64748b; margin: 0; font-size: 14px;">
+                Faleminderit për besimin dhe bashkëpunimin tuaj të çmuar.
+              </p>
+              <p style="color: #64748b; margin: 10px 0 0 0; font-size: 14px;">
+                Me respekt,<br>
+                Alban Construction Ltd
+              </p>
+            </div>
           </div>
         </div>
       `

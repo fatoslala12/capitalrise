@@ -29,20 +29,18 @@ const NotificationsPage = () => {
   // Shëno njoftimin si të lexuar
   const markAsRead = async (notificationId) => {
     try {
-      await api.patch(`/api/notifications/${notificationId}/read`);
+      // Përditëso UI menjëherë
       setNotifications(prev => 
         prev.map(n => 
           n.id === notificationId ? { ...n, isRead: true } : n
         )
       );
+      
+      // Pastaj dërgo request në backend
+      await api.patch(`/api/notifications/${notificationId}/read`);
     } catch (error) {
       console.error('Gabim në shënimin si të lexuar:', error);
-      // Nëse ka gabim, përditëso lokal state për UI
-      setNotifications(prev => 
-        prev.map(n => 
-          n.id === notificationId ? { ...n, isRead: true } : n
-        )
-      );
+      // Nëse ka gabim, mos kthe mbrapa state-in
     }
   };
 
