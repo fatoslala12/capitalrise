@@ -529,12 +529,339 @@ class NotificationService {
   // Ekzekuto të gjitha kontrollet e reminder-eve
   static async runReminderChecks() {
     try {
+      // Kontrollo për admin
       await this.checkUnpaidWorkHours();
       await this.checkUnpaidInvoices();
       await this.checkUnpaidExpenses();
+      
+      // Kontrollo për manager
+      await this.checkPendingApprovals();
+      
+      // Kontrollo për user
+      await this.checkIncompleteTasks();
+      
       console.log('Reminder checks completed successfully');
     } catch (error) {
       console.error('Error running reminder checks:', error);
+    }
+  }
+
+  // Njoftimet për ADMIN - Contract management
+  static async notifyAdminContractCreated(contractName, contractId) {
+    try {
+      const adminUsers = await pool.query(
+        "SELECT id FROM users WHERE role = 'admin'"
+      );
+      
+      const title = '📄 Kontratë e re u krijua';
+      const message = `Kontrata "${contractName}" u krijua dhe është gati për caktim`;
+
+      for (const user of adminUsers.rows) {
+        await this.createNotification(
+          user.id, 
+          title, 
+          message, 
+          'info', 
+          'contract', 
+          contractId, 
+          'contract'
+        );
+      }
+    } catch (error) {
+      console.error('Error notifying admin about contract creation:', error);
+    }
+  }
+
+  // Njoftimet për ADMIN - Employee management
+  static async notifyAdminEmployeeAdded(employeeName) {
+    try {
+      const adminUsers = await pool.query(
+        "SELECT id FROM users WHERE role = 'admin'"
+      );
+      
+      const title = '👷 Punonjës i ri u shtua';
+      const message = `Punonjësi "${employeeName}" u shtua në sistem`;
+
+      for (const user of adminUsers.rows) {
+        await this.createNotification(
+          user.id, 
+          title, 
+          message, 
+          'info', 
+          'employee'
+        );
+      }
+    } catch (error) {
+      console.error('Error notifying admin about employee addition:', error);
+    }
+  }
+
+  // Njoftimet për ADMIN - Payment processing
+  static async notifyAdminPaymentProcessed(amount, employeeName) {
+    try {
+      const adminUsers = await pool.query(
+        "SELECT id FROM users WHERE role = 'admin'"
+      );
+      
+      const title = '💰 Pagesa u procesua';
+      const message = `Pagesa prej £${amount} u procesua për punonjësin ${employeeName}`;
+
+      for (const user of adminUsers.rows) {
+        await this.createNotification(
+          user.id, 
+          title, 
+          message, 
+          'success', 
+          'payment'
+        );
+      }
+    } catch (error) {
+      console.error('Error notifying admin about payment processing:', error);
+    }
+  }
+
+  // Njoftimet për MANAGER - Task management
+  static async notifyManagerTaskAssigned(managerId, taskName, employeeName) {
+    try {
+      const title = '📝 Detyrë e re u caktua';
+      const message = `Detyra "${taskName}" u caktua për punonjësin ${employeeName}`;
+      
+      await this.createNotification(
+        managerId, 
+        title, 
+        message, 
+        'info', 
+        'task'
+      );
+    } catch (error) {
+      console.error('Error notifying manager about task assignment:', error);
+    }
+  }
+
+  // Njoftimet për MANAGER - Employee updates
+  static async notifyManagerEmployeeUpdate(managerId, employeeName, action) {
+    try {
+      const title = '👷 Përditësim i punonjësit';
+      const message = `Punonjësi ${employeeName} ${action}`;
+      
+      await this.createNotification(
+        managerId, 
+        title, 
+        message, 
+        'info', 
+        'employee'
+      );
+    } catch (error) {
+      console.error('Error notifying manager about employee update:', error);
+    }
+  }
+
+  // Njoftimet për MANAGER - Work hours submission
+  static async notifyManagerWorkHoursSubmitted(managerId, employeeName, hours) {
+    try {
+      const title = '⏰ Orët e punës u paraqitën';
+      const message = `Punonjësi ${employeeName} paraqiti ${hours} orë pune`;
+      
+      await this.createNotification(
+        managerId, 
+        title, 
+        message, 
+        'info', 
+        'work_hours'
+      );
+    } catch (error) {
+      console.error('Error notifying manager about work hours submission:', error);
+    }
+  }
+
+  // Njoftimet për MANAGER - Payment confirmation
+  static async notifyManagerPaymentConfirmed(managerId, amount, employeeName) {
+    try {
+      const title = '✅ Pagesa u konfirmua';
+      const message = `Pagesa prej £${amount} për ${employeeName} u konfirmua`;
+      
+      await this.createNotification(
+        managerId, 
+        title, 
+        message, 
+        'success', 
+        'payment'
+      );
+    } catch (error) {
+      console.error('Error notifying manager about payment confirmation:', error);
+    }
+  }
+
+  // Njoftimet për USER - Work hours reminder
+  static async notifyUserWorkHoursReminder(userId, weekStart, weekEnd) {
+    try {
+      const title = '⏰ Kujtues për orët e punës';
+      const message = `Ju lutemi paraqitni orët tuaja të punës për javën ${weekStart} - ${weekEnd}`;
+      
+      await this.createNotification(
+        userId, 
+        title, 
+        message, 
+        'warning', 
+        'reminder'
+      );
+    } catch (error) {
+      console.error('Error notifying user about work hours reminder:', error);
+    }
+  }
+
+  // Njoftimet për USER - Contract updates
+  static async notifyUserContractUpdate(userId, contractName, updateType) {
+    try {
+      const title = '📄 Përditësim i kontratës';
+      const message = `Kontrata "${contractName}" ${updateType}`;
+      
+      await this.createNotification(
+        userId, 
+        title, 
+        message, 
+        'info', 
+        'contract'
+      );
+    } catch (error) {
+      console.error('Error notifying user about contract update:', error);
+    }
+  }
+
+  // Njoftimet për USER - Task completion
+  static async notifyUserTaskCompleted(userId, taskName) {
+    try {
+      const title = '✅ Detyra u përfundua';
+      const message = `Detyra "${taskName}" u përfundua me sukses`;
+      
+      await this.createNotification(
+        userId, 
+        title, 
+        message, 
+        'success', 
+        'task'
+      );
+    } catch (error) {
+      console.error('Error notifying user about task completion:', error);
+    }
+  }
+
+  // Njoftimet për USER - Task overdue
+  static async notifyUserTaskOverdue(userId, taskName) {
+    try {
+      const title = '⚠️ Detyrë e vonuar';
+      const message = `Detyra "${taskName}" është e vonuar. Ju lutemi përfundojeni sa më shpejt`;
+      
+      await this.createNotification(
+        userId, 
+        title, 
+        message, 
+        'warning', 
+        'task'
+      );
+    } catch (error) {
+      console.error('Error notifying user about task overdue:', error);
+    }
+  }
+
+  // Njoftimet për të gjitha rolet - System announcements
+  static async notifySystemAnnouncement(title, message, roles = ['admin', 'manager', 'user']) {
+    try {
+      const users = await pool.query(
+        `SELECT id FROM users WHERE role = ANY($1)`,
+        [roles]
+      );
+      
+      for (const user of users.rows) {
+        await this.createNotification(
+          user.id, 
+          title, 
+          message, 
+          'info', 
+          'system'
+        );
+      }
+    } catch (error) {
+      console.error('Error sending system announcement:', error);
+    }
+  }
+
+  // Njoftimet për ADMIN - System maintenance
+  static async notifyAdminSystemMaintenance(maintenanceType, duration) {
+    try {
+      const adminUsers = await pool.query(
+        "SELECT id FROM users WHERE role = 'admin'"
+      );
+      
+      const title = '🔧 Mirëmbajtje e sistemit';
+      const message = `Sistemi do të jetë në mirëmbajtje për ${duration}. ${maintenanceType}`;
+
+      for (const user of adminUsers.rows) {
+        await this.createNotification(
+          user.id, 
+          title, 
+          message, 
+          'warning', 
+          'system'
+        );
+      }
+    } catch (error) {
+      console.error('Error notifying admin about system maintenance:', error);
+    }
+  }
+
+  // Reminder për MANAGER - Pending approvals
+  static async checkPendingApprovals() {
+    try {
+      const result = await pool.query(`
+        SELECT COUNT(*) as count
+        FROM work_hours 
+        WHERE approved = FALSE 
+        AND date < NOW() - INTERVAL '3 days'
+      `);
+
+      if (parseInt(result.rows[0].count) > 0) {
+        const managerUsers = await pool.query(
+          "SELECT id FROM users WHERE role = 'manager'"
+        );
+
+        const title = '⏳ Aprova të pritura!';
+        const message = `Ju keni ${result.rows[0].count} orë pune që presin për aprobim`;
+
+        for (const user of managerUsers.rows) {
+          await this.createNotification(
+            user.id, 
+            title, 
+            message, 
+            'warning', 
+            'reminder', 
+            null, 
+            null, 
+            2
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error checking pending approvals:', error);
+    }
+  }
+
+  // Reminder për USER - Incomplete tasks
+  static async checkIncompleteTasks() {
+    try {
+      const result = await pool.query(`
+        SELECT t.id, t.title, u.id as user_id
+        FROM tasks t
+        JOIN users u ON t.assigned_to = u.id
+        WHERE t.status != 'completed' 
+        AND t.due_date < NOW()
+      `);
+
+      for (const task of result.rows) {
+        await this.notifyUserTaskOverdue(task.user_id, task.title);
+      }
+    } catch (error) {
+      console.error('Error checking incomplete tasks:', error);
     }
   }
 }

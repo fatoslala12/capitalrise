@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Bell, Mail, Smartphone, Settings, Save, X } from 'lucide-react';
+import { Bell, Mail, Smartphone, Settings, Save, X, Shield, Users, FileText, Clock, AlertTriangle } from 'lucide-react';
 import api from '../api';
 
 const NotificationSettings = () => {
@@ -15,6 +15,8 @@ const NotificationSettings = () => {
     invoiceReminders: true,
     expenseReminders: true,
     systemNotifications: true,
+    employeeNotifications: true,
+    maintenanceNotifications: true,
     quietHours: {
       enabled: false,
       start: '22:00',
@@ -75,6 +77,34 @@ const NotificationSettings = () => {
     }));
   };
 
+  // Përcakto cilat njoftime janë të disponueshme për secilin rol
+  const getAvailableNotifications = () => {
+    const baseNotifications = {
+      contractNotifications: { label: 'Kontratat', icon: FileText, description: 'Njoftimet për kontratat e reja dhe përditësimet' },
+      paymentNotifications: { label: 'Pagesat', icon: Mail, description: 'Njoftimet për pagesat e reja dhe konfirmimet' },
+      taskNotifications: { label: 'Detyrat', icon: Clock, description: 'Njoftimet për detyrat e reja dhe përfundimet' },
+      workHoursReminders: { label: 'Orët e punës', icon: Clock, description: 'Kujtues për paraqitjen e orëve të punës' },
+      systemNotifications: { label: 'Sistemi', icon: Settings, description: 'Njoftimet e sistemit dhe mirëmbajtjes' }
+    };
+
+    if (user?.role === 'admin') {
+      return {
+        ...baseNotifications,
+        invoiceReminders: { label: 'Faturat', icon: FileText, description: 'Kujtues për faturat e papaguara' },
+        expenseReminders: { label: 'Shpenzimet', icon: AlertTriangle, description: 'Kujtues për shpenzimet e papaguara' },
+        employeeNotifications: { label: 'Punonjësit', icon: Users, description: 'Njoftimet për punonjësit e rinj dhe përditësimet' },
+        maintenanceNotifications: { label: 'Mirëmbajtja', icon: Shield, description: 'Njoftimet për mirëmbajtjen e sistemit' }
+      };
+    } else if (user?.role === 'manager') {
+      return {
+        ...baseNotifications,
+        employeeNotifications: { label: 'Punonjësit', icon: Users, description: 'Njoftimet për përditësimet e punonjësve' }
+      };
+    } else {
+      return baseNotifications;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -83,8 +113,10 @@ const NotificationSettings = () => {
     );
   }
 
+  const availableNotifications = getAvailableNotifications();
+
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
@@ -94,6 +126,9 @@ const NotificationSettings = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Konfigurimi i Njoftimeve</h1>
             <p className="text-gray-600">Përshtatni preferencat tuaja për njoftimet</p>
+            <p className="text-sm text-blue-600 mt-1">
+              Roli juaj: <span className="font-semibold capitalize">{user?.role}</span>
+            </p>
           </div>
         </div>
       </div>
@@ -108,7 +143,7 @@ const NotificationSettings = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Notification Channels */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -158,139 +193,51 @@ const NotificationSettings = () => {
         </div>
 
         {/* Notification Types */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Settings size={20} className="text-purple-600" />
             Llojet e Njoftimeve
           </h2>
           
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Kontratat</p>
-                <p className="text-sm text-gray-600">Njoftimet për kontratat e reja</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.contractNotifications}
-                  onChange={(e) => handleSettingChange('contractNotifications', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Pagesat</p>
-                <p className="text-sm text-gray-600">Njoftimet për pagesat e reja</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.paymentNotifications}
-                  onChange={(e) => handleSettingChange('paymentNotifications', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Detyrat</p>
-                <p className="text-sm text-gray-600">Njoftimet për detyrat e reja</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.taskNotifications}
-                  onChange={(e) => handleSettingChange('taskNotifications', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Kujtues Orët e Punës</p>
-                <p className="text-sm text-gray-600">Kujtues për regjistrimin e orëve</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.workHoursReminders}
-                  onChange={(e) => handleSettingChange('workHoursReminders', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Kujtues Faturat</p>
-                <p className="text-sm text-gray-600">Kujtues për faturat e papaguara</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.invoiceReminders}
-                  onChange={(e) => handleSettingChange('invoiceReminders', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Kujtues Shpenzimet</p>
-                <p className="text-sm text-gray-600">Kujtues për raportimin e shpenzimeve</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.expenseReminders}
-                  onChange={(e) => handleSettingChange('expenseReminders', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Njoftimet e Sistemit</p>
-                <p className="text-sm text-gray-600">Njoftimet e përgjithshme të sistemit</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.systemNotifications}
-                  onChange={(e) => handleSettingChange('systemNotifications', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.entries(availableNotifications).map(([key, config]) => {
+              const IconComponent = config.icon;
+              return (
+                <div key={key} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <IconComponent size={20} className="text-purple-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">{config.label}</p>
+                      <p className="text-sm text-gray-600">{config.description}</p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings[key]}
+                      onChange={(e) => handleSettingChange(key, e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Quiet Hours */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <X size={20} className="text-red-600" />
+            <Clock size={20} className="text-orange-600" />
             Orët e Qetësisë
           </h2>
           
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-900">Aktivizo Orët e Qetësisë</p>
-                <p className="text-sm text-gray-600">Mos dërgo njoftime gjatë orëve të caktuara</p>
+                <p className="font-medium text-gray-900">Aktivizo orët e qetësisë</p>
+                <p className="text-sm text-gray-600">Mos prano njoftime në këto orë</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -304,27 +251,23 @@ const NotificationSettings = () => {
             </div>
 
             {settings.quietHours.enabled && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ora e Fillimit
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Fillimi</label>
                   <input
                     type="time"
                     value={settings.quietHours.start}
                     onChange={(e) => handleQuietHoursChange('start', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ora e Përfundimit
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Fundi</label>
                   <input
                     type="time"
                     value={settings.quietHours.end}
                     onChange={(e) => handleQuietHoursChange('end', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -338,11 +281,53 @@ const NotificationSettings = () => {
         <button
           onClick={saveSettings}
           disabled={loading}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <Save size={20} />
           {loading ? 'Duke ruajtur...' : 'Ruaj Konfigurimin'}
         </button>
+      </div>
+
+      {/* Role-specific Information */}
+      <div className="mt-8 bg-blue-50 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-blue-900 mb-3">ℹ️ Informacion për rolin tuaj</h3>
+        {user?.role === 'admin' && (
+          <div className="text-blue-800">
+            <p className="mb-2">Si administrator, ju merrni njoftimet më të plota:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              <li>Kontratat e reja dhe përditësimet</li>
+              <li>Pagesat dhe konfirmimet</li>
+              <li>Punonjësit e rinj dhe përditësimet</li>
+              <li>Faturat dhe shpenzimet e papaguara</li>
+              <li>Mirëmbajtjen e sistemit</li>
+              <li>Detyrat dhe orët e punës</li>
+            </ul>
+          </div>
+        )}
+        {user?.role === 'manager' && (
+          <div className="text-blue-800">
+            <p className="mb-2">Si menaxher, ju merrni njoftimet për:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              <li>Kontratat e caktuara për ju</li>
+              <li>Detyrat e punonjësve tuaj</li>
+              <li>Orët e punës që presin aprobim</li>
+              <li>Përditësimet e punonjësve</li>
+              <li>Pagesat e konfirmuara</li>
+            </ul>
+          </div>
+        )}
+        {user?.role === 'user' && (
+          <div className="text-blue-800">
+            <p className="mb-2">Si përdorues, ju merrni njoftimet për:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              <li>Detyrat e caktuara për ju</li>
+              <li>Orët e punës dhe kujtues</li>
+              <li>Pagesat e konfirmuara</li>
+              <li>Përditësimet e kontratave</li>
+              <li>Njoftimet e sistemit</li>
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
