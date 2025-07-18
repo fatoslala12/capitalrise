@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Bell, Search, Filter, Trash2, Check, CheckCheck } from 'lucide-react';
+import { Bell, Search, Filter, Trash2, Check, CheckCheck, Download, FileText } from 'lucide-react';
 import api from '../api';
 
 const NotificationsPage = () => {
@@ -80,6 +80,111 @@ const NotificationsPage = () => {
       setSelectAll(false);
     } catch (error) {
       console.error('Gabim në fshirjen e njoftimeve të zgjedhura:', error);
+    }
+  };
+
+  // Eksporto njoftimet në CSV
+  const exportToCSV = () => {
+    const notificationsToExport = selectedNotifications.length > 0 
+      ? notifications.filter(n => selectedNotifications.includes(n.id))
+      : filteredNotifications;
+
+    const headers = ['ID', 'Titulli', 'Mesazhi', 'Tipi', 'Kategoria', 'E lexuar', 'Data e krijimit'];
+    const csvContent = [
+      headers.join(','),
+      ...notificationsToExport.map(n => [
+        n.id,
+        `"${n.title.replace(/"/g, '""')}"`,
+        `"${n.message.replace(/"/g, '""')}"`,
+        n.type,
+        n.category || 'system',
+        n.isRead ? 'Po' : 'Jo',
+        new Date(n.createdAt).toLocaleString('sq-AL')
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `njoftimet_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Eksporto njoftimet në PDF
+  const exportToPDF = async () => {
+    try {
+      const notificationsToExport = selectedNotifications.length > 0 
+        ? notifications.filter(n => selectedNotifications.includes(n.id))
+        : filteredNotifications;
+
+      // Krijo HTML content për PDF
+      const htmlContent = `
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h1 { color: #2563eb; text-align: center; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f8fafc; font-weight: bold; }
+              .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+              .read { background-color: #dcfce7; color: #166534; }
+              .unread { background-color: #fef2f2; color: #dc2626; }
+            </style>
+          </head>
+          <body>
+            <h1>Raporti i Njoftimeve</h1>
+            <p><strong>Përdoruesi:</strong> ${user?.email}</p>
+            <p><strong>Data e gjenerimit:</strong> ${new Date().toLocaleString('sq-AL')}</p>
+            <p><strong>Total njoftime:</strong> ${notificationsToExport.length}</p>
+            
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Titulli</th>
+                  <th>Mesazhi</th>
+                  <th>Tipi</th>
+                  <th>Statusi</th>
+                  <th>Data</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${notificationsToExport.map(n => `
+                  <tr>
+                    <td>${n.id}</td>
+                    <td>${n.title}</td>
+                    <td>${n.message}</td>
+                    <td>${getNotificationTypeLabel(n.type)}</td>
+                    <td><span class="status ${n.isRead ? 'read' : 'unread'}">${n.isRead ? 'E lexuar' : 'E palexuar'}</span></td>
+                    <td>${new Date(n.createdAt).toLocaleString('sq-AL')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `;
+
+      // Përdor jsPDF për të krijuar PDF
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      
+      // Konverto HTML në PDF
+      doc.html(htmlContent, {
+        callback: function (doc) {
+          doc.save(`njoftimet_${new Date().toISOString().split('T')[0]}.pdf`);
+        },
+        x: 10,
+        y: 10
+      });
+    } catch (error) {
+      console.error('Gabim në eksportimin e PDF:', error);
+      alert('Gabim në eksportimin e PDF. Provoni të eksportoni në CSV.');
     }
   };
 
@@ -319,7 +424,29 @@ const NotificationsPage = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {/* Export Buttons */}
+            {filteredNotifications.length > 0 && (
+              <>
+                <button
+                  onClick={exportToCSV}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+                  title="Eksporto në CSV"
+                >
+                  <Download size={16} />
+                  CSV
+                </button>
+                <button
+                  onClick={exportToPDF}
+                  className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-2"
+                  title="Eksporto në PDF"
+                >
+                  <FileText size={16} />
+                  PDF
+                </button>
+              </>
+            )}
+
             {selectedNotifications.length > 0 && (
               <button
                 onClick={deleteSelected}
@@ -333,7 +460,7 @@ const NotificationsPage = () => {
             {notifications.filter(n => !n.isRead).length > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
               >
                 <CheckCheck size={16} />
                 Shëno të gjitha si të lexuara
@@ -346,14 +473,14 @@ const NotificationsPage = () => {
                 try {
                   const response = await api.post('/api/notifications/test-email');
                   if (response.data.success) {
-                    alert('✅ Njoftimi test u dërgua me sukses! Kontrolloni email-in tuaj (fatoslala12@gmail.com)');
+                    alert('✅ Njoftimi test u dërgua me sukses! Kontrolloni email-in tuaj.');
                   }
                 } catch (error) {
                   console.error('Error testing email notification:', error);
                   alert('❌ Gabim në dërgimin e njoftimit test');
                 }
               }}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2"
             >
               📧 Test Email
             </button>
@@ -412,14 +539,13 @@ const NotificationsPage = () => {
                       <div className={`p-2 rounded-lg ${!notification.isRead ? 'bg-blue-100' : 'bg-gray-100'}`}>
                         <span className="text-lg">{getNotificationIcon(notification.type)}</span>
                       </div>
-                      
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className={`font-medium ${
+                          <p className={`font-medium ${
                             !notification.isRead ? 'text-gray-900' : 'text-gray-700'
                           }`}>
                             {notification.title}
-                          </h3>
+                          </p>
                           {!notification.isRead && (
                             <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                           )}
@@ -435,12 +561,12 @@ const NotificationsPage = () => {
                         </p>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2 w-24 justify-center">
+                    
+                    <div className="flex items-center gap-2">
                       {!notification.isRead && (
                         <button
                           onClick={() => markAsRead(notification.id)}
-                          className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
+                          className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors"
                           title="Shëno si të lexuar"
                         >
                           <Check size={16} />
@@ -448,7 +574,7 @@ const NotificationsPage = () => {
                       )}
                       <button
                         onClick={() => deleteNotification(notification.id)}
-                        className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
                         title="Fshi njoftimin"
                       >
                         <Trash2 size={16} />

@@ -45,14 +45,14 @@ async function createTestNotifications() {
     }
 
     // Kontrollo nëse ka përdorues admin
-    const adminUser = await pool.query('SELECT id FROM users WHERE email = $1', ['admin@gmail.com']);
+    const adminUser = await pool.query('SELECT id FROM users WHERE email = $1', ['admir@gmail.com']);
     
     if (adminUser.rows.length === 0) {
-      console.log('❌ Përdoruesi admin@gmail.com nuk u gjet!');
+      console.log('❌ Përdoruesi admir@gmail.com nuk u gjet!');
       console.log('📋 Përdoruesit e disponueshëm:');
-      const users = await pool.query('SELECT id, email, name FROM users LIMIT 5');
+      const users = await pool.query('SELECT id, email FROM users LIMIT 5');
       users.rows.forEach(user => {
-        console.log(`   - ID: ${user.id}, Email: ${user.email}, Name: ${user.name}`);
+        console.log(`   - ID: ${user.id}, Email: ${user.email}`);
       });
       return;
     }
@@ -110,8 +110,8 @@ async function createTestNotifications() {
 
     for (const notification of testNotifications) {
       const query = `
-        INSERT INTO notifications (user_id, type, title, message, is_read, created_at)
-        VALUES ($1, $2, $3, $4, $5, NOW())
+        INSERT INTO notifications (user_id, type, title, message, category, is_read, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW())
         RETURNING id, title, is_read
       `;
       
@@ -120,6 +120,7 @@ async function createTestNotifications() {
         notification.type,
         notification.title,
         notification.message,
+        'system',
         notification.isRead
       ]);
       

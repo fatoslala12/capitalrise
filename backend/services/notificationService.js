@@ -15,13 +15,31 @@ class NotificationService {
         [userId, title, message, type, category, relatedId, relatedType, priority]
       );
       
+      const notification = result.rows[0];
+      
+      // Dërgo real-time notification nëse klienti është i lidhur
+      this.sendRealTimeNotification(userId, notification);
+      
       // Dërgo email notification nëse është e konfiguruar
       await this.sendEmailNotification(userId, title, message, type);
       
-      return result.rows[0];
+      return notification;
     } catch (error) {
       console.error('Error creating notification:', error);
       throw error;
+    }
+  }
+
+  // Dërgo real-time notification
+  static sendRealTimeNotification(userId, notification) {
+    try {
+      if (global.notificationStreams && global.notificationStreams.has(userId)) {
+        const response = global.notificationStreams.get(userId);
+        response.write(`data: ${JSON.stringify(notification)}\n\n`);
+        console.log(`Real-time notification sent to user ${userId}: ${notification.title}`);
+      }
+    } catch (error) {
+      console.error('Error sending real-time notification:', error);
     }
   }
 
