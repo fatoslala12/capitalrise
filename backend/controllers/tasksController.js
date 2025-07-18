@@ -1,4 +1,5 @@
 const pool = require('../db');
+const NotificationService = require('../services/notificationService');
 
 exports.getAllTasks = async (req, res) => {
   try {
@@ -37,7 +38,20 @@ exports.addTask = async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
       [assigned_to, title, description, status, site_name, due_date, assigned_by, priority || 'medium', category || 'general']
     );
-    res.status(201).json(result.rows[0]);
+    
+    const newTask = result.rows[0];
+    
+    // Dërgo notification për task të ri
+    if (assigned_to) {
+      try {
+        await NotificationService.notifyUserTaskAssignment(assigned_to, title);
+        console.log(`[DEBUG] Notification sent for task assignment to user ${assigned_to}`);
+      } catch (notificationError) {
+        console.error('[ERROR] Failed to send task notification:', notificationError);
+      }
+    }
+    
+    res.status(201).json(newTask);
   } catch (err) {
     console.error('[DEBUG] addTask error:', err.message, err.stack);
     res.status(400).json({ error: err.message });
@@ -54,7 +68,24 @@ exports.updateTaskStatus = async (req, res) => {
       WHERE id = $2 RETURNING *`,
       [status, id]
     );
-    res.json(result.rows[0]);
+    
+    const updatedTask = result.rows[0];
+    
+    // Dërgo notification për ndryshimin e statusit
+    if (updatedTask && updatedTask.assigned_to) {
+      try {
+        if (status === 'completed') {
+          await NotificationService.notifyUserTaskCompleted(updatedTask.assigned_to, updatedTask.title);
+        } else if (status === 'overdue') {
+          await NotificationService.notifyUserTaskOverdue(updatedTask.assigned_to, updatedTask.title);
+        }
+        console.log(`[DEBUG] Status update notification sent for task ${id}`);
+      } catch (notificationError) {
+        console.error('[ERROR] Failed to send status update notification:', notificationError);
+      }
+    }
+    
+    res.json(updatedTask);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

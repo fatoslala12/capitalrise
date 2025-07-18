@@ -6,7 +6,7 @@ const { verifyToken, requireRole } = require('../middleware/auth');
 router.get('/', verifyToken, controller.getAllTasks);
 router.get('/:employeeId', verifyToken, controller.getTasksByEmployee);
 router.post('/', verifyToken, requireRole('admin'), controller.addTask);
-router.put('/:id', verifyToken, requireRole('admin'), controller.updateTaskStatus);
+router.put('/:id', verifyToken, controller.updateTaskStatus);
 router.delete('/:id', verifyToken, requireRole('admin'), controller.deleteTask);
 
 module.exports = router;

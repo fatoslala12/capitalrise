@@ -253,7 +253,7 @@ exports.getNotificationAnalytics = async (req, res) => {
         n.title as action,
         n.message as description,
         n.created_at as time,
-        CONCAT(u.first_name, ' ', u.last_name) as user
+        u.email as user
       FROM notifications n
       JOIN users u ON n.user_id = u.id
       WHERE n.created_at >= $1
