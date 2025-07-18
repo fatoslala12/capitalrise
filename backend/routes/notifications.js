@@ -6,6 +6,9 @@ const notificationController = require('../controllers/notificationController');
 // Merr të gjitha njoftimet
 router.get('/', verifyToken, notificationController.getNotifications);
 
+// Real-time notifications stream
+router.get('/stream', verifyToken, notificationController.getNotificationStream);
+
 // Shëno njoftimin si të lexuar
 router.patch('/:id/read', verifyToken, notificationController.markAsRead);
 
@@ -20,5 +23,9 @@ router.post('/test-email', verifyToken, notificationController.testEmailNotifica
 
 // Dërgo njoftim manual
 router.post('/send-manual', verifyToken, notificationController.sendManualNotification);
+
+// Notification settings
+router.get('/settings', verifyToken, notificationController.getNotificationSettings);
+router.put('/settings', verifyToken, notificationController.updateNotificationSettings);
 
 module.exports = router; 

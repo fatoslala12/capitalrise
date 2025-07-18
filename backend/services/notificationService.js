@@ -15,19 +15,43 @@ class NotificationService {
         [userId, title, message, type, category, relatedId, relatedType, priority]
       );
       
+      const notification = result.rows[0];
+      
+      // Dërgo real-time notification nëse klienti është i lidhur
+      this.sendRealTimeNotification(userId, notification);
+      
       // Dërgo email notification nëse është e konfiguruar
       await this.sendEmailNotification(userId, title, message, type);
       
-      return result.rows[0];
+      return notification;
     } catch (error) {
       console.error('Error creating notification:', error);
       throw error;
     }
   }
 
+  // Dërgo real-time notification
+  static sendRealTimeNotification(userId, notification) {
+    try {
+      if (global.notificationStreams && global.notificationStreams.has(userId)) {
+        const response = global.notificationStreams.get(userId);
+        response.write(`data: ${JSON.stringify(notification)}\n\n`);
+        console.log(`Real-time notification sent to user ${userId}: ${notification.title}`);
+      }
+    } catch (error) {
+      console.error('Error sending real-time notification:', error);
+    }
+  }
+
   // Dërgo email notification
   static async sendEmailNotification(userId, title, message, type = 'info') {
     try {
+      // Kontrollo nëse RESEND_API_KEY është konfiguruar
+      if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_123456789') {
+        console.log('[WARNING] RESEND_API_KEY nuk është konfiguruar ose është default. Email nuk do të dërgohet.');
+        return;
+      }
+
       // Merr të dhënat e përdoruesit
       const userResult = await pool.query(
         'SELECT email, first_name, last_name FROM users WHERE id = $1',
@@ -35,15 +59,17 @@ class NotificationService {
       );
       
       if (userResult.rows.length === 0) {
-        console.log('User not found for email notification:', userId);
+        console.log('[WARNING] User not found for email notification:', userId);
         return;
       }
       
       const user = userResult.rows[0];
       if (!user.email) {
-        console.log('User has no email address:', userId);
+        console.log('[WARNING] User has no email address:', userId);
         return;
       }
+
+      console.log(`[DEBUG] Sending email notification to ${user.email}: ${title}`);
 
       // Përcakto ikonën bazuar në tipin e njoftimit
       const getNotificationIcon = (type) => {
@@ -70,7 +96,7 @@ class NotificationService {
               
               <div style="background-color: #f1f5f9; border-left: 4px solid #2563eb; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
                 <div style="text-align: center; margin-bottom: 20px;">
-                  <span style="font-size: 32px; display: block; margin-bottom: 10px;">📢</span>
+                  <span style="font-size: 32px; display: block; margin-bottom: 10px;">${getNotificationIcon(type)}</span>
                   <h2 style="margin: 0; color: #1e293b; font-size: 18px;">Ju keni një njoftim të ri në sistem!</h2>
                 </div>
                 
@@ -103,14 +129,94 @@ class NotificationService {
       });
 
       if (error) {
-        console.error('Error sending email notification:', error);
+        console.error('[ERROR] Error sending email notification:', error);
       } else {
-        console.log('Email notification sent successfully to:', user.email);
+        console.log(`[SUCCESS] Email notification sent successfully to: ${user.email}`);
       }
       
     } catch (error) {
-      console.error('Error in sendEmailNotification:', error);
+      console.error('[ERROR] Error in sendEmailNotification:', error);
       // Mos bëj throw error që të mos ndalojë procesin kryesor
+    }
+  }
+
+  // Dërgo email notification për admin specifik
+  static async sendAdminEmailNotification(title, message, type = 'info') {
+    try {
+      // Kontrollo nëse RESEND_API_KEY është konfiguruar
+      if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_123456789') {
+        console.log('[WARNING] RESEND_API_KEY nuk është konfiguruar ose është default. Email nuk do të dërgohet.');
+        return;
+      }
+
+      const adminEmail = 'fatoslala12@gmail.com';
+      console.log(`[DEBUG] Sending admin email notification to ${adminEmail}: ${title}`);
+
+      // Përcakto ikonën bazuar në tipin e njoftimit
+      const getNotificationIcon = (type) => {
+        switch (type) {
+          case 'success': return '✅';
+          case 'warning': return '⚠️';
+          case 'error': return '❌';
+          case 'info': return 'ℹ️';
+          default: return '🔔';
+        }
+      };
+
+      // Përgatit email-in për admin
+      const { data, error } = await resend.emails.send({
+        from: 'Alban Construction <onboarding@resend.dev>',
+        to: [adminEmail],
+        subject: `[ADMIN] ${title}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px;">
+            <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #dc2626; margin: 0; font-size: 24px;">👑 Admin Notification</h1>
+                <h2 style="color: #2563eb; margin: 10px 0 0 0; font-size: 20px;">🏗️ Alban Construction</h2>
+              </div>
+              
+              <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <span style="font-size: 32px; display: block; margin-bottom: 10px;">${getNotificationIcon(type)}</span>
+                  <h2 style="margin: 0; color: #1e293b; font-size: 18px;">${title}</h2>
+                </div>
+                
+                <div style="background-color: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                  <p style="margin: 0; color: #475569; line-height: 1.6; font-size: 14px;">${message}</p>
+                </div>
+              </div>
+              
+              <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                <p style="color: #64748b; margin: 0; font-size: 14px;">
+                  Mirë se vini, Admin,
+                </p>
+                <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
+                  Ky është një njoftim automatik i dërguar nga sistemi ynë i menaxhimit.
+                </p>
+                <p style="color: #64748b; margin: 15px 0 0 0; font-size: 12px;">
+                  Për të parë të gjitha njoftimet dhe detajet e mëtejshme, ju lutemi:
+                </p>
+                <div style="margin-top: 15px;">
+                  <a href="https://building-system-seven.vercel.app/admin/notifications" 
+                     style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                    🔗 Kliko këtu për të aksesuar njoftimin
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      });
+
+      if (error) {
+        console.error('[ERROR] Error sending admin email notification:', error);
+      } else {
+        console.log(`[SUCCESS] Admin email notification sent successfully to: ${adminEmail}`);
+      }
+      
+    } catch (error) {
+      console.error('[ERROR] Error in sendAdminEmailNotification:', error);
     }
   }
 

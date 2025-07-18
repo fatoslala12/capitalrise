@@ -1,4 +1,5 @@
 const pool = require('../db');
+const NotificationService = require('../services/notificationService');
 
 exports.getAllWorkHours = async (req, res) => {
   try {
@@ -205,6 +206,47 @@ exports.addWorkHours = async (req, res) => {
     
     await client.query('COMMIT');
     console.log('[SUCCESS] addWorkHours finished successfully:', saved);
+    
+    // Dërgo notification për admin kur menaxheri shton orët
+    try {
+      const adminUsers = await client.query(
+        "SELECT id FROM users WHERE role = 'admin'"
+      );
+      
+      if (adminUsers.rows.length > 0) {
+        const totalEmployees = Object.keys(hourData).length;
+        const totalHours = saved.reduce((sum, entry) => sum + parseFloat(entry.hours || 0), 0);
+        
+        const title = '📊 Orët e punës u shtuan';
+        const message = `Menaxheri shtoi orët e punës për ${totalEmployees} punonjës me gjithsej ${totalHours} orë për javën ${weekLabel}`;
+        
+        for (const admin of adminUsers.rows) {
+          await NotificationService.createNotification(
+            admin.id,
+            title,
+            message,
+            'info',
+            'work_hours',
+            null,
+            'work_hours_added',
+            2
+          );
+        }
+        
+        // Dërgo email notification për admin
+        await NotificationService.sendAdminEmailNotification(
+          title,
+          message,
+          'info'
+        );
+        
+        console.log(`[SUCCESS] Admin notifications sent for work hours addition`);
+      }
+    } catch (notificationError) {
+      console.error('[ERROR] Failed to send admin notifications:', notificationError);
+      // Mos ndal procesin kryesor për shkak të gabimit të njoftimit
+    }
+    
     res.status(201).json({ saved });
     
   } catch (err) {
