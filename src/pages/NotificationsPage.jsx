@@ -37,6 +37,12 @@ const NotificationsPage = () => {
       );
     } catch (error) {
       console.error('Gabim në shënimin si të lexuar:', error);
+      // Nëse ka gabim, përditëso lokal state për UI
+      setNotifications(prev => 
+        prev.map(n => 
+          n.id === notificationId ? { ...n, isRead: true } : n
+        )
+      );
     }
   };
 
@@ -49,6 +55,10 @@ const NotificationsPage = () => {
       setSelectAll(false);
     } catch (error) {
       console.error('Gabim në shënimin e të gjitha si të lexuara:', error);
+      // Nëse ka gabim, përditëso lokal state për UI
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setSelectedNotifications([]);
+      setSelectAll(false);
     }
   };
 
@@ -78,6 +88,13 @@ const NotificationsPage = () => {
   // Merr njoftimet kur komponenti mountohet
   useEffect(() => {
     fetchNotifications();
+    
+    // Polling për real-time updates çdo 30 sekonda
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   // Filtro njoftimet
@@ -117,8 +134,16 @@ const NotificationsPage = () => {
   };
 
   const formatTimeAgo = (dateString) => {
+    if (!dateString) return 'Tani';
+    
     const now = new Date();
     const date = new Date(dateString);
+    
+    // Kontrollo nëse data është e vlefshme
+    if (isNaN(date.getTime())) {
+      return 'Tani';
+    }
+    
     const diffInMinutes = Math.floor((now - date) / (1000 * 60));
     
     if (diffInMinutes < 1) return 'Tani';

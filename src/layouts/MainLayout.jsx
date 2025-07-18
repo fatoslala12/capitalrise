@@ -121,17 +121,23 @@ export default function MainLayout() {
             <span className="font-bold text-gray-900">Alban Construction</span>
           </div>
           
-                     {/* Logout button - always visible on right */}
-           <div className="flex items-center gap-4">
-             <span className="hidden lg:inline text-gray-600">Mirë se vini, {user?.name || user?.email}</span>
-             <NotificationBell />
-             <button
-               onClick={logout}
-               className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors flex items-center gap-2"
-             >
-               🚪 Dil
-             </button>
-           </div>
+                               {/* Center welcome message */}
+          <div className="flex-1 flex justify-center">
+            <span className="text-gray-600 font-medium">
+              Mirë se vini, {user?.name || user?.email}
+            </span>
+          </div>
+          
+          {/* Right side actions */}
+          <div className="flex items-center gap-4">
+            <NotificationBell />
+            <button
+              onClick={logout}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors flex items-center gap-2"
+            >
+              🚪 Dil
+            </button>
+          </div>
         </header>
 
         {/* Main Content */}

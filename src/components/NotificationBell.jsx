@@ -39,6 +39,13 @@ const NotificationBell = () => {
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Gabim në shënimin si të lexuar:', error);
+      // Nëse ka gabim, përditëso lokal state për UI
+      setNotifications(prev => 
+        prev.map(n => 
+          n.id === notificationId ? { ...n, isRead: true } : n
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
     }
   };
 
@@ -50,6 +57,9 @@ const NotificationBell = () => {
       setUnreadCount(0);
     } catch (error) {
       console.error('Gabim në shënimin e të gjitha si të lexuara:', error);
+      // Nëse ka gabim, përditëso lokal state për UI
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
     }
   };
 
@@ -74,6 +84,13 @@ const NotificationBell = () => {
   useEffect(() => {
     if (user) {
       fetchNotifications();
+      
+      // Polling për real-time updates çdo 30 sekonda
+      const interval = setInterval(() => {
+        fetchNotifications();
+      }, 30000);
+      
+      return () => clearInterval(interval);
     }
   }, [user]);
 
@@ -132,12 +149,20 @@ const NotificationBell = () => {
 
   const handleViewAll = () => {
     setIsOpen(false);
-    navigate('/notifications');
+    navigate(`/${user?.role}/notifications`);
   };
 
   const formatTimeAgo = (dateString) => {
+    if (!dateString) return 'Tani';
+    
     const now = new Date();
     const date = new Date(dateString);
+    
+    // Kontrollo nëse data është e vlefshme
+    if (isNaN(date.getTime())) {
+      return 'Tani';
+    }
+    
     const diffInMinutes = Math.floor((now - date) / (1000 * 60));
     
     if (diffInMinutes < 1) return 'Tani';
