@@ -1,37 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, requireRole } = require('../middleware/auth');
+const notificationController = require('../controllers/notificationController');
+const { verifyToken } = require('../middleware/auth');
 
-// Email notification endpoint
-router.post('/email', verifyToken, async (req, res) => {
-  try {
-    const { to, subject, message } = req.body;
-    
-    // Here you would integrate with an email service like SendGrid, Mailgun, etc.
-    // For now, we'll just log the email
-    console.log('📧 Email notification:', { to, subject, message });
-    
-    res.json({ success: true, message: 'Email notification sent' });
-  } catch (error) {
-    console.error('Error sending email notification:', error);
-    res.status(500).json({ error: 'Failed to send email notification' });
-  }
-});
+// Merr njoftimet për përdoruesin
+router.get('/', verifyToken, notificationController.getUserNotifications);
 
-// Push notification endpoint
-router.post('/push', verifyToken, async (req, res) => {
-  try {
-    const { userId, title, message, data } = req.body;
-    
-    // Here you would integrate with a push notification service like Firebase, OneSignal, etc.
-    // For now, we'll just log the push notification
-    console.log('📱 Push notification:', { userId, title, message, data });
-    
-    res.json({ success: true, message: 'Push notification sent' });
-  } catch (error) {
-    console.error('Error sending push notification:', error);
-    res.status(500).json({ error: 'Failed to send push notification' });
-  }
-});
+// Merr numrin e njoftimeve të palexuara
+router.get('/unread-count', verifyToken, notificationController.getUnreadCount);
+
+// Merr të gjitha njoftimet (për faqen "Shiko të gjitha")
+router.get('/all', verifyToken, notificationController.getAllNotifications);
+
+// Mark as read
+router.put('/:notificationId/read', verifyToken, notificationController.markAsRead);
+
+// Mark all as read
+router.put('/mark-all-read', verifyToken, notificationController.markAllAsRead);
+
+// Fshi një njoftim
+router.delete('/:notificationId', verifyToken, notificationController.deleteNotification);
+
+// Ekzekuto kontrollin e reminder-ëve (për admin)
+router.post('/run-reminders', verifyToken, notificationController.runReminderChecks);
 
 module.exports = router; 

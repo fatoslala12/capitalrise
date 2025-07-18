@@ -1,5 +1,6 @@
 const { Resend } = require('resend');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+const NotificationService = require('./notificationService');
 
 // Inicializo Resend me API key
 const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789');
@@ -91,6 +92,10 @@ const sendInvoiceEmail = async (invoice, contract, recipientEmail) => {
     }
 
     console.log('Email sent successfully:', data?.id);
+    
+    // Dërgo njoftim për admin
+    await NotificationService.notifyAdminEmailSent(invoice.id, contract.id, 'invoice');
+    
     return { success: true, messageId: data?.id };
     
   } catch (error) {
@@ -139,6 +144,10 @@ const sendContractDetailsEmail = async (contract, recipientEmail) => {
     }
 
     console.log('Contract details email sent successfully:', data?.id);
+    
+    // Dërgo njoftim për admin
+    await NotificationService.notifyAdminEmailSent(null, contract.id, 'contract');
+    
     return { success: true, messageId: data?.id };
     
   } catch (error) {
