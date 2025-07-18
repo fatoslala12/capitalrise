@@ -76,6 +76,10 @@ exports.updateTaskStatus = async (req, res) => {
       try {
         if (status === 'completed') {
           await NotificationService.notifyUserTaskCompleted(updatedTask.assigned_to, updatedTask.title);
+          
+          // Dërgo notification për admin kur task përfundon
+          await NotificationService.notifyAdminTaskCompleted(updatedTask.title, updatedTask.assigned_to);
+          console.log(`[DEBUG] Admin notification sent for task completion: ${updatedTask.title}`);
         } else if (status === 'overdue') {
           await NotificationService.notifyUserTaskOverdue(updatedTask.assigned_to, updatedTask.title);
         }

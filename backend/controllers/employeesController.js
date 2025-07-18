@@ -40,16 +40,22 @@ exports.getAllEmployees = async (req, res) => {
 exports.getEmployeeById = async (req, res) => {
   const { id } = req.params;
   
+  console.log(`[DEBUG] Getting employee by ID: ${id}`);
+  
   try {
     const result = await pool.query(
       'SELECT * FROM employees WHERE id = $1',
       [id]
     );
     
+    console.log(`[DEBUG] Employee query result: ${result.rows.length} rows`);
+    
     if (result.rows.length === 0) {
+      console.log(`[DEBUG] Employee ${id} not found`);
       return res.status(404).json({ error: 'Employee nuk u gjet' });
     }
     
+    console.log(`[DEBUG] Employee found:`, result.rows[0]);
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error getting employee by ID:', err);

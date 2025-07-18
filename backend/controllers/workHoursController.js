@@ -222,7 +222,7 @@ exports.addWorkHours = async (req, res) => {
         
         for (const admin of adminUsers.rows) {
           await NotificationService.createNotification(
-            admin.id,
+            admin.user_id,
             title,
             message,
             'info',

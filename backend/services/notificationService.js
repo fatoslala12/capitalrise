@@ -433,6 +433,42 @@ class NotificationService {
     }
   }
 
+  // Njoftimet për ADMIN - Task completion
+  static async notifyAdminTaskCompleted(taskName, employeeId) {
+    try {
+      const adminUsers = await pool.query(
+        "SELECT id FROM users WHERE role = 'admin'"
+      );
+      
+      // Merr emrin e punonjësit
+      const employeeResult = await pool.query(
+        "SELECT first_name, last_name FROM employees WHERE id = $1",
+        [employeeId]
+      );
+      
+      const employeeName = employeeResult.rows.length > 0 
+        ? `${employeeResult.rows[0].first_name} ${employeeResult.rows[0].last_name}`
+        : `Punonjësi ${employeeId}`;
+      
+      const title = '✅ Detyrë u përfundua';
+      const message = `Detyra "${taskName}" u përfundua nga ${employeeName}`;
+
+      for (const user of adminUsers.rows) {
+        await this.createNotification(
+          user.id, 
+          title, 
+          message, 
+          'success', 
+          'task', 
+          null, 
+          'task_completed'
+        );
+      }
+    } catch (error) {
+      console.error('Error notifying admin about task completion:', error);
+    }
+  }
+
   // Reminder për ADMIN - Unpaid work hours (1 javë)
   static async checkUnpaidWorkHours() {
     try {
