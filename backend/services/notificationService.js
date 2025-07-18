@@ -46,6 +46,12 @@ class NotificationService {
   // Dërgo email notification
   static async sendEmailNotification(userId, title, message, type = 'info') {
     try {
+      // Kontrollo nëse RESEND_API_KEY është konfiguruar
+      if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_123456789') {
+        console.log('[WARNING] RESEND_API_KEY nuk është konfiguruar ose është default. Email nuk do të dërgohet.');
+        return;
+      }
+
       // Merr të dhënat e përdoruesit
       const userResult = await pool.query(
         'SELECT email, first_name, last_name FROM users WHERE id = $1',
@@ -53,15 +59,17 @@ class NotificationService {
       );
       
       if (userResult.rows.length === 0) {
-        console.log('User not found for email notification:', userId);
+        console.log('[WARNING] User not found for email notification:', userId);
         return;
       }
       
       const user = userResult.rows[0];
       if (!user.email) {
-        console.log('User has no email address:', userId);
+        console.log('[WARNING] User has no email address:', userId);
         return;
       }
+
+      console.log(`[DEBUG] Sending email notification to ${user.email}: ${title}`);
 
       // Përcakto ikonën bazuar në tipin e njoftimit
       const getNotificationIcon = (type) => {
@@ -88,7 +96,7 @@ class NotificationService {
               
               <div style="background-color: #f1f5f9; border-left: 4px solid #2563eb; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
                 <div style="text-align: center; margin-bottom: 20px;">
-                  <span style="font-size: 32px; display: block; margin-bottom: 10px;">📢</span>
+                  <span style="font-size: 32px; display: block; margin-bottom: 10px;">${getNotificationIcon(type)}</span>
                   <h2 style="margin: 0; color: #1e293b; font-size: 18px;">Ju keni një njoftim të ri në sistem!</h2>
                 </div>
                 
@@ -121,13 +129,13 @@ class NotificationService {
       });
 
       if (error) {
-        console.error('Error sending email notification:', error);
+        console.error('[ERROR] Error sending email notification:', error);
       } else {
-        console.log('Email notification sent successfully to:', user.email);
+        console.log(`[SUCCESS] Email notification sent successfully to: ${user.email}`);
       }
       
     } catch (error) {
-      console.error('Error in sendEmailNotification:', error);
+      console.error('[ERROR] Error in sendEmailNotification:', error);
       // Mos bëj throw error që të mos ndalojë procesin kryesor
     }
   }

@@ -63,10 +63,24 @@ exports.markAsRead = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
     
+    console.log(`[DEBUG] Marking notification ${id} as read for user ${userId}`);
+    
+    if (!id || !userId) {
+      console.error('[ERROR] Missing notification ID or user ID');
+      return res.status(400).json({ error: 'ID e njoftimit dhe user ID janë të detyrueshme' });
+    }
+    
     const notification = await NotificationService.markAsRead(id, userId);
+    
+    if (!notification) {
+      console.error(`[ERROR] Notification ${id} not found or not accessible by user ${userId}`);
+      return res.status(404).json({ error: 'Njoftimi nuk u gjet ose nuk ka akses' });
+    }
+    
+    console.log(`[SUCCESS] Notification ${id} marked as read for user ${userId}`);
     res.json(notification);
   } catch (error) {
-    console.error('Error marking notification as read:', error);
+    console.error('[ERROR] Error marking notification as read:', error);
     res.status(500).json({ error: 'Gabim në shënimin si të lexuar' });
   }
 };
