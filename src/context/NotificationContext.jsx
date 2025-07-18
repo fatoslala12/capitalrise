@@ -109,56 +109,80 @@ export const NotificationProvider = ({ children }) => {
 
     console.log('[DEBUG] Setting up EventSource for user:', user.id);
     
-    const eventSource = new EventSource(`/api/notifications/stream?userId=${user.id}`);
+    let eventSource;
+    let pollingInterval;
+    
+    try {
+      eventSource = new EventSource(`https://building-system.onrender.com/api/notifications/stream?userId=${user.id}`);
 
-    eventSource.onopen = () => {
-      console.log('[DEBUG] EventSource connected');
-    };
+      eventSource.onopen = () => {
+        console.log('[DEBUG] EventSource connected');
+      };
 
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('[DEBUG] EventSource message received:', data);
-        
-        if (data.type === 'notification') {
-          if (data.notification.action === 'markAsRead') {
-            // Përditëso notification ekzistuese
-            setNotifications(prev => 
-              prev.map(n => 
-                n.id === data.notification.id ? { ...n, isRead: true } : n
-              )
-            );
-            setUnreadCount(prev => Math.max(0, prev - 1));
-          } else if (data.notification.action === 'delete') {
-            // Hiq notification nga lista
-            setNotifications(prev => 
-              prev.filter(n => n.id !== data.notification.id)
-            );
-            // Kontrollo nëse ishte unread
-            const wasUnread = notifications.find(n => n.id === data.notification.id)?.isRead === false;
-            if (wasUnread) {
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('[DEBUG] EventSource message received:', data);
+          
+          if (data.type === 'notification') {
+            if (data.notification.action === 'markAsRead') {
+              // Përditëso notification ekzistuese
+              setNotifications(prev => 
+                prev.map(n => 
+                  n.id === data.notification.id ? { ...n, isRead: true } : n
+                )
+              );
               setUnreadCount(prev => Math.max(0, prev - 1));
+            } else if (data.notification.action === 'delete') {
+              // Hiq notification nga lista
+              setNotifications(prev => 
+                prev.filter(n => n.id !== data.notification.id)
+              );
+              // Kontrollo nëse ishte unread
+              const wasUnread = notifications.find(n => n.id === data.notification.id)?.isRead === false;
+              if (wasUnread) {
+                setUnreadCount(prev => Math.max(0, prev - 1));
+              }
+            } else {
+              // Njoftim i ri
+              addNotification(data.notification);
             }
-          } else {
-            // Njoftim i ri
-            addNotification(data.notification);
+          } else if (data.type === 'heartbeat') {
+            console.log('[DEBUG] EventSource heartbeat received');
           }
-        } else if (data.type === 'heartbeat') {
-          console.log('[DEBUG] EventSource heartbeat received');
+        } catch (error) {
+          console.error('[ERROR] Error parsing EventSource message:', error);
         }
-      } catch (error) {
-        console.error('[ERROR] Error parsing EventSource message:', error);
-      }
-    };
+      };
 
-    eventSource.onerror = (error) => {
-      console.error('[ERROR] EventSource error:', error);
-      eventSource.close();
-    };
+      eventSource.onerror = (error) => {
+        console.error('[ERROR] EventSource error:', error);
+        eventSource.close();
+        
+        // Fallback to polling nëse EventSource dështon
+        console.log('[DEBUG] Falling back to polling');
+        pollingInterval = setInterval(() => {
+          fetchNotifications();
+        }, 10000); // Poll çdo 10 sekonda
+      };
+    } catch (error) {
+      console.error('[ERROR] Failed to create EventSource:', error);
+      
+      // Fallback to polling
+      console.log('[DEBUG] Using polling as fallback');
+      pollingInterval = setInterval(() => {
+        fetchNotifications();
+      }, 10000); // Poll çdo 10 sekonda
+    }
 
     return () => {
-      console.log('[DEBUG] Closing EventSource connection');
-      eventSource.close();
+      console.log('[DEBUG] Cleaning up EventSource/polling');
+      if (eventSource) {
+        eventSource.close();
+      }
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
     };
   }, [user]);
 

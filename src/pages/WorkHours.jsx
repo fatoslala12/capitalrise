@@ -6,10 +6,22 @@ import axios from "axios";
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
   const day = today.getDay();
+  
   // Java tradicionale: E Hëna (1) → E Diel (0)
   // Nëse sot është e diel (0), fillimi i javës është e hënë e kaluar
   // Nëse sot është e hënë (1), fillimi i javës është sot
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1) + offset * 7;
+  let diff;
+  if (day === 0) {
+    // E diel - fillimi i javës është e hënë e kaluar
+    diff = today.getDate() - 6;
+  } else {
+    // Ditët e tjera - fillimi i javës është e hënë e kësaj jave
+    diff = today.getDate() - day + 1;
+  }
+  
+  // Shto offset për javët e tjera
+  diff += offset * 7;
+  
   const startOfWeek = new Date(today.getFullYear(), today.getMonth(), diff);
   return startOfWeek;
 };
@@ -39,6 +51,10 @@ export default function WorkHours() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   const currentWeekStart = getStartOfWeek();
   const currentWeekLabel = formatDateRange(currentWeekStart);
+  
+  // Debug logging
+  console.log('[DEBUG] Current week start:', currentWeekStart);
+  console.log('[DEBUG] Current week label:', currentWeekLabel);
 
   // Funksion për toast notifications
   const showToast = (message, type = 'info') => {
