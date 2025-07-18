@@ -28,4 +28,7 @@ router.post('/send-manual', verifyToken, notificationController.sendManualNotifi
 router.get('/settings', verifyToken, notificationController.getNotificationSettings);
 router.put('/settings', verifyToken, notificationController.updateNotificationSettings);
 
+// Analytics routes
+router.get('/analytics', verifyToken, notificationController.getNotificationAnalytics);
+
 module.exports = router; 

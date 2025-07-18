@@ -52,9 +52,9 @@ class NotificationService {
         return;
       }
 
-      // Merr të dhënat e përdoruesit
+      // Kontrollo notification settings të përdoruesit
       const userResult = await pool.query(
-        'SELECT email, first_name, last_name FROM users WHERE id = $1',
+        'SELECT email, first_name, last_name, notification_settings FROM users WHERE id = $1',
         [userId]
       );
       
@@ -68,6 +68,25 @@ class NotificationService {
         console.log('[WARNING] User has no email address:', userId);
         return;
       }
+
+      // Kontrollo nëse email notifications janë të aktivizuara
+      const settings = user.notification_settings || {};
+      if (settings.emailNotifications === false) {
+        console.log(`[INFO] Email notifications disabled for user ${userId}`);
+        return;
+      }
+
+      // Kontrollo orët e qetësisë
+      if (settings.quietHours && settings.quietHours.enabled) {
+        const now = new Date();
+        const currentTime = now.getHours() + ':' + now.getMinutes();
+        if (currentTime >= settings.quietHours.start || currentTime <= settings.quietHours.end) {
+          console.log(`[INFO] Quiet hours active for user ${userId}, skipping email`);
+          return;
+        }
+      }
+
+
 
       console.log(`[DEBUG] Sending email notification to ${user.email}: ${title}`);
 

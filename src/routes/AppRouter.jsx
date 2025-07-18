@@ -20,6 +20,7 @@ const PaymentDetails = lazy(() => import("../pages/PaymentDetails"));
 const ForgotPassword = lazy(() => import("../pages/ForgotPassword"));
 const MyProfile = lazy(() => import("../pages/MyProfile"));
 const NotificationsPage = lazy(() => import("../pages/NotificationsPage"));
+const NotificationAnalytics = lazy(() => import("../pages/NotificationAnalytics"));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -65,6 +66,7 @@ export default function AppRouter() {
               <Route path="reports" element={<Reports />} />
               <Route path="my-profile" element={<MyProfile />} />
               <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="notifications/analytics" element={<NotificationAnalytics />} />
             </Route>
 
             <Route path="/manager" element={<MainLayout />}>

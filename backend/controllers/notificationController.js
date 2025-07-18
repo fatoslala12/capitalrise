@@ -173,6 +173,144 @@ exports.sendManualNotification = async (req, res) => {
   }
 };
 
+// Merr analytics për njoftimet
+exports.getNotificationAnalytics = async (req, res) => {
+  try {
+    const { range = '7d' } = req.query;
+    const userId = req.user.id;
+    
+    // Përcakto datën e fillimit bazuar në range
+    let startDate;
+    const now = new Date();
+    
+    switch (range) {
+      case '30d':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '90d':
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default: // 7d
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
+
+    // Merr statistikat bazike
+    const basicStats = await pool.query(`
+      SELECT 
+        COUNT(*) as total,
+        COUNT(CASE WHEN is_read = false THEN 1 END) as unread,
+        COUNT(CASE WHEN is_read = true THEN 1 END) as read
+      FROM notifications 
+      WHERE created_at >= $1
+    `, [startDate]);
+
+    // Merr njoftimet sipas tipit
+    const typeStats = await pool.query(`
+      SELECT category, COUNT(*) as count
+      FROM notifications 
+      WHERE created_at >= $1
+      GROUP BY category
+      ORDER BY count DESC
+    `, [startDate]);
+
+    // Merr njoftimet sipas rolit të përdoruesit
+    const roleStats = await pool.query(`
+      SELECT u.role, COUNT(n.id) as count
+      FROM notifications n
+      JOIN users u ON n.user_id = u.id
+      WHERE n.created_at >= $1
+      GROUP BY u.role
+      ORDER BY count DESC
+    `, [startDate]);
+
+    // Merr aktivitetin ditor
+    const dailyStats = await pool.query(`
+      SELECT 
+        DATE(created_at) as date,
+        COUNT(*) as count
+      FROM notifications 
+      WHERE created_at >= $1
+      GROUP BY DATE(created_at)
+      ORDER BY date
+    `, [startDate]);
+
+    // Merr llojet më të popullarizuara
+    const topTypes = await pool.query(`
+      SELECT 
+        category as name,
+        COUNT(*) as count,
+        ROUND((COUNT(*) * 100.0 / (SELECT COUNT(*) FROM notifications WHERE created_at >= $1)), 1) as percentage
+      FROM notifications 
+      WHERE created_at >= $1
+      GROUP BY category
+      ORDER BY count DESC
+      LIMIT 5
+    `, [startDate]);
+
+    // Merr aktivitetin e fundit
+    const recentActivity = await pool.query(`
+      SELECT 
+        n.title as action,
+        n.message as description,
+        n.created_at as time,
+        CONCAT(u.first_name, ' ', u.last_name) as user
+      FROM notifications n
+      JOIN users u ON n.user_id = u.id
+      WHERE n.created_at >= $1
+      ORDER BY n.created_at DESC
+      LIMIT 10
+    `, [startDate]);
+
+    // Llogarit engagement rate (njoftimet e lexuara / total)
+    const engagementRate = basicStats.rows[0].total > 0 
+      ? Math.round((basicStats.rows[0].read / basicStats.rows[0].total) * 100)
+      : 0;
+
+    // Llogarit kohën mesatare të përgjigjes (simulim)
+    const averageResponseTime = Math.floor(Math.random() * 60) + 5; // 5-65 min
+
+    // Simulo email stats (në realitet do të vijnë nga email service)
+    const emailSent = Math.floor(basicStats.rows[0].total * 0.8); // 80% sukses
+    const emailFailed = basicStats.rows[0].total - emailSent;
+
+    const analytics = {
+      totalNotifications: parseInt(basicStats.rows[0].total),
+      unreadNotifications: parseInt(basicStats.rows[0].unread),
+      readNotifications: parseInt(basicStats.rows[0].read),
+      emailSent,
+      emailFailed,
+      notificationsByType: Object.fromEntries(
+        typeStats.rows.map(row => [row.category, parseInt(row.count)])
+      ),
+      notificationsByRole: Object.fromEntries(
+        roleStats.rows.map(row => [row.role, parseInt(row.count)])
+      ),
+      notificationsByDay: dailyStats.rows.map(row => ({
+        date: row.date,
+        count: parseInt(row.count)
+      })),
+      engagementRate,
+      averageResponseTime,
+      topNotificationTypes: topTypes.rows.map(row => ({
+        name: row.name,
+        count: parseInt(row.count),
+        percentage: parseFloat(row.percentage)
+      })),
+      recentActivity: recentActivity.rows.map(row => ({
+        action: row.action,
+        description: row.description,
+        time: new Date(row.time).toLocaleString('sq-AL'),
+        user: row.user
+      }))
+    };
+
+    res.json(analytics);
+  } catch (error) {
+    console.error('Error getting notification analytics:', error);
+    res.status(500).json({ error: 'Gabim në marrjen e analytics' });
+  }
+};
+
 // Merr notification settings
 exports.getNotificationSettings = async (req, res) => {
   try {

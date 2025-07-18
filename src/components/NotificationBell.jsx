@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Bell, X, Check, Trash2 } from 'lucide-react';
 import api from '../api';
+import pushNotificationService from '../utils/pushNotifications';
 
 const NotificationBell = () => {
   const { user } = useAuth();
@@ -46,6 +47,15 @@ const NotificationBell = () => {
       // Shfaq toast notification
       setNewNotification(notification);
       setShowNewNotification(true);
+      
+      // Shfaq push notification
+      if (pushNotificationService.getStatus().canShow) {
+        pushNotificationService.showNotification(notification.title, {
+          body: notification.message,
+          tag: `notification-${notification.id}`,
+          url: `/${user?.role}/notifications`
+        });
+      }
       
       // Fshi toast pas 5 sekondash
       setTimeout(() => {

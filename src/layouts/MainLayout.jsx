@@ -15,7 +15,8 @@ const adminMenu = [
   { path: "/admin/contracts", label: "📄 Kontratat" },
   { path: "/admin/tasks", label: "📝 Detyrat" },
   { path: "/admin/reports", label: "📈 Raportet" },
-  { path: "/admin/notifications", label: "🔔 Njoftimet" },
+          { path: "/admin/notifications", label: "🔔 Njoftimet" },
+        { path: "/admin/notifications/analytics", label: "📊 Analytics" },
 ];
 
 const managerMenu = [
