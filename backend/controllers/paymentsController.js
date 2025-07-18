@@ -89,6 +89,26 @@ exports.updatePayment = async (req, res) => {
               1
             );
             console.log(`[SUCCESS] Payment notification sent to employee ${employee.name}`);
+          } else {
+            // Nëse nuk ka user account, gjej user me email të njëjtë
+            const userResult = await pool.query(
+              'SELECT id FROM users WHERE email = $1',
+              [employee.email]
+            );
+            
+            if (userResult.rows.length > 0) {
+              await NotificationService.createNotification(
+                userResult.rows[0].id,
+                '💰 Pagesa u konfirmua',
+                `Orët tuaja për javën ${payment.week_label} u paguan: £${payment.net_amount}`,
+                'success',
+                'payment',
+                payment.id,
+                'payment_confirmed',
+                1
+              );
+              console.log(`[SUCCESS] Payment notification sent to user ${employee.email}`);
+            }
           }
           
           // 2. Njofto menaxherët

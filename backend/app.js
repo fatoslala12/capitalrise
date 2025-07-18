@@ -30,7 +30,15 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Compression middleware për të reduktuar madhësinë e përgjigjeve
 const compression = require('compression');
-app.use(compression());
+app.use(compression({
+  filter: (req, res) => {
+    // Mos kompreso EventSource responses
+    if (req.path === '/api/notifications/stream') {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
 
 // Routes
 const employeeRoutes = require('./routes/employees');
