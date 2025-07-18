@@ -1,27 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const notificationController = require('../controllers/notificationController');
 const { verifyToken } = require('../middleware/auth');
+const notificationController = require('../controllers/notificationController');
 
-// Merr njoftimet për përdoruesin
-router.get('/', verifyToken, notificationController.getUserNotifications);
+// Merr të gjitha njoftimet
+router.get('/', verifyToken, notificationController.getNotifications);
 
-// Merr numrin e njoftimeve të palexuara
-router.get('/unread-count', verifyToken, notificationController.getUnreadCount);
+// Shëno njoftimin si të lexuar
+router.patch('/:id/read', verifyToken, notificationController.markAsRead);
 
-// Merr të gjitha njoftimet (për faqen "Shiko të gjitha")
-router.get('/all', verifyToken, notificationController.getAllNotifications);
+// Shëno të gjitha si të lexuara
+router.patch('/mark-all-read', verifyToken, notificationController.markAllAsRead);
 
-// Mark as read
-router.put('/:notificationId/read', verifyToken, notificationController.markAsRead);
+// Fshi njoftimin
+router.delete('/:id', verifyToken, notificationController.deleteNotification);
 
-// Mark all as read
-router.put('/mark-all-read', verifyToken, notificationController.markAllAsRead);
+// Test endpoint për email notifications
+router.post('/test-email', verifyToken, notificationController.testEmailNotification);
 
-// Fshi një njoftim
-router.delete('/:notificationId', verifyToken, notificationController.deleteNotification);
-
-// Ekzekuto kontrollin e reminder-ëve (për admin)
-router.post('/run-reminders', verifyToken, notificationController.runReminderChecks);
+// Dërgo njoftim manual
+router.post('/send-manual', verifyToken, notificationController.sendManualNotification);
 
 module.exports = router; 

@@ -1,8 +1,9 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { MobileSidebar } from "../components/ui/Layout";
 import NotificationBell from "../components/NotificationBell";
+import api from "../api";
 // import Button from "../components/ui/Button";
 
 const adminMenu = [
@@ -38,6 +39,27 @@ export default function MainLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userFullName, setUserFullName] = useState('');
+
+  // Merr emrin e plotë të përdoruesit nga employees
+  useEffect(() => {
+    const fetchUserFullName = async () => {
+      try {
+        if (user?.employee_id) {
+          const response = await api.get(`/api/employees/${user.employee_id}`);
+          if (response.data) {
+            setUserFullName(`${response.data.name || ''} ${response.data.surname || ''}`.trim());
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user full name:', error);
+        // Nëse nuk gjej në employees, përdor email-in
+        setUserFullName(user?.email || '');
+      }
+    };
+
+    fetchUserFullName();
+  }, [user]);
 
   let menu = [];
   if (user?.role === "admin") menu = adminMenu;
@@ -124,7 +146,7 @@ export default function MainLayout() {
                                {/* Center welcome message */}
           <div className="flex-1 flex justify-center">
             <span className="text-gray-600 font-medium">
-              Mirë se vini, {user?.name || user?.email}
+              Mirë se vini, {userFullName || user?.email}
             </span>
           </div>
           

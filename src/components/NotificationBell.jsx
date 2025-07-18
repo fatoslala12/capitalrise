@@ -30,36 +30,34 @@ const NotificationBell = () => {
   // Shëno njoftimin si të lexuar
   const markAsRead = async (notificationId) => {
     try {
-      await api.patch(`/api/notifications/${notificationId}/read`);
+      // Përditëso UI menjëherë
       setNotifications(prev => 
         prev.map(n => 
           n.id === notificationId ? { ...n, isRead: true } : n
         )
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
+      
+      // Pastaj dërgo request në backend
+      await api.patch(`/api/notifications/${notificationId}/read`);
     } catch (error) {
       console.error('Gabim në shënimin si të lexuar:', error);
-      // Nëse ka gabim, përditëso lokal state për UI
-      setNotifications(prev => 
-        prev.map(n => 
-          n.id === notificationId ? { ...n, isRead: true } : n
-        )
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      // Nëse ka gabim, mos kthe mbrapa state-in
     }
   };
 
   // Shëno të gjitha si të lexuara
   const markAllAsRead = async () => {
     try {
-      await api.patch('/api/notifications/mark-all-read');
+      // Përditëso UI menjëherë
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
+      
+      // Pastaj dërgo request në backend
+      await api.patch('/api/notifications/mark-all-read');
     } catch (error) {
       console.error('Gabim në shënimin e të gjitha si të lexuara:', error);
-      // Nëse ka gabim, përditëso lokal state për UI
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      setUnreadCount(0);
+      // Nëse ka gabim, mos kthe mbrapa state-in
     }
   };
 

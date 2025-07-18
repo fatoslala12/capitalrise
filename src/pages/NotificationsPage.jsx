@@ -341,6 +341,24 @@ const NotificationsPage = () => {
                 Shëno të gjitha si të lexuara
               </button>
             )}
+
+            {/* Test Email Notification Button */}
+            <button
+              onClick={async () => {
+                try {
+                  const response = await api.post('/api/notifications/test-email');
+                  if (response.data.success) {
+                    alert('✅ Njoftimi test u dërgua me sukses! Kontrolloni email-in tuaj (fatoslala12@gmail.com)');
+                  }
+                } catch (error) {
+                  console.error('Error testing email notification:', error);
+                  alert('❌ Gabim në dërgimin e njoftimit test');
+                }
+              }}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+            >
+              📧 Test Email
+            </button>
           </div>
         </div>
       </div>

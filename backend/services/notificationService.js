@@ -1,4 +1,8 @@
 const pool = require('../db');
+const { Resend } = require('resend');
+
+// Inicializo Resend
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789');
 
 class NotificationService {
   // Krijo një njoftim të ri
@@ -10,10 +14,94 @@ class NotificationService {
          RETURNING *`,
         [userId, title, message, type, category, relatedId, relatedType, priority]
       );
+      
+      // Dërgo email notification nëse është e konfiguruar
+      await this.sendEmailNotification(userId, title, message, type);
+      
       return result.rows[0];
     } catch (error) {
       console.error('Error creating notification:', error);
       throw error;
+    }
+  }
+
+  // Dërgo email notification
+  static async sendEmailNotification(userId, title, message, type = 'info') {
+    try {
+      // Merr të dhënat e përdoruesit
+      const userResult = await pool.query(
+        'SELECT email, first_name, last_name FROM users WHERE id = $1',
+        [userId]
+      );
+      
+      if (userResult.rows.length === 0) {
+        console.log('User not found for email notification:', userId);
+        return;
+      }
+      
+      const user = userResult.rows[0];
+      if (!user.email) {
+        console.log('User has no email address:', userId);
+        return;
+      }
+
+      // Përcakto ikonën bazuar në tipin e njoftimit
+      const getNotificationIcon = (type) => {
+        switch (type) {
+          case 'success': return '✅';
+          case 'warning': return '⚠️';
+          case 'error': return '❌';
+          case 'info': return 'ℹ️';
+          default: return '🔔';
+        }
+      };
+
+      // Përgatit email-in
+      const { data, error } = await resend.emails.send({
+        from: 'Alban Construction <onboarding@resend.dev>',
+        to: [user.email],
+        subject: `🔔 Njoftim i ri - ${title}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px;">
+            <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #2563eb; margin: 0; font-size: 24px;">🏗️ Alban Construction</h1>
+                <p style="color: #666; margin: 10px 0 0 0;">Sistemi i Menaxhimit të Ndërtimit</p>
+              </div>
+              
+              <div style="background-color: #f1f5f9; border-left: 4px solid #2563eb; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                  <span style="font-size: 24px; margin-right: 10px;">${getNotificationIcon(type)}</span>
+                  <h2 style="margin: 0; color: #1e293b; font-size: 18px;">${title}</h2>
+                </div>
+                <p style="margin: 0; color: #475569; line-height: 1.6;">${message}</p>
+              </div>
+              
+              <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                <p style="color: #64748b; margin: 0; font-size: 14px;">
+                  Mirë se vini, ${user.first_name || user.email}
+                </p>
+                <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
+                  Ky email u dërgua automatikisht nga sistemi i njoftimeve.
+                </p>
+                <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
+                  Për të parë të gjitha njoftimet, vizitoni aplikacionin tuaj.
+                </p>
+              </div>
+            </div>
+          </div>
+        `
+      });
+
+      if (error) {
+        console.error('Error sending email notification:', error);
+      } else {
+        console.log('Email notification sent successfully to:', user.email);
+      }
+      
+    } catch (error) {
+      console.error('Error in sendEmailNotification:', error);
+      // Mos bëj throw error që të mos ndalojë procesin kryesor
     }
   }
 
@@ -251,38 +339,35 @@ class NotificationService {
     }
   }
 
-  // Reminder për ADMIN - Unpaid invoices (1 muaj)
+  // Reminder për ADMIN - Unpaid invoices (1 javë)
   static async checkUnpaidInvoices() {
     try {
       const result = await pool.query(`
-        SELECT i.id, i.invoice_number, c.company
-        FROM invoices i
-        JOIN contracts c ON i.contract_number = c.contract_number
-        WHERE i.paid = FALSE 
-        AND i.date < NOW() - INTERVAL '1 month'
+        SELECT COUNT(*) as count
+        FROM invoices 
+        WHERE paid = FALSE 
+        AND date < NOW() - INTERVAL '7 days'
       `);
 
-      if (result.rows.length > 0) {
+      if (parseInt(result.rows[0].count) > 0) {
         const adminUsers = await pool.query(
           "SELECT id FROM users WHERE role = 'admin'"
         );
 
-        for (const invoice of result.rows) {
-          const title = '⚠️ Faturë e papaguar!';
-          const message = `Fatura ${invoice.invoice_number} nga kompania ${invoice.company} nuk ju është paguar akoma`;
+        const title = '🧾 Faturat e papaguara!';
+        const message = `Ka ${result.rows[0].count} faturat e papaguara që duhen përfunduar këtë javë. Kontrolloni!`;
 
-          for (const user of adminUsers.rows) {
-            await this.createNotification(
-              user.id, 
-              title, 
-              message, 
-              'warning', 
-              'reminder', 
-              invoice.id, 
-              'invoice', 
-              3
-            );
-          }
+        for (const user of adminUsers.rows) {
+          await this.createNotification(
+            user.id, 
+            title, 
+            message, 
+            'warning', 
+            'reminder', 
+            null, 
+            null, 
+            2
+          );
         }
       }
     } catch (error) {
@@ -294,33 +379,31 @@ class NotificationService {
   static async checkUnpaidExpenses() {
     try {
       const result = await pool.query(`
-        SELECT id, expense_type, company_name
-        FROM expenses
+        SELECT COUNT(*) as count
+        FROM expenses 
         WHERE paid = FALSE 
         AND date < NOW() - INTERVAL '7 days'
       `);
 
-      if (result.rows.length > 0) {
+      if (parseInt(result.rows[0].count) > 0) {
         const adminUsers = await pool.query(
           "SELECT id FROM users WHERE role = 'admin'"
         );
 
-        for (const expense of result.rows) {
-          const title = '⚠️ Shpenzim i papaguar!';
-          const message = `Lutem paguani faturën ${expense.expense_type} për kompaninë ${expense.company_name}`;
+        const title = '💸 Shpenzimet e papaguara!';
+        const message = `Shpenzimet e këtij muaji duhen raportuar deri më 25 të këtij muaji`;
 
-          for (const user of adminUsers.rows) {
-            await this.createNotification(
-              user.id, 
-              title, 
-              message, 
-              'warning', 
-              'reminder', 
-              expense.id, 
-              'expense', 
-              3
-            );
-          }
+        for (const user of adminUsers.rows) {
+          await this.createNotification(
+            user.id, 
+            title, 
+            message, 
+            'warning', 
+            'reminder', 
+            null, 
+            null, 
+            2
+          );
         }
       }
     } catch (error) {
@@ -328,11 +411,16 @@ class NotificationService {
     }
   }
 
-  // Ekzekuto të gjitha kontrollin e reminder-ëve
+  // Ekzekuto të gjitha kontrollet e reminder-eve
   static async runReminderChecks() {
-    await this.checkUnpaidWorkHours();
-    await this.checkUnpaidInvoices();
-    await this.checkUnpaidExpenses();
+    try {
+      await this.checkUnpaidWorkHours();
+      await this.checkUnpaidInvoices();
+      await this.checkUnpaidExpenses();
+      console.log('Reminder checks completed successfully');
+    } catch (error) {
+      console.error('Error running reminder checks:', error);
+    }
   }
 }
 
