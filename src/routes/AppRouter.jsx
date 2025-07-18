@@ -19,6 +19,7 @@ const Reports = lazy(() => import("../pages/Reports"));
 const PaymentDetails = lazy(() => import("../pages/PaymentDetails"));
 const ForgotPassword = lazy(() => import("../pages/ForgotPassword"));
 const MyProfile = lazy(() => import("../pages/MyProfile"));
+const NotificationsPage = lazy(() => import("../pages/NotificationsPage"));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -48,6 +49,7 @@ export default function AppRouter() {
         ) : (
           <>
             <Route path="/" element={<Navigate to={`/${user.role}/dashboard`} />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
 
             <Route path="/admin" element={<MainLayout />}>
               <Route path="dashboard" element={<Dashboard />} />
@@ -62,6 +64,7 @@ export default function AppRouter() {
               <Route path="tasks" element={<Tasks />} />
               <Route path="reports" element={<Reports />} />
               <Route path="my-profile" element={<MyProfile />} />
+              <Route path="notifications" element={<NotificationsPage />} />
             </Route>
 
             <Route path="/manager" element={<MainLayout />}>
@@ -73,6 +76,7 @@ export default function AppRouter() {
               <Route path="my-tasks" element={<MyTasks />} />
               <Route path="my-profile" element={<MyProfile />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="notifications" element={<NotificationsPage />} />
             </Route>
 
             <Route path="/user" element={<MainLayout />}>
@@ -80,6 +84,7 @@ export default function AppRouter() {
               <Route path="work-hours" element={<WorkHours />} />
               <Route path="my-tasks" element={<MyTasks />} />
               <Route path="my-profile" element={<MyProfile />} />
+              <Route path="notifications" element={<NotificationsPage />} />
             </Route>
           </>
         )}
