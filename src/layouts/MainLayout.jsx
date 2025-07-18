@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { MobileSidebar } from "../components/ui/Layout";
 import NotificationBell from "../components/NotificationBell";
-import { useNotifications } from "../context/NotificationContext";
 // import Button from "../components/ui/Button";
 
 const adminMenu = [
@@ -39,14 +38,6 @@ export default function MainLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // Kontrollo nëse NotificationProvider është i disponueshëm
-  let notificationsContext = null;
-  try {
-    notificationsContext = useNotifications();
-  } catch (error) {
-    console.warn('NotificationProvider nuk është i disponueshëm:', error.message);
-  }
 
   let menu = [];
   if (user?.role === "admin") menu = adminMenu;
@@ -133,7 +124,7 @@ export default function MainLayout() {
                      {/* Logout button - always visible on right */}
            <div className="flex items-center gap-4">
              <span className="hidden lg:inline text-gray-600">Mirë se vini, {user?.name || user?.email}</span>
-             {notificationsContext && <NotificationBell />}
+             <NotificationBell />
              <button
                onClick={logout}
                className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors flex items-center gap-2"

@@ -1,25 +1,84 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
-import { useNavigate } from 'react-router-dom';
-import { Bell, Search, Filter, Trash2, Check, ArrowLeft } from 'lucide-react';
+import { Bell, Search, Filter, Trash2, Check, CheckCheck } from 'lucide-react';
+import api from '../api';
 
 const NotificationsPage = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterRead, setFilterRead] = useState('all');
-  
-  // Përdor kontekstin e njoftimeve
-  const { 
-    notifications, 
-    loading, 
-    markAsRead, 
-    deleteNotification, 
-    markAllAsRead,
-    fetchNotifications 
-  } = useNotifications();
+  const [selectedNotifications, setSelectedNotifications] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  // Merr të gjitha njoftimet
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/api/notifications');
+      setNotifications(response.data);
+    } catch (error) {
+      console.error('Gabim në marrjen e njoftimeve:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Shëno njoftimin si të lexuar
+  const markAsRead = async (notificationId) => {
+    try {
+      await api.patch(`/api/notifications/${notificationId}/read`);
+      setNotifications(prev => 
+        prev.map(n => 
+          n.id === notificationId ? { ...n, isRead: true } : n
+        )
+      );
+    } catch (error) {
+      console.error('Gabim në shënimin si të lexuar:', error);
+    }
+  };
+
+  // Shëno të gjitha si të lexuara
+  const markAllAsRead = async () => {
+    try {
+      await api.patch('/api/notifications/mark-all-read');
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setSelectedNotifications([]);
+      setSelectAll(false);
+    } catch (error) {
+      console.error('Gabim në shënimin e të gjitha si të lexuara:', error);
+    }
+  };
+
+  // Fshi njoftimin
+  const deleteNotification = async (notificationId) => {
+    try {
+      await api.delete(`/api/notifications/${notificationId}`);
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      setSelectedNotifications(prev => prev.filter(id => id !== notificationId));
+    } catch (error) {
+      console.error('Gabim në fshirjen e njoftimit:', error);
+    }
+  };
+
+  // Fshi njoftimet e zgjedhura
+  const deleteSelected = async () => {
+    try {
+      await Promise.all(selectedNotifications.map(id => api.delete(`/api/notifications/${id}`)));
+      setNotifications(prev => prev.filter(n => !selectedNotifications.includes(n.id)));
+      setSelectedNotifications([]);
+      setSelectAll(false);
+    } catch (error) {
+      console.error('Gabim në fshirjen e njoftimeve të zgjedhura:', error);
+    }
+  };
+
+  // Merr njoftimet kur komponenti mountohet
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   // Filtro njoftimet
   const filteredNotifications = notifications.filter(notification => {
@@ -29,11 +88,33 @@ const NotificationsPage = () => {
     const matchesType = filterType === 'all' || notification.type === filterType;
     
     const matchesRead = filterRead === 'all' || 
-                       (filterRead === 'unread' && !notification.isRead) ||
-                       (filterRead === 'read' && notification.isRead);
+                       (filterRead === 'read' && notification.isRead) ||
+                       (filterRead === 'unread' && !notification.isRead);
     
     return matchesSearch && matchesType && matchesRead;
   });
+
+  // Handle select all
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedNotifications([]);
+      setSelectAll(false);
+    } else {
+      setSelectedNotifications(filteredNotifications.map(n => n.id));
+      setSelectAll(true);
+    }
+  };
+
+  // Handle select individual
+  const handleSelectNotification = (notificationId) => {
+    setSelectedNotifications(prev => {
+      if (prev.includes(notificationId)) {
+        return prev.filter(id => id !== notificationId);
+      } else {
+        return [...prev, notificationId];
+      }
+    });
+  };
 
   const formatTimeAgo = (dateString) => {
     const now = new Date();
@@ -80,90 +161,101 @@ const NotificationsPage = () => {
       case 'task_assigned':
         return 'Detyrë e caktuar';
       case 'work_hours_reminder':
-        return 'Kujtesë orësh pune';
+        return 'Kujtues orët e punës';
       case 'invoice_reminder':
-        return 'Kujtesë faturash';
+        return 'Kujtues faturë';
       case 'expense_reminder':
-        return 'Kujtesë shpenzimesh';
+        return 'Kujtues shpenzime';
       default:
         return 'Njoftim';
     }
   };
 
-  const handleNotificationClick = (notification) => {
-    if (!notification.isRead) {
-      markAsRead(notification.id);
-    }
-    
-    // Navigo në faqen e duhur bazuar në rolin e përdoruesit
-    const basePath = `/${user?.role}`;
-    switch (notification.type) {
-      case 'contract_assigned':
-        navigate(`${basePath}/contracts`);
-        break;
-      case 'payment_received':
-        navigate(`${basePath}/payments`);
-        break;
-      case 'task_assigned':
-        if (user?.role === 'user') {
-          navigate(`${basePath}/my-tasks`);
-        } else {
-          navigate(`${basePath}/tasks`);
-        }
-        break;
-      case 'work_hours_reminder':
-        navigate(`${basePath}/work-hours`);
-        break;
-      case 'invoice_reminder':
-        navigate(`${basePath}/payments`);
-        break;
-      case 'expense_reminder':
-        navigate(`${basePath}/reports`);
-        break;
-      default:
-        break;
-    }
-  };
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div className="flex items-center gap-3">
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-3 bg-blue-100 rounded-xl">
             <Bell size={24} className="text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Njoftimet</h1>
-            {unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-sm px-2 py-1 rounded-full font-medium">
-                {unreadCount} të palexuara
-              </span>
-            )}
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Njoftimet</h1>
+            <p className="text-gray-600">Menaxho të gjitha njoftimet tuaja</p>
           </div>
         </div>
         
-        {unreadCount > 0 && (
-          <button
-            onClick={markAllAsRead}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            Shëno të gjitha si të lexuara
-          </button>
-        )}
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Bell size={20} className="text-blue-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{notifications.length}</p>
+                <p className="text-sm text-gray-600">Total</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <Bell size={20} className="text-red-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">
+                  {notifications.filter(n => !n.isRead).length}
+                </p>
+                <p className="text-sm text-gray-600">Të palexuara</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Check size={20} className="text-green-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">
+                  {notifications.filter(n => n.isRead).length}
+                </p>
+                <p className="text-sm text-gray-600">Të lexuara</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Filter size={20} className="text-purple-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">
+                  {new Set(notifications.map(n => n.type)).size}
+                </p>
+                <p className="text-sm text-gray-600">Lloje</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4">
+      {/* Filters and Actions */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
           {/* Search */}
-          <div className="flex-1">
+          <div className="flex-1 max-w-md">
             <div className="relative">
               <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
@@ -176,129 +268,158 @@ const NotificationsPage = () => {
             </div>
           </div>
 
-          {/* Type Filter */}
-          <div className="flex gap-2">
+          {/* Filters */}
+          <div className="flex gap-4">
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="all">Të gjitha tipet</option>
-              <option value="contract_assigned">Kontratat</option>
-              <option value="payment_received">Pagesat</option>
-              <option value="task_assigned">Detyrat</option>
-              <option value="work_hours_reminder">Orët e punës</option>
-              <option value="invoice_reminder">Faturat</option>
-              <option value="expense_reminder">Shpenzimet</option>
+              <option value="all">Të gjitha llojet</option>
+              <option value="contract_assigned">Kontratë e caktuar</option>
+              <option value="payment_received">Pagesë e marrë</option>
+              <option value="task_assigned">Detyrë e caktuar</option>
+              <option value="work_hours_reminder">Kujtues orët e punës</option>
+              <option value="invoice_reminder">Kujtues faturë</option>
+              <option value="expense_reminder">Kujtues shpenzime</option>
             </select>
 
             <select
               value={filterRead}
               onChange={(e) => setFilterRead(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">Të gjitha</option>
               <option value="unread">Të palexuara</option>
               <option value="read">Të lexuara</option>
             </select>
           </div>
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            {selectedNotifications.length > 0 && (
+              <button
+                onClick={deleteSelected}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+              >
+                <Trash2 size={16} />
+                Fshi të zgjedhurat ({selectedNotifications.length})
+              </button>
+            )}
+            
+            {notifications.filter(n => !n.isRead).length > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+              >
+                <CheckCheck size={16} />
+                Shëno të gjitha si të lexuara
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Notifications List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Duke ngarkuar njoftimet...</p>
-          </div>
-        ) : filteredNotifications.length === 0 ? (
-          <div className="p-8 text-center">
-            <Bell size={48} className="text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Nuk ka njoftime</h3>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {filteredNotifications.length === 0 ? (
+          <div className="p-12 text-center">
+            <Bell size={64} className="text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Nuk ka njoftime</h3>
             <p className="text-gray-600">
               {searchTerm || filterType !== 'all' || filterRead !== 'all' 
-                ? 'Nuk u gjetën njoftime me filtrat e zgjedhur' 
-                : 'Ju nuk keni njoftime për momentin'}
+                ? 'Provoni të ndryshoni filtrat për të parë më shumë rezultate'
+                : 'Ju do të njoftoheni kur të ketë diçka të re'
+              }
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
-            {filteredNotifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`p-6 hover:bg-gray-50 transition-colors ${
-                  !notification.isRead ? 'bg-blue-50' : ''
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  <span className="text-2xl">{getNotificationIcon(notification.type)}</span>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className={`text-lg font-semibold ${
-                        !notification.isRead ? 'text-gray-900' : 'text-gray-700'
-                      }`}>
-                        {notification.title}
-                      </h3>
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                        {getNotificationTypeLabel(notification.type)}
-                      </span>
+          <>
+            {/* Table Header */}
+            <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
+              <div className="flex items-center gap-4">
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAll}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="font-semibold text-gray-900">Njoftimi</span>
+                <span className="font-semibold text-gray-900 ml-auto">Data</span>
+                <span className="font-semibold text-gray-900 w-24 text-center">Veprime</span>
+              </div>
+            </div>
+
+            {/* Notifications */}
+            <div className="divide-y divide-gray-200">
+              {filteredNotifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`px-6 py-4 hover:bg-gray-50 transition-colors ${
+                    !notification.isRead ? 'bg-blue-50' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedNotifications.includes(notification.id)}
+                      onChange={() => handleSelectNotification(notification.id)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className={`p-2 rounded-lg ${!notification.isRead ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                        <span className="text-lg">{getNotificationIcon(notification.type)}</span>
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className={`font-medium ${
+                            !notification.isRead ? 'text-gray-900' : 'text-gray-700'
+                          }`}>
+                            {notification.title}
+                          </h3>
+                          {!notification.isRead && (
+                            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                          )}
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                            {getNotificationTypeLabel(notification.type)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-1">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {formatTimeAgo(notification.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-24 justify-center">
                       {!notification.isRead && (
-                        <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">
-                          E re
-                        </span>
+                        <button
+                          onClick={() => markAsRead(notification.id)}
+                          className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
+                          title="Shëno si të lexuar"
+                        >
+                          <Check size={16} />
+                        </button>
                       )}
-                    </div>
-                    
-                    <p className="text-gray-600 mb-2">{notification.message}</p>
-                    
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>{formatTimeAgo(notification.createdAt)}</span>
-                      <span>•</span>
-                      <span>ID: {notification.id}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {!notification.isRead && (
                       <button
-                        onClick={() => markAsRead(notification.id)}
-                        className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Shëno si të lexuar"
+                        onClick={() => deleteNotification(notification.id)}
+                        className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                        title="Fshi njoftimin"
                       >
-                        <Check size={16} />
+                        <Trash2 size={16} />
                       </button>
-                    )}
-                    
-                    <button
-                      onClick={() => handleNotificationClick(notification)}
-                      className="px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
-                    >
-                      Shiko
-                    </button>
-                    
-                    <button
-                      onClick={() => deleteNotification(notification.id)}
-                      className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Fshi njoftimin"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
-
-      {/* Summary */}
-      {filteredNotifications.length > 0 && (
-        <div className="mt-4 text-center text-sm text-gray-600">
-          Shfaqen {filteredNotifications.length} nga {notifications.length} njoftime
-        </div>
-      )}
     </div>
   );
 };

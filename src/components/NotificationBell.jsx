@@ -1,24 +1,81 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { Bell, X, Check, Trash2 } from 'lucide-react';
+import api from '../api';
 
 const NotificationBell = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
   
-  // Përdor kontekstin e njoftimeve
-  const { 
-    notifications, 
-    unreadCount, 
-    markAsRead, 
-    deleteNotification, 
-    markAllAsRead,
-    loading 
-  } = useNotifications();
+  // Merr të gjitha njoftimet
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/api/notifications');
+      setNotifications(response.data);
+      setUnreadCount(response.data.filter(n => !n.isRead).length);
+    } catch (error) {
+      console.error('Gabim në marrjen e njoftimeve:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Shëno njoftimin si të lexuar
+  const markAsRead = async (notificationId) => {
+    try {
+      await api.patch(`/api/notifications/${notificationId}/read`);
+      setNotifications(prev => 
+        prev.map(n => 
+          n.id === notificationId ? { ...n, isRead: true } : n
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Gabim në shënimin si të lexuar:', error);
+    }
+  };
+
+  // Shëno të gjitha si të lexuara
+  const markAllAsRead = async () => {
+    try {
+      await api.patch('/api/notifications/mark-all-read');
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Gabim në shënimin e të gjitha si të lexuara:', error);
+    }
+  };
+
+  // Fshi njoftimin
+  const deleteNotification = async (notificationId) => {
+    try {
+      await api.delete(`/api/notifications/${notificationId}`);
+      setNotifications(prev => {
+        const filtered = prev.filter(n => n.id !== notificationId);
+        const wasUnread = prev.find(n => n.id === notificationId)?.isRead === false;
+        if (wasUnread) {
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+        return filtered;
+      });
+    } catch (error) {
+      console.error('Gabim në fshirjen e njoftimit:', error);
+    }
+  };
+
+  // Merr njoftimet kur komponenti mountohet
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+    }
+  }, [user]);
 
   // Nëse përdoruesi nuk është i loguar, mos shfaq asgjë
   if (!user) {
