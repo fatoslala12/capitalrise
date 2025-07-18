@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { Bell, Search, Filter, Trash2, Check, CheckCheck, Download, FileText } from 'lucide-react';
-import api from '../api';
 
 const NotificationsPage = () => {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { notifications, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterRead, setFilterRead] = useState('all');
@@ -74,8 +73,7 @@ const NotificationsPage = () => {
   // Fshi njoftimet e zgjedhura
   const deleteSelected = async () => {
     try {
-      await Promise.all(selectedNotifications.map(id => api.delete(`/api/notifications/${id}`)));
-      setNotifications(prev => prev.filter(n => !selectedNotifications.includes(n.id)));
+      await Promise.all(selectedNotifications.map(id => deleteNotification(id)));
       setSelectedNotifications([]);
       setSelectAll(false);
     } catch (error) {
@@ -188,17 +186,7 @@ const NotificationsPage = () => {
     }
   };
 
-  // Merr njoftimet kur komponenti mountohet
-  useEffect(() => {
-    fetchNotifications();
-    
-    // Polling për real-time updates çdo 30 sekonda
-    const interval = setInterval(() => {
-      fetchNotifications();
-    }, 30000);
-    
-    return () => clearInterval(interval);
-  }, []);
+
 
   // Filtro njoftimet
   const filteredNotifications = notifications.filter(notification => {

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 import api from '../api';
 
 const NotificationContext = createContext();
@@ -12,13 +13,15 @@ export const useNotifications = () => {
 };
 
 export const NotificationProvider = ({ children }) => {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // Merr të gjitha njoftimet
   const fetchNotifications = async () => {
+    if (!user) return;
+    
     try {
       setLoading(true);
       const response = await api.get('/api/notifications');
@@ -34,13 +37,16 @@ export const NotificationProvider = ({ children }) => {
   // Shëno njoftimin si të lexuar
   const markAsRead = async (notificationId) => {
     try {
-      await api.patch(`/api/notifications/${notificationId}/read`);
+      // Përditëso UI menjëherë
       setNotifications(prev => 
         prev.map(n => 
           n.id === notificationId ? { ...n, isRead: true } : n
         )
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
+      
+      // Pastaj dërgo request në backend
+      await api.patch(`/api/notifications/${notificationId}/read`);
     } catch (error) {
       console.error('Gabim në shënimin si të lexuar:', error);
     }
@@ -49,9 +55,12 @@ export const NotificationProvider = ({ children }) => {
   // Shëno të gjitha si të lexuara
   const markAllAsRead = async () => {
     try {
-      await api.patch('/api/notifications/mark-all-read');
+      // Përditëso UI menjëherë
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
+      
+      // Pastaj dërgo request në backend
+      await api.patch('/api/notifications/mark-all-read');
     } catch (error) {
       console.error('Gabim në shënimin e të gjitha si të lexuara:', error);
     }
@@ -77,23 +86,20 @@ export const NotificationProvider = ({ children }) => {
   // Shto njoftim të ri (për real-time updates)
   const addNotification = (notification) => {
     setNotifications(prev => [notification, ...prev]);
-    if (!notification.isRead) {
-      setUnreadCount(prev => prev + 1);
-    }
+    setUnreadCount(prev => prev + 1);
   };
 
   // Merr njoftimet kur komponenti mountohet
   useEffect(() => {
-    fetchNotifications().finally(() => {
-      setIsInitialized(true);
-    });
-  }, []);
+    if (user) {
+      fetchNotifications();
+    }
+  }, [user]);
 
   const value = {
     notifications,
     unreadCount,
     loading,
-    isInitialized,
     fetchNotifications,
     markAsRead,
     markAllAsRead,

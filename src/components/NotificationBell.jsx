@@ -1,34 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { Bell, X, Check, Trash2 } from 'lucide-react';
-import api from '../api';
 import pushNotificationService from '../utils/pushNotifications';
 
 const NotificationBell = () => {
   const { user } = useAuth();
+  const { notifications, unreadCount, markAsRead, deleteNotification } = useNotifications();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [showNewNotification, setShowNewNotification] = useState(false);
   const [newNotification, setNewNotification] = useState(null);
   
-  // Merr të gjitha njoftimet
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/api/notifications');
-      setNotifications(response.data);
-      setUnreadCount(response.data.filter(n => !n.isRead).length);
-    } catch (error) {
-      console.error('Gabim në marrjen e njoftimeve:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   // Real-time notification listener
   useEffect(() => {
@@ -39,10 +25,6 @@ const NotificationBell = () => {
     
     eventSource.onmessage = (event) => {
       const notification = JSON.parse(event.data);
-      
-      // Shto njoftimin e ri në listë
-      setNotifications(prev => [notification, ...prev]);
-      setUnreadCount(prev => prev + 1);
       
       // Shfaq toast notification
       setNewNotification(notification);
@@ -74,63 +56,7 @@ const NotificationBell = () => {
     };
   }, [user]);
 
-  // Shëno njoftimin si të lexuar
-  const markAsRead = async (notificationId) => {
-    try {
-      // Përditëso UI menjëherë
-      setNotifications(prev => 
-        prev.map(n => 
-          n.id === notificationId ? { ...n, isRead: true } : n
-        )
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
-      
-      // Pastaj dërgo request në backend
-      await api.patch(`/api/notifications/${notificationId}/read`);
-    } catch (error) {
-      console.error('Gabim në shënimin si të lexuar:', error);
-      // Nëse ka gabim, mos kthe mbrapa state-in
-    }
-  };
 
-  // Shëno të gjitha si të lexuara
-  const markAllAsRead = async () => {
-    try {
-      // Përditëso UI menjëherë
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      setUnreadCount(0);
-      
-      // Pastaj dërgo request në backend
-      await api.patch('/api/notifications/mark-all-read');
-    } catch (error) {
-      console.error('Gabim në shënimin e të gjitha si të lexuara:', error);
-      // Nëse ka gabim, mos kthe mbrapa state-in
-    }
-  };
-
-  // Fshi njoftimin
-  const deleteNotification = async (notificationId) => {
-    try {
-      await api.delete(`/api/notifications/${notificationId}`);
-      setNotifications(prev => {
-        const filtered = prev.filter(n => n.id !== notificationId);
-        const wasUnread = prev.find(n => n.id === notificationId)?.isRead === false;
-        if (wasUnread) {
-          setUnreadCount(prev => Math.max(0, prev - 1));
-        }
-        return filtered;
-      });
-    } catch (error) {
-      console.error('Gabim në fshirjen e njoftimit:', error);
-    }
-  };
-
-  // Merr njoftimet kur komponenti mountohet
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-    }
-  }, [user]);
 
   // Nëse përdoruesi nuk është i loguar, mos shfaq asgjë
   if (!user) {
