@@ -244,6 +244,7 @@ const NotificationsPage = () => {
     
     // Kontrollo nëse data është e vlefshme
     if (isNaN(date.getTime())) {
+      console.log('Invalid date:', dateString);
       return 'Tani';
     }
     
