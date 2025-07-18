@@ -236,6 +236,12 @@ const NotificationsPage = () => {
       return 'Tani';
     }
     
+    // Kontrollo nëse data është në të ardhmen (gabim në timezone)
+    if (date > now) {
+      console.log('Future date detected:', dateString);
+      return 'Tani';
+    }
+    
     const diffInMinutes = Math.floor((now - date) / (1000 * 60));
     
     if (diffInMinutes < 1) return 'Tani';
