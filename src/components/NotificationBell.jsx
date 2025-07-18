@@ -1,15 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNotifications } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Bell, X, Check, Trash2 } from 'lucide-react';
 
 const NotificationBell = () => {
-  const { notifications, unreadCount, markAsRead, deleteNotification, markAllAsRead } = useNotifications();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const navigate = useNavigate();
+  
+  // Të dhëna të thjeshta për testim
+  const [notifications] = useState([]);
+  const [unreadCount] = useState(0);
+
+  // Nëse përdoruesi nuk është i loguar, mos shfaq asgjë
+  if (!user) {
+    return null;
+  }
 
   // Mbyll dropdown-in kur klikohet jashtë
   useEffect(() => {
@@ -24,9 +31,6 @@ const NotificationBell = () => {
   }, []);
 
   const handleNotificationClick = (notification) => {
-    if (!notification.isRead) {
-      markAsRead(notification.id);
-    }
     setIsOpen(false);
     
     // Navigo në faqen e duhur bazuar në tipin e njoftimit dhe rolin e përdoruesit
@@ -122,14 +126,6 @@ const NotificationBell = () => {
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h3 className="font-semibold text-gray-900">Njoftimet</h3>
             <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
-                <button
-                  onClick={markAllAsRead}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Shëno të gjitha si të lexuara
-                </button>
-              )}
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -168,28 +164,6 @@ const NotificationBell = () => {
                       <p className="text-xs text-gray-400 mt-1">
                         {formatTimeAgo(notification.createdAt)}
                       </p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {!notification.isRead && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            markAsRead(notification.id);
-                          }}
-                          className="p-1 text-green-600 hover:text-green-800"
-                        >
-                          <Check size={14} />
-                        </button>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotification(notification.id);
-                        }}
-                        className="p-1 text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 size={14} />
-                      </button>
                     </div>
                   </div>
                 </div>

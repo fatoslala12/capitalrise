@@ -15,6 +15,7 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Merr të gjitha njoftimet
   const fetchNotifications = async () => {
@@ -83,13 +84,16 @@ export const NotificationProvider = ({ children }) => {
 
   // Merr njoftimet kur komponenti mountohet
   useEffect(() => {
-    fetchNotifications();
+    fetchNotifications().finally(() => {
+      setIsInitialized(true);
+    });
   }, []);
 
   const value = {
     notifications,
     unreadCount,
     loading,
+    isInitialized,
     fetchNotifications,
     markAsRead,
     markAllAsRead,
