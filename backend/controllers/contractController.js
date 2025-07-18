@@ -1,4 +1,5 @@
 const pool = require('../db');
+const NotificationService = require('../services/notificationService');
 console.log('Contract controller loaded');
 
 // GET all contracts
@@ -111,8 +112,18 @@ exports.createContract = async (req, res) => {
         documents ? JSON.stringify(documents) : null
       ]
     );
-    console.log(`[DEBUG] Kontrata u shtua: ${result.rows[0].id}`);
-    res.status(201).json(result.rows[0]);
+    const newContract = result.rows[0];
+    console.log(`[DEBUG] Kontrata u shtua: ${newContract.id}`);
+    
+    // Dërgo notification për admin
+    try {
+      await NotificationService.notifyAdminContractCreated(site_name, newContract.id);
+      console.log(`[DEBUG] Notification sent for new contract: ${site_name}`);
+    } catch (notificationError) {
+      console.error('[ERROR] Failed to send contract notification:', notificationError);
+    }
+    
+    res.status(201).json(newContract);
   } catch (err) {
     console.error("[ERROR] Gjatë shtimit të kontratës:", err);
     res.status(400).json({ error: err.message });

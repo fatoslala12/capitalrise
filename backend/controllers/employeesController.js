@@ -1,5 +1,6 @@
 const pool = require('../db');
 const bcrypt = require('bcrypt'); // për password hash
+const NotificationService = require('../services/notificationService');
 
 exports.getAllEmployees = async (req, res) => {
   try {
@@ -118,6 +119,15 @@ exports.createEmployee = async (req, res) => {
     }
 
     await client.query('COMMIT');
+    
+    // Dërgo notification për admin
+    try {
+      await NotificationService.notifyAdminEmployeeAdded(`${first_name} ${last_name}`);
+      console.log(`[DEBUG] Notification sent for new employee: ${first_name} ${last_name}`);
+    } catch (notificationError) {
+      console.error('[ERROR] Failed to send employee notification:', notificationError);
+    }
+    
     res.status(201).json({ employee, user, workplaces: insertedWorkplaces });
   } catch (err) {
     console.error("Gabim gjatë shtimit të punonjësit:", err);
