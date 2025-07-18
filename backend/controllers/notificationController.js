@@ -17,11 +17,12 @@ exports.getNotifications = async (req, res) => {
 exports.getNotificationStream = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log(`[DEBUG] EventSource connection attempt for user ${userId}`);
     
     // Set headers for Server-Sent Events
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache, no-transform',
+      'Cache-Control': 'no-cache',
       'Connection': 'keep-alive',
       'Access-Control-Allow-Origin': 'https://building-system-seven.vercel.app',
       'Access-Control-Allow-Credentials': 'true',
@@ -37,6 +38,7 @@ exports.getNotificationStream = async (req, res) => {
       global.notificationStreams = new Map();
     }
     global.notificationStreams.set(userId, res);
+    console.log(`[DEBUG] EventSource stream established for user ${userId}`);
 
     // Handle client disconnect
     req.on('close', () => {

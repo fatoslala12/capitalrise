@@ -28,18 +28,6 @@ app.get('/api/health', (req, res) => {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Compression middleware për të reduktuar madhësinë e përgjigjeve
-const compression = require('compression');
-app.use(compression({
-  filter: (req, res) => {
-    // Mos kompreso EventSource responses
-    if (req.path === '/api/notifications/stream') {
-      return false;
-    }
-    return compression.filter(req, res);
-  }
-}));
-
 // Routes
 const employeeRoutes = require('./routes/employees');
 app.use('/api/employees', employeeRoutes);
@@ -75,7 +63,33 @@ const invoiceRoutes = require('./routes/invoices');
 app.use('/api/invoices', invoiceRoutes);
 
 const notificationRoutes = require('./routes/notifications');
+
+// EventSource route specifike (para compression)
+app.get('/api/notifications/stream', (req, res, next) => {
+  // Disable compression për EventSource
+  res.set('Cache-Control', 'no-cache');
+  res.set('Connection', 'keep-alive');
+  res.set('Content-Type', 'text/event-stream');
+  res.set('Access-Control-Allow-Origin', 'https://building-system-seven.vercel.app');
+  res.set('Access-Control-Allow-Credentials', 'true');
+  res.set('Access-Control-Allow-Headers', 'Cache-Control');
+  res.set('X-Accel-Buffering', 'no');
+  next();
+});
+
 app.use('/api/notifications', notificationRoutes);
+
+// Compression middleware për të reduktuar madhësinë e përgjigjeve (pas routes)
+const compression = require('compression');
+app.use(compression({
+  filter: (req, res) => {
+    // Mos kompreso EventSource responses
+    if (req.path === '/api/notifications/stream') {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

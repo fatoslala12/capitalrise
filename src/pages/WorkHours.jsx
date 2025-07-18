@@ -7,8 +7,11 @@ const getStartOfWeek = (offset = 0) => {
   const today = new Date();
   const day = today.getDay();
   // Java tradicionale: E Hëna (1) → E Diel (0)
+  // Nëse sot është e diel (0), fillimi i javës është e hënë e kaluar
+  // Nëse sot është e hënë (1), fillimi i javës është sot
   const diff = today.getDate() - day + (day === 0 ? -6 : 1) + offset * 7;
-  return new Date(today.setDate(diff));
+  const startOfWeek = new Date(today.getFullYear(), today.getMonth(), diff);
+  return startOfWeek;
 };
 
 const formatDateRange = (startDate) => {
