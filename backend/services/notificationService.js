@@ -140,6 +140,86 @@ class NotificationService {
     }
   }
 
+  // Dërgo email notification për admin specifik
+  static async sendAdminEmailNotification(title, message, type = 'info') {
+    try {
+      // Kontrollo nëse RESEND_API_KEY është konfiguruar
+      if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_123456789') {
+        console.log('[WARNING] RESEND_API_KEY nuk është konfiguruar ose është default. Email nuk do të dërgohet.');
+        return;
+      }
+
+      const adminEmail = 'fatoslala12@gmail.com';
+      console.log(`[DEBUG] Sending admin email notification to ${adminEmail}: ${title}`);
+
+      // Përcakto ikonën bazuar në tipin e njoftimit
+      const getNotificationIcon = (type) => {
+        switch (type) {
+          case 'success': return '✅';
+          case 'warning': return '⚠️';
+          case 'error': return '❌';
+          case 'info': return 'ℹ️';
+          default: return '🔔';
+        }
+      };
+
+      // Përgatit email-in për admin
+      const { data, error } = await resend.emails.send({
+        from: 'Alban Construction <onboarding@resend.dev>',
+        to: [adminEmail],
+        subject: `[ADMIN] ${title}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px;">
+            <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #dc2626; margin: 0; font-size: 24px;">👑 Admin Notification</h1>
+                <h2 style="color: #2563eb; margin: 10px 0 0 0; font-size: 20px;">🏗️ Alban Construction</h2>
+              </div>
+              
+              <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <span style="font-size: 32px; display: block; margin-bottom: 10px;">${getNotificationIcon(type)}</span>
+                  <h2 style="margin: 0; color: #1e293b; font-size: 18px;">${title}</h2>
+                </div>
+                
+                <div style="background-color: white; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                  <p style="margin: 0; color: #475569; line-height: 1.6; font-size: 14px;">${message}</p>
+                </div>
+              </div>
+              
+              <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                <p style="color: #64748b; margin: 0; font-size: 14px;">
+                  Mirë se vini, Admin,
+                </p>
+                <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
+                  Ky është një njoftim automatik i dërguar nga sistemi ynë i menaxhimit.
+                </p>
+                <p style="color: #64748b; margin: 15px 0 0 0; font-size: 12px;">
+                  Për të parë të gjitha njoftimet dhe detajet e mëtejshme, ju lutemi:
+                </p>
+                <div style="margin-top: 15px;">
+                  <a href="https://building-system-seven.vercel.app/admin/notifications" 
+                     style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                    🔗 Kliko këtu për të aksesuar njoftimin
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      });
+
+      if (error) {
+        console.error('[ERROR] Error sending admin email notification:', error);
+      } else {
+        console.log(`[SUCCESS] Admin email notification sent successfully to: ${adminEmail}`);
+      }
+      
+    } catch (error) {
+      console.error('[ERROR] Error in sendAdminEmailNotification:', error);
+    }
+  }
+
   // Merr njoftimet për një përdorues
   static async getUserNotifications(userId, limit = 50, offset = 0) {
     try {

@@ -126,9 +126,16 @@ exports.testEmailNotification = async (req, res) => {
       'test'
     );
     
+    // Dërgo email test për admin
+    await NotificationService.sendAdminEmailNotification(
+      '🧪 Test Email Notification',
+      'Ky është një test për të verifikuar nëse email notifications punojnë. Nëse e shihni këtë email, sistemi funksionon normalisht!',
+      'info'
+    );
+    
     res.json({ 
       success: true, 
-      message: 'Njoftimi test u dërgua me sukses! Kontrolloni email-in tuaj.',
+      message: 'Njoftimi test u dërgua me sukses! Kontrolloni email-in tuaj (fatoslala12@gmail.com).',
       notification 
     });
   } catch (error) {

@@ -233,6 +233,13 @@ exports.addWorkHours = async (req, res) => {
           );
         }
         
+        // Dërgo email notification për admin
+        await NotificationService.sendAdminEmailNotification(
+          title,
+          message,
+          'info'
+        );
+        
         console.log(`[SUCCESS] Admin notifications sent for work hours addition`);
       }
     } catch (notificationError) {

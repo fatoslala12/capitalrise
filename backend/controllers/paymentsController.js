@@ -109,7 +109,14 @@ exports.updatePayment = async (req, res) => {
             );
           }
           
-          console.log(`[SUCCESS] Payment notifications sent to managers`);
+          // 3. Dërgo email notification për admin
+          await NotificationService.sendAdminEmailNotification(
+            '💳 Pagesa u konfirmua',
+            `Pagesa për ${employee.name} për javën ${payment.week_label}: £${payment.net_amount}`,
+            'success'
+          );
+          
+          console.log(`[SUCCESS] Payment notifications sent to managers and admin`);
         }
       } catch (notificationError) {
         console.error('[ERROR] Failed to send payment notifications:', notificationError);
