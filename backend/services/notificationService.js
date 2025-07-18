@@ -1,8 +1,9 @@
+require('dotenv').config();
 const pool = require('../db');
 const { Resend } = require('resend');
 
 // Inicializo Resend
-const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789');
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 class NotificationService {
   // Krijo një njoftim të ri
@@ -47,14 +48,14 @@ class NotificationService {
   static async sendEmailNotification(userId, title, message, type = 'info') {
     try {
       // Kontrollo nëse RESEND_API_KEY është konfiguruar
-      if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_123456789') {
-        console.log('[WARNING] RESEND_API_KEY nuk është konfiguruar ose është default. Email nuk do të dërgohet.');
+      if (!process.env.RESEND_API_KEY) {
+        console.log('[WARNING] RESEND_API_KEY nuk është konfiguruar. Email nuk do të dërgohet.');
         return;
       }
 
       // Kontrollo notification settings të përdoruesit
       const userResult = await pool.query(
-        'SELECT email, first_name, last_name, notification_settings FROM users WHERE id = $1',
+        'SELECT email FROM users WHERE id = $1',
         [userId]
       );
       
@@ -69,22 +70,8 @@ class NotificationService {
         return;
       }
 
-      // Kontrollo nëse email notifications janë të aktivizuara
-      const settings = user.notification_settings || {};
-      if (settings.emailNotifications === false) {
-        console.log(`[INFO] Email notifications disabled for user ${userId}`);
-        return;
-      }
-
-      // Kontrollo orët e qetësisë
-      if (settings.quietHours && settings.quietHours.enabled) {
-        const now = new Date();
-        const currentTime = now.getHours() + ':' + now.getMinutes();
-        if (currentTime >= settings.quietHours.start || currentTime <= settings.quietHours.end) {
-          console.log(`[INFO] Quiet hours active for user ${userId}, skipping email`);
-          return;
-        }
-      }
+      // Kontrollo nëse email notifications janë të aktivizuara (për momentin të gjitha janë të aktivizuara)
+      // TODO: Implemento notification settings kur të shtohet kolona në databazë
 
 
 
@@ -102,6 +89,11 @@ class NotificationService {
       };
 
       // Përgatit email-in
+      if (!resend) {
+        console.log('[WARNING] Resend not initialized. Email nuk do të dërgohet.');
+        return;
+      }
+      
       const { data, error } = await resend.emails.send({
         from: 'Alban Construction <onboarding@resend.dev>',
         to: [user.email],
@@ -127,7 +119,7 @@ class NotificationService {
               
               <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
                 <p style="color: #64748b; margin: 0; font-size: 14px;">
-                  Mirë se vini, ${user.first_name || user.email},
+                  Mirë se vini, ${user.email},
                 </p>
                 <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
                   Ky është një njoftim automatik i dërguar nga sistemi ynë i menaxhimit.
@@ -163,8 +155,8 @@ class NotificationService {
   static async sendAdminEmailNotification(title, message, type = 'info') {
     try {
       // Kontrollo nëse RESEND_API_KEY është konfiguruar
-      if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_123456789') {
-        console.log('[WARNING] RESEND_API_KEY nuk është konfiguruar ose është default. Email nuk do të dërgohet.');
+      if (!process.env.RESEND_API_KEY) {
+        console.log('[WARNING] RESEND_API_KEY nuk është konfiguruar. Email nuk do të dërgohet.');
         return;
       }
 
@@ -183,6 +175,11 @@ class NotificationService {
       };
 
       // Përgatit email-in për admin
+      if (!resend) {
+        console.log('[WARNING] Resend not initialized. Email nuk do të dërgohet.');
+        return;
+      }
+      
       const { data, error } = await resend.emails.send({
         from: 'Alban Construction <onboarding@resend.dev>',
         to: [adminEmail],
