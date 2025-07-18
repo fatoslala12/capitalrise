@@ -1,14 +1,24 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { Bell, X, Check, Trash2 } from 'lucide-react';
+
+// Import kontekstin direkt për të kontrolluar nëse ekziston
+import { NotificationContext } from '../context/NotificationContext';
 
 const NotificationBell = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  
+  // Kontrollo nëse konteksti i njoftimeve ekziston
+  const notificationContext = useContext(NotificationContext);
+  
+  // Nëse përdoruesi nuk është i loguar ose konteksti nuk ekziston, mos shfaq asgjë
+  if (!user || !notificationContext) {
+    return null;
+  }
   
   // Përdor kontekstin e njoftimeve
   const { 
@@ -18,12 +28,7 @@ const NotificationBell = () => {
     deleteNotification, 
     markAllAsRead,
     loading 
-  } = useNotifications();
-
-  // Nëse përdoruesi nuk është i loguar, mos shfaq asgjë
-  if (!user) {
-    return null;
-  }
+  } = notificationContext;
 
   // Mbyll dropdown-in kur klikohet jashtë
   useEffect(() => {
