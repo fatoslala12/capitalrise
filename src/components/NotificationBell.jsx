@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { Bell, X, Check, Trash2 } from 'lucide-react';
 
@@ -9,10 +10,15 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   
-  // Të dhëna të thjeshta për testim - pa kontekst
-  const [notifications] = useState([]);
-  const [unreadCount] = useState(0);
-  const [loading] = useState(false);
+  // Përdor kontekstin e njoftimeve
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    deleteNotification, 
+    markAllAsRead,
+    loading 
+  } = useNotifications();
 
   // Nëse përdoruesi nuk është i loguar, mos shfaq asgjë
   if (!user) {
@@ -32,6 +38,9 @@ const NotificationBell = () => {
   }, []);
 
   const handleNotificationClick = (notification) => {
+    if (!notification.isRead) {
+      markAsRead(notification.id);
+    }
     setIsOpen(false);
     
     // Navigo në faqen e duhur bazuar në tipin e njoftimit dhe rolin e përdoruesit
@@ -136,6 +145,14 @@ const NotificationBell = () => {
               )}
             </div>
             <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button
+                  onClick={markAllAsRead}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-100 px-2 py-1 rounded transition-colors"
+                >
+                  Shëno të gjitha
+                </button>
+              )}
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded transition-colors"
@@ -188,6 +205,30 @@ const NotificationBell = () => {
                       <p className="text-xs text-gray-400">
                         {formatTimeAgo(notification.createdAt)}
                       </p>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {!notification.isRead && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(notification.id);
+                          }}
+                          className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
+                          title="Shëno si të lexuar"
+                        >
+                          <Check size={14} />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notification.id);
+                        }}
+                        className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                        title="Fshi njoftimin"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
                 </div>
