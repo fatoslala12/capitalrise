@@ -25,10 +25,15 @@ export const NotificationProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await api.get('/api/notifications');
+      console.log('[DEBUG] Fetched notifications:', response.data);
+      
+      const unreadCount = response.data.filter(n => !n.isRead).length;
+      console.log('[DEBUG] Unread count from API:', unreadCount);
+      
       setNotifications(response.data);
-      setUnreadCount(response.data.filter(n => !n.isRead).length);
+      setUnreadCount(unreadCount);
     } catch (error) {
-      console.error('Gabim në marrjen e njoftimeve:', error);
+      console.error('[ERROR] Gabim në marrjen e njoftimeve:', error);
     } finally {
       setLoading(false);
     }
@@ -37,18 +42,28 @@ export const NotificationProvider = ({ children }) => {
   // Shëno njoftimin si të lexuar
   const markAsRead = async (notificationId) => {
     try {
+      console.log('[DEBUG] Marking notification as read:', notificationId);
+      
       // Përditëso UI menjëherë
-      setNotifications(prev => 
-        prev.map(n => 
+      setNotifications(prev => {
+        const updated = prev.map(n => 
           n.id === notificationId ? { ...n, isRead: true } : n
-        )
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+        );
+        console.log('[DEBUG] Updated notifications:', updated);
+        return updated;
+      });
+      
+      setUnreadCount(prev => {
+        const newCount = Math.max(0, prev - 1);
+        console.log('[DEBUG] Updated unread count:', newCount);
+        return newCount;
+      });
       
       // Pastaj dërgo request në backend
-      await api.patch(`/api/notifications/${notificationId}/read`);
+      const response = await api.patch(`/api/notifications/${notificationId}/read`);
+      console.log('[DEBUG] Backend response:', response.data);
     } catch (error) {
-      console.error('Gabim në shënimin si të lexuar:', error);
+      console.error('[ERROR] Gabim në shënimin si të lexuar:', error);
     }
   };
 
@@ -103,89 +118,21 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [user]);
 
-  // EventSource për real-time notifications
+  // Polling për real-time notifications (zëvendëson EventSource)
   useEffect(() => {
     if (!user) return;
 
-    console.log('[DEBUG] Setting up EventSource for user:', user.id);
+    console.log('[DEBUG] Setting up polling for user:', user.id);
     
-    let eventSource;
-    let pollingInterval;
-    
-    const eventSourceUrl = `https://building-system.onrender.com/api/notifications/stream?userId=${user.id}`;
-    console.log('[DEBUG] EventSource URL:', eventSourceUrl);
-    
-    try {
-      eventSource = new EventSource(eventSourceUrl);
-
-      eventSource.onopen = () => {
-        console.log('[DEBUG] EventSource connected');
-      };
-
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('[DEBUG] EventSource message received:', data);
-          
-          if (data.type === 'notification') {
-            if (data.notification.action === 'markAsRead') {
-              // Përditëso notification ekzistuese
-              setNotifications(prev => 
-                prev.map(n => 
-                  n.id === data.notification.id ? { ...n, isRead: true } : n
-                )
-              );
-              setUnreadCount(prev => Math.max(0, prev - 1));
-            } else if (data.notification.action === 'delete') {
-              // Hiq notification nga lista
-              setNotifications(prev => 
-                prev.filter(n => n.id !== data.notification.id)
-              );
-              // Kontrollo nëse ishte unread
-              const wasUnread = notifications.find(n => n.id === data.notification.id)?.isRead === false;
-              if (wasUnread) {
-                setUnreadCount(prev => Math.max(0, prev - 1));
-              }
-            } else {
-              // Njoftim i ri
-              addNotification(data.notification);
-            }
-          } else if (data.type === 'heartbeat') {
-            console.log('[DEBUG] EventSource heartbeat received');
-          }
-        } catch (error) {
-          console.error('[ERROR] Error parsing EventSource message:', error);
-        }
-      };
-
-      eventSource.onerror = (error) => {
-        console.error('[ERROR] EventSource error:', error);
-        eventSource.close();
-        
-        // Fallback to polling nëse EventSource dështon
-        console.log('[DEBUG] Falling back to polling');
-        pollingInterval = setInterval(() => {
-          fetchNotifications();
-        }, 10000); // Poll çdo 10 sekonda
-      };
-    } catch (error) {
-      console.error('[ERROR] Failed to create EventSource:', error);
-      
-      // Fallback to polling
-      console.log('[DEBUG] Using polling as fallback');
-      pollingInterval = setInterval(() => {
-        fetchNotifications();
-      }, 10000); // Poll çdo 10 sekonda
-    }
+    // Poll çdo 5 sekonda për updates
+    const pollingInterval = setInterval(() => {
+      console.log('[DEBUG] Polling for notifications...');
+      fetchNotifications();
+    }, 5000); // Poll çdo 5 sekonda
 
     return () => {
-      console.log('[DEBUG] Cleaning up EventSource/polling');
-      if (eventSource) {
-        eventSource.close();
-      }
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-      }
+      console.log('[DEBUG] Cleaning up polling');
+      clearInterval(pollingInterval);
     };
   }, [user]);
 

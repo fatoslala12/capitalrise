@@ -31,21 +31,13 @@ class NotificationService {
     }
   }
 
-  // Dërgo real-time notification
+  // Dërgo real-time notification (tani vetëm logging)
   static sendRealTimeNotification(userId, notification) {
     try {
-      if (global.notificationStreams && global.notificationStreams.has(userId)) {
-        const response = global.notificationStreams.get(userId);
-        response.write(`data: ${JSON.stringify({ 
-          type: 'notification', 
-          notification: notification 
-        })}\n\n`);
-        console.log(`[SUCCESS] Real-time notification sent to user ${userId}: ${notification.title}`);
-      } else {
-        console.log(`[DEBUG] No active stream for user ${userId}`);
-      }
+      console.log(`[DEBUG] Real-time notification would be sent to user ${userId}: ${notification.title}`);
+      console.log(`[DEBUG] Notification details:`, notification);
     } catch (error) {
-      console.error('[ERROR] Error sending real-time notification:', error);
+      console.error('[ERROR] Error in sendRealTimeNotification:', error);
     }
   }
 
