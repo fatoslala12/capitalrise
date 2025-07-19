@@ -2,73 +2,16 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Bell, Search, Filter, Trash2, Check, CheckCheck, Download, FileText } from 'lucide-react';
+import api from '../api';
 
 const NotificationsPage = () => {
   const { user } = useAuth();
-  const { notifications, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { notifications, loading, markAsRead, markAllAsRead, deleteNotification, fetchNotifications } = useNotifications();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterRead, setFilterRead] = useState('all');
   const [selectedNotifications, setSelectedNotifications] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-
-  // Merr të gjitha njoftimet
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/api/notifications');
-      setNotifications(response.data);
-    } catch (error) {
-      console.error('Gabim në marrjen e njoftimeve:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Shëno njoftimin si të lexuar
-  const markAsRead = async (notificationId) => {
-    try {
-      // Përditëso UI menjëherë
-      setNotifications(prev => 
-        prev.map(n => 
-          n.id === notificationId ? { ...n, isRead: true } : n
-        )
-      );
-      
-      // Pastaj dërgo request në backend
-      await api.patch(`/api/notifications/${notificationId}/read`);
-    } catch (error) {
-      console.error('Gabim në shënimin si të lexuar:', error);
-      // Nëse ka gabim, mos kthe mbrapa state-in
-    }
-  };
-
-  // Shëno të gjitha si të lexuara
-  const markAllAsRead = async () => {
-    try {
-      await api.patch('/api/notifications/mark-all-read');
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      setSelectedNotifications([]);
-      setSelectAll(false);
-    } catch (error) {
-      console.error('Gabim në shënimin e të gjitha si të lexuara:', error);
-      // Nëse ka gabim, përditëso lokal state për UI
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      setSelectedNotifications([]);
-      setSelectAll(false);
-    }
-  };
-
-  // Fshi njoftimin
-  const deleteNotification = async (notificationId) => {
-    try {
-      await api.delete(`/api/notifications/${notificationId}`);
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
-      setSelectedNotifications(prev => prev.filter(id => id !== notificationId));
-    } catch (error) {
-      console.error('Gabim në fshirjen e njoftimit:', error);
-    }
-  };
 
   // Fshi njoftimet e zgjedhura
   const deleteSelected = async () => {
