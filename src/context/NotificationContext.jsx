@@ -113,7 +113,7 @@ export const NotificationProvider = ({ children }) => {
     let pollingInterval;
     
     try {
-      eventSource = new EventSource(`https://building-system.onrender.com/api/notifications/stream?userId=${user.id}`);
+      eventSource = new EventSource(`/api/notifications/stream?userId=${user.id}`);
 
       eventSource.onopen = () => {
         console.log('[DEBUG] EventSource connected');

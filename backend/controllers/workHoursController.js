@@ -333,6 +333,70 @@ exports.setPaidStatus = async (req, res) => {
         [employeeId, week, paid]
       );
     }
+    
+    // Dërgo notifications kur pagesa bëhet
+    if (paid) {
+      try {
+        // Merr informacionin e punonjësit
+        const employeeResult = await pool.query(
+          'SELECT e.id, e.first_name, e.last_name, e.email, u.id as user_id FROM employees e LEFT JOIN users u ON u.email = e.email WHERE e.id = $1',
+          [employeeId]
+        );
+        
+        if (employeeResult.rows.length > 0) {
+          const employee = employeeResult.rows[0];
+          const employeeName = `${employee.first_name} ${employee.last_name}`;
+          
+          // 1. Njofto punonjësin (nëse ka user account)
+          if (employee.user_id) {
+            await NotificationService.createNotification(
+              employee.user_id,
+              '💰 Orët tuaja u paguan',
+              `Orët tuaja për javën ${week} u paguan me sukses!`,
+              'success',
+              'work_hours_payment',
+              null,
+              'work_hours_paid',
+              1
+            );
+            console.log(`[SUCCESS] Work hours payment notification sent to employee ${employeeName}`);
+          } else {
+            // Nëse nuk ka user account, gjej user me email të njëjtë
+            const userResult = await pool.query(
+              'SELECT id FROM users WHERE email = $1',
+              [employee.email]
+            );
+            
+            if (userResult.rows.length > 0) {
+              await NotificationService.createNotification(
+                userResult.rows[0].id,
+                '💰 Orët tuaja u paguan',
+                `Orët tuaja për javën ${week} u paguan me sukses!`,
+                'success',
+                'work_hours_payment',
+                null,
+                'work_hours_paid',
+                1
+              );
+              console.log(`[SUCCESS] Work hours payment notification sent to user ${employee.email}`);
+            }
+          }
+          
+          // 2. Dërgo email notification për admin
+          await NotificationService.sendAdminEmailNotification(
+            '💰 Pagesa e orëve u konfirmua',
+            `Pagesa për ${employeeName} për javën ${week} u konfirmua me sukses!`,
+            'success'
+          );
+          
+          console.log(`[SUCCESS] Work hours payment notifications sent for ${employeeName}`);
+        }
+      } catch (notificationError) {
+        console.error('[ERROR] Failed to send work hours payment notifications:', notificationError);
+        // Mos ndal procesin kryesor për shkak të gabimit të njoftimit
+      }
+    }
+    
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

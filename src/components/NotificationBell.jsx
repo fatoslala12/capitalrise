@@ -115,15 +115,22 @@ const NotificationBell = () => {
   const formatTimeAgo = (dateString) => {
     if (!dateString) return 'Tani';
     
+    console.log('[DEBUG] formatTimeAgo input:', dateString);
+    
     const now = new Date();
     const date = new Date(dateString);
     
+    console.log('[DEBUG] Parsed date:', date);
+    console.log('[DEBUG] Is valid date:', !isNaN(date.getTime()));
+    
     // Kontrollo nëse data është e vlefshme
     if (isNaN(date.getTime())) {
+      console.log('[DEBUG] Invalid date, returning "Tani"');
       return 'Tani';
     }
     
     const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    console.log('[DEBUG] Diff in minutes:', diffInMinutes);
     
     if (diffInMinutes < 1) return 'Tani';
     if (diffInMinutes < 60) return `${diffInMinutes}m më parë`;

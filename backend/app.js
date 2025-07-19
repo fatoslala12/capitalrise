@@ -63,20 +63,6 @@ const invoiceRoutes = require('./routes/invoices');
 app.use('/api/invoices', invoiceRoutes);
 
 const notificationRoutes = require('./routes/notifications');
-
-// EventSource route specifike (para compression)
-app.get('/api/notifications/stream', (req, res, next) => {
-  // Disable compression për EventSource
-  res.set('Cache-Control', 'no-cache');
-  res.set('Connection', 'keep-alive');
-  res.set('Content-Type', 'text/event-stream');
-  res.set('Access-Control-Allow-Origin', 'https://building-system-seven.vercel.app');
-  res.set('Access-Control-Allow-Credentials', 'true');
-  res.set('Access-Control-Allow-Headers', 'Cache-Control');
-  res.set('X-Accel-Buffering', 'no');
-  next();
-});
-
 app.use('/api/notifications', notificationRoutes);
 
 // Compression middleware për të reduktuar madhësinë e përgjigjeve (pas routes)
