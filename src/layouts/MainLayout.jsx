@@ -101,7 +101,7 @@ export default function MainLayout() {
   );
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen w-full overflow-hidden">
       {/* Desktop Sidebar - Always visible and fixed */}
       <aside className="hidden lg:flex w-56 bg-gradient-to-b from-[#1e3c72] via-[#2a5298] to-[#6dd5ed] text-white flex-col shadow-2xl fixed h-full z-10">
         <SidebarContent />
@@ -120,8 +120,8 @@ export default function MainLayout() {
         </div>
       </MobileSidebar>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+              {/* Main Content Area */}
+        <div className="flex-1 flex flex-col w-full">
         {/* Desktop Header - Always visible */}
         <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-3 flex items-center justify-between">
           {/* Mobile menu button - only visible on mobile */}
@@ -164,7 +164,7 @@ export default function MainLayout() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 bg-gray-50 overflow-auto">
+        <main className="flex-1 bg-gray-50 overflow-auto w-full">
           <Outlet />
         </main>
       </div>
