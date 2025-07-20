@@ -9,14 +9,22 @@ const getStartOfWeek = (offset = 0) => {
   
   // Java sipas backend: E Hëna (1) → E Diel (0)
   // Backend përdor Monday-Sunday week calculation
-  // Nëse sot është e diel (0), fillimi i javës është e hënë e kaluar
-  // Nëse sot është e hënë (1), fillimi i javës është sot
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+  // Monday = 1, Sunday = 0
+  // We want Monday to be the start of the week
+  let diff;
+  if (day === 0) {
+    // Sunday - go back 6 days to get to Monday
+    diff = -6;
+  } else {
+    // Monday-Saturday - go back (day-1) days to get to Monday
+    diff = -(day - 1);
+  }
   
   // Shto offset për javët e tjera
   const adjustedDiff = diff + (offset * 7);
   
-  const startOfWeek = new Date(today.getFullYear(), today.getMonth(), adjustedDiff);
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() + adjustedDiff);
   
   // Debug logging
   console.log('[DEBUG] getStartOfWeek calculation:');
