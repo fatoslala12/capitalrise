@@ -7,28 +7,23 @@ const getStartOfWeek = (offset = 0) => {
   const today = new Date();
   const day = today.getDay();
   
-  // Java tradicionale: E Hëna (1) → E Diel (0)
+  // Java sipas backend: E Hëna (1) → E Diel (0)
+  // Backend përdor Monday-Sunday week calculation
   // Nëse sot është e diel (0), fillimi i javës është e hënë e kaluar
   // Nëse sot është e hënë (1), fillimi i javës është sot
-  let diff;
-  if (day === 0) {
-    // E diel - fillimi i javës është e hënë e kaluar
-    diff = today.getDate() - 6;
-  } else {
-    // Ditët e tjera - fillimi i javës është e hënë e kësaj jave
-    diff = today.getDate() - day + 1;
-  }
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
   
   // Shto offset për javët e tjera
-  diff += offset * 7;
+  const adjustedDiff = diff + (offset * 7);
   
-  const startOfWeek = new Date(today.getFullYear(), today.getMonth(), diff);
+  const startOfWeek = new Date(today.getFullYear(), today.getMonth(), adjustedDiff);
   
   // Debug logging
   console.log('[DEBUG] getStartOfWeek calculation:');
   console.log('[DEBUG] Today:', today.toISOString().slice(0, 10));
   console.log('[DEBUG] Day of week:', day);
   console.log('[DEBUG] Calculated diff:', diff);
+  console.log('[DEBUG] Adjusted diff with offset:', adjustedDiff);
   console.log('[DEBUG] Start of week:', startOfWeek.toISOString().slice(0, 10));
   console.log('[DEBUG] Offset:', offset);
   
@@ -67,6 +62,11 @@ export default function WorkHours() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   const currentWeekStart = getStartOfWeek();
   const currentWeekLabel = formatDateRange(currentWeekStart);
+  
+  // Debug log when employees state changes
+  useEffect(() => {
+    console.log('[DEBUG] Employees state changed:', employees.length, employees);
+  }, [employees]);
   
   // Debug logging
   console.log('[DEBUG] Current week start:', currentWeekStart);
@@ -121,6 +121,7 @@ export default function WorkHours() {
   useEffect(() => {
     if (!user) return;
     
+    console.log('[DEBUG] Starting to fetch employees for user:', user);
     setLoading(true);
     
     axios.get("https://building-system.onrender.com/api/employees", {
@@ -132,6 +133,7 @@ export default function WorkHours() {
         
         if (isAdmin) {
           // ADMIN: shfaq të gjithë punonjësit
+          console.log('[DEBUG] Admin user - setting all employees:', emps.length);
           setEmployees(emps);
           return;
         }
@@ -144,6 +146,7 @@ export default function WorkHours() {
             }
             return emp.email && emp.email.toLowerCase() === user.email.toLowerCase();
           });
+          console.log('[DEBUG] User role - setting self employee:', selfEmployee ? 1 : 0);
           setEmployees(selfEmployee ? [selfEmployee] : []);
           return;
         }
@@ -214,6 +217,7 @@ export default function WorkHours() {
             console.log("No employees found for manager sites, showing only manager");
             setEmployees([managerEmployee]);
           } else {
+            console.log('[DEBUG] Manager role - setting filtered employees:', filteredEmps.length);
             setEmployees(filteredEmps);
           }
         }
@@ -258,7 +262,7 @@ export default function WorkHours() {
         setHourData({});
       })
       .finally(() => setLoading(false));
-  }, [token, currentWeekLabel, user]);
+  }, [token, currentWeekLabel, user?.id]);
 
   // Merr kontratat për site options
   useEffect(() => {
@@ -540,19 +544,39 @@ export default function WorkHours() {
       {/* Tabela e orëve të punës */}
       <div className="space-y-6">
         {/* Java aktuale */}
-        <WorkHoursTable
-          employees={employees}
-          weekLabel={currentWeekLabel}
-          data={hourData}
-          onChange={handleChange}
-          readOnly={isUser}
-          showPaymentControl={isAdmin}
-          paidStatus={paidStatus}
-          setPaidStatus={setPaidStatus}
-        />
+        {loading ? (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+            <h4 className="text-lg font-semibold text-blue-800 mb-2">Duke ngarkuar të dhënat...</h4>
+            <p className="text-blue-700">Ju lutem prisni ndërsa po ngarkojmë orët e punës.</p>
+          </div>
+        ) : Array.isArray(employees) && employees.length > 0 ? (
+          <WorkHoursTable
+            employees={employees}
+            weekLabel={currentWeekLabel}
+            data={hourData}
+            onChange={handleChange}
+            readOnly={isUser}
+            showPaymentControl={isAdmin}
+            paidStatus={paidStatus}
+            setPaidStatus={setPaidStatus}
+          />
+        ) : (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+            <h4 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Nuk ka punonjës për të shfaqur</h4>
+            <p className="text-yellow-700 mb-4">
+              Nuk u gjetën punonjës për këtë javë. Kjo mund të ndodhë nëse:
+            </p>
+            <ul className="text-yellow-700 list-disc list-inside space-y-2">
+              <li>Nuk ka punonjës të caktuar për rolin tuaj</li>
+              <li>Punonjësit nuk kanë orë të punës për këtë javë</li>
+              <li>Ka problem me të dhënat e databazës</li>
+            </ul>
+          </div>
+        )}
 
         {/* Javët e kaluara - për admin dhe manager */}
-        {(isAdmin || isManager) && Object.keys(hourData).length > 0 && (
+        {(isAdmin || isManager) && Object.keys(hourData).length > 0 && Array.isArray(employees) && employees.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-gray-800">📅 Javët e Kaluara</h3>
             {(() => {

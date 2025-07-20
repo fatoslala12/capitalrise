@@ -445,9 +445,8 @@ exports.getStructuredWorkHours = async (req, res) => {
       // Use same week calculation as frontend (Monday to Sunday)
       const weekLabel = getWeekLabel(date);
       
-      const dayNames = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"];
-      const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
-      const day = dayNames[dayIndex];
+      // Use the same day mapping as getDayName function
+      const day = getDayName(date);
       
       if (!data[empId]) data[empId] = {};
       if (!data[empId][weekLabel]) data[empId][weekLabel] = {};
@@ -573,8 +572,12 @@ function getWeekLabel(date) {
 }
 
 function getDayName(date) {
-  const days = ["E diel", "E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë"];
-  return days[date.getDay()];
+  // Map to frontend day order: Monday first, Sunday last
+  const dayIndex = date.getDay();
+  const days = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"];
+  // Convert Sunday (0) to 6, Monday (1) to 0, etc.
+  const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+  return days[mappedIndex];
 }
 
 // Debug endpoint për të kontrolluar manager permissions
