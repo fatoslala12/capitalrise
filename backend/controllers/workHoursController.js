@@ -405,6 +405,14 @@ exports.setPaidStatus = async (req, res) => {
 
 exports.getStructuredWorkHours = async (req, res) => {
   console.log('[DEBUG] getStructuredWorkHours controller called');
+  
+  // Debug: kontrollo javët në database
+  try {
+    const weekLabelsResult = await pool.query('SELECT DISTINCT week_label FROM payments ORDER BY week_label DESC LIMIT 10');
+    console.log('[DEBUG] Week labels in payments table:', weekLabelsResult.rows.map(row => row.week_label));
+  } catch (err) {
+    console.log('[DEBUG] Error getting week labels:', err.message);
+  }
   let result;
   try {
     try {
@@ -420,6 +428,11 @@ exports.getStructuredWorkHours = async (req, res) => {
       return res.status(500).json({ error: queryErr.message });
     }
     console.log('[DEBUG] /api/work-hours/structured - rows:', result.rows.length);
+    
+    // Debug: kontrollo datat në work_hours
+    const uniqueDates = [...new Set(result.rows.map(row => row.date))].sort();
+    console.log('[DEBUG] Unique dates in work_hours:', uniqueDates);
+    
     result.rows.forEach((row, idx) => {
       console.log(`[DEBUG] Row ${idx}:`, row);
     });
@@ -430,15 +443,7 @@ exports.getStructuredWorkHours = async (req, res) => {
       const date = new Date(row.date);
       
       // Use same week calculation as frontend (Monday to Sunday)
-      const weekDay = date.getDay();
-      const diff = date.getDate() - weekDay + (weekDay === 0 ? -6 : 1);
-      const weekStart = new Date(date);
-      weekStart.setDate(diff);
-      weekStart.setHours(0, 0, 0, 0);
-      
-      const weekStartStr = weekStart.toISOString().slice(0, 10);
-      const weekEndStr = new Date(weekStart.getTime() + 6 * 86400000).toISOString().slice(0, 10);
-      const weekLabel = `${weekStartStr} - ${weekEndStr}`;
+      const weekLabel = getWeekLabel(date);
       
       const dayNames = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"];
       const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
@@ -453,7 +458,7 @@ exports.getStructuredWorkHours = async (req, res) => {
         contract_id: row.contract_id
       };
       
-      console.log(`[DEBUG] Structuring data for empId: ${empId}, weekLabel: ${weekLabel}, day: ${day}`, dayData);
+      console.log(`[DEBUG] Structuring data for empId: ${empId}, date: ${row.date}, weekLabel: ${weekLabel}, day: ${day}`, dayData);
       
       data[empId][weekLabel][day] = dayData;
     });
@@ -554,7 +559,17 @@ function getWeekLabel(date) {
   const startStr = startOfWeek.toISOString().slice(0, 10);
   const endStr = endOfWeek.toISOString().slice(0, 10);
   
-  return `${startStr} - ${endStr}`;
+  const weekLabel = `${startStr} - ${endStr}`;
+  
+  // Debug logging
+  console.log(`[DEBUG] getWeekLabel for date ${date.toISOString().slice(0, 10)}:`);
+  console.log(`[DEBUG] Day of week: ${day}`);
+  console.log(`[DEBUG] Calculated diff: ${diff}`);
+  console.log(`[DEBUG] Start of week: ${startStr}`);
+  console.log(`[DEBUG] End of week: ${endStr}`);
+  console.log(`[DEBUG] Week label: ${weekLabel}`);
+  
+  return weekLabel;
 }
 
 function getDayName(date) {

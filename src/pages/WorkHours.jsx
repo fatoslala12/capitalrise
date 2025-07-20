@@ -23,6 +23,15 @@ const getStartOfWeek = (offset = 0) => {
   diff += offset * 7;
   
   const startOfWeek = new Date(today.getFullYear(), today.getMonth(), diff);
+  
+  // Debug logging
+  console.log('[DEBUG] getStartOfWeek calculation:');
+  console.log('[DEBUG] Today:', today.toISOString().slice(0, 10));
+  console.log('[DEBUG] Day of week:', day);
+  console.log('[DEBUG] Calculated diff:', diff);
+  console.log('[DEBUG] Start of week:', startOfWeek.toISOString().slice(0, 10));
+  console.log('[DEBUG] Offset:', offset);
+  
   return startOfWeek;
 };
 
@@ -31,6 +40,13 @@ const formatDateRange = (startDate) => {
   endDate.setDate(startDate.getDate() + 6);
   const startStr = startDate.toISOString().slice(0, 10);
   const endStr = endDate.toISOString().slice(0, 10);
+  
+  // Debug logging
+  console.log('[DEBUG] formatDateRange calculation:');
+  console.log('[DEBUG] Start date:', startDate.toISOString().slice(0, 10));
+  console.log('[DEBUG] End date:', endDate.toISOString().slice(0, 10));
+  console.log('[DEBUG] Formatted range:', `${startStr} - ${endStr}`);
+  
   return `${startStr} - ${endStr}`;
 };
 
