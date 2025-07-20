@@ -7,7 +7,7 @@ import pushNotificationService from '../utils/pushNotifications';
 
 const NotificationBell = () => {
   const { user } = useAuth();
-  const { notifications, unreadCount, markAsRead, deleteNotification } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, loading } = useNotifications();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);

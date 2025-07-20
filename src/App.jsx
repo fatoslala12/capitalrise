@@ -8,18 +8,16 @@ import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
-    <>
-      <Toaster position="top-right" reverseOrder={false} />
-      <BrowserRouter>
-        <ToastProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              <AppRouter />
-            </NotificationProvider>
-          </AuthProvider>
-        </ToastProvider>
-      </BrowserRouter>
-    </>
+    <BrowserRouter>
+      <AuthProvider>
+        <NotificationProvider>
+          <ToastProvider>
+            <Toaster position="top-right" reverseOrder={false} />
+            <AppRouter />
+          </ToastProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
