@@ -589,10 +589,22 @@ export default function WorkHours() {
             <h3 className="text-xl font-semibold text-gray-800">📅 Javët e Kaluara</h3>
             {(() => {
               const allWeeks = Object.keys(hourData);
+              console.log("All weeks from hourData:", allWeeks);
+              console.log("Current week label:", currentWeekLabel);
+              
               // Filtrimi i javëve të kaluara: vetëm week labels në format date range
               const pastWeeks = allWeeks.filter(weekLabel => {
                 const isValidDateRange = /^\d{4}-\d{2}-\d{2} - \d{4}-\d{2}-\d{2}$/.test(weekLabel);
+                // Check if this week is not the current week by comparing dates
                 const isNotCurrentWeek = weekLabel !== currentWeekLabel;
+                
+                // Additional check: if the week ends before today, it's definitely a past week
+                const weekEndDate = weekLabel.split(' - ')[1];
+                const today = new Date().toISOString().slice(0, 10);
+                const isPastWeek = weekEndDate < today;
+                
+                console.log(`Week ${weekLabel}: isValidDateRange=${isValidDateRange}, isNotCurrentWeek=${isNotCurrentWeek}, isPastWeek=${isPastWeek}, weekEndDate=${weekEndDate}, today=${today}`);
+                
                 return isValidDateRange && isNotCurrentWeek;
               });
               
