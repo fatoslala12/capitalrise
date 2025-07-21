@@ -4,6 +4,7 @@ import WorkHoursTable from "../components/WorkHoursTable";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import api from "../api";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
@@ -18,6 +19,105 @@ const formatDateRange = (startDate) => {
   endDate.setDate(startDate.getDate() + 6);
   return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
 };
+
+const barColors = ["#60a5fa", "#34d399", "#a78bfa", "#fbbf24", "#f472b6"];
+
+function getTop5Employees(employees, hourData) {
+  return employees
+    .map(emp => {
+      let totalHours = 0;
+      const empData = hourData[emp.id] || {};
+      Object.values(empData).forEach(week => {
+        Object.values(week).forEach(day => {
+          totalHours += Number(day.hours || 0);
+        });
+      });
+      return {
+        id: emp.id,
+        name: `${emp.first_name || emp.firstName || ""} ${emp.last_name || emp.lastName || ""}`.trim(),
+        photo: emp.photo,
+        totalHours,
+      };
+    })
+    .sort((a, b) => b.totalHours - a.totalHours)
+    .slice(0, 5);
+}
+
+function EmployeeBarChart({ employees, hourData }) {
+  const top5 = getTop5Employees(employees, hourData);
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
+      <h3 className="text-xl font-bold mb-6 text-blue-800 flex items-center gap-2">
+        <span>🏆</span> Top 5 Punonjësit më Produktivë
+      </h3>
+      <ResponsiveContainer width="100%" height={320}>
+        <BarChart
+          data={top5}
+          layout="vertical"
+          margin={{ top: 10, right: 30, left: 60, bottom: 10 }}
+          barSize={32}
+        >
+          <XAxis type="number" />
+          <YAxis
+            dataKey="name"
+            type="category"
+            tick={{ fontSize: 16, fill: "#334155" }}
+            width={140}
+            tickFormatter={(name, i) => (
+              <span style={{ display: "flex", alignItems: "center" }}>
+                {top5[i].photo ? (
+                  <img
+                    src={top5[i].photo}
+                    alt={name}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      marginRight: 8,
+                      border: "2px solid #e0e7ef",
+                    }}
+                  />
+                ) : (
+                  <span
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      background: "#e0e7ef",
+                      color: "#6366f1",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      marginRight: 8,
+                    }}
+                  >
+                    {name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()}
+                  </span>
+                )}
+                {name}
+              </span>
+            )}
+          />
+          <Tooltip
+            formatter={(value) => [`${value} orë`, "Total Orë"]}
+            cursor={{ fill: "#f3f4f6" }}
+          />
+          <Bar dataKey="totalHours" radius={[8, 8, 8, 8]}>
+            {top5.map((entry, index) => (
+              <Cell key={entry.id} fill={barColors[index % barColors.length]} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -103,6 +203,8 @@ export default function AdminDashboard() {
           <div className="text-sm text-yellow-700">Shpenzime</div>
         </div>
       </div>
+      {/* Top 5 punonjësit më produktivë */}
+      <EmployeeBarChart employees={employees} hourData={hourData} />
       {/* Këtu do shtojmë cards/statistika dhe grafikë të avancuara për admin */}
       <WorkHoursTable
         employees={employees}
