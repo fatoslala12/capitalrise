@@ -751,10 +751,15 @@ export default function Contracts() {
     // 2. Llogarit gross nga faturat/expenses (si në PaymentDetails)
     let totalInvoicesGross = 0;
     if (expensesData && Array.isArray(expensesData)) {
-      const contractExpenses = expensesData.filter(exp => String(exp.contract_number).trim() === String(contract.contract_number).trim());
+      // Filtro fillimisht me contract_id (si në PaymentDetails)
+      let contractExpenses = expensesData.filter(exp => String(exp.contract_id).trim() === String(contract.id).trim());
+      // Nëse nuk gjenden, provo edhe me contract_number (për kompatibilitet)
+      if (contractExpenses.length === 0) {
+        contractExpenses = expensesData.filter(exp => String(exp.contract_number).trim() === String(contract.contract_number).trim());
+      }
       // Debug log
       if (contractExpenses.length > 0) {
-        console.log(`[DEBUG] Expenses për kontratën ${contract.contract_number}:`, contractExpenses);
+        console.log(`[DEBUG] Expenses për kontratën ${contract.contract_number} (id: ${contract.id}):`, contractExpenses);
       }
       contractExpenses.forEach(exp => {
         const gross = parseFloat(exp.gross || 0);
