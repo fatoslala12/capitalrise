@@ -735,22 +735,31 @@ export default function Contracts() {
 
   // Funksion i ri për të llogaritur shpenzimet totale për një kontratë, si në PaymentDetails
   const calculateTotalSpent = (contract) => {
-    // 1. Llogarit bruto nga orët e punës
+    // 1. Llogarit bruto nga orët e punës (si në PaymentDetails)
     let totalBruto = 0;
     if (workHoursData && Array.isArray(workHoursData)) {
       workHoursData.forEach(wh => {
-        if (String(wh.contract_id) === String(contract.id)) {
+        if (String(wh.contract_id).trim() === String(contract.id).trim()) {
           const rate = parseFloat(wh.rate || wh.hourly_rate || 0);
-          totalBruto += (parseFloat(wh.hours || 0) * rate);
+          const hours = parseFloat(wh.hours || 0);
+          if (!isNaN(hours) && !isNaN(rate)) {
+            totalBruto += hours * rate;
+          }
         }
       });
     }
-    // 2. Llogarit gross nga faturat/expenses
+    // 2. Llogarit gross nga faturat/expenses (si në PaymentDetails)
     let totalInvoicesGross = 0;
     if (expensesData && Array.isArray(expensesData)) {
-      expensesData.forEach(exp => {
-        if (exp.contract_number === contract.contract_number) {
-          totalInvoicesGross += parseFloat(exp.gross || 0);
+      const contractExpenses = expensesData.filter(exp => String(exp.contract_number).trim() === String(contract.contract_number).trim());
+      // Debug log
+      if (contractExpenses.length > 0) {
+        console.log(`[DEBUG] Expenses për kontratën ${contract.contract_number}:`, contractExpenses);
+      }
+      contractExpenses.forEach(exp => {
+        const gross = parseFloat(exp.gross || 0);
+        if (!isNaN(gross)) {
+          totalInvoicesGross += gross;
         }
       });
     }
