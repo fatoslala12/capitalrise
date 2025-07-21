@@ -1047,25 +1047,9 @@ export default function Contracts() {
             <tbody>
               {paginatedContracts.map((c, index) => {
                 const vlera = parseFloat(c.contract_value) || 0;
-                
-                // Llogarit shpenzimet nga orët e punës
-                const workHoursSpent = (Array.isArray(workHoursData) && workHoursData.length > 0)
-                  ? workHoursData.filter(wh => wh.contract_id === c.id && wh.hours && wh.hourly_rate)
-                      .reduce((sum, wh) => sum + (parseFloat(wh.hours) * parseFloat(wh.hourly_rate)), 0)
-                  : 0;
-                
-                // Llogarit shpenzimet nga expenses/faturat
-                const expensesSpent = (Array.isArray(expensesData) && expensesData.length > 0)
-                  ? expensesData.filter(exp => exp.contract_number === c.contract_number)
-                      .reduce((sum, exp) => sum + (parseFloat(exp.gross) || 0), 0)
-                  : 0;
-                
-                // Totali i shpenzimeve
-                const shpenzuar = workHoursSpent + expensesSpent;
-                
+                const shpenzuar = calculateTotalSpent(c);
                 const fitimi = vlera - shpenzuar;
-                const progres = calculateProgress(c.start_date, c.finish_date);
-                const { profit, profitMargin } = calculateContractProfit(c);
+                const profitMargin = vlera > 0 ? (fitimi / vlera) * 100 : 0;
                 return (
                   <tr key={c.id || index} className="text-center hover:bg-purple-50 transition-all duration-200 transform hover:scale-[1.01]">
                     <td className="py-4 px-4 align-middle">
@@ -1084,10 +1068,10 @@ export default function Contracts() {
                     </td>
                     <td className="py-4 px-4 align-middle font-semibold text-gray-800">{c.company}</td>
                     <td className="py-4 px-4 align-middle font-bold text-blue-900">£{vlera.toFixed(2)}</td>
-                    <td className="py-4 px-4 align-middle font-bold text-purple-700">£{calculateTotalSpent(c).toFixed(2)}</td>
-                    <td className={`py-4 px-4 align-middle font-bold ${getProfitColor(profit)}`}>
+                    <td className="py-4 px-4 align-middle font-bold text-purple-700">£{shpenzuar.toFixed(2)}</td>
+                    <td className={`py-4 px-4 align-middle font-bold ${getProfitColor(fitimi)}`}> 
                       <div className="text-center">
-                        <div className="text-lg">£{profit.toFixed(2)}</div>
+                        <div className="text-lg">£{fitimi.toFixed(2)}</div>
                         <div className="text-xs opacity-75">{profitMargin.toFixed(1)}%</div>
                       </div>
                     </td>
