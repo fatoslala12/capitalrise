@@ -237,13 +237,14 @@ class NotificationService {
   static async getUserNotifications(userId, limit = 50, offset = 0) {
     try {
       const result = await pool.query(
-        `SELECT * FROM notifications 
-         WHERE user_id = $1 
-         ORDER BY created_at DESC 
-         LIMIT $2 OFFSET $3`,
+        `SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
         [userId, limit, offset]
       );
-      return result.rows;
+      // Transformo çdo rresht që të ketë isRead (camelCase)
+      return result.rows.map(n => ({
+        ...n,
+        isRead: n.is_read
+      }));
     } catch (error) {
       console.error('Error getting user notifications:', error);
       throw error;
