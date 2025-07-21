@@ -119,6 +119,47 @@ function EmployeeBarChart({ employees, hourData }) {
   );
 }
 
+function TopContractsBarChart({ contracts }) {
+  // Merr top 5 kontratat sipas vlerës
+  const topContracts = [...contracts]
+    .filter(c => c.contract_value && !isNaN(Number(c.contract_value)))
+    .sort((a, b) => Number(b.contract_value) - Number(a.contract_value))
+    .slice(0, 5)
+    .map(c => ({
+      name: c.site_name || c.company || c.contract_number,
+      value: Number(c.contract_value),
+    }));
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
+      <h3 className="text-xl font-bold mb-6 text-purple-800 flex items-center gap-2">
+        <span>💼</span> Kontratat më të mëdha sipas vlerës
+      </h3>
+      <ResponsiveContainer width="100%" height={320}>
+        <BarChart
+          data={topContracts}
+          layout="vertical"
+          margin={{ top: 10, right: 30, left: 60, bottom: 10 }}
+          barSize={32}
+        >
+          <XAxis type="number" tickFormatter={v => `£${v.toLocaleString()}`} />
+          <YAxis
+            dataKey="name"
+            type="category"
+            tick={{ fontSize: 16, fill: "#6d28d9" }}
+            width={180}
+          />
+          <Tooltip formatter={v => [`£${v.toLocaleString()}`, "Vlera"]} cursor={{ fill: "#f3f4f6" }} />
+          <Bar dataKey="value" radius={[8, 8, 8, 8]}>
+            {topContracts.map((entry, index) => (
+              <Cell key={entry.name} fill={barColors[index % barColors.length]} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [employees, setEmployees] = useState([]);
@@ -205,6 +246,8 @@ export default function AdminDashboard() {
       </div>
       {/* Top 5 punonjësit më produktivë */}
       <EmployeeBarChart employees={employees} hourData={hourData} />
+      {/* Kontratat më të mëdha sipas vlerës */}
+      <TopContractsBarChart contracts={contracts} />
       {/* Këtu do shtojmë cards/statistika dhe grafikë të avancuara për admin */}
       <WorkHoursTable
         employees={employees}
