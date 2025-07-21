@@ -286,7 +286,7 @@ export default function WorkHours() {
 
   // Merr statusin e pagesës nga backend
   useEffect(() => {
-    axios.get(`https://building-system.onrender.com/api/work-hours/paid-status?week=${encodeURIComponent(currentWeekLabel)}`, {
+    axios.get("https://building-system.onrender.com/api/work-hours/paid-status", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -297,7 +297,7 @@ export default function WorkHours() {
         setPaidStatus(data);
       })
       .catch(() => setPaidStatus({}));
-  }, [token, currentWeekLabel]);
+  }, [token]);
 
   const handleChange = (empId, day, field, value) => {
     if (isAdmin) {
