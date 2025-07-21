@@ -733,6 +733,30 @@ export default function Contracts() {
     }
   };
 
+  // Funksion i ri për të llogaritur shpenzimet totale për një kontratë, si në PaymentDetails
+  const calculateTotalSpent = (contract) => {
+    // 1. Llogarit bruto nga orët e punës
+    let totalBruto = 0;
+    if (workHoursData && Array.isArray(workHoursData)) {
+      workHoursData.forEach(wh => {
+        if (String(wh.contract_id) === String(contract.id)) {
+          const rate = parseFloat(wh.rate || wh.hourly_rate || 0);
+          totalBruto += (parseFloat(wh.hours || 0) * rate);
+        }
+      });
+    }
+    // 2. Llogarit gross nga faturat/expenses
+    let totalInvoicesGross = 0;
+    if (expensesData && Array.isArray(expensesData)) {
+      expensesData.forEach(exp => {
+        if (exp.contract_number === contract.contract_number) {
+          totalInvoicesGross += parseFloat(exp.gross || 0);
+        }
+      });
+    }
+    return totalBruto + totalInvoicesGross;
+  };
+
   // UI/UX improvements
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -1060,7 +1084,7 @@ export default function Contracts() {
                     </td>
                     <td className="py-4 px-4 align-middle font-semibold text-gray-800">{c.company}</td>
                     <td className="py-4 px-4 align-middle font-bold text-blue-900">£{vlera.toFixed(2)}</td>
-                    <td className="py-4 px-4 align-middle font-bold text-purple-700">£{shpenzuar.toFixed(2)}</td>
+                    <td className="py-4 px-4 align-middle font-bold text-purple-700">£{calculateTotalSpent(c).toFixed(2)}</td>
                     <td className={`py-4 px-4 align-middle font-bold ${getProfitColor(profit)}`}>
                       <div className="text-center">
                         <div className="text-lg">£{profit.toFixed(2)}</div>
