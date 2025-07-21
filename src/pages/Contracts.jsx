@@ -1050,6 +1050,7 @@ export default function Contracts() {
                 const shpenzuar = calculateTotalSpent(c);
                 const fitimi = vlera - shpenzuar;
                 const profitMargin = vlera > 0 ? (fitimi / vlera) * 100 : 0;
+                const progres = calculateProgress(c.start_date, c.finish_date);
                 return (
                   <tr key={c.id || index} className="text-center hover:bg-purple-50 transition-all duration-200 transform hover:scale-[1.01]">
                     <td className="py-4 px-4 align-middle">
