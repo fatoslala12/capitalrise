@@ -189,10 +189,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="w-full max-w-none px-2 md:px-8">
       {/* Heqim titullin për admin */}
       {user.role !== "admin" && (
-        <h1 className="text-2xl font-bold mb-4">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-4">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h1>
       )}
 
       {/* Përdorues - Punonjës */}
@@ -253,8 +253,9 @@ export default function Dashboard() {
       {user.role === "admin" && (
         <div className="space-y-6">
           <section>
-            {/* Zvogëlojmë panelin e administrimit */}
+            {/* Zvogëlo madhësinë e titullit të Paneli i Administrimit */}
             <div className="max-w-2xl mx-auto">
+              <h2 className="text-xl md:text-2xl font-bold mb-4 text-purple-700">Paneli i Administrimit</h2>
               <DashboardStats />
             </div>
           </section>
