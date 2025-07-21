@@ -166,7 +166,10 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [hourData, setHourData] = useState({});
+  const [contracts, setContracts] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [expenses, setExpenses] = useState([]);
   const [managerStats, setManagerStats] = useState({
     totalEmployees: 0,
     activeEmployees: 0,
@@ -296,6 +299,16 @@ export default function Dashboard() {
     }
   }, [user, token, hourData, currentWeekLabel]);
 
+  // Merr të dhënat e adminit
+  useEffect(() => {
+    if (user?.role === "admin") {
+      api.get("/api/contracts").then(res => setContracts(res.data)).catch(() => setContracts([]));
+      api.get("/api/tasks").then(res => setTasks(res.data)).catch(() => setTasks([]));
+      api.get("/api/invoices").then(res => setInvoices(res.data)).catch(() => setInvoices([]));
+      api.get("/api/expenses").then(res => setExpenses(res.data)).catch(() => setExpenses([]));
+    }
+  }, [user]);
+
   const handleChange = (empId, day, field, value) => {
     setHourData((prev) => ({
       ...prev,
@@ -406,12 +419,12 @@ export default function Dashboard() {
             </div>
             <div className="bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl shadow-lg p-6 flex flex-col items-center">
               <div className="text-4xl mb-2">🧾</div>
-              <div className="text-2xl font-bold text-purple-800">{0}</div>
+              <div className="text-2xl font-bold text-purple-800">{invoices.length}</div>
               <div className="text-sm text-purple-700">Fatura</div>
             </div>
             <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-2xl shadow-lg p-6 flex flex-col items-center">
               <div className="text-4xl mb-2">💸</div>
-              <div className="text-2xl font-bold text-yellow-800">{0}</div>
+              <div className="text-2xl font-bold text-yellow-800">{expenses.length}</div>
               <div className="text-sm text-yellow-700">Shpenzime</div>
             </div>
           </div>
