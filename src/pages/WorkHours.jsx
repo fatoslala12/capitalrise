@@ -588,29 +588,24 @@ export default function WorkHours() {
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-gray-800">📅 Javët e Kaluara</h3>
             {(() => {
-              const allWeeks = Object.keys(hourData);
-              console.log("All weeks from hourData:", allWeeks);
-              console.log("Current week label:", currentWeekLabel);
-              
-              // Filtrimi i javëve të kaluara: vetëm week labels në format date range
-              const pastWeeks = allWeeks.filter(weekLabel => {
+              // Gjej të gjitha javët unike nga të gjithë punonjësit
+              const allWeeks = Object.values(hourData).flatMap(empData => Object.keys(empData));
+              const uniqueWeeks = Array.from(new Set(allWeeks));
+              // Filtrimi i javëve të kaluara: vetëm week labels në format date range, përjashto javën aktuale
+              const pastWeeks = uniqueWeeks.filter(weekLabel => {
                 const isValidDateRange = /^\d{4}-\d{2}-\d{2} - \d{4}-\d{2}-\d{2}$/.test(weekLabel);
                 // Check if this week is not the current week by comparing dates
                 const isNotCurrentWeek = weekLabel !== currentWeekLabel;
-                
                 // Additional check: if the week ends before today, it's definitely a past week
                 const weekEndDate = weekLabel.split(' - ')[1];
                 const today = new Date().toISOString().slice(0, 10);
                 const isPastWeek = weekEndDate < today;
-                
                 console.log(`Week ${weekLabel}: isValidDateRange=${isValidDateRange}, isNotCurrentWeek=${isNotCurrentWeek}, isPastWeek=${isPastWeek}, weekEndDate=${weekEndDate}, today=${today}`);
-                
                 return isValidDateRange && isNotCurrentWeek;
               });
-              
-              console.log("Filtered past weeks:", pastWeeks);
-              
-              return pastWeeks.slice(0, 5).map((weekLabel) => {
+              // Rendit nga më e reja te më e vjetra
+              pastWeeks.sort((a, b) => new Date(b.split(' - ')[0]) - new Date(a.split(' - ')[0]));
+              return pastWeeks.map((weekLabel) => {
                 return (
                   <div key={weekLabel} className="bg-white rounded-lg shadow-md">
                     <button
@@ -624,7 +619,6 @@ export default function WorkHours() {
                         </span>
                       </div>
                     </button>
-                    
                     {expandedWeeks.includes(weekLabel) && (
                       <div className="p-4">
                         <WorkHoursTable
