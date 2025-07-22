@@ -17,6 +17,7 @@ class NotificationService {
       );
       
       const notification = result.rows[0];
+      console.log(`[NOTIF] Krijuar për userId=${userId} | title="${title}" | type=${type}`);
       
       // Dërgo real-time notification nëse klienti është i lidhur
       this.sendRealTimeNotification(userId, notification);
@@ -26,7 +27,7 @@ class NotificationService {
       
       return notification;
     } catch (error) {
-      console.error('Error creating notification:', error);
+      console.error(`[NOTIF-ERROR] Dështoi për userId=${userId} | title="${title}" | type=${type} | error:`, error.message);
       throw error;
     }
   }
