@@ -161,6 +161,28 @@ exports.updateEmployee = async (req, res) => {
       values
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+    // Shto njoftim për admin nëse ndryshohet fotoja
+    if (fields.includes('photo')) {
+      try {
+        const adminUsers = await pool.query("SELECT id FROM users WHERE role = 'admin'");
+        const title = '🖼️ Foto e punonjësit u ndryshua';
+        const message = `Punonjësi me ID ${id} ndryshoi foton e profilit.`;
+        for (const admin of adminUsers.rows) {
+          await NotificationService.createNotification(
+            admin.id,
+            title,
+            message,
+            'info',
+            'employee',
+            id,
+            'photo_changed',
+            2
+          );
+        }
+      } catch (notificationError) {
+        console.error('[ERROR] Failed to send admin notification for photo change:', notificationError);
+      }
+    }
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -258,6 +280,26 @@ exports.uploadEmployeeDocument = async (req, res) => {
       'UPDATE employees SET documents = $1 WHERE id = $2 RETURNING *',
       [JSON.stringify(documents), id]
     );
+    // Shto njoftim për admin për dokument të ri
+    try {
+      const adminUsers = await pool.query("SELECT id FROM users WHERE role = 'admin'");
+      const title = '📄 Dokument i ri u ngarkua';
+      const message = `Punonjësi me ID ${id} ngarkoi një dokument të ri.`;
+      for (const admin of adminUsers.rows) {
+        await NotificationService.createNotification(
+          admin.id,
+          title,
+          message,
+          'info',
+          'employee',
+          id,
+          'document_uploaded',
+          2
+        );
+      }
+    } catch (notificationError) {
+      console.error('[ERROR] Failed to send admin notification for document upload:', notificationError);
+    }
     res.json(update.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
