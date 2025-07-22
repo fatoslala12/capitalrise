@@ -246,6 +246,41 @@ exports.addWorkHours = async (req, res) => {
       console.error('[ERROR] Failed to send admin notifications:', notificationError);
       // Mos ndal procesin kryesor për shkak të gabimit të njoftimit
     }
+
+    // Pasi të ruhet/ndryshohet ora për këtë punonjës, dërgo njoftim për admin nëse përdoruesi është menaxher
+    // Merr të dhënat e menaxherit dhe punonjësit
+    let managerName = '';
+    let employeeName = '';
+    if (req.user && req.user.role === 'manager') {
+      // Merr emrin e menaxherit
+      const managerRes = await client.query('SELECT first_name, last_name FROM employees WHERE id = $1', [req.user.employee_id]);
+      if (managerRes.rows.length > 0) {
+        managerName = `${managerRes.rows[0].first_name} ${managerRes.rows[0].last_name}`;
+      }
+      // Merr emrin e punonjësit
+      const empRes = await client.query('SELECT first_name, last_name FROM employees WHERE id = $1', [employeeId]);
+      if (empRes.rows.length > 0) {
+        employeeName = `${empRes.rows[0].first_name} ${empRes.rows[0].last_name}`;
+      }
+      // Merr të gjithë admin users
+      const adminUsers = await client.query("SELECT id FROM users WHERE role = 'admin'");
+      if (adminUsers.rows.length > 0) {
+        const title = '🕒 Orët e punës u ndryshuan';
+        const message = `Menaxheri ${managerName} ndryshoi orët për javën ${weekLabel} për punonjësin ${employeeName}`;
+        for (const admin of adminUsers.rows) {
+          await NotificationService.createNotification(
+            admin.id,
+            title,
+            message,
+            'info',
+            'work_hours',
+            null,
+            'work_hours_changed',
+            2
+          );
+        }
+      }
+    }
     
     res.status(201).json({ saved });
     
@@ -462,28 +497,53 @@ exports.getStructuredWorkHours = async (req, res) => {
     });
     // Strukturo të dhënat për React
     const data = {};
+    // Për të mbajtur updated_at për çdo orë të javës
+    const weekUpdates = {};
     result.rows.forEach(row => {
       const empId = row.employee_id;
       const date = new Date(row.date);
-      
-      // Use same week calculation as frontend (Monday to Sunday)
       const weekLabel = getWeekLabel(date);
-      
-      // Use the same day mapping as getDayName function
       const day = getDayName(date);
-      
       if (!data[empId]) data[empId] = {};
       if (!data[empId][weekLabel]) data[empId][weekLabel] = {};
+      if (!weekUpdates[empId]) weekUpdates[empId] = {};
+      if (!weekUpdates[empId][weekLabel]) weekUpdates[empId][weekLabel] = [];
       const dayData = {
         hours: row.hours,
-        site: row.site_name, // përdor vetëm site_name si site
+        site: row.site_name,
         rate: row.hourly_rate,
-        contract_id: row.contract_id
+        contract_id: row.contract_id,
+        updated_at: row.updated_at // ruajmë për krahasim
       };
-      
-      console.log(`[DEBUG] Structuring data for empId: ${empId}, date: ${row.date}, weekLabel: ${weekLabel}, day: ${day}`, dayData);
-      
       data[empId][weekLabel][day] = dayData;
+      weekUpdates[empId][weekLabel].push(new Date(row.updated_at));
+    });
+    // Merr pagesat për të gjithë punonjësit dhe javët
+    const paymentsRes = await pool.query('SELECT employee_id, week_label, is_paid, updated_at FROM payments');
+    const paymentsMap = {};
+    paymentsRes.rows.forEach(row => {
+      if (!paymentsMap[row.employee_id]) paymentsMap[row.employee_id] = {};
+      paymentsMap[row.employee_id][row.week_label] = {
+        is_paid: row.is_paid,
+        paid_updated_at: row.updated_at
+      };
+    });
+    // Shto flag-un changedAfterPaid për çdo javë/punonjës
+    Object.entries(data).forEach(([empId, weeks]) => {
+      Object.entries(weeks).forEach(([weekLabel, days]) => {
+        let changedAfterPaid = false;
+        const payment = paymentsMap[empId] && paymentsMap[empId][weekLabel];
+        if (payment && payment.is_paid && payment.paid_updated_at) {
+          // Nëse ndonjë orë e javës është ndryshuar pas pagesës
+          const paidDate = new Date(payment.paid_updated_at);
+          const anyChanged = (weekUpdates[empId][weekLabel] || []).some(upd => upd > paidDate);
+          if (anyChanged) changedAfterPaid = true;
+        }
+        // Vendos flag-un në çdo ditë të javës për këtë punonjës/javë
+        Object.values(days).forEach(dayObj => {
+          dayObj.changedAfterPaid = changedAfterPaid;
+        });
+      });
     });
     res.json(data);
   } catch (err) {
@@ -1011,7 +1071,7 @@ exports.updatePaymentStatus = async (req, res) => {
       if (checkPay.rows.length > 0) {
         // Përditëso pagesën ekzistuese
         await client.query(
-          `UPDATE payments SET is_paid = $1, updated_at = NOW() WHERE employee_id = $2 AND week_label = $3`,
+          `UPDATE payments SET is_paid = $1 WHERE employee_id = $2 AND week_label = $3`,
           [paid, employeeId, week]
         );
       } else {
