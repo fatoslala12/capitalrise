@@ -251,6 +251,7 @@ exports.addWorkHours = async (req, res) => {
     // Merr të dhënat e menaxherit dhe punonjësit
     let managerName = '';
     let employeeName = '';
+    console.log('[NOTIF-ADMIN-DEBUG] req.user:', req.user);
     if (req.user && req.user.role === 'manager') {
       // Merr emrin e menaxherit
       const managerRes = await client.query('SELECT first_name, last_name FROM employees WHERE id = $1', [req.user.employee_id]);
