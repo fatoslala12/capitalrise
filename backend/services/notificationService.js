@@ -569,7 +569,7 @@ class NotificationService {
     try {
       const result = await pool.query(`
         SELECT COUNT(*) as count
-        FROM expenses 
+        FROM expenses_invoices 
         WHERE paid = FALSE 
         AND date < NOW() - INTERVAL '7 days'
       `);
@@ -579,8 +579,8 @@ class NotificationService {
           "SELECT id FROM users WHERE role = 'admin'"
         );
 
-        const title = '💸 Shpenzimet e papaguara!';
-        const message = `Shpenzimet e këtij muaji duhen raportuar deri më 25 të këtij muaji`;
+        const title = '💸 Kujtesë: Shpenzime të papaguara (1+ javë)';
+        const message = `Ka ${result.rows[0].count} shpenzime të papaguara për më shumë se 1 javë. Kontrolloni shpenzimet e mbetura!`;
 
         for (const user of adminUsers.rows) {
           await this.createNotification(
@@ -590,7 +590,7 @@ class NotificationService {
             'warning', 
             'reminder', 
             null, 
-            null, 
+            'expense_reminder', 
             2
           );
         }
