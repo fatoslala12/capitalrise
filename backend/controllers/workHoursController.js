@@ -268,6 +268,7 @@ exports.addWorkHours = async (req, res) => {
         const title = '🕒 Orët e punës u ndryshuan';
         const message = `Menaxheri ${managerName} ndryshoi orët për javën ${weekLabel} për punonjësin ${employeeName}`;
         for (const admin of adminUsers.rows) {
+          console.log(`[NOTIF-ADMIN] Dërgo njoftim te admin id: ${admin.id} | title: ${title} | message: ${message}`);
           await NotificationService.createNotification(
             admin.id,
             title,
@@ -278,7 +279,10 @@ exports.addWorkHours = async (req, res) => {
             'work_hours_changed',
             2
           );
+          console.log(`[NOTIF-ADMIN] Njoftimi u dërgua te admin id: ${admin.id}`);
         }
+      } else {
+        console.log('[NOTIF-ADMIN] Nuk u gjet asnjë admin në DB!');
       }
     }
     
