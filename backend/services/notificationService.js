@@ -938,6 +938,42 @@ class NotificationService {
       console.error('Error checking incomplete tasks:', error);
     }
   }
+
+  // Dërgo njoftim manual te menaxherët
+  static async notifyManagerManual(managerId, title, message, type = 'info') {
+    try {
+      if (managerId === 'all') {
+        // Dërgo te të gjithë menaxherët
+        const managers = await pool.query("SELECT id FROM users WHERE role = 'manager'");
+        for (const manager of managers.rows) {
+          await this.createNotification(
+            manager.id,
+            title,
+            message,
+            type,
+            'manual',
+            null,
+            'admin_to_manager',
+            2
+          );
+        }
+      } else {
+        // Dërgo te një menaxher specifik
+        await this.createNotification(
+          managerId,
+          title,
+          message,
+          type,
+          'manual',
+          null,
+          'admin_to_manager',
+          2
+        );
+      }
+    } catch (error) {
+      console.error('Error sending manual notification to manager:', error);
+    }
+  }
 }
 
 module.exports = NotificationService; 

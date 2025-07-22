@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, requireRole } = require('../middleware/auth');
 const notificationController = require('../controllers/notificationController');
 
 // Merr të gjitha njoftimet
@@ -20,6 +20,9 @@ router.post('/test-email', verifyToken, notificationController.testEmailNotifica
 
 // Dërgo njoftim manual
 router.post('/send-manual', verifyToken, notificationController.sendManualNotification);
+
+// Dërgo njoftim manual te menaxherët (vetëm admin)
+router.post('/send-to-manager', verifyToken, requireRole('admin'), notificationController.sendToManager);
 
 // Notification settings
 router.get('/settings', verifyToken, notificationController.getNotificationSettings);

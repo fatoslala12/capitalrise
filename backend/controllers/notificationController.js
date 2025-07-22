@@ -131,6 +131,21 @@ exports.sendManualNotification = async (req, res) => {
   }
 };
 
+// Dërgo njoftim manual te menaxherët
+exports.sendToManager = async (req, res) => {
+  try {
+    const { managerId, title, message, type = 'info' } = req.body;
+    if (!managerId || !title || !message) {
+      return res.status(400).json({ error: 'managerId, title dhe message janë të detyrueshme' });
+    }
+    await NotificationService.notifyManagerManual(managerId, title, message, type);
+    res.json({ success: true, message: 'Njoftimi u dërgua te menaxheri(t)' });
+  } catch (error) {
+    console.error('Error sending notification to manager:', error);
+    res.status(500).json({ error: 'Gabim në dërgimin e njoftimit te menaxheri' });
+  }
+};
+
 // Merr analytics për njoftimet
 exports.getNotificationAnalytics = async (req, res) => {
   try {
