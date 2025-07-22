@@ -384,14 +384,14 @@ exports.setPaidStatus = async (req, res) => {
               1
             );
             console.log(`[SUCCESS] Work hours payment notification sent to employee ${employeeName}`);
-          } else {
-            // Nëse nuk ka user account, gjej user me email të njëjtë
+          }
+          // Gjithmonë dërgo njoftim edhe te user-i me të njëjtin email (nëse ekziston), pavarësisht rolit
+          if (employee.email) {
             const userResult = await pool.query(
               'SELECT id FROM users WHERE email = $1',
               [employee.email]
             );
-            
-            if (userResult.rows.length > 0) {
+            if (userResult.rows.length > 0 && (!employee.user_id || userResult.rows[0].id !== employee.user_id)) {
               await NotificationService.createNotification(
                 userResult.rows[0].id,
                 '💰 Orët tuaja u paguan',
@@ -402,7 +402,7 @@ exports.setPaidStatus = async (req, res) => {
                 'work_hours_paid',
                 1
               );
-              console.log(`[SUCCESS] Work hours payment notification sent to user ${employee.email}`);
+              console.log(`[SUCCESS] Work hours payment notification sent to user with email ${employee.email}`);
             }
           }
           
