@@ -543,8 +543,8 @@ class NotificationService {
           "SELECT id FROM users WHERE role = 'admin'"
         );
 
-        const title = '🧾 Faturat e papaguara!';
-        const message = `Ka ${result.rows[0].count} faturat e papaguara që duhen përfunduar këtë javë. Kontrolloni!`;
+        const title = '🧾 Kujtesë: Fatura të papaguara (1+ javë)';
+        const message = `Ka ${result.rows[0].count} fatura të papaguara për më shumë se 1 javë. Kontrolloni faturat e mbetura!`;
 
         for (const user of adminUsers.rows) {
           await this.createNotification(
@@ -554,7 +554,7 @@ class NotificationService {
             'warning', 
             'reminder', 
             null, 
-            null, 
+            'invoice_reminder', 
             2
           );
         }
