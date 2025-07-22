@@ -268,27 +268,29 @@ exports.updateWorkHours = async (req, res) => {
       WHERE id = $3 RETURNING *`,
       [date, hours, id]
     );
-    // Shto njoftim për admin
-    try {
-      const adminUsers = await pool.query("SELECT id FROM users WHERE role = 'admin'");
-      if (adminUsers.rows.length > 0) {
-        const title = '📝 Orët e punës u ndryshuan';
-        const message = `Një menaxher ndryshoi orët e punës (ID: ${id}) për datën ${date} në ${hours} orë.`;
-        for (const admin of adminUsers.rows) {
-          await NotificationService.createNotification(
-            admin.id,
-            title,
-            message,
-            'info',
-            'work_hours',
-            id,
-            'work_hours_updated',
-            2
-          );
+    // Shto njoftim për admin vetëm nëse përdoruesi është menaxher
+    if (req.user && req.user.role === 'manager') {
+      try {
+        const adminUsers = await pool.query("SELECT id FROM users WHERE role = 'admin'");
+        if (adminUsers.rows.length > 0) {
+          const title = '📝 Orët e punës u ndryshuan';
+          const message = `Menaxheri ndryshoi orët e punës (ID: ${id}) për datën ${date} në ${hours} orë.`;
+          for (const admin of adminUsers.rows) {
+            await NotificationService.createNotification(
+              admin.id,
+              title,
+              message,
+              'info',
+              'work_hours',
+              id,
+              'work_hours_updated',
+              2
+            );
+          }
         }
+      } catch (notificationError) {
+        console.error('[ERROR] Failed to send admin notification for work hours update:', notificationError);
       }
-    } catch (notificationError) {
-      console.error('[ERROR] Failed to send admin notification for work hours update:', notificationError);
     }
     res.json(result.rows[0]);
   } catch (err) {
