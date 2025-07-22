@@ -366,7 +366,7 @@ exports.setPaidStatus = async (req, res) => {
       try {
         // Merr informacionin e punonjësit
         const employeeResult = await pool.query(
-          'SELECT e.id, e.first_name, e.last_name, e.email, u.id as user_id FROM employees e LEFT JOIN users u ON u.email = e.email WHERE e.id = $1',
+          'SELECT e.id, e.first_name, e.last_name, u.email, u.id as user_id FROM employees e LEFT JOIN users u ON u.employee_id = e.id WHERE e.id = $1',
           [employeeId]
         );
         if (employeeResult.rows.length > 0) {
