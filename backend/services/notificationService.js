@@ -495,11 +495,11 @@ class NotificationService {
   static async checkUnpaidWorkHours() {
     try {
       const result = await pool.query(`
-        SELECT DISTINCT wh.employee_id, e.name as employee_name
+        SELECT DISTINCT wh.employee_id, e.first_name, e.last_name
         FROM work_hours wh
         JOIN employees e ON wh.employee_id = e.id
         WHERE wh.paid = FALSE 
-        AND wh.date < NOW() - INTERVAL '7 days'
+        AND wh.date < NOW() - INTERVAL '2 days'
       `);
 
       if (result.rows.length > 0) {
@@ -507,8 +507,8 @@ class NotificationService {
           "SELECT id FROM users WHERE role = 'admin'"
         );
 
-        const title = '⚠️ Punonjës pa paguar!';
-        const message = 'Ju keni punonjës pa paguar! Kontrolloni orët e punës të papaguara';
+        const title = '⏰ Kujtesë: Orë pune të papaguara (2+ ditë)';
+        const message = `Ka punonjës me orë pune të papaguara për më shumë se 2 ditë. Kontrolloni pagesat e mbetura!`;
 
         for (const user of adminUsers.rows) {
           await this.createNotification(
@@ -518,7 +518,7 @@ class NotificationService {
             'warning', 
             'reminder', 
             null, 
-            null, 
+            'work_hours_reminder', 
             3
           );
         }
