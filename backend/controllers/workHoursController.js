@@ -261,6 +261,7 @@ exports.addWorkHours = async (req, res) => {
 exports.updateWorkHours = async (req, res) => {
   const { id } = req.params;
   const { date, hours } = req.body;
+  console.log('[DEBUG] updateWorkHours called by:', req.user);
   try {
     const result = await pool.query(`
       UPDATE work_hours
@@ -271,11 +272,13 @@ exports.updateWorkHours = async (req, res) => {
     // Shto njoftim për admin vetëm nëse përdoruesi është menaxher
     if (req.user && req.user.role === 'manager') {
       try {
+        console.log('[DEBUG] Dërgo njoftim për admin (manager changing work hours)');
         const adminUsers = await pool.query("SELECT id FROM users WHERE role = 'admin'");
         if (adminUsers.rows.length > 0) {
           const title = '📝 Orët e punës u ndryshuan';
           const message = `Menaxheri ndryshoi orët e punës (ID: ${id}) për datën ${date} në ${hours} orë.`;
           for (const admin of adminUsers.rows) {
+            console.log(`[DEBUG] Dërgo njoftim te admin id: ${admin.id}`);
             await NotificationService.createNotification(
               admin.id,
               title,
@@ -338,6 +341,7 @@ exports.getPaidStatus = async (req, res) => {
 // Set paid status for a week/employee
 exports.setPaidStatus = async (req, res) => {
   const { week, employeeId, paid } = req.body;
+  console.log('[DEBUG] setPaidStatus called by:', req.user);
   try {
     // Check if payment exists
     const check = await pool.query(
@@ -357,7 +361,6 @@ exports.setPaidStatus = async (req, res) => {
         [employeeId, week, paid]
       );
     }
-    
     // Dërgo notifications kur pagesa bëhet
     if (paid) {
       try {
@@ -366,11 +369,10 @@ exports.setPaidStatus = async (req, res) => {
           'SELECT e.id, e.first_name, e.last_name, e.email, u.id as user_id FROM employees e LEFT JOIN users u ON u.email = e.email WHERE e.id = $1',
           [employeeId]
         );
-        
         if (employeeResult.rows.length > 0) {
           const employee = employeeResult.rows[0];
           const employeeName = `${employee.first_name} ${employee.last_name}`;
-          
+          console.log('[DEBUG] Dërgo njoftim për pagesë te user:', employee);
           // 1. Njofto punonjësin (nëse ka user account)
           if (employee.user_id) {
             await NotificationService.createNotification(
@@ -388,10 +390,11 @@ exports.setPaidStatus = async (req, res) => {
           // Gjithmonë dërgo njoftim edhe te user-i me të njëjtin email (nëse ekziston), pavarësisht rolit
           if (employee.email) {
             const userResult = await pool.query(
-              'SELECT id FROM users WHERE email = $1',
+              'SELECT id, role FROM users WHERE email = $1',
               [employee.email]
             );
             if (userResult.rows.length > 0 && (!employee.user_id || userResult.rows[0].id !== employee.user_id)) {
+              console.log(`[DEBUG] Dërgo njoftim për pagesë te user me email (id: ${userResult.rows[0].id}, role: ${userResult.rows[0].role})`);
               await NotificationService.createNotification(
                 userResult.rows[0].id,
                 '💰 Orët tuaja u paguan',
@@ -405,14 +408,12 @@ exports.setPaidStatus = async (req, res) => {
               console.log(`[SUCCESS] Work hours payment notification sent to user with email ${employee.email}`);
             }
           }
-          
           // 2. Dërgo email notification për admin
           await NotificationService.sendAdminEmailNotification(
             '💰 Pagesa e orëve u konfirmua',
             `Pagesa për ${employeeName} për javën ${week} u konfirmua me sukses!`,
             'success'
           );
-          
           console.log(`[SUCCESS] Work hours payment notifications sent for ${employeeName}`);
         }
       } catch (notificationError) {
@@ -420,7 +421,6 @@ exports.setPaidStatus = async (req, res) => {
         // Mos ndal procesin kryesor për shkak të gabimit të njoftimit
       }
     }
-    
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
