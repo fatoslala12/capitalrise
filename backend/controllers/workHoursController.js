@@ -812,7 +812,7 @@ exports.checkManagerAccess = async (req, res) => {
 exports.getDashboardStats = async (req, res) => {
   const client = await pool.connect();
   try {
-    // Helper function to get current week label
+    // Helper functions
     const getCurrentWeekLabel = () => {
       const today = new Date();
       const day = today.getDay();
@@ -820,20 +820,80 @@ exports.getDashboardStats = async (req, res) => {
       const monday = new Date(today);
       monday.setDate(diff);
       monday.setHours(0, 0, 0, 0);
-      
       const sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 6);
-      
       const mondayStr = monday.toISOString().slice(0, 10);
       const sundayStr = sunday.toISOString().slice(0, 10);
-      
       return `${mondayStr} - ${sundayStr}`;
     };
-    
+    const getMonthRange = () => {
+      const now = new Date();
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      return [firstDay.toISOString().slice(0, 10), lastDay.toISOString().slice(0, 10)];
+    };
+    const getYearRange = () => {
+      const now = new Date();
+      const firstDay = new Date(now.getFullYear(), 0, 1);
+      const lastDay = new Date(now.getFullYear(), 11, 31);
+      return [firstDay.toISOString().slice(0, 10), lastDay.toISOString().slice(0, 10)];
+    };
+
     const thisWeek = getCurrentWeekLabel();
-    
+    const [monthStart, monthEnd] = getMonthRange();
+    const [yearStart, yearEnd] = getYearRange();
+
+    // --- PAGESAT ---
+    // Javore
+    const paidThisWeek = await client.query(
+      `SELECT COALESCE(SUM(gross_amount),0) as total_gross FROM payments WHERE week_label = $1 AND is_paid = true`,
+      [thisWeek]
+    );
+    // Mujore
+    const paidThisMonth = await client.query(
+      `SELECT COALESCE(SUM(gross_amount),0) as total_gross FROM payments WHERE is_paid = true AND week_label >= $1 AND week_label <= $2`,
+      [monthStart + ' - ' + monthStart, monthEnd + ' - ' + monthEnd]
+    );
+    // Vjetore
+    const paidThisYear = await client.query(
+      `SELECT COALESCE(SUM(gross_amount),0) as total_gross FROM payments WHERE is_paid = true AND week_label >= $1 AND week_label <= $2`,
+      [yearStart + ' - ' + yearStart, yearEnd + ' - ' + yearEnd]
+    );
+
+    // --- SHPENZIMET ---
+    // Javore
+    const expensesThisWeek = await client.query(
+      `SELECT COALESCE(SUM(gross),0) as total_expenses FROM expenses_invoices WHERE date >= $1 AND date <= $2`,
+      [thisWeek.split(' - ')[0], thisWeek.split(' - ')[1]]
+    );
+    // Mujore
+    const expensesThisMonth = await client.query(
+      `SELECT COALESCE(SUM(gross),0) as total_expenses FROM expenses_invoices WHERE date >= $1 AND date <= $2`,
+      [monthStart, monthEnd]
+    );
+    // Vjetore
+    const expensesThisYear = await client.query(
+      `SELECT COALESCE(SUM(gross),0) as total_expenses FROM expenses_invoices WHERE date >= $1 AND date <= $2`,
+      [yearStart, yearEnd]
+    );
+
+    // --- FITIMI & BALANCA ---
+    const totalPaidWeek = parseFloat(paidThisWeek.rows[0].total_gross || 0);
+    const totalPaidMonth = parseFloat(paidThisMonth.rows[0].total_gross || 0);
+    const totalPaidYear = parseFloat(paidThisYear.rows[0].total_gross || 0);
+    const totalProfitWeek = totalPaidWeek * 0.20;
+    const totalProfitMonth = totalPaidMonth * 0.20;
+    const totalProfitYear = totalPaidYear * 0.20;
+    const totalExpensesWeek = parseFloat(expensesThisWeek.rows[0].total_expenses || 0);
+    const totalExpensesMonth = parseFloat(expensesThisMonth.rows[0].total_expenses || 0);
+    const totalExpensesYear = parseFloat(expensesThisYear.rows[0].total_expenses || 0);
+    const netBalanceWeek = totalProfitWeek - totalExpensesWeek;
+    const netBalanceMonth = totalProfitMonth - totalExpensesMonth;
+    const netBalanceYear = totalProfitYear - totalExpensesYear;
+
+    // --- DATA E VJETER ---
     // 1. Get paid payments for this week
-    const paidThisWeek = await client.query(`
+    const paidThisWeekRes = await client.query(`
       SELECT p.*, e.first_name, e.last_name, e.hourly_rate, e.label_type
       FROM payments p
       JOIN employees e ON p.employee_id = e.id
@@ -841,7 +901,7 @@ exports.getDashboardStats = async (req, res) => {
     `, [thisWeek]);
     
     // 2. Get all work hours for this week
-    const workHoursThisWeek = await client.query(`
+    const workHoursThisWeekRes = await client.query(`
       SELECT wh.*, e.first_name, e.last_name, e.hourly_rate, c.site_name
       FROM work_hours wh
       JOIN employees e ON wh.employee_id = e.id
@@ -851,7 +911,7 @@ exports.getDashboardStats = async (req, res) => {
     `, [thisWeek.split(' - ')[0], thisWeek.split(' - ')[1]]);
     
     // 3. Get all payments for this week (paid and unpaid)  
-    const allPaymentsThisWeek = await client.query(`
+    const allPaymentsThisWeekRes = await client.query(`
       SELECT p.*, e.first_name, e.last_name, e.hourly_rate
       FROM payments p
       JOIN employees e ON p.employee_id = e.id
@@ -860,37 +920,106 @@ exports.getDashboardStats = async (req, res) => {
     `, [thisWeek]);
     
     // Calculate totals
-    const totalPaid = paidThisWeek.rows.reduce((sum, p) => sum + parseFloat(p.gross_amount || 0), 0);
+    const totalPaid = paidThisWeekRes.rows.reduce((sum, p) => sum + parseFloat(p.gross_amount || 0), 0);
     const totalProfit = totalPaid * 0.20;
     
     // Calculate work hours by site
     const siteHours = {};
-    workHoursThisWeek.rows.forEach(wh => {
+    workHoursThisWeekRes.rows.forEach(wh => {
       const site = wh.site_name || 'Unknown';
       siteHours[site] = (siteHours[site] || 0) + parseFloat(wh.hours || 0);
     });
     
     // Top 5 employees by gross amount
-    const top5Employees = allPaymentsThisWeek.rows.slice(0, 5).map(p => ({
+    const top5Employees = allPaymentsThisWeekRes.rows.slice(0, 5).map(p => ({
       id: p.employee_id,
       name: `${p.first_name} ${p.last_name}`,
       grossAmount: parseFloat(p.gross_amount || 0),
       isPaid: p.is_paid
     }));
-    
+
+    // --- STATISTIKA TË DETAJUARA ---
+    // Orët totale të punës (javore, mujore, vjetore)
+    const totalHoursWeekRes = await client.query(
+      `SELECT COALESCE(SUM(hours),0) as total_hours FROM work_hours WHERE date >= $1 AND date <= $2`,
+      [thisWeek.split(' - ')[0], thisWeek.split(' - ')[1]]
+    );
+    const totalHoursMonthRes = await client.query(
+      `SELECT COALESCE(SUM(hours),0) as total_hours FROM work_hours WHERE date >= $1 AND date <= $2`,
+      [monthStart, monthEnd]
+    );
+    const totalHoursYearRes = await client.query(
+      `SELECT COALESCE(SUM(hours),0) as total_hours FROM work_hours WHERE date >= $1 AND date <= $2`,
+      [yearStart, yearEnd]
+    );
+    const totalHoursWeek = parseFloat(totalHoursWeekRes.rows[0].total_hours || 0);
+    const totalHoursMonth = parseFloat(totalHoursMonthRes.rows[0].total_hours || 0);
+    const totalHoursYear = parseFloat(totalHoursYearRes.rows[0].total_hours || 0);
+
+    // Orët mesatare për punonjës (javore, mujore, vjetore)
+    // Numri i punonjësve me orë të regjistruara në periudhë
+    const employeesWithHoursWeekRes = await client.query(
+      `SELECT COUNT(DISTINCT employee_id) as count FROM work_hours WHERE date >= $1 AND date <= $2`,
+      [thisWeek.split(' - ')[0], thisWeek.split(' - ')[1]]
+    );
+    const employeesWithHoursMonthRes = await client.query(
+      `SELECT COUNT(DISTINCT employee_id) as count FROM work_hours WHERE date >= $1 AND date <= $2`,
+      [monthStart, monthEnd]
+    );
+    const employeesWithHoursYearRes = await client.query(
+      `SELECT COUNT(DISTINCT employee_id) as count FROM work_hours WHERE date >= $1 AND date <= $2`,
+      [yearStart, yearEnd]
+    );
+    const employeesWithHoursWeek = parseInt(employeesWithHoursWeekRes.rows[0].count || 1);
+    const employeesWithHoursMonth = parseInt(employeesWithHoursMonthRes.rows[0].count || 1);
+    const employeesWithHoursYear = parseInt(employeesWithHoursYearRes.rows[0].count || 1);
+    const avgHoursPerEmployeeWeek = employeesWithHoursWeek > 0 ? totalHoursWeek / employeesWithHoursWeek : 0;
+    const avgHoursPerEmployeeMonth = employeesWithHoursMonth > 0 ? totalHoursMonth / employeesWithHoursMonth : 0;
+    const avgHoursPerEmployeeYear = employeesWithHoursYear > 0 ? totalHoursYear / employeesWithHoursYear : 0;
+
     const dashboardData = {
       thisWeek: thisWeek,
-      totalPaid: totalPaid,
-      totalProfit: totalProfit,
+      totals: {
+        weekly: {
+          paid: totalPaidWeek,
+          profit: totalProfitWeek,
+          expenses: totalExpensesWeek,
+          netBalance: netBalanceWeek
+        },
+        monthly: {
+          paid: totalPaidMonth,
+          profit: totalProfitMonth,
+          expenses: totalExpensesMonth,
+          netBalance: netBalanceMonth
+        },
+        yearly: {
+          paid: totalPaidYear,
+          profit: totalProfitYear,
+          expenses: totalExpensesYear,
+          netBalance: netBalanceYear
+        }
+      },
+      detailedStats: {
+        totalWorkHours: {
+          weekly: totalHoursWeek,
+          monthly: totalHoursMonth,
+          yearly: totalHoursYear
+        },
+        avgHoursPerEmployee: {
+          weekly: avgHoursPerEmployeeWeek,
+          monthly: avgHoursPerEmployeeMonth,
+          yearly: avgHoursPerEmployeeYear
+        }
+      },
       workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
       top5Employees: top5Employees,
-      totalWorkHours: workHoursThisWeek.rows.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0),
-      paidEmployeesCount: paidThisWeek.rows.length,
-      totalEmployeesWithHours: [...new Set(workHoursThisWeek.rows.map(wh => wh.employee_id))].length
+      totalWorkHours: workHoursThisWeekRes.rows.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0),
+      paidEmployeesCount: paidThisWeekRes.rows.length,
+      totalEmployeesWithHours: [...new Set(workHoursThisWeekRes.rows.map(wh => wh.employee_id))].length
     };
-    
+
     res.json(dashboardData);
-    
+
   } catch (err) {
     console.error('[ERROR] Dashboard stats:', err);
     res.status(500).json({ error: err.message });
