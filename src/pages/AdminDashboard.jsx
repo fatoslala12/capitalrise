@@ -239,8 +239,8 @@ export default function DashboardStats() {
           </svg>
         </div>
         <div>
-          <h2 className="text-2xl font-bold mb-2 text-gray-900">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h2>
-          <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</div>
+          <h2 className="text-1xl font-bold mb-2 text-gray-900">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h2>
+          <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</div>
           <div className="text-lg font-medium text-purple-700">Statistika, detyra, pagesa dhe më shumë</div>
         </div>
       </div>
@@ -260,12 +260,12 @@ export default function DashboardStats() {
           color="green"
         />
         <MoneyStatCard
-          title="Paguar këtë javë"
+          title="Orë të punuara këtë javë"
           amount={`${dashboardStats.totalHoursThisWeek ?? 0} orë`}
           color="purple"
         />
         <MoneyStatCard
-          title="Fitimi (20%)"
+          title="Total Bruto"
           amount={`£${Number(dashboardStats.totalGrossThisWeek ?? 0).toFixed(2)}`}
           color="amber"
         />
