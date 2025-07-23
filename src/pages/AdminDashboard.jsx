@@ -4,7 +4,7 @@ import WorkHoursTable from "../components/WorkHoursTable";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import api from "../api";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
 
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
@@ -421,26 +421,46 @@ export default function AdminDashboard() {
           </div>
         </>
       )}
+      {/* Grafik për site */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve ({dashboardStats.thisWeek})</h3>
+        <div className="mb-4 text-lg font-semibold text-gray-700">
+          Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
+        </div>
+        {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
+              <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#3b82f6' }} />
+              <Tooltip />
+              <Bar dataKey="hours" fill="#3b82f6" radius={[0, 6, 6, 0]} barSize={30} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-gray-500 italic text-center py-8">Nuk ka orë pune të regjistruara për këtë javë</p>
+        )}
+      </div>
+
       {/* Top 5 më të paguar */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
-        {top5Paid && top5Paid.length > 0 ? (
+        {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
-            {top5Paid.map((e, i) => (
+            {dashboardStats.top5Employees.map((e, i) => (
               <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
-                <div className="w-14 h-14 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xl border-2 border-blue-300 shadow overflow-hidden">
-                  <img src={e.photo} alt="foto" className="w-full h-full object-cover" />
+                <div className="w-14 h-14 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xl border-2 border-blue-300 shadow">
+                  {i + 1}
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-lg">
-                    {e.first_name} {e.last_name}
-                    <span className="ml-2 text-xs px-2 py-1 rounded bg-purple-200 text-purple-800 font-semibold uppercase">{e.role}</span>
+                    {e.name}
                   </p>
                   <p className="text-sm text-gray-600">
                     {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
                   </p>
                 </div>
-                <div className="text-blue-700 font-extrabold text-xl">£{e.grossAmount?.toFixed(2) ?? '0.00'}</div>
+                <div className="text-blue-700 font-extrabold text-xl">£{e.grossAmount.toFixed(2)}</div>
               </li>
             ))}
           </ul>
