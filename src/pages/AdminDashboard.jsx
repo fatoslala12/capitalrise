@@ -257,6 +257,23 @@ export default function AdminDashboard() {
       .slice(0, 5);
   })();
 
+  // Shto funksion për të marrë fitimin për çdo site për javën aktuale:
+  const siteProfits = (() => {
+    const profits = {};
+    employees.forEach(emp => {
+      const weekData = (hourData[emp.id] || {})[currentWeekLabel] || {};
+      Object.values(weekData).forEach(day => {
+        if (day.site && day.hours) {
+          const profit = (parseFloat(day.hours) || 0) * (parseFloat(emp.hourly_rate) || 0) * 0.2;
+          profits[day.site] = (profits[day.site] || 0) + profit;
+        }
+      });
+    });
+    return Object.entries(profits)
+      .map(([site, profit]) => ({ site, profit }))
+      .sort((a, b) => b.profit - a.profit);
+  })();
+
   return (
     <div className="w-full max-w-full px-2 md:px-8 py-6 md:py-10 min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Kartat ekzistuese */}
@@ -468,6 +485,29 @@ export default function AdminDashboard() {
             />
             <Tooltip formatter={v => [`${v} orë`, "Total Orë"]} cursor={{ fill: "#f3f4f6" }} />
             <Bar dataKey="hours" radius={[8, 8, 8, 8]} fill="#2563eb" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
+        <h3 className="text-xl font-bold mb-6 text-green-700 flex items-center gap-2">
+          <span>💰</span> Fitimi aktual për çdo site (kjo javë)
+        </h3>
+        <ResponsiveContainer width="100%" height={320}>
+          <BarChart
+            data={siteProfits}
+            layout="vertical"
+            margin={{ top: 10, right: 30, left: 60, bottom: 10 }}
+            barSize={32}
+          >
+            <XAxis type="number" tickFormatter={v => `£${v.toFixed(2)}`}/>
+            <YAxis
+              dataKey="site"
+              type="category"
+              tick={{ fontSize: 16, fill: "#059669" }}
+              width={140}
+            />
+            <Tooltip formatter={v => [`£${v.toFixed(2)}`, "Fitimi"]} cursor={{ fill: "#f3f4f6" }} />
+            <Bar dataKey="profit" radius={[8, 8, 8, 8]} fill="#059669" />
           </BarChart>
         </ResponsiveContainer>
       </div>
