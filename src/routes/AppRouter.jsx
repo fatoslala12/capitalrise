@@ -21,6 +21,7 @@ const ForgotPassword = lazy(() => import("../pages/ForgotPassword"));
 const MyProfile = lazy(() => import("../pages/MyProfile"));
 const NotificationsPage = lazy(() => import("../pages/NotificationsPage"));
 const NotificationAnalytics = lazy(() => import("../pages/NotificationAnalytics"));
+const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -53,7 +54,7 @@ export default function AppRouter() {
             <Route path="/notifications" element={<NotificationsPage />} />
 
             <Route path="/admin" element={<MainLayout />}>
-              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="work-hours" element={<WorkHours />} />
               <Route path="payments" element={<Payments />} />
               <Route path="contracts" element={<Contracts />} />
