@@ -1218,8 +1218,22 @@ exports.getDashboardStats = async (req, res) => {
       paid: parseFloat(row.total_paid || 0)
     }));
 
+    // Llogarit total orë dhe total bruto për këtë javë nga work_hours
+    const workHoursRows = workHoursThisWeekRes.rows;
+    const totalHoursThisWeek = workHoursRows.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0);
+    // Për çdo punonjës, llogarit (orë * rate)
+    let totalGrossThisWeek = 0;
+    const empRateMap = {};
+    workHoursRows.forEach(wh => {
+      const rate = parseFloat(wh.hourly_rate || 0);
+      const hours = parseFloat(wh.hours || 0);
+      totalGrossThisWeek += rate * hours;
+    });
+
     const dashboardData = {
       thisWeek: thisWeek,
+      totalHoursThisWeek,
+      totalGrossThisWeek,
       totals: {
         weekly: {
           totalPaid: totalPaidWeek,

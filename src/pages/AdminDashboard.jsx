@@ -261,12 +261,12 @@ export default function DashboardStats() {
         />
         <MoneyStatCard
           title="Paguar këtë javë"
-          amount={`£${Number((dashboardStats.totals?.weekly?.totalPaid ?? 0)).toFixed(2)}`}
+          amount={`${dashboardStats.totalHoursThisWeek ?? 0} orë`}
           color="purple"
         />
         <MoneyStatCard
           title="Fitimi (20%)"
-          amount={dashboardStats.totalProfit}
+          amount={`£${Number(dashboardStats.totalGrossThisWeek ?? 0).toFixed(2)}`}
           color="amber"
         />
       </Grid>
