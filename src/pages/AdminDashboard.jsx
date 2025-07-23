@@ -180,6 +180,7 @@ export default function AdminDashboard() {
   const [invoices, setInvoices] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [dashboardStats, setDashboardStats] = useState(null);
+  const [taskFilter, setTaskFilter] = useState('ongoing');
   const token = localStorage.getItem("token");
 
   // Kartat ekzistuese
