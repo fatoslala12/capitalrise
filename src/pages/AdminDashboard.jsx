@@ -524,6 +524,38 @@ export default function AdminDashboard() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+      {/* Detyrat - më të dukshme */}
+      <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-8 rounded-2xl shadow-xl col-span-full border border-yellow-200">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📋 Detyrat</h3>
+        <div className="mb-4 flex gap-4 items-center">
+          <label className="font-medium">Filtro:</label>
+          <select value={taskFilter} onChange={e => setTaskFilter(e.target.value)} className="border p-2 rounded">
+            <option value="ongoing">Vetëm aktive</option>
+            <option value="completed">Vetëm të përfunduara</option>
+            <option value="all">Të gjitha</option>
+          </select>
+        </div>
+        <div className="mb-4 flex flex-wrap gap-6">
+          <div className="bg-blue-100 px-6 py-3 rounded-xl text-blue-800 font-bold shadow">Totali: {allTasks.length}</div>
+          <div className="bg-green-100 px-6 py-3 rounded-xl text-green-800 font-bold shadow">✅ Të përfunduara: {allTasks.filter(t => t.status === 'completed').length}</div>
+          <div className="bg-yellow-100 px-6 py-3 rounded-xl text-yellow-800 font-bold shadow">🕒 Në vazhdim: {allTasks.filter(t => t.status === 'ongoing').length}</div>
+        </div>
+        {filteredTasks.length > 0 ? (
+          <ul className="space-y-3">
+            {filteredTasks.map((t, idx) => (
+              <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-4 bg-white rounded-xl p-4 shadow border border-blue-100">
+                <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
+                <span className="font-semibold flex-1 text-lg">{t.description || t.title || ''}</span>
+                <span className="text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
+                <span className="text-lg text-purple-700 font-bold">Afati: {t.due_date ? new Date(t.due_date).toLocaleDateString() : ''}</span>
+                <span className="text-xs text-gray-500">Nga: {t.assigned_by || t.assignedBy || ''}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <NoTasksEmpty />
+        )}
+      </div>
     </div>
   );
 }
