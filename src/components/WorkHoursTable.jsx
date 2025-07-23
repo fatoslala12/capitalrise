@@ -442,10 +442,6 @@ export default function WorkHoursTable({
                         <option key={site} value={site}>{site}</option>
                       ))}
                     </select>
-                    {/* Mesazh informues për menaxherin kur është readOnly për shkak të pagesës */}
-                    {(typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly) && (
-                      <div className="text-xs text-red-600 mt-1 font-semibold">Orët nuk mund të ndryshohen pasi janë shënuar si të paguara nga administratori.</div>
-                    )}
                   </td>
                 ))}
                 <td className="py-2 px-2 font-semibold text-blue-900 bg-blue-50 rounded-xl">£{calc.rate && !isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}</td>

@@ -212,6 +212,10 @@ export default function AdminDashboard() {
   const top5Employees = dashboardStats?.quickLists?.top5ProductiveEmployees || [];
   // Top 5 kontratat më të mëdha nga backend
   const top5Contracts = dashboardStats?.contractStats?.top5ContractsTotal || [];
+  // Quick lists
+  const unpaidEmployees = dashboardStats?.quickLists?.unpaidEmployees || [];
+  const absentEmployees = dashboardStats?.quickLists?.absentEmployees || [];
+  const overduePayments = dashboardStats?.paymentStats?.overduePayments || [];
 
   return (
     <div className="w-full max-w-full px-2 md:px-8 py-6 md:py-10 min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -238,6 +242,54 @@ export default function AdminDashboard() {
           <div className="text-sm text-yellow-700">Shpenzime</div>
         </div>
       </div>
+
+      {/* Quick lists dhe njoftime të shpejta */}
+      {dashboardStats && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h3 className="text-lg font-bold mb-4 text-blue-700 flex items-center gap-2">
+              <span>⏳</span> Punonjësit me pagesa të papaguara
+            </h3>
+            {unpaidEmployees.length === 0 ? <p className="text-gray-500 italic">Të gjithë janë paguar këtë javë.</p> : (
+              <ul className="space-y-2">
+                {unpaidEmployees.map(e => (
+                  <li key={e.id} className="flex justify-between border-b pb-1">
+                    <span>{e.name}</span>
+                    <span className="text-red-600 font-bold">£{e.amount}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h3 className="text-lg font-bold mb-4 text-yellow-700 flex items-center gap-2">
+              <span>🚫</span> Punonjësit absentë këtë javë
+            </h3>
+            {absentEmployees.length === 0 ? <p className="text-gray-500 italic">Të gjithë kanë orë të regjistruara.</p> : (
+              <ul className="space-y-2">
+                {absentEmployees.map(e => (
+                  <li key={e.id}>{e.name}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h3 className="text-lg font-bold mb-4 text-purple-700 flex items-center gap-2">
+              <span>💸</span> Pagesa të prapambetura
+            </h3>
+            {overduePayments.length === 0 ? <p className="text-gray-500 italic">Nuk ka pagesa të prapambetura.</p> : (
+              <ul className="space-y-2">
+                {overduePayments.map(e => (
+                  <li key={e.id + e.week} className="flex justify-between border-b pb-1">
+                    <span>{e.name} ({e.week})</span>
+                    <span className="text-red-600 font-bold">£{e.amount}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Grafiket/statistikat e reja nga dashboardStats */}
       {dashboardStats && (
