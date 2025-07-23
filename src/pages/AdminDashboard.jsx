@@ -227,6 +227,7 @@ export default function DashboardStats() {
   console.log('[DEBUG] dashboardStats:', dashboardStats);
   console.log('[DEBUG] employees:', employees);
   console.log('[DEBUG] top5Employees:', dashboardStats.top5Employees);
+  console.log('[DEBUG] totals:', dashboardStats.totals);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
@@ -330,7 +331,6 @@ export default function DashboardStats() {
         {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
             {dashboardStats.top5Employees.map((e, i) => {
-              const emp = employees.find(emp => emp.id === e.id);
               const amount = e.grossAmount ?? e.amount ?? 0;
               const photoSrc = e.photo
                 ? e.photo.startsWith('data:image')
@@ -339,8 +339,9 @@ export default function DashboardStats() {
                 : '/placeholder.png';
               return (
                 <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
-                  <div className="w-14 h-14 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xl border-2 border-blue-300 shadow overflow-hidden">
-                    <img src={photoSrc} alt="foto" className="w-full h-full object-cover" />
+                  <div className="relative w-14 h-14">
+                    <img src={photoSrc} alt="foto" className="w-full h-full rounded-full object-cover border-2 border-blue-300 shadow" />
+                    <span className="absolute -top-2 -left-2 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">{i + 1}</span>
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-lg">
