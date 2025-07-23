@@ -224,6 +224,10 @@ export default function DashboardStats() {
     return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat..." />;
   }
 
+  console.log('[DEBUG] dashboardStats:', dashboardStats);
+  console.log('[DEBUG] employees:', employees);
+  console.log('[DEBUG] top5Employees:', dashboardStats.top5Employees);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
       {/* HEADER MODERN */}
@@ -333,7 +337,7 @@ export default function DashboardStats() {
                     {emp && emp.photo ? (
                       <img src={emp.photo} alt="foto" className="w-full h-full object-cover" />
                     ) : (
-                      <span>{i + 1}</span>
+                      <img src="/placeholder.png" alt="placeholder" className="w-full h-full object-cover" />
                     )}
                   </div>
                   <div className="flex-1">
