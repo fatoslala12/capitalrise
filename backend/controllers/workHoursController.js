@@ -1133,6 +1133,80 @@ exports.getDashboardStats = async (req, res) => {
       amount: parseFloat(row.gross_amount || 0)
     }));
 
+    // --- STATISTIKA PËR KONTRATA/SITE ---
+    // Top 5 site me më shumë orë pune (total)
+    const top5SitesTotalRes = await client.query(
+      `SELECT site, SUM(hours) as total_hours FROM work_hours GROUP BY site ORDER BY total_hours DESC LIMIT 5`
+    );
+    const top5SitesTotal = top5SitesTotalRes.rows.map(row => ({
+      site: row.site,
+      hours: parseFloat(row.total_hours || 0)
+    }));
+    // Top 5 site këtë javë
+    const top5SitesWeekRes = await client.query(
+      `SELECT site, SUM(hours) as total_hours FROM work_hours WHERE date >= $1 AND date <= $2 GROUP BY site ORDER BY total_hours DESC LIMIT 5`,
+      [thisWeek.split(' - ')[0], thisWeek.split(' - ')[1]]
+    );
+    const top5SitesWeek = top5SitesWeekRes.rows.map(row => ({
+      site: row.site,
+      hours: parseFloat(row.total_hours || 0)
+    }));
+    // Top 5 site këtë muaj
+    const top5SitesMonthRes = await client.query(
+      `SELECT site, SUM(hours) as total_hours FROM work_hours WHERE date >= $1 AND date <= $2 GROUP BY site ORDER BY total_hours DESC LIMIT 5`,
+      [monthStart, monthEnd]
+    );
+    const top5SitesMonth = top5SitesMonthRes.rows.map(row => ({
+      site: row.site,
+      hours: parseFloat(row.total_hours || 0)
+    }));
+
+    // Top 5 kontrata me pagesa më të larta (total)
+    const top5ContractsTotalRes = await client.query(
+      `SELECT c.contract_number, c.site_name, SUM(p.gross_amount) as total_paid FROM payments p JOIN contracts c ON p.contract_id = c.id GROUP BY c.contract_number, c.site_name ORDER BY total_paid DESC LIMIT 5`
+    );
+    const top5ContractsTotal = top5ContractsTotalRes.rows.map(row => ({
+      contract: row.contract_number,
+      site: row.site_name,
+      paid: parseFloat(row.total_paid || 0)
+    }));
+    // Top 5 kontrata këtë javë
+    const top5ContractsWeekRes = await client.query(
+      `SELECT c.contract_number, c.site_name, SUM(p.gross_amount) as total_paid FROM payments p JOIN contracts c ON p.contract_id = c.id WHERE p.week_label = $1 GROUP BY c.contract_number, c.site_name ORDER BY total_paid DESC LIMIT 5`,
+      [thisWeek]
+    );
+    const top5ContractsWeek = top5ContractsWeekRes.rows.map(row => ({
+      contract: row.contract_number,
+      site: row.site_name,
+      paid: parseFloat(row.total_paid || 0)
+    }));
+    // Top 5 kontrata këtë muaj
+    const top5ContractsMonthRes = await client.query(
+      `SELECT c.contract_number, c.site_name, SUM(p.gross_amount) as total_paid FROM payments p JOIN contracts c ON p.contract_id = c.id WHERE p.week_label >= $1 AND p.week_label <= $2 GROUP BY c.contract_number, c.site_name ORDER BY total_paid DESC LIMIT 5`,
+      [monthStart + ' - ' + monthStart, monthEnd + ' - ' + monthEnd]
+    );
+    const top5ContractsMonth = top5ContractsMonthRes.rows.map(row => ({
+      contract: row.contract_number,
+      site: row.site_name,
+      paid: parseFloat(row.total_paid || 0)
+    }));
+
+    // Orët totale dhe pagesat për çdo kontratë (për tabela/grafikë)
+    const allContractsStatsRes = await client.query(
+      `SELECT c.contract_number, c.site_name, COALESCE(SUM(wh.hours),0) as total_hours, COALESCE(SUM(p.gross_amount),0) as total_paid
+       FROM contracts c
+       LEFT JOIN work_hours wh ON wh.contract_id = c.id
+       LEFT JOIN payments p ON p.contract_id = c.id
+       GROUP BY c.contract_number, c.site_name
+       ORDER BY c.contract_number`
+    );
+    const allContractsStats = allContractsStatsRes.rows.map(row => ({
+      contract: row.contract_number,
+      site: row.site_name,
+      hours: parseFloat(row.total_hours || 0),
+      paid: parseFloat(row.total_paid || 0)
+    }));
+
     const dashboardData = {
       thisWeek: thisWeek,
       totals: {
@@ -1159,6 +1233,15 @@ exports.getDashboardStats = async (req, res) => {
         unpaidCountWeek: unpaidCountWeek,
         unpaidCountMonth: unpaidCountMonth,
         overduePayments: overduePayments
+      },
+      contractStats: {
+        top5SitesTotal: top5SitesTotal,
+        top5SitesWeek: top5SitesWeek,
+        top5SitesMonth: top5SitesMonth,
+        top5ContractsTotal: top5ContractsTotal,
+        top5ContractsWeek: top5ContractsWeek,
+        top5ContractsMonth: top5ContractsMonth,
+        allContracts: allContractsStats
       },
       detailedStats: {
         totalWorkHours: {
