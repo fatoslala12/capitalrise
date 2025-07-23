@@ -564,7 +564,7 @@ export default function WorkHours() {
             weekLabel={currentWeekLabel}
             data={hourData}
             onChange={handleChange}
-            readOnly={isUser}
+            readOnly={(empId) => isUser || (isManager && paidStatus[`${currentWeekLabel}_${empId}`])}
             showPaymentControl={isAdmin}
             paidStatus={paidStatus}
             setPaidStatus={setPaidStatus}
@@ -626,7 +626,7 @@ export default function WorkHours() {
                           weekLabel={weekLabel}
                           data={hourData}
                           onChange={handleChange}
-                          readOnly={isUser}
+                          readOnly={(empId) => isUser || (isManager && paidStatus[`${weekLabel}_${empId}`])}
                           showPaymentControl={isAdmin}
                           paidStatus={paidStatus}
                           setPaidStatus={setPaidStatus}

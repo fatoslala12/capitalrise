@@ -424,24 +424,28 @@ export default function WorkHoursTable({
                       value={calc.hours[day]?.hours || ""}
                       onChange={e => onChange(calc.emp.id, day, "hours", e.target.value)}
                       className={`w-16 p-2 border-2 border-blue-200 rounded-xl text-center focus:ring-2 focus:ring-blue-400 shadow-sm text-base ${
-                        readOnly ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : 'bg-blue-50'
+                        (typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly) ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : 'bg-blue-50'
                       }`}
-                      disabled={readOnly}
+                      disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly}
                       placeholder="0"
                     />
                     <select
                       className={`mt-2 w-full border-2 border-blue-200 rounded-xl text-xs shadow-sm ${
-                        readOnly ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : 'bg-blue-50'
+                        (typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly) ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : 'bg-blue-50'
                       }`}
                       value={calc.hours[day]?.site || ""}
                       onChange={e => onChange(calc.emp.id, day, "site", e.target.value)}
-                      disabled={readOnly}
+                      disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly}
                     >
                       <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? "Zgjidh vendin" : "Pushim"}</option>
                       {calc.empSites.map(site => (
                         <option key={site} value={site}>{site}</option>
                       ))}
                     </select>
+                    {/* Mesazh informues për menaxherin kur është readOnly për shkak të pagesës */}
+                    {(typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly) && (
+                      <div className="text-xs text-red-600 mt-1 font-semibold">Orët nuk mund të ndryshohen pasi janë shënuar si të paguara nga administratori.</div>
+                    )}
                   </td>
                 ))}
                 <td className="py-2 px-2 font-semibold text-blue-900 bg-blue-50 rounded-xl">£{calc.rate && !isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}</td>
