@@ -240,6 +240,23 @@ export default function AdminDashboard() {
   const unpaidInvoices = invoices.filter(inv => !inv.paid);
   const unpaidExpenses = expenses.filter(exp => !exp.paid);
 
+  // Shto funksion për të marrë top 5 site më aktive për javën aktuale:
+  const top5Sites = (() => {
+    const siteHours = {};
+    employees.forEach(emp => {
+      const weekData = (hourData[emp.id] || {})[currentWeekLabel] || {};
+      Object.values(weekData).forEach(day => {
+        if (day.site && day.hours) {
+          siteHours[day.site] = (siteHours[day.site] || 0) + parseFloat(day.hours);
+        }
+      });
+    });
+    return Object.entries(siteHours)
+      .map(([site, hours]) => ({ site, hours }))
+      .sort((a, b) => b.hours - a.hours)
+      .slice(0, 5);
+  })();
+
   return (
     <div className="w-full max-w-full px-2 md:px-8 py-6 md:py-10 min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Kartat ekzistuese */}
@@ -430,6 +447,29 @@ export default function AdminDashboard() {
             </li>
           ))}
         </ul>
+      </div>
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
+        <h3 className="text-xl font-bold mb-6 text-blue-700 flex items-center gap-2">
+          <span>📊</span> Top 5 site më aktive (kjo javë)
+        </h3>
+        <ResponsiveContainer width="100%" height={320}>
+          <BarChart
+            data={top5Sites}
+            layout="vertical"
+            margin={{ top: 10, right: 30, left: 60, bottom: 10 }}
+            barSize={32}
+          >
+            <XAxis type="number" />
+            <YAxis
+              dataKey="site"
+              type="category"
+              tick={{ fontSize: 16, fill: "#2563eb" }}
+              width={140}
+            />
+            <Tooltip formatter={v => [`${v} orë`, "Total Orë"]} cursor={{ fill: "#f3f4f6" }} />
+            <Bar dataKey="hours" radius={[8, 8, 8, 8]} fill="#2563eb" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
