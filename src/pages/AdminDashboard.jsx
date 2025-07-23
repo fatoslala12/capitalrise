@@ -393,7 +393,10 @@ export default function AdminDashboard() {
             <li key={emp.id} className="flex items-center gap-4 border-b pb-2">
               <img src={emp.photo} alt="" className="w-10 h-10 rounded-full object-cover border" />
               <span className="font-semibold">{emp.first_name} {emp.last_name}</span>
-              <span className="ml-auto font-bold text-green-700">£{emp.total.toFixed(2)}</span>
+              <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-2 py-1 rounded-full shadow uppercase tracking-wide ml-2">
+                {emp.role}
+              </span>
+              <span className="ml-auto font-bold text-green-700">£{emp.total ? emp.total.toFixed(2) : '0.00'}</span>
             </li>
           ))}
         </ul>
