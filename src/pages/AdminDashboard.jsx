@@ -260,7 +260,7 @@ export default function DashboardStats() {
         />
         <MoneyStatCard
           title="Paguar këtë javë"
-          amount={`£${Number(dashboardStats.totalPaid).toFixed(2)}`}
+          amount={`£${Number((dashboardStats.totals?.weekly?.totalPaid ?? 0)).toFixed(2)}`}
           color="purple"
         />
         <MoneyStatCard
@@ -331,6 +331,7 @@ export default function DashboardStats() {
           <ul className="space-y-3 text-gray-800">
             {dashboardStats.top5Employees.map((e, i) => {
               const emp = employees.find(emp => emp.id === e.id);
+              const amount = e.grossAmount ?? e.amount ?? 0;
               return (
                 <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
                   <div className="w-14 h-14 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xl border-2 border-blue-300 shadow overflow-hidden">
@@ -348,7 +349,7 @@ export default function DashboardStats() {
                       {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
                     </p>
                   </div>
-                  <div className="text-blue-700 font-extrabold text-xl">£{Number(e.grossAmount).toFixed(2)}</div>
+                  <div className="text-blue-700 font-extrabold text-xl">£{Number(amount).toFixed(2)}</div>
                 </li>
               );
             })}
