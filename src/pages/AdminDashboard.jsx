@@ -160,6 +160,17 @@ function TopContractsBarChart({ contracts }) {
   );
 }
 
+const getCurrentWeekLabel = () => {
+  const today = new Date();
+  const day = today.getDay();
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(today);
+  monday.setDate(diff);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
+};
+
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [employees, setEmployees] = useState([]);
@@ -216,6 +227,18 @@ export default function AdminDashboard() {
   const unpaidEmployees = dashboardStats?.quickLists?.unpaidEmployees || [];
   const absentEmployees = dashboardStats?.quickLists?.absentEmployees || [];
   const overduePayments = dashboardStats?.paymentStats?.overduePayments || [];
+
+  const currentWeekLabel = getCurrentWeekLabel();
+  const top5Paid = employees
+    .map(emp => {
+      const weekData = (hourData[emp.id] || {})[currentWeekLabel] || {};
+      const total = Object.values(weekData).reduce((sum, d) => sum + ((parseFloat(d.hours) || 0) * (parseFloat(emp.hourly_rate) || 0)), 0);
+      return { ...emp, total };
+    })
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
+  const unpaidInvoices = invoices.filter(inv => !inv.paid);
+  const unpaidExpenses = expenses.filter(exp => !exp.paid);
 
   return (
     <div className="w-full max-w-full px-2 md:px-8 py-6 md:py-10 min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -361,6 +384,50 @@ export default function AdminDashboard() {
           </div>
         </>
       )}
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
+        <h3 className="text-xl font-bold mb-6 text-green-800 flex items-center gap-2">
+          <span>💷</span> Top 5 më të paguar (kjo javë)
+        </h3>
+        <ul className="space-y-3">
+          {top5Paid.map(emp => (
+            <li key={emp.id} className="flex items-center gap-4 border-b pb-2">
+              <img src={emp.photo} alt="" className="w-10 h-10 rounded-full object-cover border" />
+              <span className="font-semibold">{emp.first_name} {emp.last_name}</span>
+              <span className="ml-auto font-bold text-green-700">£{emp.total.toFixed(2)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
+        <h3 className="text-xl font-bold mb-6 text-purple-800 flex items-center gap-2">
+          <span>🧾</span> Faturat e papaguara
+        </h3>
+        <ul className="space-y-3">
+          {unpaidInvoices.map(inv => (
+            <li key={inv.invoice_number} className="flex flex-col md:flex-row md:items-center gap-2 border-b pb-2">
+              <span className="font-semibold">#{inv.invoice_number}</span>
+              <span>{inv.company || inv.company_name}</span>
+              <span>{inv.site_name || inv.site_number}</span>
+              <span className="ml-auto font-bold text-purple-700">£{inv.total || inv.amount}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
+        <h3 className="text-xl font-bold mb-6 text-yellow-800 flex items-center gap-2">
+          <span>💸</span> Shpenzime të papaguara
+        </h3>
+        <ul className="space-y-3">
+          {unpaidExpenses.map(exp => (
+            <li key={exp.id || exp.invoice_number} className="flex flex-col md:flex-row md:items-center gap-2 border-b pb-2">
+              <span className="font-semibold">#{exp.invoice_number || exp.id}</span>
+              <span>{exp.company || exp.company_name}</span>
+              <span>{exp.site_name || exp.site_number}</span>
+              <span className="ml-auto font-bold text-yellow-700">£{exp.total || exp.amount || exp.gross}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
