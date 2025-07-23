@@ -229,14 +229,17 @@ export default function AdminDashboard() {
   const overduePayments = dashboardStats?.paymentStats?.overduePayments || [];
 
   const currentWeekLabel = getCurrentWeekLabel();
-  const top5Paid = employees
-    .map(emp => {
-      const weekData = (hourData[emp.id] || {})[currentWeekLabel] || {};
-      const total = Object.values(weekData).reduce((sum, d) => sum + ((parseFloat(d.hours) || 0) * (parseFloat(emp.hourly_rate) || 0)), 0);
-      return { ...emp, total };
-    })
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 5);
+  // Për Top 5 më të paguar, përditëso map-in që të marrë edhe rolin dhe foton:
+  const top5Paid = dashboardStats?.top5Employees?.map(e => {
+    const emp = employees.find(emp => emp.id === e.id);
+    return {
+      ...e,
+      role: emp?.role || '-',
+      photo: emp?.photo || '/placeholder.png',
+      first_name: emp?.first_name || '',
+      last_name: emp?.last_name || ''
+    };
+  }) || [];
   const unpaidInvoices = invoices.filter(inv => !inv.paid);
   const unpaidExpenses = expenses.filter(exp => !exp.paid);
 
@@ -418,22 +421,32 @@ export default function AdminDashboard() {
           </div>
         </>
       )}
-      <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
-        <h3 className="text-xl font-bold mb-6 text-green-800 flex items-center gap-2">
-          <span>💷</span> Top 5 më të paguar (kjo javë)
-        </h3>
-        <ul className="space-y-3">
-          {top5Paid.map(emp => (
-            <li key={emp.id} className="flex items-center gap-4 border-b pb-2">
-              <img src={emp.photo} alt="" className="w-10 h-10 rounded-full object-cover border" />
-              <span className="font-semibold">{emp.first_name} {emp.last_name}</span>
-              <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-2 py-1 rounded-full shadow uppercase tracking-wide ml-2">
-                {emp.role}
-              </span>
-              <span className="ml-auto font-bold text-green-700">£{emp.total ? emp.total.toFixed(2) : '0.00'}</span>
-            </li>
-          ))}
-        </ul>
+      {/* Top 5 më të paguar */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
+        {top5Paid && top5Paid.length > 0 ? (
+          <ul className="space-y-3 text-gray-800">
+            {top5Paid.map((e, i) => (
+              <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
+                <div className="w-14 h-14 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xl border-2 border-blue-300 shadow overflow-hidden">
+                  <img src={e.photo} alt="foto" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-lg">
+                    {e.first_name} {e.last_name}
+                    <span className="ml-2 text-xs px-2 py-1 rounded bg-purple-200 text-purple-800 font-semibold uppercase">{e.role}</span>
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
+                  </p>
+                </div>
+                <div className="text-blue-700 font-extrabold text-xl">£{e.grossAmount?.toFixed(2) ?? '0.00'}</div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500 italic text-center py-8">Nuk ka pagesa të regjistruara për këtë javë</p>
+        )}
       </div>
       <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
         <h3 className="text-xl font-bold mb-6 text-purple-800 flex items-center gap-2">
