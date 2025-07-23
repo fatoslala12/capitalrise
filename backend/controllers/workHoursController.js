@@ -810,6 +810,10 @@ exports.checkManagerAccess = async (req, res) => {
 
 // Dashboard stats endpoint - optimized for dashboard display
 exports.getDashboardStats = async (req, res) => {
+  // Lejo vetëm admin
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
   const client = await pool.connect();
   try {
     // Helper functions
@@ -1068,6 +1072,36 @@ exports.getDashboardStats = async (req, res) => {
       weeklyExpenses.push({ week, total: parseFloat(res.rows[0].total || 0) });
     }
 
+    // --- TRENDET MUJORE (12 muajt e fundit) ---
+    // 1. Merr 12 muajt e fundit (format YYYY-MM)
+    const monthsRes = await client.query(`
+      SELECT DISTINCT TO_CHAR(DATE_TRUNC('month', date::date), 'YYYY-MM') as month
+      FROM work_hours
+      ORDER BY month DESC LIMIT 12
+    `);
+    const months = monthsRes.rows.map(r => r.month).sort(); // nga më i vjetri te më i riu
+
+    // 2. Pagesat totale për çdo muaj
+    const monthlyPayments = [];
+    for (const month of months) {
+      const res = await client.query(`
+        SELECT COALESCE(SUM(gross_amount),0) as total
+        FROM payments
+        WHERE TO_CHAR(DATE_TRUNC('month', CAST(split_part(week_label, ' - ', 1) AS DATE)), 'YYYY-MM') = $1
+      `, [month]);
+      monthlyPayments.push({ month, total: parseFloat(res.rows[0].total || 0) });
+    }
+    // 3. Orët totale të punës për çdo muaj
+    const monthlyWorkHours = [];
+    for (const month of months) {
+      const res = await client.query(`
+        SELECT COALESCE(SUM(hours),0) as total
+        FROM work_hours
+        WHERE TO_CHAR(DATE_TRUNC('month', date::date), 'YYYY-MM') = $1
+      `, [month]);
+      monthlyWorkHours.push({ month, total: parseFloat(res.rows[0].total || 0) });
+    }
+
     const dashboardData = {
       thisWeek: thisWeek,
       totals: {
@@ -1116,7 +1150,9 @@ exports.getDashboardStats = async (req, res) => {
       trends: {
         weeklyPayments: weeklyPayments,
         weeklyWorkHours: weeklyWorkHours,
-        weeklyExpenses: weeklyExpenses
+        weeklyExpenses: weeklyExpenses,
+        monthlyPayments: monthlyPayments,
+        monthlyWorkHours: monthlyWorkHours
       },
       workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
       top5Employees: top5Employees,
