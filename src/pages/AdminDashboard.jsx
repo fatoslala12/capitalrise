@@ -256,7 +256,7 @@ export default function DashboardStats() {
         />
         <MoneyStatCard
           title="Paguar këtë javë"
-          amount={dashboardStats.totalPaid}
+          amount={`£${Number(dashboardStats.totalPaid).toFixed(2)}`}
           color="purple"
         />
         <MoneyStatCard
@@ -325,22 +325,29 @@ export default function DashboardStats() {
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
         {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
-            {dashboardStats.top5Employees.map((e, i) => (
-              <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
-                <div className="w-14 h-14 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xl border-2 border-blue-300 shadow">
-                  {i + 1}
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-lg">
-                    {e.name}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
-                  </p>
-                </div>
-                <div className="text-blue-700 font-extrabold text-xl">£{e.grossAmount.toFixed(2)}</div>
-              </li>
-            ))}
+            {dashboardStats.top5Employees.map((e, i) => {
+              const emp = employees.find(emp => emp.id === e.id);
+              return (
+                <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
+                  <div className="w-14 h-14 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xl border-2 border-blue-300 shadow overflow-hidden">
+                    {emp && emp.photo ? (
+                      <img src={emp.photo} alt="foto" className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{i + 1}</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-lg">
+                      {e.name}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
+                    </p>
+                  </div>
+                  <div className="text-blue-700 font-extrabold text-xl">£{Number(e.grossAmount).toFixed(2)}</div>
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="text-gray-500 italic text-center py-8">Nuk ka pagesa të regjistruara për këtë javë</p>
@@ -389,20 +396,3 @@ export default function DashboardStats() {
           </ul>
         )}
       </div>
-
-      {/* Butoni Dil */}
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-          }}
-          className="bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:from-pink-500 hover:to-red-500 transition text-lg"
-        >
-          🚪 Dil
-        </button>
-      </div>
-    </div>
-  );
-}
