@@ -332,14 +332,15 @@ export default function DashboardStats() {
             {dashboardStats.top5Employees.map((e, i) => {
               const emp = employees.find(emp => emp.id === e.id);
               const amount = e.grossAmount ?? e.amount ?? 0;
+              const photoSrc = e.photo
+                ? e.photo.startsWith('data:image')
+                  ? e.photo
+                  : e.photo
+                : '/placeholder.png';
               return (
                 <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
                   <div className="w-14 h-14 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xl border-2 border-blue-300 shadow overflow-hidden">
-                    {emp && emp.photo ? (
-                      <img src={emp.photo} alt="foto" className="w-full h-full object-cover" />
-                    ) : (
-                      <img src="/placeholder.png" alt="placeholder" className="w-full h-full object-cover" />
-                    )}
+                    <img src={photoSrc} alt="foto" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-lg">
