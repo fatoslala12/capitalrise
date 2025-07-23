@@ -934,12 +934,23 @@ exports.getDashboardStats = async (req, res) => {
       siteHours[site] = (siteHours[site] || 0) + parseFloat(wh.hours || 0);
     });
     
-    // Top 5 employees by gross amount
-    const top5Employees = allPaymentsThisWeekRes.rows.slice(0, 5).map(p => ({
+    // Top 5 employees by gross amount (vetëm të paguarat)
+    const top5PaidRes = await client.query(`
+      SELECT p.employee_id, e.first_name, e.last_name, e.photo, u.role, p.gross_amount, p.is_paid
+      FROM payments p
+      JOIN employees e ON p.employee_id = e.id
+      LEFT JOIN users u ON u.employee_id = e.id
+      WHERE p.week_label = $1 AND p.is_paid = true
+      ORDER BY p.gross_amount DESC
+      LIMIT 5
+    `, [thisWeek]);
+    const top5Employees = top5PaidRes.rows.map(p => ({
       id: p.employee_id,
       name: `${p.first_name} ${p.last_name}`,
       grossAmount: parseFloat(p.gross_amount || 0),
-      isPaid: p.is_paid
+      isPaid: p.is_paid,
+      photo: p.photo || null,
+      role: p.role || ''
     }));
 
     // --- STATISTIKA TË DETAJUARA ---
@@ -1211,7 +1222,7 @@ exports.getDashboardStats = async (req, res) => {
       thisWeek: thisWeek,
       totals: {
         weekly: {
-          paid: totalPaidWeek,
+          totalPaid: totalPaidWeek,
           profit: totalProfitWeek,
           expenses: totalExpensesWeek,
           netBalance: netBalanceWeek
