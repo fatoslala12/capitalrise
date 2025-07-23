@@ -423,11 +423,11 @@ export default function AdminDashboard() {
       )}
       {/* Grafik për site */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve ({dashboardStats.thisWeek})</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve ({dashboardStats?.thisWeek || ''})</h3>
         <div className="mb-4 text-lg font-semibold text-gray-700">
-          Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
+          Total orë të punuara: <span className="text-blue-600">{dashboardStats?.totalWorkHours ?? 0}</span> orë
         </div>
-        {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
+        {dashboardStats?.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -445,7 +445,7 @@ export default function AdminDashboard() {
       {/* Top 5 më të paguar */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
-        {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
+        {dashboardStats?.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
             {dashboardStats.top5Employees.map((e, i) => (
               <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
