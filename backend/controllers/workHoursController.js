@@ -1102,6 +1102,37 @@ exports.getDashboardStats = async (req, res) => {
       monthlyWorkHours.push({ month, total: parseFloat(res.rows[0].total || 0) });
     }
 
+    // --- STATUSI I PAGESAVE ---
+    // Numri i pagesave të papaguara këtë javë
+    const unpaidCountWeekRes = await client.query(
+      `SELECT COUNT(*) as count FROM payments WHERE week_label = $1 AND is_paid = false`,
+      [thisWeek]
+    );
+    const unpaidCountWeek = parseInt(unpaidCountWeekRes.rows[0].count || 0);
+    // Numri i pagesave të papaguara këtë muaj
+    const unpaidCountMonthRes = await client.query(
+      `SELECT COUNT(*) as count FROM payments WHERE week_label >= $1 AND week_label <= $2 AND is_paid = false`,
+      [monthStart + ' - ' + monthStart, monthEnd + ' - ' + monthEnd]
+    );
+    const unpaidCountMonth = parseInt(unpaidCountMonthRes.rows[0].count || 0);
+
+    // Lista e punonjësve me pagesa të prapambetura (më shumë se 1 javë pa pagesë)
+    // Merr pagesat e papaguara përveç javës aktuale
+    const overduePaymentsRes = await client.query(
+      `SELECT p.employee_id, e.first_name, e.last_name, p.week_label, p.gross_amount
+       FROM payments p
+       JOIN employees e ON p.employee_id = e.id
+       WHERE p.is_paid = false AND p.week_label < $1
+       ORDER BY p.week_label ASC`,
+      [thisWeek]
+    );
+    const overduePayments = overduePaymentsRes.rows.map(row => ({
+      id: row.employee_id,
+      name: `${row.first_name} ${row.last_name}`,
+      week: row.week_label,
+      amount: parseFloat(row.gross_amount || 0)
+    }));
+
     const dashboardData = {
       thisWeek: thisWeek,
       totals: {
@@ -1123,6 +1154,11 @@ exports.getDashboardStats = async (req, res) => {
           expenses: totalExpensesYear,
           netBalance: netBalanceYear
         }
+      },
+      paymentStats: {
+        unpaidCountWeek: unpaidCountWeek,
+        unpaidCountMonth: unpaidCountMonth,
+        overduePayments: overduePayments
       },
       detailedStats: {
         totalWorkHours: {
