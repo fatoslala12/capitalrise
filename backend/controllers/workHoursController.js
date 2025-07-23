@@ -1042,6 +1042,32 @@ exports.getDashboardStats = async (req, res) => {
       hours: parseFloat(row.total_hours || 0)
     }));
 
+    // --- TRENDET JAVORE (12 javët e fundit) ---
+    // 1. Merr 12 javët e fundit nga payments
+    const weekLabelsRes = await client.query('SELECT DISTINCT week_label FROM payments ORDER BY week_label DESC LIMIT 12');
+    const weekLabels = weekLabelsRes.rows.map(r => r.week_label).sort(); // nga më e vjetra te më e reja
+
+    // 2. Pagesat totale për çdo javë
+    const weeklyPayments = [];
+    for (const week of weekLabels) {
+      const res = await client.query('SELECT COALESCE(SUM(gross_amount),0) as total FROM payments WHERE week_label = $1', [week]);
+      weeklyPayments.push({ week, total: parseFloat(res.rows[0].total || 0) });
+    }
+    // 3. Orët totale të punës për çdo javë
+    const weeklyWorkHours = [];
+    for (const week of weekLabels) {
+      const [start, end] = week.split(' - ');
+      const res = await client.query('SELECT COALESCE(SUM(hours),0) as total FROM work_hours WHERE date >= $1 AND date <= $2', [start, end]);
+      weeklyWorkHours.push({ week, total: parseFloat(res.rows[0].total || 0) });
+    }
+    // 4. Shpenzimet totale për çdo javë
+    const weeklyExpenses = [];
+    for (const week of weekLabels) {
+      const [start, end] = week.split(' - ');
+      const res = await client.query('SELECT COALESCE(SUM(gross),0) as total FROM expenses_invoices WHERE date >= $1 AND date <= $2', [start, end]);
+      weeklyExpenses.push({ week, total: parseFloat(res.rows[0].total || 0) });
+    }
+
     const dashboardData = {
       thisWeek: thisWeek,
       totals: {
@@ -1086,6 +1112,11 @@ exports.getDashboardStats = async (req, res) => {
         absentEmployees: absentEmployees,
         top5ProductiveEmployees: top5ProductiveEmployees,
         top5Sites: top5Sites
+      },
+      trends: {
+        weeklyPayments: weeklyPayments,
+        weeklyWorkHours: weeklyWorkHours,
+        weeklyExpenses: weeklyExpenses
       },
       workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
       top5Employees: top5Employees,
