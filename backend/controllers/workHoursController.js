@@ -977,6 +977,71 @@ exports.getDashboardStats = async (req, res) => {
     const avgHoursPerEmployeeMonth = employeesWithHoursMonth > 0 ? totalHoursMonth / employeesWithHoursMonth : 0;
     const avgHoursPerEmployeeYear = employeesWithHoursYear > 0 ? totalHoursYear / employeesWithHoursYear : 0;
 
+    // --- ORËT MESATARE PËR SITE/KONTRATË ---
+    // Merr numrin e site-ve/kontratave me orë të regjistruara në periudhë
+    const sitesWithHoursWeekRes = await client.query(
+      `SELECT COUNT(DISTINCT site) as count FROM work_hours WHERE date >= $1 AND date <= $2`,
+      [thisWeek.split(' - ')[0], thisWeek.split(' - ')[1]]
+    );
+    const sitesWithHoursMonthRes = await client.query(
+      `SELECT COUNT(DISTINCT site) as count FROM work_hours WHERE date >= $1 AND date <= $2`,
+      [monthStart, monthEnd]
+    );
+    const sitesWithHoursYearRes = await client.query(
+      `SELECT COUNT(DISTINCT site) as count FROM work_hours WHERE date >= $1 AND date <= $2`,
+      [yearStart, yearEnd]
+    );
+    const sitesWithHoursWeek = parseInt(sitesWithHoursWeekRes.rows[0].count || 1);
+    const sitesWithHoursMonth = parseInt(sitesWithHoursMonthRes.rows[0].count || 1);
+    const sitesWithHoursYear = parseInt(sitesWithHoursYearRes.rows[0].count || 1);
+    const avgHoursPerSiteWeek = sitesWithHoursWeek > 0 ? totalHoursWeek / sitesWithHoursWeek : 0;
+    const avgHoursPerSiteMonth = sitesWithHoursMonth > 0 ? totalHoursMonth / sitesWithHoursMonth : 0;
+    const avgHoursPerSiteYear = sitesWithHoursYear > 0 ? totalHoursYear / sitesWithHoursYear : 0;
+
+    // --- QUICK LISTS ---
+    // 1. Punonjësit me pagesa të papaguara këtë javë
+    const unpaidEmployeesRes = await client.query(
+      `SELECT p.employee_id, e.first_name, e.last_name, p.gross_amount FROM payments p JOIN employees e ON p.employee_id = e.id WHERE p.week_label = $1 AND p.is_paid = false`,
+      [thisWeek]
+    );
+    const unpaidEmployees = unpaidEmployeesRes.rows.map(row => ({
+      id: row.employee_id,
+      name: `${row.first_name} ${row.last_name}`,
+      amount: parseFloat(row.gross_amount || 0)
+    }));
+
+    // 2. Punonjësit absentë këtë javë (nuk kanë asnjë orë të regjistruar)
+    const allEmployeesRes = await client.query(`SELECT id, first_name, last_name FROM employees`);
+    const employeesWithHoursThisWeekRes = await client.query(
+      `SELECT DISTINCT employee_id FROM work_hours WHERE date >= $1 AND date <= $2`,
+      [thisWeek.split(' - ')[0], thisWeek.split(' - ')[1]]
+    );
+    const employeesWithHoursSet = new Set(employeesWithHoursThisWeekRes.rows.map(r => r.employee_id));
+    const absentEmployees = allEmployeesRes.rows
+      .filter(emp => !employeesWithHoursSet.has(emp.id))
+      .map(emp => ({ id: emp.id, name: `${emp.first_name} ${emp.last_name}` }));
+
+    // 3. Top 5 punonjësit më produktivë këtë javë (më shumë orë)
+    const top5ProductiveRes = await client.query(
+      `SELECT wh.employee_id, e.first_name, e.last_name, SUM(wh.hours) as total_hours FROM work_hours wh JOIN employees e ON wh.employee_id = e.id WHERE wh.date >= $1 AND wh.date <= $2 GROUP BY wh.employee_id, e.first_name, e.last_name ORDER BY total_hours DESC LIMIT 5`,
+      [thisWeek.split(' - ')[0], thisWeek.split(' - ')[1]]
+    );
+    const top5ProductiveEmployees = top5ProductiveRes.rows.map(row => ({
+      id: row.employee_id,
+      name: `${row.first_name} ${row.last_name}`,
+      hours: parseFloat(row.total_hours || 0)
+    }));
+
+    // 4. Top 5 site më aktive këtë javë (më shumë orë)
+    const top5SitesRes = await client.query(
+      `SELECT site, SUM(hours) as total_hours FROM work_hours WHERE date >= $1 AND date <= $2 GROUP BY site ORDER BY total_hours DESC LIMIT 5`,
+      [thisWeek.split(' - ')[0], thisWeek.split(' - ')[1]]
+    );
+    const top5Sites = top5SitesRes.rows.map(row => ({
+      site: row.site,
+      hours: parseFloat(row.total_hours || 0)
+    }));
+
     const dashboardData = {
       thisWeek: thisWeek,
       totals: {
@@ -1009,7 +1074,18 @@ exports.getDashboardStats = async (req, res) => {
           weekly: avgHoursPerEmployeeWeek,
           monthly: avgHoursPerEmployeeMonth,
           yearly: avgHoursPerEmployeeYear
+        },
+        avgHoursPerSite: {
+          weekly: avgHoursPerSiteWeek,
+          monthly: avgHoursPerSiteMonth,
+          yearly: avgHoursPerSiteYear
         }
+      },
+      quickLists: {
+        unpaidEmployees: unpaidEmployees,
+        absentEmployees: absentEmployees,
+        top5ProductiveEmployees: top5ProductiveEmployees,
+        top5Sites: top5Sites
       },
       workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
       top5Employees: top5Employees,
