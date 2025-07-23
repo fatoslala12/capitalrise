@@ -403,3 +403,20 @@ export default function DashboardStats() {
           </ul>
         )}
       </div>
+
+      {/* Butoni Dil */}
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+          }}
+          className="bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:from-pink-500 hover:to-red-500 transition text-lg"
+        >
+          🚪 Dil
+        </button>
+      </div>
+    </div>
+  );
+}
