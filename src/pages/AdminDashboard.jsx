@@ -325,6 +325,38 @@ export default function DashboardStats() {
         )}
       </div>
 
+      {/* Grafik për progresin e kontratave aktive */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 Progresi i kontratave aktive (%)</h3>
+        {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart
+              data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => ({
+                name: c.site_name || c.siteName || c.company || c.contract_number,
+                progress: (() => {
+                  const start = new Date(c.start_date);
+                  const end = new Date(c.finish_date);
+                  const now = new Date();
+                  if (now < start) return 0;
+                  if (now > end) return 100;
+                  return Math.floor(((now - start) / (end - start)) * 100);
+                })()
+              }) )}
+              layout="vertical"
+              margin={{ left: 50 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" domain={[0, 100]} label={{ value: "%", position: "insideBottomRight", offset: -5 }} tickFormatter={v => `${v}%`} />
+              <YAxis type="category" dataKey="name" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
+              <Tooltip formatter={v => [`${v}%`, "Progresi"]} />
+              <Bar dataKey="progress" fill="#a21caf" radius={[0, 6, 6, 0]} barSize={30} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-gray-500 italic text-center py-8">Nuk ka kontrata aktive për momentin</p>
+        )}
+      </div>
+
       {/* Top 5 më të paguar */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
