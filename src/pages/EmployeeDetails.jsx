@@ -44,6 +44,26 @@ export default function EmployeeDetails() {
     setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 3000);
   };
 
+  // Funksion për reset password
+  const handleResetPassword = async () => {
+    if (!user) {
+      showToast("Punonjësi nuk ka llogari të krijuar!", "error");
+      return;
+    }
+
+    try {
+      await axios.post(`https://building-system.onrender.com/api/users/reset-password`, {
+        email: user.email
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      showToast("Fjalëkalimi u reset me sukses! Fjalëkalimi i ri është: 123456789", "success");
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      showToast("Gabim gjatë resetimit të fjalëkalimit!", "error");
+    }
+  };
+
   // Merr të gjithë punonjësit për workplace
   useEffect(() => {
     setLoading(true);
@@ -905,6 +925,14 @@ export default function EmployeeDetails() {
                     ✏️ Edito
                   </button>
                 )}
+                <button
+                  onClick={handleResetPassword}
+                  disabled={!user}
+                  className="bg-gradient-to-r from-red-400 to-pink-500 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold text-sm md:text-lg shadow hover:from-pink-600 hover:to-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={!user ? "Punonjësi nuk ka llogari të krijuar" : "Reset fjalëkalimin e punonjësit"}
+                >
+                  🔒 Reset Password
+                </button>
                 <button
                   onClick={() => nextEmployee && navigate(`/admin/employee/${nextEmployee.id}`)}
                   className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm md:text-lg disabled:opacity-50"
