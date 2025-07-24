@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import api from "../api";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie, Cell as PieCell
 } from "recharts";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
@@ -539,6 +539,12 @@ export default function DashboardStats() {
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet sipas Site-ve</h3>
         <ShpenzimePerSiteChart allExpenses={allExpenses} structuredWorkHours={structuredWorkHours} contracts={contracts} />
       </div>
+
+      {/* Grafik për statusin e kontratave */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i kontratave</h3>
+        <StatusiKontrataveChart contracts={contracts} />
+      </div>
     </div>
   );
 }
@@ -649,6 +655,73 @@ function ShpenzimePerSiteChart({ allExpenses, structuredWorkHours, contracts }) 
           ))}
         </Bar>
       </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function StatusiKontrataveChart({ contracts }) {
+  const [data, setData] = useState([]);
+  const statusColors = {
+    'active': '#10b981',
+    'suspended': '#f59e0b', 
+    'completed': '#3b82f6',
+    'cancelled': '#ef4444',
+    'pending': '#8b5cf6'
+  };
+  
+  useEffect(() => {
+    if (!contracts || contracts.length === 0) return;
+    
+    const statusCount = {};
+    contracts.forEach(contract => {
+      const status = contract.status || contract.contract_status || 'pending';
+      const statusKey = status.toLowerCase();
+      statusCount[statusKey] = (statusCount[statusKey] || 0) + 1;
+    });
+    
+    const chartData = Object.entries(statusCount).map(([status, count]) => ({
+      name: status === 'active' ? 'Aktive' : 
+            status === 'suspended' ? 'Të pezulluara' :
+            status === 'completed' ? 'Të mbyllura' :
+            status === 'cancelled' ? 'Të anuluara' :
+            status === 'pending' ? 'Në pritje' : status,
+      value: count,
+      color: statusColors[status] || '#6b7280'
+    }));
+    
+    setData(chartData);
+  }, [contracts]);
+
+  if (data.length === 0) return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e kontratave</div>;
+
+  return (
+    <ResponsiveContainer width="100%" height={350}>
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          outerRadius={120}
+          innerRadius={60}
+          dataKey="value"
+          label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+          labelLine={true}
+        >
+          {data.map((entry, index) => (
+            <PieCell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip 
+          contentStyle={{ 
+            background: '#fffbe9', 
+            border: '1px solid #fbbf24', 
+            borderRadius: 12, 
+            fontSize: 16, 
+            color: '#78350f' 
+          }}
+          formatter={(value, name) => [value, name]}
+        />
+      </PieChart>
     </ResponsiveContainer>
   );
 }
