@@ -343,7 +343,7 @@ export default function DashboardStats() {
                 <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
                 <span className="font-semibold flex-1 text-lg">{t.description || t.title || ''}</span>
                 <span className="text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
-                <span className="text-lg text-purple-700 font-bold">Afati: {t.due_date ? new Date(t.due_date).toLocaleDateString() : ''}</span>
+                <span className="text-lg text-purple-700 font-bold">Afati: {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'Pa afat'}</span>
                 <span className="text-xs text-gray-500">Nga: {t.assigned_by || t.assignedBy || ''}</span>
               </li>
             ))}
