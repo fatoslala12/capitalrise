@@ -598,13 +598,15 @@ function VonesaFaturashChart() {
 
 function ShpenzimePerSiteChart({ allExpenses, structuredWorkHours, contracts }) {
   const [data, setData] = useState([]);
+  const pastelColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe", "#6ee7b7", "#fcd34d"]; // më shumë ngjyra
   useEffect(() => {
     // 1. Shpenzimet nga expenses_invoices
     const expensesBySite = {};
     allExpenses.forEach(e => {
       if (!e.contractId && !e.contract_id) return;
       const contract = contracts.find(c => String(c.id) === String(e.contractId || e.contract_id));
-      const site = contract ? (contract.site_name || contract.siteName || contract.company) : 'Pa site';
+      const site = contract ? (contract.site_name || contract.siteName || contract.company) : null;
+      if (!site) return; // heq 'Pa site'
       if (!expensesBySite[site]) expensesBySite[site] = 0;
       expensesBySite[site] += parseFloat(e.gross || 0);
     });
@@ -624,7 +626,7 @@ function ShpenzimePerSiteChart({ allExpenses, structuredWorkHours, contracts }) 
     const allSites = Array.from(new Set([
       ...Object.keys(expensesBySite),
       ...Object.keys(workHoursBySite)
-    ]));
+    ])).filter(site => !!site); // heq null/undefined
     const combined = allSites.map(site => ({
       site,
       expenses: expensesBySite[site] || 0,
@@ -636,12 +638,16 @@ function ShpenzimePerSiteChart({ allExpenses, structuredWorkHours, contracts }) 
   if (data.length === 0) return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
   return (
     <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data} layout="vertical" margin={{ left: 50 }}>
+      <BarChart data={data} layout="vertical" margin={{ left: 50 }} barCategoryGap={18}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis type="number" label={{ value: "Shpenzime totale (£)", position: "insideBottomRight", offset: -5 }} />
-        <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0ea5e9' }} />
-        <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} />
-        <Bar dataKey="total" fill="#f472b6" radius={[0, 6, 6, 0]} barSize={30} />
+        <XAxis type="number" label={{ value: "Shpenzime totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
+        <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#0284c7' }} />
+        <Tooltip contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} />
+        <Bar dataKey="total" radius={[0, 12, 12, 0]} barSize={32} >
+          {data.map((_, i) => (
+            <Cell key={i} fill={pastelColors[i % pastelColors.length]} />
+          ))}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
