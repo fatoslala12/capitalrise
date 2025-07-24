@@ -331,17 +331,30 @@ export default function DashboardStats() {
         {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
           <ResponsiveContainer width="100%" height={350}>
             <BarChart
-              data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => ({
-                name: c.site_name || c.siteName || c.company || (c.contract_number ? `Kontrata #${c.contract_number}` : '') || 'Pa emër',
-                progress: (() => {
-                  const start = new Date(c.start_date);
-                  const end = new Date(c.finish_date);
-                  const now = new Date();
-                  if (now < start) return 0;
-                  if (now > end) return 100;
-                  return Math.floor(((now - start) / (end - start)) * 100);
-                })()
-              }) )}
+              data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
+                // Llogarit progresin me validim të fortë
+                let progress = 0;
+                const start = new Date(c.start_date);
+                const end = new Date(c.finish_date);
+                const now = new Date();
+                if (
+                  !c.start_date || !c.finish_date ||
+                  isNaN(start.getTime()) || isNaN(end.getTime()) ||
+                  start.getTime() === end.getTime()
+                ) {
+                  progress = 0;
+                } else if (now < start) {
+                  progress = 0;
+                } else if (now > end) {
+                  progress = 100;
+                } else {
+                  progress = Math.floor(((now - start) / (end - start)) * 100);
+                }
+                return {
+                  name: c.site_name || c.siteName || c.company || (c.contract_number ? `Kontrata #${c.contract_number}` : '') || 'Pa emër',
+                  progress
+                };
+              })}
               layout="vertical"
               margin={{ left: 50 }}
             >
