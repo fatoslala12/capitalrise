@@ -492,8 +492,9 @@ export default function Dashboard() {
               Orët e Punës të Javës Aktuale
             </h3>
             <WorkHoursTable 
-              employeeId={user.employee_id} 
-              hourData={hourData[user.employee_id] || {}} 
+              employees={employees.filter(emp => emp.id === user.employee_id)}
+              weekLabel={currentWeekLabel}
+              data={hourData}
               readOnly={false}
             />
           </section>
