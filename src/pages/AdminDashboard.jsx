@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import api from "../api";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell
 } from "recharts";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
@@ -276,6 +276,8 @@ export default function DashboardStats() {
   console.log('[DEBUG] top5Employees:', dashboardStats.top5Employees);
   console.log('[DEBUG] totals:', dashboardStats.totals);
 
+  const progressBarColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"]; // pastel
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
       {/* HEADER MODERN */}
@@ -379,7 +381,6 @@ export default function DashboardStats() {
           <ResponsiveContainer width="100%" height={350}>
             <BarChart
               data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
-                // Përdor camelCase nëse ekziston, përndryshe snake_case
                 const start = c.startDate ? new Date(c.startDate) : (c.start_date ? new Date(c.start_date) : null);
                 const end = c.finishDate ? new Date(c.finishDate) : (c.finish_date ? new Date(c.finish_date) : null);
                 const now = new Date();
@@ -388,8 +389,6 @@ export default function DashboardStats() {
                 else if (now < start) progress = 0;
                 else if (now > end) progress = 100;
                 else progress = Math.floor(((now - start) / (end - start)) * 100);
-                // DEBUG
-                console.log(`[PROGRES DEBUG] Site: ${c.site_name || c.siteName || c.company || c.contract_number} | Start: ${c.startDate || c.start_date} | End: ${c.finishDate || c.finish_date} | Now: ${now.toISOString()} | Progress: ${progress}`);
                 return {
                   name: c.site_name || c.siteName || c.company || (c.contract_number ? `Kontrata #${c.contract_number}` : '') || 'Pa emër',
                   progress
@@ -402,7 +401,11 @@ export default function DashboardStats() {
               <XAxis type="number" domain={[0, 100]} label={{ value: "%", position: "insideBottomRight", offset: -5 }} tickFormatter={v => `${v}%`} />
               <YAxis type="category" dataKey="name" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
               <Tooltip formatter={v => [`${v}%`, "Progresi"]} />
-              <Bar dataKey="progress" fill="#a21caf" radius={[0, 6, 6, 0]} barSize={30} />
+              <Bar dataKey="progress" radius={[0, 6, 6, 0]} barSize={30}>
+                {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map((_, i) => (
+                  <Cell key={i} fill={progressBarColors[i % progressBarColors.length]} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (
@@ -519,6 +522,65 @@ export default function DashboardStats() {
           <p className="text-gray-500 italic text-center py-8">Nuk ka të dhëna të mjaftueshme për pagesat javore</p>
         )}
       </div>
+
+      {/* Grafik për vonesat në pagesa/fatura */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">⏰ Vonesat në Pagesa/Fatura</h3>
+        <VonesaFaturashChart />
+      </div>
     </div>
+  );
+}
+
+function VonesaFaturashChart() {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    async function fetchInvoices() {
+      try {
+        const res = await api.get("/api/invoices");
+        const invoices = res.data || [];
+        // Për çdo faturë, llogarit statusin e pagesës
+        const result = { "Paguar në kohë": 0, "Paguar me vonesë": 0, "Pa paguar": 0 };
+        invoices.forEach(inv => {
+          if (!inv.paid) {
+            result["Pa paguar"]++;
+          } else {
+            // Përdor updated_at si datë pagese nëse nuk ka paid_date
+            const invoiceDate = inv.date ? new Date(inv.date) : null;
+            const paidDate = inv.paid_date ? new Date(inv.paid_date) : (inv.updated_at ? new Date(inv.updated_at) : null);
+            if (invoiceDate && paidDate) {
+              const diffDays = Math.floor((paidDate - invoiceDate) / (1000 * 60 * 60 * 24));
+              if (diffDays <= 30) result["Paguar në kohë"]++;
+              else result["Paguar me vonesë"]++;
+            } else {
+              result["Paguar në kohë"]++;
+            }
+          }
+        });
+        setData([
+          { status: "Paguar në kohë", count: result["Paguar në kohë"] },
+          { status: "Paguar me vonesë", count: result["Paguar me vonesë"] },
+          { status: "Pa paguar", count: result["Pa paguar"] },
+        ]);
+      } catch (err) {
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchInvoices();
+  }, []);
+  if (loading) return <div className="text-center text-gray-400 py-8">Duke ngarkuar...</div>;
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={data} margin={{ left: 50 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="status" tick={{ fontSize: 16, fill: '#6366f1' }} />
+        <YAxis allowDecimals={false} />
+        <Tooltip formatter={(v) => [v, 'Numri i faturave']} />
+        <Bar dataKey="count" fill="#fbbf24" radius={[6, 6, 0, 0]} barSize={48} />
+      </BarChart>
+    </ResponsiveContainer>
   );
 }
