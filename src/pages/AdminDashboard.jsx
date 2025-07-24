@@ -261,7 +261,7 @@ export default function DashboardStats() {
         />
         <MoneyStatCard
           title="Orë të punuara këtë javë"
-          amount={`${dashboardStats.totalHoursThisWeek ?? 0} orë`}
+          amount={`${dashboardStats.totalWorkHours ?? 0} orë`}
           color="purple"
         />
         <MoneyStatCard
@@ -332,24 +332,13 @@ export default function DashboardStats() {
           <ResponsiveContainer width="100%" height={350}>
             <BarChart
               data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
-                // Llogarit progresin me validim të fortë
-                let progress = 0;
                 const start = new Date(c.start_date);
                 const end = new Date(c.finish_date);
                 const now = new Date();
-                if (
-                  !c.start_date || !c.finish_date ||
-                  isNaN(start.getTime()) || isNaN(end.getTime()) ||
-                  start.getTime() === end.getTime()
-                ) {
-                  progress = 0;
-                } else if (now < start) {
-                  progress = 0;
-                } else if (now > end) {
-                  progress = 100;
-                } else {
-                  progress = Math.floor(((now - start) / (end - start)) * 100);
-                }
+                let progress = 0;
+                if (now < start) progress = 0;
+                else if (now > end) progress = 100;
+                else progress = Math.floor(((now - start) / (end - start)) * 100);
                 return {
                   name: c.site_name || c.siteName || c.company || (c.contract_number ? `Kontrata #${c.contract_number}` : '') || 'Pa emër',
                   progress
