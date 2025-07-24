@@ -435,8 +435,7 @@ export default function Dashboard() {
                 Shiko të gjitha →
               </Link>
             </div>
-
-            {tasks.filter((t) => t.assignedTo === user.email && t.status === "ongoing").length === 0 ? (
+            {tasks.filter((t) => t.assignedTo === user.email).length === 0 ? (
               <div className="text-center py-8">
                 <div className="text-6xl mb-4">🎉</div>
                 <p className="text-gray-500 text-lg">Nuk ke detyra aktive për momentin!</p>
@@ -445,7 +444,7 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-4">
                 {tasks
-                  .filter((t) => t.assignedTo === user.email && t.status === "ongoing")
+                  .filter((t) => t.assignedTo === user.email)
                   .slice(0, 3)
                   .map((t) => (
                     <div
@@ -495,7 +494,7 @@ export default function Dashboard() {
               employees={employees.filter(emp => emp.id === user.employee_id)}
               weekLabel={currentWeekLabel}
               data={hourData}
-              readOnly={false}
+              readOnly={true}
             />
           </section>
 
