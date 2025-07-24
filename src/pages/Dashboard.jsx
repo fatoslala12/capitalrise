@@ -202,23 +202,29 @@ export default function Dashboard() {
       .catch(() => setEmployees([]));
   }, []);
 
-  // Merr orët e punës për çdo punonjës nga backend
+  // Merr orët e punës për user-in nga backend
   useEffect(() => {
-    if (employees.length === 0) return;
-    const fetchHours = async () => {
-      const allData = {};
-      for (const emp of employees) {
-        try {
-          const res = await api.get(`/api/work-hours/${emp.id}`);
-          allData[emp.id] = res.data || {};
-        } catch {
-          allData[emp.id] = {};
+    if (user?.role === "user" && user?.employee_id) {
+      api.get(`/api/work-hours/${user.employee_id}`)
+        .then(res => setHourData({ [user.employee_id]: res.data || {} }))
+        .catch(() => setHourData({ [user.employee_id]: {} }));
+    } else if (employees.length > 0) {
+      // Menaxher/admin: merr për të gjithë
+      const fetchHours = async () => {
+        const allData = {};
+        for (const emp of employees) {
+          try {
+            const res = await api.get(`/api/work-hours/${emp.id}`);
+            allData[emp.id] = res.data || {};
+          } catch {
+            allData[emp.id] = {};
+          }
         }
-      }
-      setHourData(allData);
-    };
-    fetchHours();
-  }, [employees]);
+        setHourData(allData);
+      };
+      fetchHours();
+    }
+  }, [user, employees]);
 
   // Merr detyrat nga backend
   useEffect(() => {
@@ -900,6 +906,34 @@ export default function Dashboard() {
             </div>
           </section>
         </div>
+      )}
+
+      {/* Seksion për të gjitha javët e kaluara për user-in */}
+      {user.role === "user" && hourData[user.employee_id] && (
+        <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <span className="text-blue-600">📅</span>
+            Orët e Punës për të Gjitha Javët
+          </h3>
+          {Object.keys(hourData[user.employee_id]).length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-4">📆</div>
+              <p className="text-gray-500">Nuk ka të dhëna për javët e kaluara</p>
+            </div>
+          ) : (
+            Object.keys(hourData[user.employee_id]).sort().reverse().map(weekLabel => (
+              <div key={weekLabel} className="mb-8">
+                <h4 className="text-lg font-semibold text-blue-700 mb-2">Java: {weekLabel}</h4>
+                <WorkHoursTable
+                  employees={employees.filter(emp => emp.id === user.employee_id)}
+                  weekLabel={weekLabel}
+                  data={hourData}
+                  readOnly={true}
+                />
+              </div>
+            ))
+          )}
+        </section>
       )}
     </div>
   );
