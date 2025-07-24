@@ -80,6 +80,10 @@ export default function DashboardStats() {
         ]);
         
         setContracts(snakeToCamel(contractsRes.data || []));
+        // DEBUG kontratat
+        setTimeout(() => {
+          console.log('[KONTRATAT API]', contractsRes.data);
+        }, 1000);
         setEmployees(snakeToCamel(employeesRes.data || []));
         
         const invoices = snakeToCamel(invoicesRes.data || []);
@@ -375,9 +379,9 @@ export default function DashboardStats() {
           <ResponsiveContainer width="100%" height={350}>
             <BarChart
               data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
-                // Kontrollo që datat janë string
-                const start = c.start_date ? new Date(c.start_date) : null;
-                const end = c.finish_date ? new Date(c.finish_date) : null;
+                // Përdor camelCase nëse ekziston, përndryshe snake_case
+                const start = c.startDate ? new Date(c.startDate) : (c.start_date ? new Date(c.start_date) : null);
+                const end = c.finishDate ? new Date(c.finishDate) : (c.finish_date ? new Date(c.finish_date) : null);
                 const now = new Date();
                 let progress = 0;
                 if (!start || !end || isNaN(start) || isNaN(end)) progress = 0;
@@ -385,7 +389,7 @@ export default function DashboardStats() {
                 else if (now > end) progress = 100;
                 else progress = Math.floor(((now - start) / (end - start)) * 100);
                 // DEBUG
-                console.log(`[PROGRES DEBUG] Site: ${c.site_name || c.siteName || c.company || c.contract_number} | Start: ${c.start_date} | End: ${c.finish_date} | Now: ${now.toISOString()} | Progress: ${progress}`);
+                console.log(`[PROGRES DEBUG] Site: ${c.site_name || c.siteName || c.company || c.contract_number} | Start: ${c.startDate || c.start_date} | End: ${c.finishDate || c.finish_date} | Now: ${now.toISOString()} | Progress: ${progress}`);
                 return {
                   name: c.site_name || c.siteName || c.company || (c.contract_number ? `Kontrata #${c.contract_number}` : '') || 'Pa emër',
                   progress
