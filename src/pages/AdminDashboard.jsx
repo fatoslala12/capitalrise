@@ -507,7 +507,7 @@ export default function DashboardStats() {
 
       {/* Grafik për pagesat javore */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore për stafin</h3>
         {weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={(() => { const filtered = weeklyProfitData.filter(w => w.totalPaid > 0); console.log('[PAGESA JAVORE DEBUG]', filtered); return filtered; })()} margin={{ left: 50 }}>
@@ -527,6 +527,12 @@ export default function DashboardStats() {
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">⏰ Vonesat në Pagesa/Fatura</h3>
         <VonesaFaturashChart />
+      </div>
+
+      {/* Grafik për shpenzimet sipas site-ve */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet sipas Site-ve</h3>
+        <ShpenzimePerSiteChart allExpenses={allExpenses} structuredWorkHours={structuredWorkHours} contracts={contracts} />
       </div>
     </div>
   );
@@ -580,6 +586,57 @@ function VonesaFaturashChart() {
         <YAxis allowDecimals={false} />
         <Tooltip formatter={(v) => [v, 'Numri i faturave']} />
         <Bar dataKey="count" fill="#fbbf24" radius={[6, 6, 0, 0]} barSize={48} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function ShpenzimePerSiteChart({ allExpenses, structuredWorkHours, contracts }) {
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    // 1. Shpenzimet nga expenses_invoices
+    const expensesBySite = {};
+    allExpenses.forEach(e => {
+      if (!e.contractId && !e.contract_id) return;
+      const contract = contracts.find(c => String(c.id) === String(e.contractId || e.contract_id));
+      const site = contract ? (contract.site_name || contract.siteName || contract.company) : 'Pa site';
+      if (!expensesBySite[site]) expensesBySite[site] = 0;
+      expensesBySite[site] += parseFloat(e.gross || 0);
+    });
+    // 2. Shpenzimet nga work_hours (bruto per site)
+    const workHoursBySite = {};
+    Object.values(structuredWorkHours || {}).forEach(empData => {
+      Object.values(empData || {}).forEach(weekData => {
+        Object.values(weekData || {}).forEach(day => {
+          if (day.site && day.hours && day.rate) {
+            if (!workHoursBySite[day.site]) workHoursBySite[day.site] = 0;
+            workHoursBySite[day.site] += Number(day.hours) * Number(day.rate);
+          }
+        });
+      });
+    });
+    // 3. Kombino të dyja
+    const allSites = Array.from(new Set([
+      ...Object.keys(expensesBySite),
+      ...Object.keys(workHoursBySite)
+    ]));
+    const combined = allSites.map(site => ({
+      site,
+      expenses: expensesBySite[site] || 0,
+      workHours: workHoursBySite[site] || 0,
+      total: (expensesBySite[site] || 0) + (workHoursBySite[site] || 0)
+    })).sort((a, b) => b.total - a.total);
+    setData(combined);
+  }, [allExpenses, structuredWorkHours, contracts]);
+  if (data.length === 0) return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
+  return (
+    <ResponsiveContainer width="100%" height={350}>
+      <BarChart data={data} layout="vertical" margin={{ left: 50 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis type="number" label={{ value: "Shpenzime totale (£)", position: "insideBottomRight", offset: -5 }} />
+        <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0ea5e9' }} />
+        <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} />
+        <Bar dataKey="total" fill="#f472b6" radius={[0, 6, 6, 0]} barSize={30} />
       </BarChart>
     </ResponsiveContainer>
   );
