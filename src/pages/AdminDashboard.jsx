@@ -405,8 +405,10 @@ export default function DashboardStats() {
                 <span className="font-bold text-lg flex items-center gap-1">💷 {item.gross !== undefined ? `£${item.gross.toFixed(2)}` : ''}</span>
                 <span className="font-bold text-blue-700 flex items-center gap-1">
                   🏢 {(() => {
-                    if (!item.contract_id || !contracts.length) return '';
-                    const c = contracts.find(c => String(c.id) === String(item.contract_id));
+                    let c = null;
+                    if (item.contract_id && contracts.length) {
+                      c = contracts.find(c => String(c.id) === String(item.contract_id));
+                    }
                     if (c && c.site_name) {
                       return (
                         <a
@@ -417,6 +419,9 @@ export default function DashboardStats() {
                           {c.site_name}
                         </a>
                       );
+                    }
+                    if (item.site || item.site_name) {
+                      return item.site || item.site_name;
                     }
                     return '';
                   })()}
