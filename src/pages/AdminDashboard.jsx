@@ -46,6 +46,8 @@ export default function DashboardStats() {
   const [allTasks, setAllTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [weeklyProfitData, setWeeklyProfitData] = useState([]);
+  const [allExpenses, setAllExpenses] = useState([]);
+  const [structuredWorkHours, setStructuredWorkHours] = useState({});
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
@@ -91,6 +93,9 @@ export default function DashboardStats() {
         const allExpenses = snakeToCamel(expensesRes.data || []);
         const allPayments = snakeToCamel(paymentsRes.data || []);
         const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
+        
+        setAllExpenses(allExpenses);
+        setStructuredWorkHours(structuredWorkHours);
         
         // Calculate current week
         const today = new Date();
