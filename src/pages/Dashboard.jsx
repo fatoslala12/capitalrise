@@ -329,6 +329,16 @@ export default function Dashboard() {
     // Mund të shtosh axios.put/post këtu për të ruajtur ndryshimet në backend
   };
 
+  const userEmployee = employees.find(emp => emp.id === user.employee_id);
+  const [expandedWeeks, setExpandedWeeks] = useState([]);
+  const toggleWeek = (weekLabel) => {
+    setExpandedWeeks(prev =>
+      prev.includes(weekLabel)
+        ? prev.filter(w => w !== weekLabel)
+        : [...prev, weekLabel]
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
@@ -922,14 +932,23 @@ export default function Dashboard() {
             </div>
           ) : (
             Object.keys(hourData[user.employee_id]).sort().reverse().map(weekLabel => (
-              <div key={weekLabel} className="mb-8">
-                <h4 className="text-lg font-semibold text-blue-700 mb-2">Java: {weekLabel}</h4>
-                <WorkHoursTable
-                  employees={employees.filter(emp => emp.id === user.employee_id)}
-                  weekLabel={weekLabel}
-                  data={hourData}
-                  readOnly={true}
-                />
+              <div key={weekLabel} className="mb-4">
+                <button
+                  className="flex items-center gap-2 text-lg font-semibold text-blue-700 hover:underline focus:outline-none mb-2"
+                  onClick={() => toggleWeek(weekLabel)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <span>{expandedWeeks.includes(weekLabel) ? '▼' : '▶'}</span>
+                  Java: {weekLabel}
+                </button>
+                {expandedWeeks.includes(weekLabel) && userEmployee && (
+                  <WorkHoursTable
+                    employees={[userEmployee]}
+                    weekLabel={weekLabel}
+                    data={hourData}
+                    readOnly={true}
+                  />
+                )}
               </div>
             ))
           )}
