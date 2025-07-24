@@ -370,11 +370,18 @@ export default function DashboardStats() {
           <ul className="space-y-2 text-red-700 text-base">
             {unpaid.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <span className="font-bold">🔴 Kontrata #{item.contractNumber || ''}</span>
+                <a href={`/contracts/${item.contractNumber}`} className="font-bold text-red-700 underline cursor-pointer">
+                  🔴 Kontrata #{item.contractNumber || ''}
+                </a>
                 <span className="font-bold text-black">Nr. Fature: <b>{item.invoiceNumber || ''}</b></span>
                 <span className="font-bold text-blue-700 flex items-center gap-1">🏢 Site: {(() => {
-                  if (!item.contract_id || !contracts.length) return '';
-                  const c = contracts.find(c => String(c.id) === String(item.contract_id));
+                  let c = null;
+                  if (item.contract_id && contracts.length) {
+                    c = contracts.find(c => String(c.id) === String(item.contract_id));
+                  }
+                  if (!c && item.contractNumber && contracts.length) {
+                    c = contracts.find(c => String(c.contract_number) === String(item.contractNumber));
+                  }
                   return c ? `${c.site_name || c.siteName || ''}` : '';
                 })()}</span>
                 <span className="font-bold text-lg flex items-center gap-1">💷 {item.total !== undefined ? `£${item.total.toFixed(2)}` : ''}</span>
@@ -382,44 +389,6 @@ export default function DashboardStats() {
             ))}
           </ul>
         )}
-      </div>
-
-      {/* Shpenzimet e papaguara */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full mb-8">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
-        {unpaidExpenses.length === 0 ? (
-          <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
-        ) : (
-          <ul className="space-y-2 text-red-700 text-base">
-            {unpaidExpenses.map((item, idx) => (
-              <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <span className="font-bold flex items-center gap-1">📅 {item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
-                <span className="font-bold text-lg">{item.type || ''}</span>
-                <span className="font-bold text-lg flex items-center gap-1">💷 {item.gross !== undefined ? `£${item.gross.toFixed(2)}` : ''}</span>
-                <span className="font-bold text-blue-700 flex items-center gap-1">🏢 {(() => {
-                  if (!item.contract_id || !contracts.length) return '';
-                  const c = contracts.find(c => String(c.id) === String(item.contract_id));
-                  return c ? `${c.site_name || c.siteName || ''}` : '';
-                })()}</span>
-                <span className="text-gray-700">{item.description || ''}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Butoni Dil */}
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-          }}
-          className="bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:from-pink-500 hover:to-red-500 transition text-lg"
-        >
-          🚪 Dil
-        </button>
       </div>
     </div>
   );
