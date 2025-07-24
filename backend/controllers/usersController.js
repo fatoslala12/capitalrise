@@ -1,5 +1,4 @@
 const pool = require('../db');
-const bcrypt = require('bcrypt');
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -30,11 +29,10 @@ exports.getUserById = async (req, res) => {
 exports.createUser = async (req, res) => {
   const { email, password, role } = req.body;
   try {
-    const hashed = await bcrypt.hash(password, 10);
     const result = await pool.query(`
       INSERT INTO users (email, password, role)
       VALUES ($1, $2, $3) RETURNING id, email, role`,
-      [email, hashed, role]
+      [email, password, role]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -52,7 +50,7 @@ exports.updateUser = async (req, res) => {
 
     if (password) {
       updates.push(`password = $${index}`);
-      values.push(await bcrypt.hash(password, 10));
+      values.push(password); // PA HASH
       index++;
     }
     if (role) {
@@ -104,7 +102,7 @@ exports.addUser = async (req, res) => {
       return res.status(400).json({ error: "Ky email ekziston tashmë!" });
     }
 
-    // Shto user-in (password default 12345678 nëse nuk jepet nga forma)
+    // Shto user-in (password default 12345678 nëse nuk jepet nga forma) - PA HASH
     const userRes = await pool.query(
       `INSERT INTO users
       (email, password, role, employee_id, first_name, last_name, created_at, updated_at)
@@ -157,16 +155,14 @@ exports.changePassword = async (req, res) => {
     const user = userResult.rows[0];
     
     // Kontrollo nëse fjalëkalimi aktual është i saktë
-    // Për momentin po kontrolloj si plain text pasi nuk kemi hash
     if (user.password !== current_password) {
       return res.status(400).json({ error: 'Fjalëkalimi aktual është i gabuar!' });
     }
 
-    // Hash fjalëkalimin e ri dhe përditëso
-    const hashedNewPassword = await bcrypt.hash(new_password, 10);
+    // Përditëso fjalëkalimin e ri - PA HASH
     await pool.query(
       'UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2',
-      [hashedNewPassword, id]
+      [new_password, id]
     );
 
     res.json({ message: 'Fjalëkalimi u ndryshua me sukses!' });

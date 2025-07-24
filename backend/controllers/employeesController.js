@@ -1,5 +1,4 @@
 const pool = require('../db');
-const bcrypt = require('bcrypt'); // për password hash
 const NotificationService = require('../services/notificationService');
 
 exports.getAllEmployees = async (req, res) => {
@@ -93,14 +92,13 @@ exports.createEmployee = async (req, res) => {
     );
     const employee = empRes.rows[0];
 
-    // 2. Shto user-in
-    const hashed = await bcrypt.hash(password || "12345678", 10);
+    // 2. Shto user-in - PA HASH
     const userRes = await client.query(
       `INSERT INTO users
       (email, password, role, employee_id)
       VALUES ($1, $2, $3, $4)
       RETURNING *`,
-      [email, hashed, role, employee.id]
+      [email, password || "12345678", role, employee.id]
     );
     const user = userRes.rows[0];
 
