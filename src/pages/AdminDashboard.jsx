@@ -375,11 +375,13 @@ export default function DashboardStats() {
           <ResponsiveContainer width="100%" height={350}>
             <BarChart
               data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
-                const start = new Date(c.start_date);
-                const end = new Date(c.finish_date);
+                // Kontrollo që datat janë string
+                const start = c.start_date ? new Date(c.start_date) : null;
+                const end = c.finish_date ? new Date(c.finish_date) : null;
                 const now = new Date();
                 let progress = 0;
-                if (now < start) progress = 0;
+                if (!start || !end || isNaN(start) || isNaN(end)) progress = 0;
+                else if (now < start) progress = 0;
                 else if (now > end) progress = 100;
                 else progress = Math.floor(((now - start) / (end - start)) * 100);
                 // DEBUG
@@ -499,9 +501,9 @@ export default function DashboardStats() {
       {/* Grafik për pagesat javore */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore</h3>
-        {weeklyProfitData.length > 0 ? (
+        {weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={(() => { console.log('[PAGESA JAVORE DEBUG]', weeklyProfitData); return weeklyProfitData; })()} margin={{ left: 50 }}>
+            <BarChart data={(() => { const filtered = weeklyProfitData.filter(w => w.totalPaid > 0); console.log('[PAGESA JAVORE DEBUG]', filtered); return filtered; })()} margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
               <YAxis label={{ value: 'Pagesa (£)', angle: -90, position: 'insideLeft', offset: 10 }} />
