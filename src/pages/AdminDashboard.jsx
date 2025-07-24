@@ -293,7 +293,7 @@ export default function DashboardStats() {
           </svg>
         </div>
         <div>
-          <h2 className="text-1xl font-bold mb-2 text-gray-900">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h2>
+         
           <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</div>
           <div className="text-lg font-medium text-purple-700">Statistika, detyra, pagesa dhe më shumë</div>
         </div>
@@ -454,85 +454,8 @@ export default function DashboardStats() {
         )}
       </div>
 
-      {/* Faturat e papaguara */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
-        {unpaid.length === 0 ? (
-          <p className="text-gray-500 italic">Të gjitha faturat janë të paguara ✅</p>
-        ) : (
-          <ul className="space-y-2 text-red-700 text-base">
-            {unpaid.map((item, idx) => (
-              <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <a href={`/admin/contracts/${item.contractNumber}`} className="font-bold text-red-700 underline cursor-pointer">
-                  🔴 Kontrata #{item.contractNumber || ''}
-                </a>
-                <span className="font-bold text-black">Nr. Fature: <b>{item.invoiceNumber || ''}</b></span>
-                <span className="font-bold text-blue-700 flex items-center gap-1">🏢 Site: {(() => {
-                  let c = null;
-                  if (item.contract_id && contracts.length) {
-                    c = contracts.find(c => String(c.id) === String(item.contract_id));
-                  }
-                  if (!c && item.contractNumber && contracts.length) {
-                    c = contracts.find(c => String(c.contract_number) === String(item.contractNumber));
-                  }
-                  return c ? `${c.site_name || c.siteName || ''}` : '';
-                })()}</span>
-                <span className="font-bold text-lg flex items-center gap-1">💷 {item.total !== undefined ? `£${item.total.toFixed(2)}` : ''}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
 
-      {/* Shpenzimet e papaguara */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full mb-8">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
-        {unpaidExpenses.length === 0 ? (
-          <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
-        ) : (
-          <ul className="space-y-2 text-red-700 text-base">
-            {unpaidExpenses.map((item, idx) => (
-              <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <span className="font-bold flex items-center gap-1">📅 {item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
-                <span className="font-bold text-lg">{item.type || ''}</span>
-                <span className="font-bold text-lg flex items-center gap-1">💷 {item.gross !== undefined ? `£${item.gross.toFixed(2)}` : ''}</span>
-                <span className="font-bold text-blue-700 flex items-center gap-1">
-                  🏢 {(() => {
-                    if (!item.contract_id || !contracts.length) return '';
-                    const c = contracts.find(c => String(c.id) === String(item.contract_id));
-                    return c ? `${c.site_name || c.siteName || ''}` : '';
-                  })()}
-                </span>
-                <span className="text-gray-700">{item.description || ''}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Grafik për pagesat javore */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore për stafin</h3>
-        {weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={(() => { const filtered = weeklyProfitData.filter(w => w.totalPaid > 0); console.log('[PAGESA JAVORE DEBUG]', filtered); return filtered; })()} margin={{ left: 50 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
-              <YAxis label={{ value: 'Pagesa (£)', angle: -90, position: 'insideLeft', offset: 10 }} />
-              <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'totalPaid' ? 'Pagesa' : n]} />
-              <Bar dataKey="totalPaid" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={24} />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka të dhëna të mjaftueshme për pagesat javore</p>
-        )}
-      </div>
-
-      {/* Grafik për vonesat në pagesa/fatura */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">⏰ Vonesat në Pagesa/Fatura</h3>
-        <VonesaFaturashChart />
-      </div>
+      
 
       {/* Grafik për shpenzimet sipas site-ve */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
@@ -661,24 +584,22 @@ function ShpenzimePerSiteChart({ allExpenses, structuredWorkHours, contracts }) 
 
 function StatusiKontrataveChart({ contracts }) {
   const [data, setData] = useState([]);
+  // Ngjyra pastel të lehta për çdo status
   const statusColors = {
-    'active': '#10b981',
-    'suspended': '#f59e0b', 
-    'completed': '#3b82f6',
-    'cancelled': '#ef4444',
-    'pending': '#8b5cf6'
+    'active': '#a7f3d0',      // Jeshile pastel
+    'suspended': '#fde68a',  // E verdhë pastel
+    'completed': '#bfdbfe',  // Blu pastel
+    'cancelled': '#fecaca',  // E kuqe pastel
+    'pending': '#ddd6fe'     // Vjollcë pastel
   };
-  
   useEffect(() => {
     if (!contracts || contracts.length === 0) return;
-    
     const statusCount = {};
     contracts.forEach(contract => {
       const status = contract.status || contract.contract_status || 'pending';
       const statusKey = status.toLowerCase();
       statusCount[statusKey] = (statusCount[statusKey] || 0) + 1;
     });
-    
     const chartData = Object.entries(statusCount).map(([status, count]) => ({
       name: status === 'active' ? 'Aktive' : 
             status === 'suspended' ? 'Të pezulluara' :
@@ -686,14 +607,11 @@ function StatusiKontrataveChart({ contracts }) {
             status === 'cancelled' ? 'Të anuluara' :
             status === 'pending' ? 'Në pritje' : status,
       value: count,
-      color: statusColors[status] || '#6b7280'
+      color: statusColors[status] || '#e5e7eb' // gri shumë e lehtë si default
     }));
-    
     setData(chartData);
   }, [contracts]);
-
   if (data.length === 0) return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e kontratave</div>;
-
   return (
     <ResponsiveContainer width="100%" height={350}>
       <PieChart>
@@ -708,7 +626,7 @@ function StatusiKontrataveChart({ contracts }) {
           labelLine={true}
         >
           {data.map((entry, index) => (
-            <PieCell key={`cell-${index}`} fill={entry.color} />
+            <Cell key={`cell-${index}`} fill={entry.color} />
           ))}
         </Pie>
         <Tooltip 
@@ -725,3 +643,83 @@ function StatusiKontrataveChart({ contracts }) {
     </ResponsiveContainer>
   );
 }
+
+{/* Grafik për pagesat javore */}
+<div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+<h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore për stafin</h3>
+{weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
+  <ResponsiveContainer width="100%" height={350}>
+    <BarChart data={(() => { const filtered = weeklyProfitData.filter(w => w.totalPaid > 0); console.log('[PAGESA JAVORE DEBUG]', filtered); return filtered; })()} margin={{ left: 50 }}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
+      <YAxis label={{ value: 'Pagesa (£)', angle: -90, position: 'insideLeft', offset: 10 }} />
+      <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'totalPaid' ? 'Pagesa' : n]} />
+      <Bar dataKey="totalPaid" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={24} />
+    </BarChart>
+  </ResponsiveContainer>
+) : (
+  <p className="text-gray-500 italic text-center py-8">Nuk ka të dhëna të mjaftueshme për pagesat javore</p>
+)}
+</div>
+
+{/* Grafik për vonesat në pagesa/fatura */}
+<div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+<h3 className="text-2xl font-bold mb-4 flex items-center gap-2">⏰ Vonesat në Pagesa/Fatura</h3>
+<VonesaFaturashChart />
+</div>
+
+      {/* Faturat e papaguara */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
+        {unpaid.length === 0 ? (
+          <p className="text-gray-500 italic">Të gjitha faturat janë të paguara ✅</p>
+        ) : (
+          <ul className="space-y-2 text-red-700 text-base">
+            {unpaid.map((item, idx) => (
+              <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
+                <a href={`/admin/contracts/${item.contractNumber}`} className="font-bold text-red-700 underline cursor-pointer">
+                  🔴 Kontrata #{item.contractNumber || ''}
+                </a>
+                <span className="font-bold text-black">Nr. Fature: <b>{item.invoiceNumber || ''}</b></span>
+                <span className="font-bold text-blue-700 flex items-center gap-1">🏢 Site: {(() => {
+                  let c = null;
+                  if (item.contract_id && contracts.length) {
+                    c = contracts.find(c => String(c.id) === String(item.contract_id));
+                  }
+                  if (!c && item.contractNumber && contracts.length) {
+                    c = contracts.find(c => String(c.contract_number) === String(item.contractNumber));
+                  }
+                  return c ? `${c.site_name || c.siteName || ''}` : '';
+                })()}</span>
+                <span className="font-bold text-lg flex items-center gap-1">💷 {item.total !== undefined ? `£${item.total.toFixed(2)}` : ''}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Shpenzimet e papaguara */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full mb-8">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
+        {unpaidExpenses.length === 0 ? (
+          <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
+        ) : (
+          <ul className="space-y-2 text-red-700 text-base">
+            {unpaidExpenses.map((item, idx) => (
+              <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
+                <span className="font-bold flex items-center gap-1">📅 {item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
+                <span className="font-bold text-lg">{item.type || ''}</span>
+                <span className="font-bold text-lg flex items-center gap-1">💷 {item.gross !== undefined ? `£${item.gross.toFixed(2)}` : ''}</span>
+                <span className="font-bold text-blue-700 flex items-center gap-1">
+                  🏢 {(() => {
+                    if (!item.contract_id || !contracts.length) return '';
+                    const c = contracts.find(c => String(c.id) === String(item.contract_id));
+                    return c ? `${c.site_name || c.siteName || ''}` : '';
+                  })()}
+                </span>
+                <span className="text-gray-700">{item.description || ''}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
