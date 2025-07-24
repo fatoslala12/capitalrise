@@ -332,7 +332,7 @@ export default function DashboardStats() {
           <ResponsiveContainer width="100%" height={350}>
             <BarChart
               data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => ({
-                name: c.site_name || c.siteName || c.company || c.contract_number,
+                name: c.site_name || c.siteName || c.company || (c.contract_number ? `Kontrata #${c.contract_number}` : '') || 'Pa emër',
                 progress: (() => {
                   const start = new Date(c.start_date);
                   const end = new Date(c.finish_date);
