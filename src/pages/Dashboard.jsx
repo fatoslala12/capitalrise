@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import DashboardStats from "../components/DashboardStats";
 import api from "../api";
 import axios from "axios";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
 
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
@@ -350,54 +350,316 @@ export default function Dashboard() {
 
       {/* Përdorues - Punonjës */}
       {user.role === "user" && (
-        <div className="space-y-6">
-          <section className="space-y-4">
-            <h3 className="text-xl font-semibold flex items-center gap-2">
-              <span className="text-red-600 text-lg">📌</span>
-              Detyrat e tua (në vazhdim)
-            </h3>
+        <div className="space-y-8">
+          {/* Header i mirëseardhjes */}
+          <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl shadow-lg p-6 border border-blue-200">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                {userFullName ? userFullName.split(' ').map(n => n[0]).join('') : 'U'}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">Mirë se erdhe, {userFullName || 'Punonjës'}! 👋</h2>
+                <p className="text-gray-600">Këtu mund të shohësh detyrat, orët e punës dhe pagesat e tua</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Statistika të shpejta */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm">Orët e Javës</p>
+                  <p className="text-3xl font-bold">
+                    {(() => {
+                      const userHours = hourData[user.employee_id] || {};
+                      const currentWeek = Object.values(userHours).find(week => 
+                        Object.keys(week).some(day => week[day]?.hours > 0)
+                      ) || {};
+                      return Object.values(currentWeek).reduce((total, day) => 
+                        total + (Number(day?.hours) || 0), 0
+                      );
+                    })()} orë
+                  </p>
+                </div>
+                <div className="text-4xl">⏰</div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-sm">Detyrat Aktive</p>
+                  <p className="text-3xl font-bold">
+                    {tasks.filter(t => t.assignedTo === user.email && t.status === "ongoing").length}
+                  </p>
+                </div>
+                <div className="text-4xl">📋</div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100 text-sm">Paga e Javës</p>
+                  <p className="text-3xl font-bold">
+                    £{(() => {
+                      const userHours = hourData[user.employee_id] || {};
+                      const currentWeek = Object.values(userHours).find(week => 
+                        Object.keys(week).some(day => week[day]?.hours > 0)
+                      ) || {};
+                      const totalHours = Object.values(currentWeek).reduce((total, day) => 
+                        total + (Number(day?.hours) || 0), 0
+                      );
+                      const hourlyRate = employees.find(emp => emp.id === user.employee_id)?.hourly_rate || 0;
+                      return (totalHours * hourlyRate).toFixed(2);
+                    })()}
+                  </p>
+                </div>
+                <div className="text-4xl">💰</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Detyrat e mia */}
+          <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <span className="text-blue-600">📌</span>
+                Detyrat e Mia
+              </h3>
+              <Link
+                to={`/${user.role}/my-tasks`}
+                className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg transition"
+              >
+                Shiko të gjitha →
+              </Link>
+            </div>
 
             {tasks.filter((t) => t.assignedTo === user.email && t.status === "ongoing").length === 0 ? (
-              <p className="text-gray-500 italic">Nuk ke detyra aktive për momentin.</p>
+              <div className="text-center py-8">
+                <div className="text-6xl mb-4">🎉</div>
+                <p className="text-gray-500 text-lg">Nuk ke detyra aktive për momentin!</p>
+                <p className="text-gray-400 text-sm">Gëzo pushimet e tua</p>
+              </div>
             ) : (
-              <ul className="space-y-3">
+              <div className="space-y-4">
                 {tasks
                   .filter((t) => t.assignedTo === user.email && t.status === "ongoing")
                   .slice(0, 3)
                   .map((t) => (
-                    <li
+                    <div
                       key={t.id}
-                      className="flex flex-col bg-yellow-50 border-l-4 border-yellow-400 px-4 py-3 rounded-lg shadow hover:shadow-md transition"
+                      className="flex items-center justify-between bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 px-6 py-4 rounded-xl shadow-sm hover:shadow-md transition"
                     >
-                      <div className="flex items-center gap-2 text-yellow-800 font-medium text-sm">
-                        🕒 {t.description || t.title}
-                      </div>
-                      {t.dueDate && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          {new Date(t.dueDate) < new Date()
-                            ? "❗ Ka kaluar afati!"
-                            : `⏳ Afat deri më: ${new Date(t.dueDate).toLocaleDateString()}`}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <h4 className="font-semibold text-gray-800">{t.description || t.title}</h4>
                         </div>
-                      )}
-                      {t.siteName && (
-                        <div className="text-xs text-gray-500">📍 Site: {t.siteName}</div>
-                      )}
-                      <div className="text-xs text-green-700 font-semibold mt-1">Statusi: Në vazhdim</div>
-                    </li>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                          {t.siteName && (
+                            <span className="flex items-center gap-1">
+                              <span>📍</span> {t.siteName}
+                            </span>
+                          )}
+                          {t.dueDate && (
+                            <span className={`flex items-center gap-1 ${new Date(t.dueDate) < new Date() ? 'text-red-600 font-semibold' : ''}`}>
+                              <span>⏰</span> 
+                              {new Date(t.dueDate) < new Date() 
+                                ? "Ka kaluar afati!" 
+                                : `Afat: ${new Date(t.dueDate).toLocaleDateString()}`
+                              }
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">
+                          Në vazhdim
+                        </span>
+                      </div>
+                    </div>
                   ))}
-              </ul>
+              </div>
             )}
-
-            <Link
-              to={`/${user.role}/my-tasks`}
-              className="inline-block mt-3 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium px-4 py-2 rounded transition"
-            >
-              ➕ Shiko të gjitha detyrat
-            </Link>
           </section>
 
-          <section>
+          {/* Orët e punës të javës aktuale */}
+          <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <span className="text-green-600">🕒</span>
+              Orët e Punës të Javës Aktuale
+            </h3>
+            <WorkHoursTable 
+              employeeId={user.employee_id} 
+              hourData={hourData[user.employee_id] || {}} 
+              readOnly={false}
+            />
+          </section>
+
+          {/* Grafik i orëve të punës */}
+          <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <span className="text-indigo-600">📊</span>
+              Orët e Punës të Javëve të Fundit
+            </h3>
+            {(() => {
+              const userHours = hourData[user.employee_id] || {};
+              const weeks = Object.keys(userHours).slice(-4); // 4 javët e fundit
+              const chartData = weeks.map(week => {
+                const weekData = userHours[week];
+                const totalHours = Object.values(weekData || {}).reduce((total, day) => 
+                  total + (Number(day?.hours) || 0), 0
+                );
+                return {
+                  week: week.split(' - ')[0], // Merr vetëm datën e fillimit
+                  hours: totalHours
+                };
+              }).filter(item => item.hours > 0);
+
+              if (chartData.length === 0) {
+                return (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-4">📈</div>
+                    <p className="text-gray-500">Nuk ka të dhëna për orët e punës</p>
+                  </div>
+                );
+              }
+
+              return (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="week" 
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) => new Date(value).toLocaleDateString('sq-AL', { month: 'short', day: 'numeric' })}
+                    />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip 
+                      formatter={(value) => [`${value} orë`, 'Orët']}
+                      labelFormatter={(label) => `Java: ${new Date(label).toLocaleDateString('sq-AL')}`}
+                    />
+                    <Bar dataKey="hours" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              );
+            })()}
+          </section>
+
+          {/* Pagesat e fundit */}
+          <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <span className="text-emerald-600">💰</span>
+              Pagesat e Fundit
+            </h3>
+            {(() => {
+              // Simuloj pagesat e fundit bazuar në orët e punës
+              const userHours = hourData[user.employee_id] || {};
+              const hourlyRate = employees.find(emp => emp.id === user.employee_id)?.hourly_rate || 0;
+              const recentPayments = Object.keys(userHours).slice(-3).map(week => {
+                const weekData = userHours[week];
+                const totalHours = Object.values(weekData || {}).reduce((total, day) => 
+                  total + (Number(day?.hours) || 0), 0
+                );
+                return {
+                  week,
+                  hours: totalHours,
+                  amount: totalHours * hourlyRate,
+                  date: week.split(' - ')[0]
+                };
+              }).filter(payment => payment.hours > 0);
+
+              if (recentPayments.length === 0) {
+                return (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-4">💳</div>
+                    <p className="text-gray-500">Nuk ka pagesa të regjistruara</p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-4">
+                  {recentPayments.map((payment, index) => (
+                    <div key={index} className="flex items-center justify-between bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 px-4 py-3 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                          £
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800">
+                            Java: {new Date(payment.date).toLocaleDateString('sq-AL')}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {payment.hours} orë të punuara
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-emerald-700">
+                          £{payment.amount.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          £{hourlyRate}/orë
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </section>
+
+          {/* Ndryshimi i fjalëkalimit */}
+          <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <span className="text-purple-600">🔐</span>
+              Siguria e Llogarisë
+            </h3>
             <ChangePassword />
+          </section>
+
+          {/* Butona të shpejtë për navigim */}
+          <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <span className="text-cyan-600">⚡</span>
+              Akses i Shpejtë
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Link
+                to={`/${user.role}/work-hours`}
+                className="flex flex-col items-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:from-blue-100 hover:to-blue-200 transition-all duration-200 group"
+              >
+                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">🕒</div>
+                <span className="text-sm font-semibold text-blue-800 text-center">Orët e Punës</span>
+              </Link>
+              
+              <Link
+                to={`/${user.role}/my-tasks`}
+                className="flex flex-col items-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 hover:from-green-100 hover:to-green-200 transition-all duration-200 group"
+              >
+                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">📋</div>
+                <span className="text-sm font-semibold text-green-800 text-center">Detyrat e Mia</span>
+              </Link>
+              
+              <Link
+                to={`/${user.role}/my-profile`}
+                className="flex flex-col items-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:from-purple-100 hover:to-purple-200 transition-all duration-200 group"
+              >
+                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">👤</div>
+                <span className="text-sm font-semibold text-purple-800 text-center">Profili Im</span>
+              </Link>
+              
+              <Link
+                to="/notifications"
+                className="flex flex-col items-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200 hover:from-orange-100 hover:to-orange-200 transition-all duration-200 group"
+              >
+                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">🔔</div>
+                <span className="text-sm font-semibold text-orange-800 text-center">Njoftimet</span>
+              </Link>
+            </div>
           </section>
         </div>
       )}
