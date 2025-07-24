@@ -45,6 +45,7 @@ export default function DashboardStats() {
   const [taskFilter, setTaskFilter] = useState('ongoing');
   const [allTasks, setAllTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [weeklyProfitData, setWeeklyProfitData] = useState([]);
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
@@ -194,6 +195,48 @@ export default function DashboardStats() {
           }
         });
         setUnpaidExpenses(unpaidExpensesList);
+        
+        // --- FITIMI JAVORE ---
+        // 1. Grumbullo pagesat e paguara per cdo jave
+        const paidPayments = allPayments.filter(p => p.isPaid === true);
+        const paymentsByWeek = {};
+        paidPayments.forEach(p => {
+          if (!paymentsByWeek[p.weekLabel]) paymentsByWeek[p.weekLabel] = 0;
+          paymentsByWeek[p.weekLabel] += parseFloat(p.grossAmount || 0);
+        });
+        // 2. Grumbullo shpenzimet per cdo jave
+        const expensesByWeek = {};
+        allExpenses.forEach(e => {
+          if (!e.date) return;
+          const date = new Date(e.date);
+          // Gjej fillimin dhe fundin e javes per kete date
+          const day = date.getDay();
+          const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+          const monday = new Date(date);
+          monday.setDate(diff);
+          monday.setHours(0, 0, 0, 0);
+          const sunday = new Date(monday);
+          sunday.setDate(monday.getDate() + 6);
+          const weekLabel = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
+          if (!expensesByWeek[weekLabel]) expensesByWeek[weekLabel] = 0;
+          expensesByWeek[weekLabel] += parseFloat(e.gross || 0);
+        });
+        // 3. Bashko javet dhe llogarit fitimin
+        const allWeeks = Array.from(new Set([
+          ...Object.keys(paymentsByWeek),
+          ...Object.keys(expensesByWeek)
+        ])).sort();
+        const weeklyProfitArr = allWeeks.map(week => {
+          const totalPaid = paymentsByWeek[week] || 0;
+          const totalExpenses = expensesByWeek[week] || 0;
+          return {
+            week,
+            totalPaid,
+            totalExpenses,
+            profit: totalPaid - totalExpenses
+          };
+        });
+        setWeeklyProfitData(weeklyProfitArr);
         
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -448,6 +491,24 @@ export default function DashboardStats() {
               </li>
             ))}
           </ul>
+        )}
+      </div>
+
+      {/* Grafik për fitimin javore */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Fitimi Javore</h3>
+        {weeklyProfitData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={weeklyProfitData} margin={{ left: 50 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
+              <YAxis label={{ value: 'Fitimi (£)', angle: -90, position: 'insideLeft', offset: 10 }} />
+              <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'profit' ? 'Fitimi' : n]} />
+              <Bar dataKey="profit" fill="#22c55e" radius={[6, 6, 0, 0]} barSize={24} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-gray-500 italic text-center py-8">Nuk ka të dhëna të mjaftueshme për fitimin javore</p>
         )}
       </div>
     </div>
