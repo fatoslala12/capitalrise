@@ -382,6 +382,8 @@ export default function DashboardStats() {
                 if (now < start) progress = 0;
                 else if (now > end) progress = 100;
                 else progress = Math.floor(((now - start) / (end - start)) * 100);
+                // DEBUG
+                console.log(`[PROGRES DEBUG] Site: ${c.site_name || c.siteName || c.company || c.contract_number} | Start: ${c.start_date} | End: ${c.finish_date} | Now: ${now.toISOString()} | Progress: ${progress}`);
                 return {
                   name: c.site_name || c.siteName || c.company || (c.contract_number ? `Kontrata #${c.contract_number}` : '') || 'Pa emër',
                   progress
@@ -494,21 +496,21 @@ export default function DashboardStats() {
         )}
       </div>
 
-      {/* Grafik për fitimin javore */}
+      {/* Grafik për pagesat javore */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Fitimi Javore</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore</h3>
         {weeklyProfitData.length > 0 ? (
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={weeklyProfitData} margin={{ left: 50 }}>
+            <BarChart data={(() => { console.log('[PAGESA JAVORE DEBUG]', weeklyProfitData); return weeklyProfitData; })()} margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
-              <YAxis label={{ value: 'Fitimi (£)', angle: -90, position: 'insideLeft', offset: 10 }} />
-              <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'profit' ? 'Fitimi' : n]} />
-              <Bar dataKey="profit" fill="#22c55e" radius={[6, 6, 0, 0]} barSize={24} />
+              <YAxis label={{ value: 'Pagesa (£)', angle: -90, position: 'insideLeft', offset: 10 }} />
+              <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'totalPaid' ? 'Pagesa' : n]} />
+              <Bar dataKey="totalPaid" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={24} />
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka të dhëna të mjaftueshme për fitimin javore</p>
+          <p className="text-gray-500 italic text-center py-8">Nuk ka të dhëna të mjaftueshme për pagesat javore</p>
         )}
       </div>
     </div>
