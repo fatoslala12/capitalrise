@@ -370,7 +370,7 @@ export default function DashboardStats() {
           <ul className="space-y-2 text-red-700 text-base">
             {unpaid.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <a href={`/contracts/${item.contractNumber}`} className="font-bold text-red-700 underline cursor-pointer">
+                <a href={`/admin/contracts/${item.contractNumber}`} className="font-bold text-red-700 underline cursor-pointer">
                   🔴 Kontrata #{item.contractNumber || ''}
                 </a>
                 <span className="font-bold text-black">Nr. Fature: <b>{item.invoiceNumber || ''}</b></span>
