@@ -372,7 +372,11 @@ export default function DashboardStats() {
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
                 <span className="font-bold">🔴 Kontrata #{item.contractNumber || ''}</span>
                 <span className="font-bold text-black">Nr. Fature: <b>{item.invoiceNumber || ''}</b></span>
-                <span className="font-bold text-black flex items-center gap-1">🏢 Site: <b>{item.siteName || ''}</b></span>
+                <span className="font-bold text-blue-700 flex items-center gap-1">🏢 Site: {(() => {
+                  if (!item.contract_id || !contracts.length) return '';
+                  const c = contracts.find(c => String(c.id) === String(item.contract_id));
+                  return c ? `${c.site_name || c.siteName || ''}` : '';
+                })()}</span>
                 <span className="font-bold text-lg flex items-center gap-1">💷 {item.total !== undefined ? `£${item.total.toFixed(2)}` : ''}</span>
               </li>
             ))}
