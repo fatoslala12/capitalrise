@@ -1,212 +1,584 @@
-const { Resend } = require('resend');
-const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
-const NotificationService = require('./notificationService');
+const nodemailer = require('nodemailer');
+const { createError } = require('../middleware/errorHandler');
 
-// Inicializo Resend me API key
-const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789');
+class EmailService {
+  constructor() {
+    this.transporter = null;
+    this.initializeTransporter();
+  }
 
-// Funksion për të gjeneruar PDF nga faturë me pdf-lib
-const generateInvoicePDF = async (invoice, contract) => {
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([595, 842]); // A4 size
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
-  let y = 800;
-  const drawText = (text, size = 14, color = rgb(0,0,0), x = 50) => {
-    page.drawText(text, { x, y, size, font, color });
-    y -= size + 8;
-  };
-
-  drawText(`FATURA`, 22, rgb(0.2,0.2,0.7));
-  drawText(`Kontrata #${contract.contract_number} – ${contract.site_name}`, 14);
-  drawText(`Data: ${invoice.date}`);
-  drawText(`Kompania: ${contract.company}`);
-  drawText(`Adresa: ${contract.address || 'N/A'}`);
-  drawText(`Pershkrimi: ${invoice.description || 'N/A'}`);
-  y -= 10;
-  drawText('---------------------------------------------', 10);
-  drawText('Pershkrimi   Shifts   Rate   Shuma', 12, rgb(0.1,0.1,0.1));
-  (invoice.items || []).forEach(item => {
-    drawText(`${item.description || ''}   ${item.shifts || ''}   £${item.rate || '0.00'}   £${item.amount ? item.amount.toFixed(2) : '0.00'}`, 12);
-  });
-  y -= 10;
-  drawText('---------------------------------------------', 10);
-  drawText(`Te tjera: £${invoice.other || '0.00'}`);
-  drawText(`TVSH (20%): £${invoice.vat || '0.00'}`);
-  drawText(`TOTALI: £${invoice.total || '0.00'}`, 16, rgb(0,0.5,0));
-  y -= 20;
-  drawText('Faleminderit per besimin tuaj!', 12, rgb(0.2,0.5,0.2));
-  drawText('Alban Construction', 12, rgb(0.2,0.5,0.2));
-
-  const pdfBytes = await pdfDoc.save();
-  return Buffer.from(pdfBytes);
-};
-
-// Funksion kryesor për dërgimin e email-it
-const sendInvoiceEmail = async (invoice, contract, recipientEmail) => {
-  try {
-    // Gjenero PDF
-    const pdfBuffer = await generateInvoicePDF(invoice, contract);
-    
-    // Konverto PDF buffer në base64
-    const pdfBase64 = pdfBuffer.toString('base64');
-    
-    // Përgatit email-in me Resend
-    const { data, error } = await resend.emails.send({
-      from: 'Alban Construction <onboarding@resend.dev>',
-      to: [recipientEmail],
-      subject: `Faturë për Punimet e Kryera – ${contract.site_name} – Kontrata #${contract.contract_number}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px;">
-          <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #2563eb; margin: 0; font-size: 24px;">🏗️ Alban Construction</h1>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-              <p style="color: #475569; font-size: 16px; margin: 0;">Përshëndetje,</p>
-              <p style="color: #475569; font-size: 16px; margin: 10px 0 0 0;">
-                Ju dërgojmë më poshtë detajet e faturës të lëshuar për punimet e kryera në kuadër të kontratës #${contract.contract_number} – ${contract.site_name}:
-              </p>
-            </div>
-            
-            <div style="background-color: #f1f5f9; border-left: 4px solid #2563eb; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-              <div style="text-align: center; margin-bottom: 15px;">
-                <span style="font-size: 24px;">🧾</span>
-                <h3 style="margin: 10px 0 0 0; color: #1e293b;">Detajet e Faturës:</h3>
-              </div>
-              <div style="background-color: white; padding: 15px; border-radius: 5px;">
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Numri i Faturës:</strong> ${invoice.invoice_number}</p>
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Data e Lëshimit:</strong> ${invoice.date}</p>
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Kompania:</strong> ${contract.company}</p>
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Përshkrimi i Punimeve:</strong> ${invoice.description || 'N/A'}</p>
-                <p style="margin: 0; color: #475569;"><strong>• Shuma Totale:</strong> £${invoice.total || '0.00'}</p>
-              </div>
-            </div>
-            
-            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-              <p style="color: #64748b; margin: 0 0 10px 0; font-size: 14px;">📎 Fatura është bashkëngjitur në këtë email.</p>
-              <p style="color: #64748b; margin: 0; font-size: 14px;">
-                Faleminderit për bashkëpunimin dhe besimin tuaj të vazhdueshëm.
-              </p>
-              <p style="color: #64748b; margin: 10px 0 0 0; font-size: 14px;">
-                Me respekt,<br>
-                Alban Construction Ltd
-              </p>
-            </div>
-          </div>
-        </div>
-      `,
-      attachments: [
-        {
-          filename: `Fatura_${invoice.invoice_number}_${contract.site_name}.pdf`,
-          content: pdfBase64
+  // Initialize transporter
+  async initializeTransporter() {
+    try {
+      this.transporter = nodemailer.createTransporter({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: process.env.SMTP_PORT || 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        },
+        tls: {
+          rejectUnauthorized: false
         }
-      ]
-    });
+      });
 
-    if (error) {
-      console.error('Resend error:', error);
-      throw new Error(`Email sending failed: ${error.message}`);
+      // Verify connection
+      await this.transporter.verify();
+      console.log('✅ Email service u inicializua me sukses');
+    } catch (error) {
+      console.error('❌ Gabim në inicializimin e email service:', error);
+      this.transporter = null;
     }
-
-    console.log('Email sent successfully:', data?.id);
-    
-    // Dërgo njoftim për admin
-    await NotificationService.notifyAdminEmailSent(invoice.id, contract.id, 'invoice');
-    
-    return { success: true, messageId: data?.id };
-    
-  } catch (error) {
-    console.error('Error sending email:', error);
-    throw error;
   }
-};
 
-// Funksion për dërgimin e contract details në email
-const sendContractDetailsEmail = async (contract, recipientEmail) => {
-  try {
-    const { data, error } = await resend.emails.send({
-      from: 'Alban Construction <onboarding@resend.dev>',
-      to: [recipientEmail],
-      subject: `Informacion mbi Kontratën #${contract.contract_number} – ${contract.site_name}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 20px;">
-          <div style="background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #2563eb; margin: 0; font-size: 24px;">🏗️ Alban Construction</h1>
+  // Dërgo email për user të ri
+  async sendWelcomeEmail(userData) {
+    try {
+      if (!this.transporter) {
+        throw createError('EMAIL_SERVICE_ERROR', null, 'Email service nuk është i disponueshëm');
+      }
+
+      const { email, firstName, lastName, password, role } = userData;
+      
+      const subject = 'Mirëseerdhët në Alban Construction!';
+      const htmlContent = this.generateWelcomeEmailHTML(userData);
+      const textContent = this.generateWelcomeEmailText(userData);
+
+      const mailOptions = {
+        from: `"Alban Construction" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: subject,
+        html: htmlContent,
+        text: textContent
+      };
+
+      const result = await this.transporter.sendMail(mailOptions);
+      
+      console.log('✅ Email u dërgua me sukses:', result.messageId);
+      
+      return {
+        success: true,
+        messageId: result.messageId,
+        email: email
+      };
+
+    } catch (error) {
+      console.error('❌ Gabim në dërgimin e email:', error);
+      throw createError('EMAIL_SERVICE_ERROR', {
+        email: userData.email,
+        error: error.message
+      }, 'Gabim në dërgimin e email-it të mirëseerdhjes');
+    }
+  }
+
+  // Dërgo email për reset password
+  async sendPasswordResetEmail(email, resetToken) {
+    try {
+      if (!this.transporter) {
+        throw createError('EMAIL_SERVICE_ERROR', null, 'Email service nuk është i disponueshëm');
+      }
+
+      const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+      
+      const subject = 'Reset Fjalëkalimi - Alban Construction';
+      const htmlContent = this.generatePasswordResetHTML(email, resetUrl);
+      const textContent = this.generatePasswordResetText(email, resetUrl);
+
+      const mailOptions = {
+        from: `"Alban Construction" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: subject,
+        html: htmlContent,
+        text: textContent
+      };
+
+      const result = await this.transporter.sendMail(mailOptions);
+      
+      console.log('✅ Password reset email u dërgua me sukses:', result.messageId);
+      
+      return {
+        success: true,
+        messageId: result.messageId,
+        email: email
+      };
+
+    } catch (error) {
+      console.error('❌ Gabim në dërgimin e password reset email:', error);
+      throw createError('EMAIL_SERVICE_ERROR', {
+        email: email,
+        error: error.message
+      }, 'Gabim në dërgimin e email-it për reset password');
+    }
+  }
+
+  // Dërgo email për notifikime të rëndësishme
+  async sendNotificationEmail(email, subject, message, type = 'info') {
+    try {
+      if (!this.transporter) {
+        throw createError('EMAIL_SERVICE_ERROR', null, 'Email service nuk është i disponueshëm');
+      }
+
+      const htmlContent = this.generateNotificationHTML(subject, message, type);
+      const textContent = this.generateNotificationText(subject, message, type);
+
+      const mailOptions = {
+        from: `"Alban Construction" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: subject,
+        html: htmlContent,
+        text: textContent
+      };
+
+      const result = await this.transporter.sendMail(mailOptions);
+      
+      console.log('✅ Notification email u dërgua me sukses:', result.messageId);
+      
+      return {
+        success: true,
+        messageId: result.messageId,
+        email: email
+      };
+
+    } catch (error) {
+      console.error('❌ Gabim në dërgimin e notification email:', error);
+      throw createError('EMAIL_SERVICE_ERROR', {
+        email: email,
+        error: error.message
+      }, 'Gabim në dërgimin e email-it të njoftimit');
+    }
+  }
+
+  // Generate HTML për welcome email
+  generateWelcomeEmailHTML(userData) {
+    const { firstName, lastName, email, password, role } = userData;
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
+    
+    return `
+      <!DOCTYPE html>
+      <html lang="sq">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mirëseerdhët në Alban Construction</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+          }
+          .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e3f2fd;
+          }
+          .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 10px;
+          }
+          .welcome-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+          }
+          .credentials-box {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .credential-item {
+            margin: 10px 0;
+            font-weight: 500;
+          }
+          .credential-label {
+            color: #1976d2;
+            font-weight: bold;
+          }
+          .login-button {
+            display: inline-block;
+            background-color: #1976d2;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin: 20px 0;
+            transition: background-color 0.3s;
+          }
+          .login-button:hover {
+            background-color: #1565c0;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 14px;
+          }
+          .warning {
+            background-color: #fff3e0;
+            border: 1px solid #ffcc02;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #e65100;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">🏗️ Alban Construction</div>
+            <div class="welcome-text">Mirëseerdhët në sistemin tonë!</div>
+          </div>
+          
+          <p>Përshëndetje <strong>${firstName} ${lastName}</strong>,</p>
+          
+          <p>Ju u krijua një llogari e re në sistemin e Alban Construction. Ju lutem ndiqni linkun më poshtë për tu loguar:</p>
+          
+          <div style="text-align: center;">
+            <a href="${loginUrl}" class="login-button">🔐 Hyr në Sistem</a>
+          </div>
+          
+          <div class="credentials-box">
+            <h3 style="margin-top: 0; color: #1976d2;">Kredencialet tuaja:</h3>
+            <div class="credential-item">
+              <span class="credential-label">Email:</span> ${email}
             </div>
-            
-            <div style="margin-bottom: 20px;">
-              <p style="color: #475569; font-size: 16px; margin: 0;">Përshëndetje,</p>
-              <p style="color: #475569; font-size: 16px; margin: 10px 0 0 0;">
-                Ju informojmë se është lidhur me sukses kontrata e re me detajet si më poshtë:
-              </p>
+            <div class="credential-item">
+              <span class="credential-label">Fjalëkalimi:</span> ${password}
             </div>
-            
-            <div style="background-color: #f1f5f9; border-left: 4px solid #2563eb; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-              <div style="text-align: center; margin-bottom: 15px;">
-                <span style="font-size: 24px;">🧾</span>
-                <h3 style="margin: 10px 0 0 0; color: #1e293b;">Informacion mbi Kontratën:</h3>
-              </div>
-              <div style="background-color: white; padding: 15px; border-radius: 5px;">
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Numri i Kontratës:</strong> #${contract.contract_number}</p>
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Emri i Kompanisë:</strong> ${contract.company}</p>
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Vendodhja e Punimeve:</strong> ${contract.site_name}</p>
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Vlera Totale e Kontratës:</strong> £${contract.contract_value || '0.00'}</p>
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Data e Fillimit:</strong> ${contract.start_date || 'N/A'}</p>
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Data e Mbarimit:</strong> ${contract.finish_date || 'N/A'}</p>
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Statusi Aktual:</strong> ${contract.status || 'N/A'}</p>
-                <p style="margin: 0 0 8px 0; color: #475569;"><strong>• Adresa:</strong> ${contract.address || 'N/A'}</p>
-                <p style="margin: 0; color: #475569;"><strong>• Përshkrim i Punimeve:</strong> ${contract.description || 'N/A'}</p>
-              </div>
-            </div>
-            
-            <div style="background-color: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-              <p style="color: #0c4a6e; margin: 0; font-size: 14px; line-height: 1.6;">
-                Kjo kontratë shënon një tjetër hap të rëndësishëm në ndërtimin e marrëdhënieve të qëndrueshme dhe profesionale midis palëve.
-              </p>
-            </div>
-            
-            <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-              <p style="color: #166534; margin: 0; font-size: 14px; line-height: 1.6;">
-                Ne mbetemi të angazhuar për realizimin e suksesshëm të projektit, duke ofruar cilësi të lartë, respektim të afateve, dhe bashkëpunim të hapur në çdo fazë të zbatimit.
-              </p>
-            </div>
-            
-            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-              <p style="color: #64748b; margin: 0; font-size: 14px;">
-                Faleminderit për besimin dhe bashkëpunimin tuaj të çmuar.
-              </p>
-              <p style="color: #64748b; margin: 10px 0 0 0; font-size: 14px;">
-                Me respekt,<br>
-                Alban Construction Ltd
-              </p>
+            <div class="credential-item">
+              <span class="credential-label">Roli:</span> ${this.getRoleLabel(role)}
             </div>
           </div>
+          
+          <div class="warning">
+            <strong>⚠️ Siguria:</strong> Ju lutem ndryshoni fjalëkalimin tuaj pas hyrjes së parë në sistem për sigurinë e llogarisë suaj.
+          </div>
+          
+          <p><strong>Link për hyrje:</strong> <a href="${loginUrl}">${loginUrl}</a></p>
+          
+          <p>Nëse keni ndonjë pyetje ose problem, ju lutem kontaktoni administratorin e sistemit.</p>
+          
+          <div class="footer">
+            <p>Ky email u dërgua automatikisht nga sistemi i Alban Construction.</p>
+            <p>Ju lutem mos përgjigjuni këtij email-i.</p>
+          </div>
         </div>
-      `
-    });
-
-    if (error) {
-      console.error('Resend error:', error);
-      throw new Error(`Email sending failed: ${error.message}`);
-    }
-
-    console.log('Contract details email sent successfully:', data?.id);
-    
-    // Dërgo njoftim për admin
-    await NotificationService.notifyAdminEmailSent(null, contract.id, 'contract');
-    
-    return { success: true, messageId: data?.id };
-    
-  } catch (error) {
-    console.error('Error sending contract details email:', error);
-    throw error;
+      </body>
+      </html>
+    `;
   }
-};
 
-module.exports = {
-  sendInvoiceEmail,
-  sendContractDetailsEmail
-}; 
+  // Generate text për welcome email
+  generateWelcomeEmailText(userData) {
+    const { firstName, lastName, email, password, role } = userData;
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
+    
+    return `
+Mirëseerdhët në Alban Construction!
+
+Përshëndetje ${firstName} ${lastName},
+
+Ju u krijua një llogari e re në sistemin e Alban Construction. Ju lutem ndiqni linkun më poshtë për tu loguar:
+
+Link për hyrje: ${loginUrl}
+
+Kredencialet tuaja:
+- Email: ${email}
+- Fjalëkalimi: ${password}
+- Roli: ${this.getRoleLabel(role)}
+
+⚠️ Siguria: Ju lutem ndryshoni fjalëkalimin tuaj pas hyrjes së parë në sistem për sigurinë e llogarisë suaj.
+
+Nëse keni ndonjë pyetje ose problem, ju lutem kontaktoni administratorin e sistemit.
+
+Ky email u dërgua automatikisht nga sistemi i Alban Construction.
+Ju lutem mos përgjigjuni këtij email-i.
+    `;
+  }
+
+  // Generate HTML për password reset
+  generatePasswordResetHTML(email, resetUrl) {
+    return `
+      <!DOCTYPE html>
+      <html lang="sq">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset Fjalëkalimi - Alban Construction</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+          }
+          .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e3f2fd;
+          }
+          .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 10px;
+          }
+          .reset-button {
+            display: inline-block;
+            background-color: #1976d2;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin: 20px 0;
+            transition: background-color 0.3s;
+          }
+          .reset-button:hover {
+            background-color: #1565c0;
+          }
+          .warning {
+            background-color: #fff3e0;
+            border: 1px solid #ffcc02;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #e65100;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">🏗️ Alban Construction</div>
+            <div>Reset Fjalëkalimi</div>
+          </div>
+          
+          <p>Përshëndetje,</p>
+          
+          <p>Kemi marrë një kërkesë për të rivendosur fjalëkalimin tuaj për llogarinë: <strong>${email}</strong></p>
+          
+          <div style="text-align: center;">
+            <a href="${resetUrl}" class="reset-button">🔐 Rivendos Fjalëkalimin</a>
+          </div>
+          
+          <div class="warning">
+            <strong>⚠️ Siguria:</strong> Ky link është i vlefshëm vetëm për 1 orë. Nëse nuk keni bërë këtë kërkesë, ju lutem injoroni këtë email.
+          </div>
+          
+          <p><strong>Link për reset:</strong> <a href="${resetUrl}">${resetUrl}</a></p>
+          
+          <div class="footer">
+            <p>Ky email u dërgua automatikisht nga sistemi i Alban Construction.</p>
+            <p>Ju lutem mos përgjigjuni këtij email-i.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  // Generate text për password reset
+  generatePasswordResetText(email, resetUrl) {
+    return `
+Reset Fjalëkalimi - Alban Construction
+
+Përshëndetje,
+
+Kemi marrë një kërkesë për të rivendosur fjalëkalimin tuaj për llogarinë: ${email}
+
+Link për reset: ${resetUrl}
+
+⚠️ Siguria: Ky link është i vlefshëm vetëm për 1 orë. Nëse nuk keni bërë këtë kërkesë, ju lutem injoroni këtë email.
+
+Ky email u dërgua automatikisht nga sistemi i Alban Construction.
+Ju lutem mos përgjigjuni këtij email-i.
+    `;
+  }
+
+  // Generate HTML për notifications
+  generateNotificationHTML(subject, message, type) {
+    const typeColors = {
+      info: '#1976d2',
+      success: '#2e7d32',
+      warning: '#ed6c02',
+      error: '#d32f2f'
+    };
+    
+    const color = typeColors[type] || typeColors.info;
+    
+    return `
+      <!DOCTYPE html>
+      <html lang="sq">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+          }
+          .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid ${color};
+          }
+          .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: ${color};
+            margin-bottom: 10px;
+          }
+          .message {
+            background-color: #f8f9fa;
+            border-left: 4px solid ${color};
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">🏗️ Alban Construction</div>
+            <div>${subject}</div>
+          </div>
+          
+          <div class="message">
+            ${message}
+          </div>
+          
+          <div class="footer">
+            <p>Ky email u dërgua automatikisht nga sistemi i Alban Construction.</p>
+            <p>Ju lutem mos përgjigjuni këtij email-i.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  // Generate text për notifications
+  generateNotificationText(subject, message, type) {
+    return `
+${subject} - Alban Construction
+
+${message}
+
+Ky email u dërgua automatikisht nga sistemi i Alban Construction.
+Ju lutem mos përgjigjuni këtij email-i.
+    `;
+  }
+
+  // Get role label
+  getRoleLabel(role) {
+    const roleLabels = {
+      admin: 'Administrator',
+      manager: 'Menaxher',
+      employee: 'Punonjës',
+      user: 'Përdorues'
+    };
+    return roleLabels[role] || role;
+  }
+
+  // Test email service
+  async testEmailService() {
+    try {
+      if (!this.transporter) {
+        throw new Error('Email service nuk është inicializuar');
+      }
+
+      const testEmail = {
+        from: `"Alban Construction" <${process.env.SMTP_USER}>`,
+        to: process.env.SMTP_USER, // Send to self for testing
+        subject: 'Test Email - Alban Construction',
+        html: '<h1>Test Email</h1><p>Ky është një test email për të verifikuar funksionimin e email service.</p>',
+        text: 'Test Email - Ky është një test email për të verifikuar funksionimin e email service.'
+      };
+
+      const result = await this.transporter.sendMail(testEmail);
+      
+      console.log('✅ Test email u dërgua me sukses:', result.messageId);
+      
+      return {
+        success: true,
+        messageId: result.messageId
+      };
+
+    } catch (error) {
+      console.error('❌ Gabim në test email:', error);
+      throw error;
+    }
+  }
+
+  // Get service status
+  getServiceStatus() {
+    return {
+      initialized: !!this.transporter,
+      smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+      smtpPort: process.env.SMTP_PORT || 587,
+      smtpUser: process.env.SMTP_USER ? 'Configured' : 'Not configured'
+    };
+  }
+}
+
+module.exports = EmailService; 

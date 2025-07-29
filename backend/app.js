@@ -77,6 +77,9 @@ app.use('/api/real-time-alerts', realTimeAlertRoutes);
 const errorReportRoutes = require('./routes/errorReport');
 app.use('/api/error-report', errorReportRoutes);
 
+const userManagementRoutes = require('./routes/userManagement');
+app.use('/api/user-management', userManagementRoutes);
+
 // Compression middleware për të reduktuar madhësinë e përgjigjeve (pas routes)
 const compression = require('compression');
 app.use(compression({

@@ -212,28 +212,80 @@ export default function EmployeesList() {
       }
     }
     try {
-      // 1. Shto punonjësin me workplace në payload
-      const payload = { ...toSnakeCase(newEmployee), workplace: newEmployee.workplace };
-      const res = await axios.post("https://building-system.onrender.com/api/employees", payload, {
+      // Përdor API-n e re për user management me email
+      const userData = {
+        firstName: newEmployee.firstName,
+        lastName: newEmployee.lastName,
+        email: newEmployee.email,
+        password: newEmployee.password,
+        role: newEmployee.role,
+        phone: newEmployee.phone,
+        address: newEmployee.residence,
+        position: newEmployee.qualification,
+        hourlyRate: newEmployee.hourlyRate,
+        startDate: newEmployee.startDate,
+        status: newEmployee.status,
+        qualification: newEmployee.qualification,
+        nextOfKin: newEmployee.nextOfKin,
+        nextOfKinPhone: newEmployee.nextOfKinPhone
+      };
+
+      const res = await axios.post("https://building-system.onrender.com/api/user-management/create", userData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (res.status === 201) {
-        // 2. Merr punonjësin e ri nga response
-        const newEmp = snakeToCamel(res.data);
+      if (res.data.success) {
+        // Shto punonjësin në listë
+        const newEmp = {
+          id: res.data.data.id,
+          firstName: res.data.data.firstName,
+          lastName: res.data.data.lastName,
+          email: res.data.data.email,
+          role: res.data.data.role,
+          status: res.data.data.status,
+          workplace: newEmployee.workplace,
+          phone: newEmployee.phone,
+          residence: newEmployee.residence,
+          hourlyRate: newEmployee.hourlyRate,
+          startDate: newEmployee.startDate,
+          qualification: newEmployee.qualification,
+          nextOfKin: newEmployee.nextOfKin,
+          nextOfKinPhone: newEmployee.nextOfKinPhone
+        };
         
-        // 3. Përditëso listën lokale
         setEmployees(prev => [...prev, newEmp]);
-        
-        // 4. Reset forma dhe mbyll modalit
         resetForm();
         setShowAddModal(false);
         
-        alert("Punonjësi u shtua me sukses!");
+        // Shfaq mesazh suksesi me detaje
+        const successMessage = `✅ Punonjësi u krijua me sukses!
+
+📧 Email u dërgua në: ${newEmployee.email}
+
+🔐 Kredencialet e hyrjes:
+   Email: ${newEmployee.email}
+   Fjalëkalimi: ${newEmployee.password}
+
+⚠️ Ju lutem ndryshoni fjalëkalimin pas hyrjes së parë për sigurinë e llogarisë.`;
+
+        alert(successMessage);
       }
     } catch (error) {
       console.error("Gabim në shtimin e punonjësit:", error);
-      alert("Gabim në shtimin e punonjësit. Provoni përsëri.");
+      
+      let errorMessage = "Gabim në shtimin e punonjësit. Provoni përsëri.";
+      
+      if (error.response?.data?.error?.message) {
+        errorMessage = error.response.data.error.message;
+      } else if (error.response?.status === 409) {
+        errorMessage = "Email-i ekziston tashmë në sistem";
+      } else if (error.response?.status === 400) {
+        errorMessage = "Të dhënat nuk janë të vlefshme. Kontrolloni fushat e detyrueshme.";
+      } else if (error.response?.status === 403) {
+        errorMessage = "Nuk keni leje për të krijuar punonjës";
+      }
+      
+      alert(`❌ ${errorMessage}`);
     }
   };
 

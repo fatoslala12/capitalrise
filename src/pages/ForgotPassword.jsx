@@ -18,14 +18,24 @@ export default function ForgotPassword() {
       return;
     }
     try {
-      await axios.post("https://building-system.onrender.com/api/users/reset-password", {
+      await axios.post("https://building-system.onrender.com/api/user-management/reset-password", {
         email: email.trim().toLowerCase(),
         newPassword,
       });
-      setMessage("✅ Fjalëkalimi u rivendos me sukses.");
-      setTimeout(() => navigate("/"), 2000);
+      setMessage("✅ Fjalëkalimi u rivendos me sukses. Email u dërgua me njoftim.");
+      setTimeout(() => navigate("/"), 3000);
     } catch (err) {
-      setMessage("❌ Ky email nuk ekziston ose ndodhi një gabim.");
+      let errorMessage = "❌ Ky email nuk ekziston ose ndodhi një gabim.";
+      
+      if (err.response?.data?.error?.message) {
+        errorMessage = `❌ ${err.response.data.error.message}`;
+      } else if (err.response?.status === 404) {
+        errorMessage = "❌ Email-i nuk u gjet në sistem.";
+      } else if (err.response?.status === 400) {
+        errorMessage = "❌ Të dhënat nuk janë të vlefshme.";
+      }
+      
+      setMessage(errorMessage);
     }
   };
 
