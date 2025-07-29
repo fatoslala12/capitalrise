@@ -74,6 +74,9 @@ app.use('/api/audit', auditRoutes);
 const realTimeAlertRoutes = require('./routes/realTimeAlerts');
 app.use('/api/real-time-alerts', realTimeAlertRoutes);
 
+const errorReportRoutes = require('./routes/errorReport');
+app.use('/api/error-report', errorReportRoutes);
+
 // Compression middleware për të reduktuar madhësinë e përgjigjeve (pas routes)
 const compression = require('compression');
 app.use(compression({
@@ -86,16 +89,36 @@ app.use(compression({
   }
 }));
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err.stack);
-  res.status(500).json({ error: 'Diçka shkoi keq!' });
-});
+// Import error handling middleware
+const {
+  errorHandler,
+  notFoundHandler,
+  validationErrorHandler,
+  databaseErrorHandler,
+  rateLimitErrorHandler,
+  securityErrorHandler
+} = require('./middleware/errorHandler');
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route nuk u gjet' });
-});
+// Import rate limit service
+const RateLimitService = require('./services/rateLimitService');
+const rateLimitService = new RateLimitService();
+
+// Start auto cleanup për rate limits
+rateLimitService.startAutoCleanup();
+
+// Apply rate limiting middleware
+app.use('/api/auth', rateLimitService.authRateLimitMiddleware());
+app.use('/api', rateLimitService.apiRateLimitMiddleware());
+app.use('/api/backup', rateLimitService.backupRateLimitMiddleware());
+app.use('/api/real-time-alerts', rateLimitService.alertsRateLimitMiddleware());
+
+// Error handling middleware (duhet të jenë në fund)
+app.use(validationErrorHandler);
+app.use(databaseErrorHandler);
+app.use(rateLimitErrorHandler);
+app.use(securityErrorHandler);
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
