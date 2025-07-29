@@ -2,11 +2,12 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 // const bcrypt = require("bcryptjs"); // Komentohet për test
 const pool = require("../db");
+const { authAuditMiddleware } = require("../middleware/audit");
 require("dotenv").config();
 
 const router = express.Router();
 
-router.post("/login", async (req, res) => {
+router.post("/login", authAuditMiddleware, async (req, res) => {
   const { email, password } = req.body;
 
   try {

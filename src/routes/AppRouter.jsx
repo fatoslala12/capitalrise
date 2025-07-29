@@ -9,7 +9,7 @@ const Dashboard = lazy(() => import("../pages/Dashboard"));
 const WorkHours = lazy(() => import("../pages/WorkHours"));
 const Payments = lazy(() => import("../pages/Payments"));
 const Contracts = lazy(() => import("../pages/Contracts"));
-const Employees = lazy(() => import("../pages/Employees"));
+
 const EmployeesList = lazy(() => import("../pages/EmployeesList"));
 const EmployeeDetails = lazy(() => import("../pages/EmployeeDetails"));
 const ContractDetails = lazy(() => import("../pages/ContractDetails"));
@@ -22,6 +22,8 @@ const MyProfile = lazy(() => import("../pages/MyProfile"));
 const NotificationsPage = lazy(() => import("../pages/NotificationsPage"));
 const NotificationAnalytics = lazy(() => import("../pages/NotificationAnalytics"));
 const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
+const BackupManagement = lazy(() => import("../pages/BackupManagement"));
+const AuditTrail = lazy(() => import("../pages/AuditTrail"));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -58,13 +60,14 @@ export default function AppRouter() {
               <Route path="work-hours" element={<WorkHours />} />
               <Route path="payments" element={<Payments />} />
               <Route path="contracts" element={<Contracts />} />
-              <Route path="employees" element={<Employees />} />
               <Route path="employees-list" element={<EmployeesList />} />
               <Route path="employee/:id" element={<EmployeeDetails />} />
               <Route path="contracts/:contract_number" element={<ContractDetails />} />
               <Route path="payments/details/:contract_number" element={<PaymentDetails />} />
               <Route path="tasks" element={<Tasks />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="backup" element={<BackupManagement />} />
+              <Route path="audit" element={<AuditTrail />} />
               <Route path="my-profile" element={<MyProfile />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="notifications/analytics" element={<NotificationAnalytics />} />

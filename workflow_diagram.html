@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Construction Management System Workflow</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8fafc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #1e293b;
+            margin-bottom: 30px;
+        }
+        .mermaid {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ Construction Management System Workflow</h1>
+        <div class="mermaid">
+            flowchart TD
+                A["Admin<br/>- Creates contracts<br/>- Adds employees<br/>- Processes payroll<br/>- Generates reports"]
+                B["Manager<br/>- Adds employees<br/>- Records work hours<br/>- Assigns tasks<br/>- Monitors progress"]
+                C["User (Employee)<br/>- Receives tasks<br/>- Marks tasks as completed<br/>- Views own hours/payments"]
+                
+                A -->|"Creates"| D["Contract/Project"]
+                A -->|"Adds"| E["Employee"]
+                B -->|"Adds"| E
+                B -->|"Assigns"| F["Task"]
+                B -->|"Records"| G["Work Hours"]
+                G -->|"Submitted to"| A
+                A -->|"Processes"| H["Payroll/Payments"]
+                H -->|"Notifies"| C
+                F -->|"Assigned to"| C
+                C -->|"Marks as completed"| F
+                A -->|"Generates"| I["Reports"]
+                B -->|"Views"| I
+                C -->|"Views own"| I
+                
+                subgraph System
+                    D
+                    E
+                    F
+                    G
+                    H
+                    I
+                end
+                
+                style A fill:#e0e7ff,stroke:#6366f1,stroke-width:2px
+                style B fill:#d1fae5,stroke:#10b981,stroke-width:2px
+                style C fill:#fef9c3,stroke:#f59e42,stroke-width:2px
+                style System fill:#f1f5f9,stroke:#94a3b8,stroke-width:1px
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html> 

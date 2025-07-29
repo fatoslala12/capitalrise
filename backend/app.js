@@ -65,6 +65,15 @@ app.use('/api/invoices', invoiceRoutes);
 const notificationRoutes = require('./routes/notifications');
 app.use('/api/notifications', notificationRoutes);
 
+const backupRoutes = require('./routes/backup');
+app.use('/api/backup', backupRoutes);
+
+const auditRoutes = require('./routes/audit');
+app.use('/api/audit', auditRoutes);
+
+const realTimeAlertRoutes = require('./routes/realTimeAlerts');
+app.use('/api/real-time-alerts', realTimeAlertRoutes);
+
 // Compression middleware për të reduktuar madhësinë e përgjigjeve (pas routes)
 const compression = require('compression');
 app.use(compression({

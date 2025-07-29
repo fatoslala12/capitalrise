@@ -8,13 +8,14 @@ import api from "../api";
 
 const adminMenu = [
   { path: "/admin/dashboard", label: "🏠 Dashboard" },
-  { path: "/admin/employees", label: "👷 Punonjësit" },
-  { path: "/admin/employees-list", label: "➕ Shto Punonjës" },
+  { path: "/admin/employees-list", label: "👷 Punonjësit" },
   { path: "/admin/work-hours", label: "🕒 Orët e Punës" },
   { path: "/admin/payments", label: "💰 Pagesat" },
   { path: "/admin/contracts", label: "📄 Kontratat" },
   { path: "/admin/tasks", label: "📝 Detyrat" },
   { path: "/admin/reports", label: "📈 Raportet" },
+  { path: "/admin/backup", label: "💾 Backup" },
+  { path: "/admin/audit", label: "🔍 Audit Trail" },
           { path: "/admin/notifications", label: "🔔 Njoftimet" },
         { path: "/admin/notifications/analytics", label: "📊 Analytics" },
 ];
@@ -22,7 +23,7 @@ const adminMenu = [
 const managerMenu = [
   { path: "/manager/dashboard", label: "🏠 Dashboard" },
   { path: "/manager/my-tasks", label: "📝 Detyrat e Mia" },
-  { path: "/manager/employees-list", label: "➕ Menaxho Punonjësit" },
+  { path: "/manager/employees-list", label: "👷 Menaxho Punonjësit" },
   { path: "/manager/work-hours", label: "🕒 Orët e Punës" },
   { path: "/manager/payments", label: "💰 Pagesat" },
   { path: "/manager/reports", label: "📊 Raportet" },
