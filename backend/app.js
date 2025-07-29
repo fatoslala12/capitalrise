@@ -100,4 +100,18 @@ app.use('*', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  
+  // Fillo real-time monitoring automatikisht
+  const RealTimeAlertService = require('./services/realTimeAlertService');
+  const realTimeAlertService = new RealTimeAlertService();
+  
+  // Fillo monitoring pas 5 sekondash
+  setTimeout(async () => {
+    try {
+      await realTimeAlertService.startMonitoring();
+      console.log('✅ Real-time monitoring u aktivizua automatikisht');
+    } catch (error) {
+      console.error('❌ Gabim në aktivizimin e real-time monitoring:', error);
+    }
+  }, 5000);
 });
