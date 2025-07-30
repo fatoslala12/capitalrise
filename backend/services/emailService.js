@@ -1,41 +1,33 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const { createError } = require('../middleware/errorHandler');
 
 class EmailService {
   constructor() {
-    this.transporter = null;
-    this.initializeTransporter();
+    this.resend = null;
+    this.initializeResend();
   }
 
-  // Initialize transporter
-  async initializeTransporter() {
+  // Initialize Resend
+  async initializeResend() {
     try {
-      this.transporter = nodemailer.createTransporter({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: process.env.SMTP_PORT || 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        },
-        tls: {
-          rejectUnauthorized: false
-        }
-      });
+      if (!process.env.RESEND_API_KEY) {
+        console.warn('⚠️ RESEND_API_KEY nuk është konfiguruar');
+        this.resend = null;
+        return;
+      }
 
-      // Verify connection
-      await this.transporter.verify();
-      console.log('✅ Email service u inicializua me sukses');
+      this.resend = new Resend(process.env.RESEND_API_KEY);
+      console.log('✅ Resend email service u inicializua me sukses');
     } catch (error) {
-      console.error('❌ Gabim në inicializimin e email service:', error);
-      this.transporter = null;
+      console.error('❌ Gabim në inicializimin e Resend service:', error);
+      this.resend = null;
     }
   }
 
   // Dërgo email për user të ri
   async sendWelcomeEmail(userData) {
     try {
-      if (!this.transporter) {
+      if (!this.resend) {
         throw createError('EMAIL_SERVICE_ERROR', null, 'Email service nuk është i disponueshëm');
       }
 
@@ -45,21 +37,19 @@ class EmailService {
       const htmlContent = this.generateWelcomeEmailHTML(userData);
       const textContent = this.generateWelcomeEmailText(userData);
 
-      const mailOptions = {
-        from: `"Alban Construction" <${process.env.SMTP_USER}>`,
-        to: email,
+      const result = await this.resend.emails.send({
+        from: 'Alban Construction <onboarding@resend.dev>',
+        to: [email],
         subject: subject,
         html: htmlContent,
         text: textContent
-      };
-
-      const result = await this.transporter.sendMail(mailOptions);
+      });
       
-      console.log('✅ Email u dërgua me sukses:', result.messageId);
+      console.log('✅ Email u dërgua me sukses:', result.id);
       
       return {
         success: true,
-        messageId: result.messageId,
+        messageId: result.id,
         email: email
       };
 
@@ -75,7 +65,7 @@ class EmailService {
   // Dërgo email për reset password
   async sendPasswordResetEmail(email, resetToken) {
     try {
-      if (!this.transporter) {
+      if (!this.resend) {
         throw createError('EMAIL_SERVICE_ERROR', null, 'Email service nuk është i disponueshëm');
       }
 
@@ -85,21 +75,19 @@ class EmailService {
       const htmlContent = this.generatePasswordResetHTML(email, resetUrl);
       const textContent = this.generatePasswordResetText(email, resetUrl);
 
-      const mailOptions = {
-        from: `"Alban Construction" <${process.env.SMTP_USER}>`,
-        to: email,
+      const result = await this.resend.emails.send({
+        from: 'Alban Construction <onboarding@resend.dev>',
+        to: [email],
         subject: subject,
         html: htmlContent,
         text: textContent
-      };
-
-      const result = await this.transporter.sendMail(mailOptions);
+      });
       
-      console.log('✅ Password reset email u dërgua me sukses:', result.messageId);
+      console.log('✅ Password reset email u dërgua me sukses:', result.id);
       
       return {
         success: true,
-        messageId: result.messageId,
+        messageId: result.id,
         email: email
       };
 
@@ -115,28 +103,26 @@ class EmailService {
   // Dërgo email për notifikime të rëndësishme
   async sendNotificationEmail(email, subject, message, type = 'info') {
     try {
-      if (!this.transporter) {
+      if (!this.resend) {
         throw createError('EMAIL_SERVICE_ERROR', null, 'Email service nuk është i disponueshëm');
       }
 
       const htmlContent = this.generateNotificationHTML(subject, message, type);
       const textContent = this.generateNotificationText(subject, message, type);
 
-      const mailOptions = {
-        from: `"Alban Construction" <${process.env.SMTP_USER}>`,
-        to: email,
+      const result = await this.resend.emails.send({
+        from: 'Alban Construction <onboarding@resend.dev>',
+        to: [email],
         subject: subject,
         html: htmlContent,
         text: textContent
-      };
-
-      const result = await this.transporter.sendMail(mailOptions);
+      });
       
-      console.log('✅ Notification email u dërgua me sukses:', result.messageId);
+      console.log('✅ Notification email u dërgua me sukses:', result.id);
       
       return {
         success: true,
-        messageId: result.messageId,
+        messageId: result.id,
         email: email
       };
 
@@ -169,75 +155,92 @@ class EmailService {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f4f4f4;
+            background-color: #f8f9fa;
           }
           .container {
             background-color: #ffffff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
           }
           .header {
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e3f2fd;
+            margin-bottom: 40px;
+            padding-bottom: 25px;
+            border-bottom: 3px solid #007bff;
           }
           .logo {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
-            color: #1976d2;
-            margin-bottom: 10px;
+            color: #007bff;
+            margin-bottom: 15px;
           }
           .welcome-text {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 20px;
+            font-size: 20px;
+            color: #495057;
+            margin-bottom: 25px;
           }
           .credentials-box {
-            background-color: #e3f2fd;
-            border: 1px solid #bbdefb;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
           }
           .credential-item {
-            margin: 10px 0;
+            margin: 15px 0;
             font-weight: 500;
+            font-size: 16px;
           }
           .credential-label {
-            color: #1976d2;
+            color: #007bff;
             font-weight: bold;
+            display: inline-block;
+            width: 120px;
           }
           .login-button {
             display: inline-block;
-            background-color: #1976d2;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: white;
-            padding: 12px 30px;
+            padding: 15px 35px;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
-            margin: 20px 0;
-            transition: background-color 0.3s;
+            margin: 25px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
           }
           .login-button:hover {
-            background-color: #1565c0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
           }
           .footer {
             text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-            color: #666;
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 2px solid #e9ecef;
+            color: #6c757d;
             font-size: 14px;
           }
           .warning {
-            background-color: #fff3e0;
-            border: 1px solid #ffcc02;
-            border-radius: 6px;
-            padding: 15px;
-            margin: 20px 0;
-            color: #e65100;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            color: #856404;
+          }
+          .security-icon {
+            font-size: 18px;
+            margin-right: 8px;
+          }
+          .credentials-title {
+            color: #007bff;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
           }
         </style>
       </head>
@@ -250,36 +253,42 @@ class EmailService {
           
           <p>Përshëndetje <strong>${firstName} ${lastName}</strong>,</p>
           
-          <p>Ju u krijua një llogari e re në sistemin e Alban Construction. Ju lutem ndiqni linkun më poshtë për tu loguar:</p>
+          <p>Mirë se vini në Alban Construction!<br>
+          Jemi të kënaqur që ju kemi pjesë të ekipit tonë.</p>
           
-          <div style="text-align: center;">
-            <a href="${loginUrl}" class="login-button">🔐 Hyr në Sistem</a>
-          </div>
+          <p>Llogaria juaj në sistemin tonë është krijuar me sukses. Më poshtë gjeni të dhënat e hyrjes:</p>
           
           <div class="credentials-box">
-            <h3 style="margin-top: 0; color: #1976d2;">Kredencialet tuaja:</h3>
+            <div class="credentials-title">🔐 Kredencialet e Hyrjes</div>
             <div class="credential-item">
-              <span class="credential-label">Email:</span> ${email}
+              <span class="credential-label">🔹 Email:</span> ${email}
             </div>
             <div class="credential-item">
-              <span class="credential-label">Fjalëkalimi:</span> ${password}
+              <span class="credential-label">🔹 Fjalëkalimi:</span> ${password}
             </div>
             <div class="credential-item">
-              <span class="credential-label">Roli:</span> ${this.getRoleLabel(role)}
+              <span class="credential-label">🔹 Roli në sistem:</span> ${this.getRoleLabel(role)}
             </div>
+          </div>
+          
+          <div style="text-align: center;">
+            <a href="${loginUrl}" class="login-button">🚀 Hyr në Sistem</a>
           </div>
           
           <div class="warning">
-            <strong>⚠️ Siguria:</strong> Ju lutem ndryshoni fjalëkalimin tuaj pas hyrjes së parë në sistem për sigurinë e llogarisë suaj.
+            <strong><span class="security-icon">🔐</span>Kujdes për sigurinë:</strong><br>
+            Për arsye sigurie, ju lutemi që të ndryshoni fjalëkalimin tuaj pas hyrjes së parë në sistem.
           </div>
           
-          <p><strong>Link për hyrje:</strong> <a href="${loginUrl}">${loginUrl}</a></p>
-          
-          <p>Nëse keni ndonjë pyetje ose problem, ju lutem kontaktoni administratorin e sistemit.</p>
+          <p>Nëse keni ndonjë pyetje ose nevojë për ndihmë, mos hezitoni të na kontaktoni.</p>
           
           <div class="footer">
-            <p>Ky email u dërgua automatikisht nga sistemi i Alban Construction.</p>
-            <p>Ju lutem mos përgjigjuni këtij email-i.</p>
+            <p><strong>Me respekt,</strong><br>
+            <strong>Ekipi i Alban Construction</strong></p>
+            <p style="margin-top: 20px; font-size: 12px; color: #adb5bd;">
+              Ky email u dërgua automatikisht nga sistemi i Alban Construction.<br>
+              Ju lutem mos përgjigjuni këtij email-i.
+            </p>
           </div>
         </div>
       </body>
@@ -297,19 +306,26 @@ Mirëseerdhët në Alban Construction!
 
 Përshëndetje ${firstName} ${lastName},
 
-Ju u krijua një llogari e re në sistemin e Alban Construction. Ju lutem ndiqni linkun më poshtë për tu loguar:
+Mirë se vini në Alban Construction!
+Jemi të kënaqur që ju kemi pjesë të ekipit tonë.
+
+Llogaria juaj në sistemin tonë është krijuar me sukses. Më poshtë gjeni të dhënat e hyrjes:
+
+🔹 Email: ${email}
+🔹 Fjalëkalimi: ${password}
+🔹 Roli në sistem: ${this.getRoleLabel(role)}
+
+🔐 Kujdes për sigurinë:
+Për arsye sigurie, ju lutemi që të ndryshoni fjalëkalimin tuaj pas hyrjes së parë në sistem.
 
 Link për hyrje: ${loginUrl}
 
-Kredencialet tuaja:
-- Email: ${email}
-- Fjalëkalimi: ${password}
-- Roli: ${this.getRoleLabel(role)}
+Nëse keni ndonjë pyetje ose nevojë për ndihmë, mos hezitoni të na kontaktoni.
 
-⚠️ Siguria: Ju lutem ndryshoni fjalëkalimin tuaj pas hyrjes së parë në sistem për sigurinë e llogarisë suaj.
+Me respekt,
+Ekipi i Alban Construction
 
-Nëse keni ndonjë pyetje ose problem, ju lutem kontaktoni administratorin e sistemit.
-
+---
 Ky email u dërgua automatikisht nga sistemi i Alban Construction.
 Ju lutem mos përgjigjuni këtij email-i.
     `;
@@ -543,25 +559,31 @@ Ju lutem mos përgjigjuni këtij email-i.
   // Test email service
   async testEmailService() {
     try {
-      if (!this.transporter) {
-        throw new Error('Email service nuk është inicializuar');
+      if (!this.resend) {
+        throw new Error('Resend service nuk është inicializuar');
       }
 
-      const testEmail = {
-        from: `"Alban Construction" <${process.env.SMTP_USER}>`,
-        to: process.env.SMTP_USER, // Send to self for testing
+      const result = await this.resend.emails.send({
+        from: 'Alban Construction <onboarding@resend.dev>',
+        to: [process.env.TEST_EMAIL || 'admin@albanconstruction.com'],
         subject: 'Test Email - Alban Construction',
-        html: '<h1>Test Email</h1><p>Ky është një test email për të verifikuar funksionimin e email service.</p>',
-        text: 'Test Email - Ky është një test email për të verifikuar funksionimin e email service.'
-      };
-
-      const result = await this.transporter.sendMail(testEmail);
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h1 style="color: #007bff;">Test Email - Alban Construction</h1>
+            <p>Ky është një test email për të verifikuar funksionimin e email service.</p>
+            <p><strong>Koha e dërgimit:</strong> ${new Date().toLocaleString('sq-AL')}</p>
+            <p><strong>Status:</strong> ✅ Email service funksionon normalisht</p>
+          </div>
+        `,
+        text: 'Test Email - Alban Construction\n\nKy është një test email për të verifikuar funksionimin e email service.\n\nKoha e dërgimit: ' + new Date().toLocaleString('sq-AL') + '\nStatus: ✅ Email service funksionon normalisht'
+      });
       
-      console.log('✅ Test email u dërgua me sukses:', result.messageId);
+      console.log('✅ Test email u dërgua me sukses:', result.id);
       
       return {
         success: true,
-        messageId: result.messageId
+        messageId: result.id,
+        sentTo: process.env.TEST_EMAIL || 'admin@albanconstruction.com'
       };
 
     } catch (error) {
@@ -573,10 +595,11 @@ Ju lutem mos përgjigjuni këtij email-i.
   // Get service status
   getServiceStatus() {
     return {
-      initialized: !!this.transporter,
-      smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
-      smtpPort: process.env.SMTP_PORT || 587,
-      smtpUser: process.env.SMTP_USER ? 'Configured' : 'Not configured'
+      initialized: !!this.resend,
+      provider: 'Resend',
+      apiKeyConfigured: !!process.env.RESEND_API_KEY,
+      testEmail: process.env.TEST_EMAIL || 'Not configured',
+      fromEmail: 'onboarding@resend.dev'
     };
   }
 }

@@ -102,7 +102,7 @@ export default function Login() {
       
     } catch (error) {
       // Handle specific error types
-      let errorMessage = "Email ose fjalëkalim i pasaktë!";
+      let errorMessage = "Logimi dështoi. Ju lutem kontrolloni kredencialet tuaja.";
       
       if (error.response?.status === 429) {
         errorMessage = "Shumë tentativa të dështuara. Provoni përsëri më vonë.";
@@ -139,108 +139,121 @@ export default function Login() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative overflow-hidden"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
-      <div className="bg-white bg-opacity-95 p-8 rounded-2xl shadow-xl w-full max-w-md text-center backdrop-blur-sm">
-        <img src={logo} alt="Logo" className="h-16 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-blue-800 mb-2">
-          Mirëseerdhët në Alban Construction
-        </h2>
-        <p className="text-sm text-gray-600 mb-6">Vendosni kredencialet për të hyrë:</p>
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-indigo-900/20"></div>
+      
+      <div className="relative z-10 bg-white/95 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md text-center border border-white/20">
+        {/* Logo and Header */}
+        <div className="mb-8">
+          <img src={logo} alt="Logo" className="h-20 mx-auto mb-6 drop-shadow-lg" />
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+            Mirëseerdhët
+          </h2>
+          <p className="text-gray-600 text-sm">Vendosni kredencialet për të hyrë në sistem</p>
+        </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-6">
+          {/* Email Field */}
           <div className="text-left">
-            <label className="block mb-1 text-sm font-medium text-gray-700">
-              Email
+            <label className="block mb-2 text-sm font-semibold text-gray-700">
+              📧 Email
             </label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Vendosni email-in tuaj"
-              value={formData.email}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:outline-none transition-colors ${
-                errors.email 
-                  ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                  : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-              }`}
-              disabled={loading}
-              autoComplete="email"
-            />
+            <div className="relative">
+              <input
+                type="email"
+                name="email"
+                placeholder="Vendosni email-in tuaj"
+                value={formData.email}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                className={`w-full p-4 pl-12 border-2 rounded-xl focus:ring-4 focus:outline-none transition-all duration-300 ${
+                  errors.email 
+                    ? 'border-red-300 focus:ring-red-200 focus:border-red-500 bg-red-50' 
+                    : 'border-gray-200 focus:ring-blue-200 focus:border-blue-500 bg-white hover:border-blue-300'
+                }`}
+                disabled={loading}
+                autoComplete="email"
+              />
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className="text-gray-400">📧</span>
+              </div>
+            </div>
             {errors.email && (
-              <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+              <p className="text-red-500 text-xs mt-2 flex items-center gap-1 animate-pulse">
                 <span>⚠️</span> {errors.email}
               </p>
             )}
           </div>
 
+          {/* Password Field */}
           <div className="text-left">
-            <label className="block mb-1 text-sm font-medium text-gray-700">
-              Fjalëkalimi
+            <label className="block mb-2 text-sm font-semibold text-gray-700">
+              🔐 Fjalëkalimi
             </label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Vendosni fjalëkalimin tuaj"
-              value={formData.password}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:outline-none transition-colors ${
-                errors.password 
-                  ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                  : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-              }`}
-              disabled={loading}
-              autoComplete="current-password"
-            />
+            <div className="relative">
+              <input
+                type="password"
+                name="password"
+                placeholder="Vendosni fjalëkalimin tuaj"
+                value={formData.password}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                className={`w-full p-4 pl-12 border-2 rounded-xl focus:ring-4 focus:outline-none transition-all duration-300 ${
+                  errors.password 
+                    ? 'border-red-300 focus:ring-red-200 focus:border-red-500 bg-red-50' 
+                    : 'border-gray-200 focus:ring-blue-200 focus:border-blue-500 bg-white hover:border-blue-300'
+                }`}
+                disabled={loading}
+                autoComplete="current-password"
+              />
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className="text-gray-400">🔐</span>
+              </div>
+            </div>
             {errors.password && (
-              <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+              <p className="text-red-500 text-xs mt-2 flex items-center gap-1 animate-pulse">
                 <span>⚠️</span> {errors.password}
               </p>
             )}
           </div>
 
+          {/* Login Button */}
           <button
             type="submit"
             disabled={loading}
-            className={`w-full font-medium py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
+            className={`w-full font-semibold py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 ${
               loading
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transform hover:scale-[1.02]'
+                : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] shadow-lg'
             }`}
           >
             {loading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Duke hyrë...
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                <span>Duke hyrë...</span>
               </>
             ) : (
               <>
-                <span>🔐</span>
-                Hyr
+                <span className="text-lg">🚀</span>
+                <span>Hyr në Sistem</span>
               </>
             )}
           </button>
 
-          <div className="mt-4 text-sm text-center">
+          {/* Forgot Password Link */}
+          <div className="mt-6 text-center">
             <a 
               href="/forgot-password" 
-              className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+              className="text-blue-600 hover:text-blue-800 font-medium transition-all duration-300 hover:scale-105 inline-flex items-center gap-2"
             >
-              Kam harruar fjalëkalimin?
+              <span>🔑</span>
+              <span>Kam harruar fjalëkalimin?</span>
             </a>
           </div>
         </form>
-
-        {/* Security notice */}
-        <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-xs text-blue-700 flex items-center gap-1">
-            <span>🔒</span>
-            Lidhja juaj është e sigurt dhe e enkriptuar
-          </p>
-        </div>
       </div>
     </div>
   );
