@@ -71,9 +71,9 @@ export default function MainLayout() {
 
   const SidebarContent = () => (
     <>
-      <div className="p-3 sm:p-4 text-lg sm:text-xl font-extrabold border-b border-blue-800 mb-2 rounded-b-2xl bg-white/10 backdrop-blur-md shadow-lg flex items-center gap-2">
-        <span className="bg-blue-100 rounded-xl p-1 shadow text-blue-700 text-xl sm:text-2xl">🏗️</span>
-        <span className="drop-shadow text-sm sm:text-base">Alban Construction</span>
+      <div className="p-2 md:p-3 lg:p-4 text-base md:text-lg lg:text-xl font-extrabold border-b border-blue-800 mb-2 rounded-b-2xl bg-white/10 backdrop-blur-md shadow-lg flex items-center gap-2">
+        <span className="bg-blue-100 rounded-xl p-1 shadow text-blue-700 text-lg md:text-xl lg:text-2xl">🏗️</span>
+        <span className="drop-shadow text-xs md:text-sm lg:text-base">Alban Construction</span>
       </div>
       <nav className="flex-1 px-2 py-4 space-y-2">
         {menu.map((item) => {
@@ -83,19 +83,19 @@ export default function MainLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu on navigation
-              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-3 rounded-xl font-semibold text-sm sm:text-base transition-all duration-150
-                ${isActive ? "bg-white/20 border-l-4 border-blue-200 shadow text-blue-50" : "hover:bg-blue-700/70 hover:shadow-md hover:scale-[1.04]"}
+              className={`flex items-center gap-1 md:gap-2 lg:gap-3 px-2 md:px-3 py-2 md:py-3 rounded-xl font-semibold text-xs md:text-sm lg:text-base transition-all duration-150
+                ${isActive ? "bg-white/20 border-l-4 border-blue-200 shadow text-blue-50" : "hover:bg-blue-700/70 hover:shadow-md hover:scale-[1.02] md:hover:scale-[1.04]"}
               `}
             >
-              <span className="text-xl">{item.label.split(" ")[0]}</span>
+              <span className="text-lg md:text-xl">{item.label.split(" ")[0]}</span>
               <span className="ml-1 whitespace-nowrap">{item.label.replace(/^[^ ]+ /, "")}</span>
             </Link>
           );
         })}
       </nav>
       {/* Empty space for bottom alignment */}
-      <div className="mt-auto p-3 sm:p-4 border-t border-blue-800/30">
-        <div className="text-center text-xs sm:text-sm text-blue-200">
+      <div className="mt-auto p-2 md:p-3 lg:p-4 border-t border-blue-800/30">
+        <div className="text-center text-xs md:text-sm text-blue-200">
           © 2024 Alban Construction
         </div>
       </div>

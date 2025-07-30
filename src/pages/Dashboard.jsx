@@ -358,35 +358,35 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="w-full max-w-none px-2 md:px-8">
+    <div className="w-full max-w-none px-2 md:px-4 lg:px-8">
       {/* Heqim titullin për admin */}
       {user.role !== "admin" && (
-        <h1 className="text-2xl md:text-3xl font-bold mb-4">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h1>
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 px-2">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h1>
       )}
 
       {/* Përdorues - Punonjës */}
       {user.role === "user" && (
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
           {/* Header i mirëseardhjes */}
-          <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl shadow-lg p-6 border border-blue-200">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+          <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border border-blue-200 mx-2 md:mx-0">
+            <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4">
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-lg md:text-2xl font-bold">
                 {userFullName ? userFullName.split(' ').map(n => n[0]).join('') : 'U'}
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800">Mirë se erdhe, {userFullName || 'Punonjës'}! 👋</h2>
-                <p className="text-gray-600">Këtu mund të shohësh detyrat, orët e punës dhe pagesat e tua</p>
+              <div className="text-center sm:text-left">
+                <h2 className="text-lg md:text-2xl font-bold text-gray-800">Mirë se erdhe, {userFullName || 'Punonjës'}! 👋</h2>
+                <p className="text-sm md:text-base text-gray-600">Këtu mund të shohësh detyrat, orët e punës dhe pagesat e tua</p>
               </div>
             </div>
           </div>
 
           {/* Statistika të shpejta */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-2 md:px-0">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 md:p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm">Orët e Javës</p>
-                  <p className="text-3xl font-bold">
+                  <p className="text-blue-100 text-xs md:text-sm">Orët e Javës</p>
+                  <p className="text-xl md:text-2xl lg:text-3xl font-bold">
                     {(() => {
                       const userHours = hourData[user.employee_id] || {};
                       const currentWeek = Object.values(userHours).find(week => 
@@ -398,27 +398,27 @@ export default function Dashboard() {
                     })()} orë
                   </p>
                 </div>
-                <div className="text-4xl">⏰</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl">⏰</div>
               </div>
             </div>
             
-            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg">
+            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-4 md:p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm">Detyrat Aktive</p>
-                  <p className="text-3xl font-bold">
+                  <p className="text-green-100 text-xs md:text-sm">Detyrat Aktive</p>
+                  <p className="text-xl md:text-2xl lg:text-3xl font-bold">
                     {tasks.filter(t => t.assignedTo === user.email && t.status === "ongoing").length}
                   </p>
                 </div>
-                <div className="text-4xl">📋</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl">📋</div>
               </div>
             </div>
             
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl p-6 shadow-lg">
+            <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl p-4 md:p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm">Paga e Javës</p>
-                  <p className="text-3xl font-bold">
+                  <p className="text-purple-100 text-xs md:text-sm">Paga e Javës</p>
+                  <p className="text-xl md:text-2xl lg:text-3xl font-bold">
                     £{(() => {
                       const userHours = hourData[user.employee_id] || {};
                       const currentWeek = Object.values(userHours).find(week => 
@@ -432,7 +432,7 @@ export default function Dashboard() {
                     })()}
                   </p>
                 </div>
-                <div className="text-4xl">💰</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl">💰</div>
               </div>
             </div>
           </div>

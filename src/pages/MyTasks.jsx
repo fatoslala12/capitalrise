@@ -132,10 +132,10 @@ export default function MyTasks() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-2 md:p-4 lg:p-6 space-y-4 md:space-y-6">
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 ${
+        <div className={`fixed top-16 md:top-20 right-2 md:right-4 z-50 px-4 md:px-6 py-3 md:py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 text-sm md:text-base ${
           toast.type === 'success' ? 'bg-green-500' : 
           toast.type === 'error' ? 'bg-red-500' : 
           'bg-blue-500'
@@ -144,33 +144,33 @@ export default function MyTasks() {
         </div>
       )}
 
-      <h2 className="text-2xl md:text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
         📌 Detyrat e Mia
       </h2>
 
       {/* 📊 Statistika */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 text-center">
-          <div className="text-2xl font-bold">{total}</div>
-          <div className="text-sm">Total</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-3 md:p-4 text-center">
+          <div className="text-lg md:text-xl lg:text-2xl font-bold">{total}</div>
+          <div className="text-xs md:text-sm">Total</div>
         </div>
-        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-4 text-center">
-          <div className="text-2xl font-bold">{completed}</div>
-          <div className="text-sm">Përfunduara</div>
+        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-3 md:p-4 text-center">
+          <div className="text-lg md:text-xl lg:text-2xl font-bold">{completed}</div>
+          <div className="text-xs md:text-sm">Përfunduara</div>
         </div>
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-4 text-center">
-          <div className="text-2xl font-bold">{inProgress}</div>
-          <div className="text-sm">Në Progres</div>
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-3 md:p-4 text-center">
+          <div className="text-lg md:text-xl lg:text-2xl font-bold">{inProgress}</div>
+          <div className="text-xs md:text-sm">Në Progres</div>
         </div>
-        <div className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-xl p-4 text-center">
-          <div className="text-2xl font-bold">{pending}</div>
-          <div className="text-sm">Në Pritje</div>
+        <div className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-xl p-3 md:p-4 text-center">
+          <div className="text-lg md:text-xl lg:text-2xl font-bold">{pending}</div>
+          <div className="text-xs md:text-sm">Në Pritje</div>
         </div>
       </div>
 
       {/* 🔽 Filtra */}
-      <div className="bg-white rounded-xl p-4 shadow-lg border border-blue-100">
-        <div className="flex flex-col md:flex-row items-center gap-4 flex-wrap">
+      <div className="bg-white rounded-xl p-3 md:p-4 shadow-lg border border-blue-100">
+        <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-blue-700">Statusi:</label>
             <select

@@ -461,50 +461,50 @@ export default function EmployeesList() {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-2 md:p-4">
       {/* Header me butonin për të hapur modalit */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
-          <span className="text-4xl">👥</span> Lista e Punonjësve
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
+          <span className="text-2xl md:text-3xl lg:text-4xl">👥</span> Lista e Punonjësve
         </h2>
         <button
           onClick={openAddModal}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-700 hover:to-blue-700 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 text-sm md:text-base"
         >
-          <span className="text-xl">➕</span> Shto Punonjës
+          <span className="text-lg md:text-xl">➕</span> Shto Punonjës
         </button>
       </div>
 
       {/* Modal për shtimin e punonjësit */}
       {showAddModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 md:p-4"
           onClick={closeAddModal}
         >
           <div 
-            className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-xl md:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
-                  <span className="text-3xl">➕</span> Shto Punonjës të Ri
+            <div className="p-4 md:p-6">
+              <div className="flex justify-between items-center mb-4 md:mb-6">
+                <h3 className="text-lg md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
+                  <span className="text-2xl md:text-3xl">➕</span> Shto Punonjës të Ri
                 </h3>
                 <button
                   onClick={closeAddModal}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  className="text-gray-500 hover:text-gray-700 text-xl md:text-2xl font-bold"
                 >
                   ✕
                 </button>
               </div>
               
               <form
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
                 onSubmit={handleSubmit}
               >
-                <label className="col-span-2 text-blue-700 italic mb-2">Lutem plotësoni të gjithë fushat e nevojshme</label>
-                <input type="text" name="firstName" placeholder="Emri *" required value={newEmployee.firstName} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-                <input type="text" name="lastName" placeholder="Mbiemri *" required value={newEmployee.lastName} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <label className="col-span-2 text-blue-700 italic mb-2 text-sm md:text-base">Lutem plotësoni të gjithë fushat e nevojshme</label>
+                <input type="text" name="firstName" placeholder="Emri *" required value={newEmployee.firstName} onChange={handleChange} className="p-3 md:p-4 border-2 border-blue-200 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                <input type="text" name="lastName" placeholder="Mbiemri *" required value={newEmployee.lastName} onChange={handleChange} className="p-3 md:p-4 border-2 border-blue-200 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
                 <div>
                   <label className="block text-blue-800 font-semibold mb-1">Data e Fillimit *</label>
                   <input type="date" name="startDate" required value={newEmployee.startDate} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl w-full text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />

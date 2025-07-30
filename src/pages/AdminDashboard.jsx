@@ -284,23 +284,23 @@ export default function DashboardStats() {
   const progressBarColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"]; // pastel
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10 space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+    <div className="max-w-7xl mx-auto px-2 md:px-4 py-6 md:py-10 space-y-6 md:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
       {/* HEADER MODERN */}
-      <div className="flex flex-col md:flex-row items-center gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl shadow-lg px-10 py-6 mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
-        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-3 shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-12 h-12">
+      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-4 md:px-10 py-4 md:py-6 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
+        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 md:p-3 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-8 h-8 md:w-12 md:h-12">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
           </svg>
         </div>
-        <div>
+        <div className="text-center md:text-left">
          
-          <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</div>
-          <div className="text-lg font-medium text-purple-700">Statistika, detyra, pagesa dhe më shumë</div>
+          <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</div>
+          <div className="text-sm md:text-lg font-medium text-purple-700">Statistika, detyra, pagesa dhe më shumë</div>
         </div>
       </div>
 
       {/* Statistika kryesore */}
-      <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="lg" className="mb-12">
+      <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="lg" className="mb-8 md:mb-12">
         <CountStatCard
           title="Site aktive"
           count={activeSites.length}
@@ -326,29 +326,29 @@ export default function DashboardStats() {
       </Grid>
 
       {/* Detyrat - më të dukshme */}
-      <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-8 rounded-2xl shadow-xl col-span-full border border-yellow-200">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📋 Detyrat</h3>
-        <div className="mb-4 flex gap-4 items-center">
-          <label className="font-medium">Filtro:</label>
-          <select value={taskFilter} onChange={e => setTaskFilter(e.target.value)} className="border p-2 rounded">
+      <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-4 md:p-8 rounded-xl md:rounded-2xl shadow-xl col-span-full border border-yellow-200">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📋 Detyrat</h3>
+        <div className="mb-4 flex flex-col sm:flex-row gap-2 md:gap-4 items-start sm:items-center">
+          <label className="font-medium text-sm md:text-base">Filtro:</label>
+          <select value={taskFilter} onChange={e => setTaskFilter(e.target.value)} className="border p-2 rounded text-sm md:text-base">
             <option value="ongoing">Vetëm aktive</option>
             <option value="completed">Vetëm të përfunduara</option>
             <option value="all">Të gjitha</option>
           </select>
         </div>
-        <div className="mb-4 flex flex-wrap gap-6">
-          <div className="bg-blue-100 px-6 py-3 rounded-xl text-blue-800 font-bold shadow">Totali: {allTasks.length}</div>
-          <div className="bg-green-100 px-6 py-3 rounded-xl text-green-800 font-bold shadow">✅ Të përfunduara: {allTasks.filter(t => t.status === 'completed').length}</div>
-          <div className="bg-yellow-100 px-6 py-3 rounded-xl text-yellow-800 font-bold shadow">🕒 Në vazhdim: {allTasks.filter(t => t.status === 'ongoing').length}</div>
+        <div className="mb-4 flex flex-col sm:flex-row flex-wrap gap-2 md:gap-6">
+          <div className="bg-blue-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">Totali: {allTasks.length}</div>
+          <div className="bg-green-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">✅ Të përfunduara: {allTasks.filter(t => t.status === 'completed').length}</div>
+          <div className="bg-yellow-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">🕒 Në vazhdim: {allTasks.filter(t => t.status === 'ongoing').length}</div>
         </div>
         {filteredTasks.length > 0 ? (
           <ul className="space-y-3">
             {filteredTasks.map((t, idx) => (
-              <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-4 bg-white rounded-xl p-4 shadow border border-blue-100">
+              <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-3 md:p-4 shadow border border-blue-100">
                 <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
-                <span className="font-semibold flex-1 text-lg">{t.description || t.title || ''}</span>
-                <span className="text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
-                <span className="text-lg text-purple-700 font-bold">Afati: {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'Pa afat'}</span>
+                <span className="font-semibold flex-1 text-sm md:text-lg">{t.description || t.title || ''}</span>
+                <span className="text-sm md:text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
+                <span className="text-sm md:text-lg text-purple-700 font-bold">Afati: {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'Pa afat'}</span>
                 <span className="text-xs text-gray-500">Nga: {t.assigned_by || t.assignedBy || ''}</span>
               </li>
             ))}
@@ -359,9 +359,9 @@ export default function DashboardStats() {
       </div>
 
       {/* Grafik për site */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve ({dashboardStats.thisWeek})</h3>
-        <div className="mb-4 text-lg font-semibold text-gray-700">
+      <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve ({dashboardStats.thisWeek})</h3>
+        <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
           Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
         </div>
         {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (

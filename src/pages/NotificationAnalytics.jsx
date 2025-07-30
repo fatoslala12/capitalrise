@@ -85,16 +85,16 @@ const NotificationAnalytics = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-2 md:p-4 lg:p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 bg-blue-100 rounded-xl">
-            <BarChart3 size={24} className="text-blue-600" />
+      <div className="mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+          <div className="p-2 md:p-3 bg-blue-100 rounded-xl">
+            <BarChart3 size={20} className="md:w-6 md:h-6 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics i Njoftimeve</h1>
-            <p className="text-gray-600">Statistikat dhe insights për sistemin e njoftimeve</p>
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">Analytics i Njoftimeve</h1>
+            <p className="text-sm md:text-base text-gray-600">Statistikat dhe insights për sistemin e njoftimeve</p>
           </div>
         </div>
 
