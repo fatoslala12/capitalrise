@@ -8,6 +8,9 @@ class AuditService {
   // Krijo tabelën e audit trail nëse nuk ekziston
   async ensureAuditTable() {
     try {
+      // Set schema to public
+      await pool.query('SET search_path TO public');
+      
       await pool.query(`
         CREATE TABLE IF NOT EXISTS audit_trail (
           id SERIAL PRIMARY KEY,
