@@ -37,9 +37,23 @@ const verifyToken = (req, res, next) => {
 
 const requireRole = (role) => {
   return (req, res, next) => {
-    if (!req.user || req.user.role !== role) {
-      console.log('[DEBUG] requireRole: akses i ndaluar për rolin', role, 'user:', req.user);
+    if (!req.user) {
+      console.log('[DEBUG] requireRole: nuk ka user');
       return res.status(403).json({ error: "Akses i ndaluar" });
+    }
+    
+    // Kontrollo nëse role është array
+    if (Array.isArray(role)) {
+      if (!role.includes(req.user.role)) {
+        console.log('[DEBUG] requireRole: akses i ndaluar për rolet', role, 'user role:', req.user.role);
+        return res.status(403).json({ error: "Akses i ndaluar" });
+      }
+    } else {
+      // Kontrollo nëse role është string
+      if (req.user.role !== role) {
+        console.log('[DEBUG] requireRole: akses i ndaluar për rolin', role, 'user role:', req.user.role);
+        return res.status(403).json({ error: "Akses i ndaluar" });
+      }
     }
     next();
   };

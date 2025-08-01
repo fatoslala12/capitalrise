@@ -424,10 +424,15 @@ export default function Contracts() {
       );
     }
 
-    // Apply status filter
-    if (filterStatus !== "all") {
-      filtered = filtered.filter(c => c.status === filterStatus);
-    }
+      // Apply status filter
+  if (filterStatus !== "all") {
+    filtered = filtered.filter(c => c.status === filterStatus);
+  }
+
+  // Apply contract type filter
+  if (filterContractType !== "all") {
+    filtered = filtered.filter(c => c.contract_type === filterContractType);
+  }
 
     // Apply sorting
     filtered.sort((a, b) => {
@@ -994,6 +999,18 @@ export default function Contracts() {
               <option value="Mbyllur me vonese">Mbyllur me vonese</option>
             </select>
           </div>
+
+          <div>
+            <select
+              value={filterContractType}
+              onChange={(e) => setFilterContractType(e.target.value)}
+              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
+            >
+              <option value="all">Të gjitha tipet</option>
+              <option value="day_work">Day Work</option>
+              <option value="price_work">Price Work</option>
+            </select>
+          </div>
           
           <div>
             <select
@@ -1048,6 +1065,7 @@ export default function Contracts() {
               <tr>
                 <th className="py-4 px-4 text-center">Zgjidh</th>
                 <th className="py-4 px-4 text-center">Nr. Kontratës</th>
+                <th className="py-4 px-4 text-center">Tipi</th>
                 <th className="py-4 px-4 text-center">Vendodhja</th>
                 <th className="py-4 px-4 text-center">Kompania</th>
                 <th className="py-4 px-4 text-center">Vlera</th>
@@ -1077,6 +1095,17 @@ export default function Contracts() {
                     </td>
                     <td className="py-4 px-4 align-middle font-bold text-blue-900">
                       <Link to={`/admin/contracts/${c.contract_number}`} className="underline hover:text-purple-700 transition-colors">{c.contract_number}</Link>
+                    </td>
+                    <td className="py-4 px-4 align-middle">
+                      <div className="flex items-center justify-center gap-1">
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          (c.contract_type || 'day_work') === 'price_work' 
+                            ? 'bg-orange-100 text-orange-700 border border-orange-200' 
+                            : 'bg-blue-100 text-blue-700 border border-blue-200'
+                        }`}>
+                          {(c.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
+                        </span>
+                      </div>
                     </td>
                     <td className="py-4 px-4 align-middle font-semibold text-blue-700 underline cursor-pointer hover:text-blue-900 transition">
                       <Link to={`/admin/contracts/${c.contract_number}`}>{c.site_name}</Link>
