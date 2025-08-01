@@ -25,6 +25,7 @@ export default function Contracts() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterContractType, setFilterContractType] = useState("all");
   const [sortBy, setSortBy] = useState("contract_number");
   const [sortOrder, setSortOrder] = useState("desc");
   const [currentPage, setCurrentPage] = useState(1);

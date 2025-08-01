@@ -17,7 +17,7 @@ class ErrorBoundary extends React.Component {
     // Përditëso state për të shfaqur fallback UI
     return {
       hasError: true,
-      errorId: this.generateErrorId()
+      errorId: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     };
   }
 
