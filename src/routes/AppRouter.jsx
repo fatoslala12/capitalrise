@@ -54,6 +54,7 @@ export default function AppRouter() {
         ) : (
           <>
             <Route path="/" element={<Navigate to={`/${user.role}/dashboard`} />} />
+            <Route path="/dashboard" element={<Navigate to={`/${user.role}/dashboard`} />} />
             <Route path="/notifications" element={<NotificationsPage />} />
 
             <Route path="/admin" element={<MainLayout />}>
