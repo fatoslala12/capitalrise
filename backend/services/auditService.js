@@ -232,6 +232,8 @@ class AuditService {
     sortOrder = 'DESC'
   } = {}) {
     try {
+      console.log('🔧 [AUDIT SERVICE] getAuditLogs called with params:', { userId, entityType, entityId, action, severity, startDate, endDate, limit, offset, sortBy, sortOrder });
+      
       let query = `
         SELECT *
         FROM audit_trail
@@ -279,7 +281,11 @@ class AuditService {
       query += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
       params.push(limit, offset);
 
+      console.log('🔧 [AUDIT SERVICE] Final query:', query);
+      console.log('🔧 [AUDIT SERVICE] Params:', params);
+
       const result = await pool.query(query, params);
+      console.log('🔧 [AUDIT SERVICE] Query executed successfully, returned', result.rows.length, 'rows');
       return result.rows;
     } catch (error) {
       console.error('❌ Gabim në marrjen e audit logs:', error);
