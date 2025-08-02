@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api";
 
 const AuthContext = createContext();
 
@@ -28,7 +28,7 @@ export function AuthProvider({ children }) {
   // Login me backend - optimized me useCallback
   const login = useCallback(async (email, password) => {
     try {
-      const res = await axios.post("https://building-system.onrender.com/api/auth/login", {
+      const res = await api.post("/api/auth/login", {
         email: email.trim().toLowerCase(),
         password,
       });

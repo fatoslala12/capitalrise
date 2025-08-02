@@ -117,17 +117,24 @@ export default function AuditTrail() {
 
   // Formato datën
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('sq-AL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      if (!dateString) return 'Unknown';
+      return new Date(dateString).toLocaleString('sq-AL', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
   };
 
   // Merr ngjyrën e severity
   const getSeverityColor = (severity) => {
+    if (!severity) return 'blue';
     switch (severity) {
       case 'high': return 'red';
       case 'warning': return 'yellow';
@@ -138,6 +145,7 @@ export default function AuditTrail() {
 
   // Merr ikonën e action
   const getActionIcon = (action) => {
+    if (!action) return '📝';
     switch (action) {
       case 'CREATE': return '➕';
       case 'UPDATE': return '✏️';
@@ -382,18 +390,21 @@ export default function AuditTrail() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={auditLogs.slice(0, 10).map(log => ({
-                date: new Date(log.timestamp).toLocaleDateString(),
-                count: 1
-              })).reduce((acc, curr) => {
-                const existing = acc.find(item => item.date === curr.date);
-                if (existing) {
-                  existing.count++;
-                } else {
-                  acc.push(curr);
-                }
-                return acc;
-              }, [])}>
+              <BarChart data={(() => {
+                if (!auditLogs || auditLogs.length === 0) return [];
+                return auditLogs.slice(0, 10).map(log => ({
+                  date: new Date(log.timestamp).toLocaleDateString(),
+                  count: 1
+                })).reduce((acc, curr) => {
+                  const existing = acc.find(item => item.date === curr.date);
+                  if (existing) {
+                    existing.count++;
+                  } else {
+                    acc.push(curr);
+                  }
+                  return acc;
+                }, []);
+              })()}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
@@ -414,24 +425,43 @@ export default function AuditTrail() {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie
-                  data={Object.entries(auditLogs.reduce((acc, log) => {
+                {(() => {
+                  if (!auditLogs || auditLogs.length === 0) {
+                    return (
+                      <Pie
+                        data={[{ name: 'No Data', value: 1 }]}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        dataKey="value"
+                        label={({ name }) => name}
+                      >
+                        <Cell fill="#e5e7eb" />
+                      </Pie>
+                    );
+                  }
+                  
+                  const actionCounts = auditLogs.reduce((acc, log) => {
                     acc[log.action] = (acc[log.action] || 0) + 1;
                     return acc;
-                  }, {})).map(([action, count]) => ({ name: action, value: count }))}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`}
-                >
-                  {Object.entries(auditLogs.reduce((acc, log) => {
-                    acc[log.action] = (acc[log.action] || 0) + 1;
-                    return acc;
-                  }, {})).map(([action, count], index) => (
-                    <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][index % 5]} />
-                  ))}
-                </Pie>
+                  }, {});
+                  const pieData = Object.entries(actionCounts).map(([action, count]) => ({ name: action, value: count }));
+                  
+                  return (
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                      label={({ name, value }) => `${name}: ${value}`}
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][index % 5]} />
+                      ))}
+                    </Pie>
+                  );
+                })()}
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
@@ -460,16 +490,16 @@ export default function AuditTrail() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">{getActionIcon(log.action)}</span>
-                        <span className="font-bold text-lg">{log.action}</span>
-                        <StatusBadge status={getSeverityColor(log.severity)} />
+                        <span className="text-2xl">{getActionIcon(log.action || 'UNKNOWN')}</span>
+                        <span className="font-bold text-lg">{log.action || 'UNKNOWN'}</span>
+                        <StatusBadge status={getSeverityColor(log.severity || 'info')} />
                       </div>
-                      <p className="text-gray-700 mb-2">{log.description}</p>
+                      <p className="text-gray-700 mb-2">{log.description || 'No description available'}</p>
                       <div className="flex flex-wrap gap-4 text-sm text-gray-500">
                         <span>👤 {log.user_email || 'Sistemi'}</span>
-                        <span>🏷️ {log.entity_type}</span>
+                        <span>🏷️ {log.entity_type || 'Unknown'}</span>
                         {log.entity_id && <span>🆔 {log.entity_id}</span>}
-                        <span>📅 {formatDate(log.timestamp)}</span>
+                        <span>📅 {log.timestamp ? formatDate(log.timestamp) : 'Unknown'}</span>
                         {log.ip_address && <span>🌐 {log.ip_address}</span>}
                       </div>
                       {log.changes && (

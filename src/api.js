@@ -1,7 +1,12 @@
 import axios from "axios";
 
+// Use localhost for development, production URL for production
+const baseURL = process.env.NODE_ENV === 'production' 
+  ? "https://building-system.onrender.com"
+  : "http://localhost:5000";
+
 const api = axios.create({
-  baseURL: "https://building-system.onrender.com",
+  baseURL,
 });
 
 // Interceptor për të shtuar token-in në çdo kërkesë
