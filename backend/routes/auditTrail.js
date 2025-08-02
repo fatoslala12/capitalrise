@@ -20,7 +20,7 @@ router.get('/', authenticateToken, async (req, res) => {
         al.details,
         u.email as user_email,
         CONCAT(e.name, ' ', e.surname) as user_name
-      FROM audit_logs al
+      FROM audit_trail al
       LEFT JOIN users u ON al.user_id = u.id
       LEFT JOIN employees e ON u.employee_id = e.id
       WHERE 1=1
@@ -61,7 +61,7 @@ router.get('/', authenticateToken, async (req, res) => {
     // Get total count for pagination
     let countQuery = `
       SELECT COUNT(*) as total
-      FROM audit_logs al
+      FROM audit_trail al
       LEFT JOIN users u ON al.user_id = u.id
       LEFT JOIN employees e ON u.employee_id = e.id
       WHERE 1=1
@@ -122,7 +122,7 @@ router.post('/', authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     const query = `
-      INSERT INTO audit_logs (action, module, description, user_id, timestamp, details)
+      INSERT INTO audit_trail (action, module, description, user_id, timestamp, details)
       VALUES (?, ?, ?, ?, NOW(), ?)
     `;
 
@@ -165,7 +165,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
     // Action statistics
     const actionStatsQuery = `
       SELECT action, COUNT(*) as count
-      FROM audit_logs
+      FROM audit_trail
       ${whereClause}
       GROUP BY action
       ORDER BY count DESC
@@ -175,7 +175,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
     // Module statistics
     const moduleStatsQuery = `
       SELECT module, COUNT(*) as count
-      FROM audit_logs
+      FROM audit_trail
       ${whereClause}
       GROUP BY module
       ORDER BY count DESC
@@ -187,7 +187,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
       SELECT 
         CONCAT(e.name, ' ', e.surname) as user_name,
         COUNT(*) as count
-      FROM audit_logs al
+      FROM audit_trail al
       LEFT JOIN users u ON al.user_id = u.id
       LEFT JOIN employees e ON u.employee_id = e.id
       ${whereClause}
