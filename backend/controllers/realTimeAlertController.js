@@ -10,6 +10,11 @@ exports.startMonitoring = async (req, res) => {
     
     console.log(`[REAL-TIME] Përdoruesi ${user.email} po fillon real-time monitoring`);
 
+    // Kontrollo nëse service është i disponueshëm
+    if (!realTimeAlertService) {
+      throw new Error('Real-time alert service nuk është i disponueshëm');
+    }
+
     await realTimeAlertService.startMonitoring();
 
     res.json({

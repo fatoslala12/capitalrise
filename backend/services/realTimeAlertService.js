@@ -27,26 +27,39 @@ class RealTimeAlertService {
 
   // Fillo monitorimin e real-time
   async startMonitoring() {
-    if (this.isMonitoring) {
-      console.log('⚠️ Real-time monitoring është tashmë aktiv');
-      return;
-    }
-
-    console.log('🚀 Duke filluar real-time monitoring...');
-    this.isMonitoring = true;
-
-    // Kontrollo çdo 30 sekonda
-    this.monitoringInterval = setInterval(async () => {
-      try {
-        await this.checkForSuspiciousActivity();
-        await this.checkForAnomalies();
-        await this.checkForSecurityEvents();
-      } catch (error) {
-        console.error('❌ Gabim në real-time monitoring:', error);
+    try {
+      if (this.isMonitoring) {
+        console.log('⚠️ Real-time monitoring është tashmë aktiv');
+        return;
       }
-    }, 30000); // 30 sekonda
 
-    console.log('✅ Real-time monitoring u aktivizua');
+      console.log('🚀 Duke filluar real-time monitoring...');
+      
+      // Kontrollo nëse audit service është i disponueshëm
+      if (!this.auditService) {
+        throw new Error('Audit service nuk është i disponueshëm');
+      }
+
+      this.isMonitoring = true;
+
+      // Kontrollo çdo 30 sekonda
+      this.monitoringInterval = setInterval(async () => {
+        try {
+          console.log('🔍 Duke kontrolluar aktivitet të verdhësishëm...');
+          await this.checkForSuspiciousActivity();
+          await this.checkForAnomalies();
+          await this.checkForSecurityEvents();
+        } catch (error) {
+          console.error('❌ Gabim në real-time monitoring:', error);
+        }
+      }, 30000); // 30 sekonda
+
+      console.log('✅ Real-time monitoring u aktivizua');
+    } catch (error) {
+      console.error('❌ Gabim në fillimin e real-time monitoring:', error);
+      this.isMonitoring = false;
+      throw error;
+    }
   }
 
   // Ndalo monitorimin
@@ -62,7 +75,15 @@ class RealTimeAlertService {
   // Kontrollo aktivitet të verdhësishëm
   async checkForSuspiciousActivity() {
     try {
+      console.log('🔍 Kontrolloj aktivitet të verdhësishëm...');
+      
+      if (!this.auditService || typeof this.auditService.detectSuspiciousActivity !== 'function') {
+        console.error('❌ Audit service nuk është i disponueshëm ose nuk ka metodën detectSuspiciousActivity');
+        return;
+      }
+
       const suspiciousActivities = await this.auditService.detectSuspiciousActivity(1); // Kontrollo 1 orën e fundit
+      console.log(`🔍 Gjetën ${suspiciousActivities.length} aktivitete të verdhësishëm`);
       
       for (const activity of suspiciousActivities) {
         await this.processSuspiciousActivity(activity);

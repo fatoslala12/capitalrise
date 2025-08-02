@@ -2,7 +2,14 @@ const pool = require('../db');
 
 class AuditService {
   constructor() {
-    this.ensureAuditTable();
+    console.log('🔧 [AUDIT SERVICE] Initializing AuditService...');
+    try {
+      this.ensureAuditTable();
+      console.log('✅ [AUDIT SERVICE] AuditService initialized successfully');
+    } catch (error) {
+      console.error('❌ [AUDIT SERVICE] Error initializing AuditService:', error);
+      throw error;
+    }
   }
 
   // Krijo tabelën e audit trail nëse nuk ekziston
