@@ -5,6 +5,19 @@ const { verifyToken } = require('../middleware/auth');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
 
+// Test endpoint without authentication
+router.get('/test', async (req, res) => {
+  try {
+    const result = await db.query('SELECT COUNT(*) as count FROM audit_trail');
+    res.json({ 
+      message: 'Audit API is working!', 
+      totalLogs: result.rows[0].count 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get audit logs with advanced filtering
 router.get('/logs', verifyToken, async (req, res) => {
   try {
@@ -30,20 +43,18 @@ router.get('/logs', verifyToken, async (req, res) => {
       SELECT 
         al.id,
         al.action,
-        al.module,
+        al.entity_type as module,
         al.description,
         al.user_id,
         al.timestamp,
-        al.details,
+        al.metadata as details,
         al.severity,
         al.ip_address,
         al.entity_type,
         al.entity_id,
-        u.email as user_email,
-        CONCAT(e.name, ' ', e.surname) as user_name
+        al.user_email,
+        al.user_email as user_name
       FROM audit_trail al
-      LEFT JOIN users u ON al.user_id = u.id
-      LEFT JOIN employees e ON u.employee_id = e.id
       WHERE 1=1
     `;
     
@@ -55,13 +66,13 @@ router.get('/logs', verifyToken, async (req, res) => {
     }
 
     if (module) {
-      query += ` AND al.module = ?`;
+      query += ` AND al.entity_type = ?`;
       params.push(module);
     }
 
     if (user) {
-      query += ` AND (u.email LIKE ? OR CONCAT(e.name, ' ', e.surname) LIKE ?)`;
-      params.push(`%${user}%`, `%${user}%`);
+      query += ` AND al.user_email LIKE ?`;
+      params.push(`%${user}%`);
     }
 
     if (dateFrom) {
@@ -95,7 +106,7 @@ router.get('/logs', verifyToken, async (req, res) => {
     }
 
     if (hasChanges === 'true') {
-      query += ` AND al.details IS NOT NULL AND al.details != '{}'`;
+      query += ` AND al.changes IS NOT NULL AND al.changes != '{}'`;
     }
 
     // Handle time range shortcuts
@@ -125,14 +136,13 @@ router.get('/logs', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
 
-    const [logs] = await db.execute(query, params);
+    const result = await db.query(query, params);
+    const logs = result.rows;
 
     // Get total count for pagination
     let countQuery = `
       SELECT COUNT(*) as total
       FROM audit_trail al
-      LEFT JOIN users u ON al.user_id = u.id
-      LEFT JOIN employees e ON u.employee_id = e.id
       WHERE 1=1
     `;
     
@@ -144,13 +154,13 @@ router.get('/logs', verifyToken, async (req, res) => {
     }
 
     if (module) {
-      countQuery += ` AND al.module = ?`;
+      countQuery += ` AND al.entity_type = ?`;
       countParams.push(module);
     }
 
     if (user) {
-      countQuery += ` AND (u.email LIKE ? OR CONCAT(e.name, ' ', e.surname) LIKE ?)`;
-      countParams.push(`%${user}%`, `%${user}%`);
+      countQuery += ` AND al.user_email LIKE ?`;
+      countParams.push(`%${user}%`);
     }
 
     if (dateFrom) {
@@ -184,7 +194,7 @@ router.get('/logs', verifyToken, async (req, res) => {
     }
 
     if (hasChanges === 'true') {
-      countQuery += ` AND al.details IS NOT NULL AND al.details != '{}'`;
+      countQuery += ` AND al.changes IS NOT NULL AND al.changes != '{}'`;
     }
 
     if (timeRange && timeRange !== 'custom') {
@@ -210,13 +220,13 @@ router.get('/logs', verifyToken, async (req, res) => {
       }
     }
 
-    const [countResult] = await db.execute(countQuery, countParams);
-    const total = countResult[0].total;
+    const countResult = await db.query(countQuery, countParams);
+    const total = countResult.rows[0].total;
 
     res.json({
       data: logs.map(log => ({
         ...log,
-        details: log.details ? JSON.parse(log.details) : null
+        details: log.details || null
       })),
       pagination: {
         page: parseInt(page),
@@ -254,8 +264,8 @@ router.get('/stats', verifyToken, async (req, res) => {
 
     // Total logs
     const totalQuery = `SELECT COUNT(*) as total FROM audit_trail ${whereClause}`;
-    const [totalResult] = await db.execute(totalQuery, params);
-    const totalLogs = totalResult[0].total;
+    const totalResult = await db.query(totalQuery, params);
+    const totalLogs = totalResult.rows[0].total;
 
     // Today's logs
     const todayQuery = `
@@ -263,8 +273,8 @@ router.get('/stats', verifyToken, async (req, res) => {
       FROM audit_trail 
       WHERE DATE(timestamp) = CURDATE()
     `;
-    const [todayResult] = await db.execute(todayQuery);
-    const todayLogs = todayResult[0].today;
+    const todayResult = await db.query(todayQuery);
+    const todayLogs = todayResult.rows[0].today;
 
     // Action statistics
     const actionStatsQuery = `
@@ -274,7 +284,8 @@ router.get('/stats', verifyToken, async (req, res) => {
       GROUP BY action
       ORDER BY count DESC
     `;
-    const [actionStats] = await db.execute(actionStatsQuery, params);
+    const actionStatsResult = await db.query(actionStatsQuery, params);
+    const actionStats = actionStatsResult.rows;
 
     // Calculate action counts
     const createCount = actionStats.find(s => s.action === 'CREATE')?.count || 0;
@@ -289,8 +300,8 @@ router.get('/stats', verifyToken, async (req, res) => {
       FROM audit_trail
       WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
     `;
-    const [activeUsersResult] = await db.execute(activeUsersQuery);
-    const activeUsers = activeUsersResult[0].active_users;
+    const activeUsersResult = await db.query(activeUsersQuery);
+    const activeUsers = activeUsersResult.rows[0].active_users;
 
     res.json({
       data: {
@@ -317,11 +328,9 @@ router.get('/suspicious-activity', verifyToken, async (req, res) => {
     const suspiciousQuery = `
       SELECT 
         al.*,
-        u.email as user_email,
-        CONCAT(e.name, ' ', e.surname) as user_name
+        al.user_email,
+        al.user_email as user_name
       FROM audit_trail al
-      LEFT JOIN users u ON al.user_id = u.id
-      LEFT JOIN employees e ON u.employee_id = e.id
       WHERE al.severity IN ('high', 'warning')
       OR al.action = 'DELETE'
       OR al.action = 'LOGIN'
@@ -329,12 +338,13 @@ router.get('/suspicious-activity', verifyToken, async (req, res) => {
       LIMIT 20
     `;
     
-    const [suspiciousActivities] = await db.execute(suspiciousQuery);
+    const suspiciousResult = await db.query(suspiciousQuery);
+    const suspiciousActivities = suspiciousResult.rows;
     
     res.json({
       data: suspiciousActivities.map(activity => ({
         ...activity,
-        details: activity.details ? JSON.parse(activity.details) : null
+        details: activity.metadata || null
       }))
     });
   } catch (error) {
@@ -359,7 +369,8 @@ router.get('/most-active-entities', verifyToken, async (req, res) => {
       LIMIT 10
     `;
     
-    const [entities] = await db.execute(entitiesQuery);
+    const entitiesResult = await db.query(entitiesQuery);
+    const entities = entitiesResult.rows;
     
     res.json({
       data: entities
@@ -379,20 +390,18 @@ router.get('/export-excel', verifyToken, async (req, res) => {
       SELECT 
         al.id,
         al.action,
-        al.module,
+        al.entity_type as module,
         al.description,
         al.user_id,
         al.timestamp,
-        al.details,
+        al.metadata as details,
         al.severity,
         al.ip_address,
         al.entity_type,
         al.entity_id,
-        u.email as user_email,
-        CONCAT(e.name, ' ', e.surname) as user_name
+        al.user_email,
+        al.user_email as user_name
       FROM audit_trail al
-      LEFT JOIN users u ON al.user_id = u.id
-      LEFT JOIN employees e ON u.employee_id = e.id
       WHERE 1=1
     `;
     
@@ -404,13 +413,13 @@ router.get('/export-excel', verifyToken, async (req, res) => {
     }
 
     if (module) {
-      query += ` AND al.module = ?`;
+      query += ` AND al.entity_type = ?`;
       params.push(module);
     }
 
     if (user) {
-      query += ` AND (u.email LIKE ? OR CONCAT(e.name, ' ', e.surname) LIKE ?)`;
-      params.push(`%${user}%`, `%${user}%`);
+      query += ` AND al.user_email LIKE ?`;
+      params.push(`%${user}%`);
     }
 
     if (dateFrom) {
@@ -431,7 +440,8 @@ router.get('/export-excel', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC LIMIT ?`;
     params.push(parseInt(limit));
 
-    const [logs] = await db.execute(query, params);
+    const result = await db.query(query, params);
+    const logs = result.rows;
 
     // Create Excel workbook
     const workbook = new ExcelJS.Workbook();
@@ -459,13 +469,13 @@ router.get('/export-excel', verifyToken, async (req, res) => {
         action: log.action,
         module: log.module,
         description: log.description,
-        user_name: log.user_name || log.user_email || 'Sistemi',
+        user_name: log.user_name || 'Sistemi',
         timestamp: new Date(log.timestamp).toLocaleString('sq-AL'),
         severity: log.severity || 'info',
         ip_address: log.ip_address || '',
         entity_type: log.entity_type || '',
         entity_id: log.entity_id || '',
-        details: log.details ? JSON.stringify(JSON.parse(log.details), null, 2) : ''
+        details: log.details ? JSON.stringify(log.details, null, 2) : ''
       });
     });
 
@@ -499,20 +509,18 @@ router.get('/export-pdf', verifyToken, async (req, res) => {
       SELECT 
         al.id,
         al.action,
-        al.module,
+        al.entity_type as module,
         al.description,
         al.user_id,
         al.timestamp,
-        al.details,
+        al.metadata as details,
         al.severity,
         al.ip_address,
         al.entity_type,
         al.entity_id,
-        u.email as user_email,
-        CONCAT(e.name, ' ', e.surname) as user_name
+        al.user_email,
+        al.user_email as user_name
       FROM audit_trail al
-      LEFT JOIN users u ON al.user_id = u.id
-      LEFT JOIN employees e ON u.employee_id = e.id
       WHERE 1=1
     `;
     
@@ -524,13 +532,13 @@ router.get('/export-pdf', verifyToken, async (req, res) => {
     }
 
     if (module) {
-      query += ` AND al.module = ?`;
+      query += ` AND al.entity_type = ?`;
       params.push(module);
     }
 
     if (user) {
-      query += ` AND (u.email LIKE ? OR CONCAT(e.name, ' ', e.surname) LIKE ?)`;
-      params.push(`%${user}%`, `%${user}%`);
+      query += ` AND al.user_email LIKE ?`;
+      params.push(`%${user}%`);
     }
 
     if (dateFrom) {
@@ -551,7 +559,8 @@ router.get('/export-pdf', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC LIMIT ?`;
     params.push(parseInt(limit));
 
-    const [logs] = await db.execute(query, params);
+    const result = await db.query(query, params);
+    const logs = result.rows;
 
     // Create PDF document
     const doc = new PDFDocument();
@@ -578,13 +587,13 @@ router.get('/export-pdf', verifyToken, async (req, res) => {
     logs.forEach((log, index) => {
       doc.fontSize(12).text(`${index + 1}. ${log.action} - ${log.module}`, { underline: true });
       doc.fontSize(10).text(`Description: ${log.description}`);
-      doc.fontSize(10).text(`User: ${log.user_name || log.user_email || 'Sistemi'}`);
+      doc.fontSize(10).text(`User: ${log.user_name || 'Sistemi'}`);
       doc.fontSize(10).text(`Date: ${new Date(log.timestamp).toLocaleString('sq-AL')}`);
       if (log.ip_address) {
         doc.fontSize(10).text(`IP: ${log.ip_address}`);
       }
       if (log.details) {
-        doc.fontSize(10).text(`Details: ${JSON.stringify(JSON.parse(log.details), null, 2)}`);
+        doc.fontSize(10).text(`Details: ${JSON.stringify(log.details, null, 2)}`);
       }
       doc.moveDown();
     });
@@ -607,13 +616,13 @@ router.post('/cleanup', verifyToken, async (req, res) => {
       WHERE timestamp < DATE_SUB(NOW(), INTERVAL ? DAY)
     `;
     
-    const [result] = await db.execute(deleteQuery, [daysToKeep]);
+    const result = await db.query(deleteQuery, [daysToKeep]);
     
     res.json({
       success: true,
       data: {
-        deletedCount: result.affectedRows,
-        message: `U fshinë ${result.affectedRows} audit logs të vjetër`
+        deletedCount: result.rowCount,
+        message: `U fshinë ${result.rowCount} audit logs të vjetër`
       }
     });
   } catch (error) {
@@ -629,11 +638,11 @@ router.post('/', verifyToken, async (req, res) => {
     const userId = req.user.id;
 
     const query = `
-      INSERT INTO audit_trail (action, module, description, user_id, timestamp, details, severity, ip_address, entity_type, entity_id)
+      INSERT INTO audit_trail (action, entity_type, description, user_id, timestamp, metadata, severity, ip_address, entity_type, entity_id)
       VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)
     `;
 
-    await db.execute(query, [
+    await db.query(query, [
       action,
       module,
       description,
