@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { authenticateToken } = require('../middleware/auth');
+const { verifyToken } = require('../middleware/auth');
 
 // Get all audit logs with pagination and filtering
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', verifyToken, async (req, res) => {
   try {
     const { page = 1, limit = 50, action, module, user, dateFrom, dateTo } = req.query;
     const offset = (page - 1) * limit;
@@ -116,7 +116,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Create audit log entry (for internal use)
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', verifyToken, async (req, res) => {
   try {
     const { action, module, description, details } = req.body;
     const userId = req.user.id;
@@ -142,7 +142,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Get audit log statistics
-router.get('/stats', authenticateToken, async (req, res) => {
+router.get('/stats', verifyToken, async (req, res) => {
   try {
     const { dateFrom, dateTo } = req.query;
     
