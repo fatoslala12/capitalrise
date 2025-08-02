@@ -15,8 +15,9 @@ const adminMenu = [
   { path: "/admin/contracts", label: "📄 Kontratat" },
   { path: "/admin/tasks", label: "📝 Detyrat" },
   { path: "/admin/reports", label: "📈 Raportet" },
-          { path: "/admin/notifications", label: "🔔 Njoftimet" },
-        { path: "/admin/notifications/analytics", label: "📊 Analytics" },
+  { path: "/admin/audit-trail", label: "🔍 Audit Trail" },
+  { path: "/admin/notifications", label: "🔔 Njoftimet" },
+  { path: "/admin/notifications/analytics", label: "📊 Analytics" },
 ];
 
 const managerMenu = [
@@ -26,7 +27,8 @@ const managerMenu = [
   { path: "/manager/work-hours", label: "🕒 Orët e Punës" },
   { path: "/manager/payments", label: "💰 Pagesat" },
   { path: "/manager/reports", label: "📊 Raportet" },
-  { path: "/manager/my-profile", label: "�� Profili Im" },
+  { path: "/manager/audit-trail", label: "🔍 Audit Trail" },
+  { path: "/manager/my-profile", label: "👤 Profili Im" },
 ];
 
 const userMenu = [

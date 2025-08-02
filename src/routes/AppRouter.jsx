@@ -21,6 +21,7 @@ const ForgotPassword = lazy(() => import("../pages/ForgotPassword"));
 const MyProfile = lazy(() => import("../pages/MyProfile"));
 const NotificationsPage = lazy(() => import("../pages/NotificationsPage"));
 const NotificationAnalytics = lazy(() => import("../pages/NotificationAnalytics"));
+const AuditTrail = lazy(() => import("../pages/AuditTrail"));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -64,6 +65,7 @@ export default function AppRouter() {
               <Route path="payments/details/:contract_number" element={<PaymentDetails />} />
               <Route path="tasks" element={<Tasks />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="audit-trail" element={<AuditTrail />} />
               <Route path="my-profile" element={<MyProfile />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="notifications/analytics" element={<NotificationAnalytics />} />
@@ -78,6 +80,7 @@ export default function AppRouter() {
               <Route path="my-tasks" element={<MyTasks />} />
               <Route path="my-profile" element={<MyProfile />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="audit-trail" element={<AuditTrail />} />
               <Route path="notifications" element={<NotificationsPage />} />
             </Route>
 
