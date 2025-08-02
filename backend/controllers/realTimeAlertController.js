@@ -161,16 +161,11 @@ exports.getRecentAlerts = async (req, res) => {
     console.log(`[REAL-TIME] Përdoruesi ${user.email} po shikon alerts e fundit`);
 
     const result = await pool.query(`
-      SELECT 
-        at.*,
-        u.first_name,
-        u.last_name,
-        u.email as user_email_display
-      FROM audit_trail at
-      LEFT JOIN users u ON at.user_id = u.id
-      WHERE at.action LIKE 'ALERT_%'
-      AND at.timestamp >= NOW() - INTERVAL '${hours} hours'
-      ORDER BY at.timestamp DESC
+      SELECT *
+      FROM audit_trail
+      WHERE action LIKE 'ALERT_%'
+      AND timestamp >= NOW() - INTERVAL '${hours} hours'
+      ORDER BY timestamp DESC
       LIMIT $1
     `, [parseInt(limit)]);
 

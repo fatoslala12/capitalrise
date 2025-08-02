@@ -151,16 +151,11 @@ exports.getRecentErrors = async (req, res) => {
     const { limit = 50, hours = 24 } = req.query;
     
     const result = await pool.query(`
-      SELECT 
-        at.*,
-        u.first_name,
-        u.last_name,
-        u.email as user_email_display
-      FROM audit_trail at
-      LEFT JOIN users u ON at.user_id = u.id
-      WHERE at.action IN ('FRONTEND_ERROR', 'ERROR_CRITICAL')
-      AND at.timestamp >= NOW() - INTERVAL '${hours} hours'
-      ORDER BY at.timestamp DESC
+      SELECT *
+      FROM audit_trail
+      WHERE action IN ('FRONTEND_ERROR', 'ERROR_CRITICAL')
+      AND timestamp >= NOW() - INTERVAL '${hours} hours'
+      ORDER BY timestamp DESC
       LIMIT $1
     `, [parseInt(limit)]);
 
