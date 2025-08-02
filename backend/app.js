@@ -83,6 +83,9 @@ app.use('/api/user-management', userManagementRoutes);
 const businessIntelligenceRoutes = require('./routes/businessIntelligence');
 app.use('/api/business-intelligence', businessIntelligenceRoutes);
 
+const auditTrailRoutes = require('./routes/auditTrail');
+app.use('/api/audit-trail', auditTrailRoutes);
+
 // Compression middleware për të reduktuar madhësinë e përgjigjeve (pas routes)
 const compression = require('compression');
 app.use(compression({

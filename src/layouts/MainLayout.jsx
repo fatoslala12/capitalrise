@@ -15,10 +15,10 @@ const adminMenu = [
   { path: "/admin/tasks", label: "📝 Detyrat" },
   { path: "/admin/reports", label: "📈 Raportet" },
   { path: "/admin/backup", label: "💾 Backup" },
-  { path: "/admin/audit", label: "🔍 Audit Trail" },
+  { path: "/admin/audit-trail", label: "🔍 Audit Trail" },
   { path: "/admin/real-time-alerts", label: "🚨 Real-Time Alerts" },
-          { path: "/admin/notifications", label: "🔔 Njoftimet" },
-        { path: "/admin/notifications/analytics", label: "📊 Analytics" },
+  { path: "/admin/notifications", label: "🔔 Njoftimet" },
+  { path: "/admin/notifications/analytics", label: "📊 Analytics" },
 ];
 
 const managerMenu = [
@@ -28,7 +28,8 @@ const managerMenu = [
   { path: "/manager/work-hours", label: "🕒 Orët e Punës" },
   { path: "/manager/payments", label: "💰 Pagesat" },
   { path: "/manager/reports", label: "📊 Raportet" },
-  { path: "/manager/my-profile", label: "�� Profili Im" },
+  { path: "/manager/audit-trail", label: "🔍 Audit Trail" },
+  { path: "/manager/my-profile", label: "👤 Profili Im" },
 ];
 
 const userMenu = [
