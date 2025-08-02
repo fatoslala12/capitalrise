@@ -233,54 +233,49 @@ class AuditService {
   } = {}) {
     try {
       let query = `
-        SELECT 
-          at.*,
-          u.first_name,
-          u.last_name,
-          u.email as user_email_display
-        FROM audit_trail at
-        LEFT JOIN users u ON at.user_id = u.id
+        SELECT *
+        FROM audit_trail
         WHERE 1=1
       `;
       const params = [];
       let paramIndex = 1;
 
       if (userId) {
-        query += ` AND at.user_id = $${paramIndex++}`;
+        query += ` AND user_id = $${paramIndex++}`;
         params.push(userId);
       }
 
       if (entityType) {
-        query += ` AND at.entity_type = $${paramIndex++}`;
+        query += ` AND entity_type = $${paramIndex++}`;
         params.push(entityType);
       }
 
       if (entityId) {
-        query += ` AND at.entity_id = $${paramIndex++}`;
+        query += ` AND entity_id = $${paramIndex++}`;
         params.push(entityId);
       }
 
       if (action) {
-        query += ` AND at.action = $${paramIndex++}`;
+        query += ` AND action = $${paramIndex++}`;
         params.push(action);
       }
 
       if (severity) {
-        query += ` AND at.severity = $${paramIndex++}`;
+        query += ` AND severity = $${paramIndex++}`;
         params.push(severity);
       }
 
       if (startDate) {
-        query += ` AND at.timestamp >= $${paramIndex++}`;
+        query += ` AND timestamp >= $${paramIndex++}`;
         params.push(startDate);
       }
 
       if (endDate) {
-        query += ` AND at.timestamp <= $${paramIndex++}`;
+        query += ` AND timestamp <= $${paramIndex++}`;
         params.push(endDate);
       }
 
-      query += ` ORDER BY at.${sortBy} ${sortOrder}`;
+      query += ` ORDER BY ${sortBy} ${sortOrder}`;
       query += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
       params.push(limit, offset);
 

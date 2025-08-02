@@ -30,12 +30,16 @@ export default function AuditTrail() {
 
   // Merr të dhënat në fillim
   useEffect(() => {
+    console.log('🔍 AuditTrail component loading, API baseURL:', api.defaults.baseURL);
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Fetching audit data from:', api.defaults.baseURL);
+      console.log('🔍 Filters:', filters);
+      
       const [logsRes, statsRes, suspiciousRes, entitiesRes] = await Promise.all([
         api.get('/api/audit/logs', { params: filters }),
         api.get('/api/audit/stats'),
@@ -43,12 +47,14 @@ export default function AuditTrail() {
         api.get('/api/audit/most-active-entities')
       ]);
 
+      console.log('🔍 Audit logs response:', logsRes.data);
       setAuditLogs(logsRes.data.data || []);
       setStats(statsRes.data.data);
       setSuspiciousActivities(suspiciousRes.data.data || []);
       setMostActiveEntities(entitiesRes.data.data || []);
     } catch (error) {
       console.error('Error fetching audit data:', error);
+      console.error('Error details:', error.response?.data);
       toast.error('Gabim gjatë ngarkimit të të dhënave');
     } finally {
       setLoading(false);
