@@ -69,7 +69,7 @@ export default function AppRouter() {
               <Route path="tasks" element={<Tasks />} />
               <Route path="reports" element={<Reports />} />
               <Route path="backup" element={<BackupManagement />} />
-              <Route path="audit" element={<AuditTrail />} />
+              <Route path="audit-trail" element={<AuditTrail />} />
               <Route path="real-time-alerts" element={<RealTimeAlerts />} />
               <Route path="my-profile" element={<MyProfile />} />
               <Route path="notifications" element={<NotificationsPage />} />
@@ -85,6 +85,7 @@ export default function AppRouter() {
               <Route path="my-tasks" element={<MyTasks />} />
               <Route path="my-profile" element={<MyProfile />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="audit-trail" element={<AuditTrail />} />
               <Route path="notifications" element={<NotificationsPage />} />
             </Route>
 

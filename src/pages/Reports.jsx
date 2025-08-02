@@ -52,6 +52,7 @@ export default function Reports() {
   const [siteOptions, setSiteOptions] = useState([]);
   const [employeeOptions, setEmployeeOptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [managerSites, setManagerSites] = useState([]);
   const [managerEmployees, setManagerEmployees] = useState([]);
   const [managerStats, setManagerStats] = useState({
@@ -99,6 +100,7 @@ export default function Reports() {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
         
         const [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
           api.get("/api/contracts"),
@@ -324,6 +326,7 @@ export default function Reports() {
         
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError('Gabim gjatë ngarkimit të të dhënave. Ju lutem provoni përsëri.');
       } finally {
         setLoading(false);
       }
@@ -365,6 +368,26 @@ export default function Reports() {
 
   if (loading) {
     return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <div className="text-center py-12">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+            <div className="text-red-600 text-4xl mb-4">❌</div>
+            <h2 className="text-xl font-semibold text-red-800 mb-2">Gabim gjatë ngarkimit</h2>
+            <p className="text-red-600 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Provoni përsëri
+            </button>
+          </div>
+        </div>
+      </Container>
+    );
   }
 
   return (
