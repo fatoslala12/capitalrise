@@ -244,27 +244,41 @@ export default function EmployeesList() {
           role: res.data.data.role,
           status: res.data.data.status,
           workplace: newEmployee.workplace,
-          phone: newEmployee.phone,
-          residence: newEmployee.residence,
-          hourlyRate: newEmployee.hourlyRate,
-          startDate: newEmployee.startDate,
-          qualification: newEmployee.qualification,
-          nextOfKin: newEmployee.nextOfKin,
-          nextOfKinPhone: newEmployee.nextOfKinPhone
+          phone: res.data.data.phone,
+          residence: res.data.data.address,
+          hourlyRate: res.data.data.hourlyRate,
+          startDate: res.data.data.startDate,
+          qualification: res.data.data.qualification,
+          nextOfKin: res.data.data.nextOfKin,
+          nextOfKinPhone: res.data.data.nextOfKinPhone
         };
         
         setEmployees(prev => [...prev, newEmp]);
         resetForm();
         setShowAddModal(false);
         
-        // Shfaq mesazh suksesi me detaje
+        // Shfaq mesazh suksesi me të dhënat e plota
         const successMessage = `✅ Punonjësi u krijua me sukses!
 
-📧 Email u dërgua në: ${newEmployee.email}
+👤 Informacionet e Punonjësit:
+   Emri: ${res.data.data.firstName} ${res.data.data.lastName}
+   Email: ${res.data.data.email}
+   Roli: ${res.data.data.role}
+   Statusi: ${res.data.data.status}
+   Telefoni: ${res.data.data.phone || 'N/A'}
+   Adresa: ${res.data.data.address || 'N/A'}
+   Pozicioni: ${res.data.data.position || 'N/A'}
+   Paga për orë: £${res.data.data.hourlyRate || 'N/A'}
+   Data e fillimit: ${res.data.data.startDate || 'N/A'}
+   Kualifikimi: ${res.data.data.qualification || 'N/A'}
+   Kontakti i ngushtë: ${res.data.data.nextOfKin || 'N/A'}
+   Telefoni i kontaktit: ${res.data.data.nextOfKinPhone || 'N/A'}
 
 🔐 Kredencialet e hyrjes:
-   Email: ${newEmployee.email}
-   Fjalëkalimi: ${newEmployee.password}
+   Email: ${res.data.data.email}
+   Fjalëkalimi: ${res.data.data.password}
+
+📧 Statusi i email-it: ${res.data.data.emailSent ? '✅ U dërgua' : '❌ Nuk u dërgua'}
 
 ⚠️ Ju lutem ndryshoni fjalëkalimin pas hyrjes së parë për sigurinë e llogarisë.`;
 

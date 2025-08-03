@@ -38,9 +38,8 @@ exports.createUser = asyncHandler(async (req, res) => {
     throw createError('DB_DUPLICATE_ENTRY', null, 'Email-i ekziston tashmë');
   }
 
-  // Hash password
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  // Ruaj password pa hash
+  const plainPassword = password;
 
   // Krijo punonjës në tabelën employees së pari
   let newEmployee = null;
@@ -77,7 +76,7 @@ exports.createUser = asyncHandler(async (req, res) => {
     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), $15)
     RETURNING *`,
     [
-      firstName, lastName, email.toLowerCase(), hashedPassword, role,
+      firstName, lastName, email.toLowerCase(), plainPassword, role,
       phone, address, position, hourlyRate, startDate, status,
       qualification, nextOfKin, nextOfKinPhone, newEmployee.id
     ]
@@ -86,6 +85,7 @@ exports.createUser = asyncHandler(async (req, res) => {
   const newUser = result.rows[0];
 
   // Dërgo email përshëndetje
+  let emailSent = false;
   try {
     await sendWelcomeEmail({
       firstName: newUser.first_name,
@@ -96,15 +96,16 @@ exports.createUser = asyncHandler(async (req, res) => {
     });
 
     console.log(`✅ Email u dërgua me sukses për user: ${newUser.email}`);
+    emailSent = true;
   } catch (emailError) {
     console.error('❌ Gabim në dërgimin e email:', emailError);
-    // Mos fshi user-in nëse email dështon, vetëm log error
+    emailSent = false;
   }
 
-  // Përgjigju me sukses
+  // Përgjigju me sukses dhe të dhënat për message box
   res.status(201).json({
     success: true,
-    message: 'Përdoruesi u krijua me sukses dhe email u dërgua',
+    message: 'Përdoruesi u krijua me sukses',
     data: {
       id: newUser.id,
       firstName: newUser.first_name,
@@ -112,7 +113,18 @@ exports.createUser = asyncHandler(async (req, res) => {
       email: newUser.email,
       role: newUser.role,
       status: newUser.status,
-      emailSent: true
+      password: password, // Password i papërpunuar për message box
+      emailSent: emailSent,
+      // Të dhënat e plota për message box
+      employeeId: newEmployee.id,
+      phone: newUser.phone,
+      address: newUser.address,
+      position: newUser.position,
+      hourlyRate: newUser.hourly_rate,
+      startDate: newUser.start_date,
+      qualification: newUser.qualification,
+      nextOfKin: newUser.next_of_kin,
+      nextOfKinPhone: newUser.next_of_kin_phone
     }
   });
 });
