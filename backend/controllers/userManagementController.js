@@ -55,7 +55,7 @@ exports.createUser = asyncHandler(async (req, res) => {
       [
         firstName, lastName, address, startDate, phone,
         nextOfKin, nextOfKinPhone, qualification, status,
-        hourlyRate, email.toLowerCase(), newUser?.id || 1, 'CSS',
+        hourlyRate, email.toLowerCase(), 1, 'CSS',
         req.body.dob || null, req.body.pob || null, req.body.nid || null
       ]
     );
@@ -83,6 +83,26 @@ exports.createUser = asyncHandler(async (req, res) => {
   );
 
   const newUser = result.rows[0];
+
+  // Krijo employee_workplaces nëse ka workplace
+  if (req.body.workplace && Array.isArray(req.body.workplace) && req.body.workplace.length > 0) {
+    try {
+      for (const workplace of req.body.workplace) {
+        // Gjej contract_id nga emri i site-it
+        const contractRes = await pool.query('SELECT id FROM contracts WHERE site_name = $1 LIMIT 1', [workplace]);
+        if (contractRes.rows.length > 0) {
+          const contractId = contractRes.rows[0].id;
+          await pool.query(
+            `INSERT INTO employee_workplaces (employee_id, contract_id) VALUES ($1, $2)`,
+            [newEmployee.id, contractId]
+          );
+          console.log(`✅ Workplace u shtua: ${workplace} për punonjësin ${newEmployee.id}`);
+        }
+      }
+    } catch (workplaceError) {
+      console.error('❌ Gabim në krijimin e workplace:', workplaceError);
+    }
+  }
 
   // Dërgo email përshëndetje
   let emailSent = false;
@@ -186,7 +206,7 @@ exports.updateUser = asyncHandler(async (req, res) => {
   });
 });
 
-// Fshi user
+// Fshi user dhe të gjitha të dhënat e lidhura (vetëm admin)
 exports.deleteUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -196,13 +216,67 @@ exports.deleteUser = asyncHandler(async (req, res) => {
     throw createError('DB_RECORD_NOT_FOUND', null, 'Përdoruesi nuk u gjet');
   }
 
-  // Fshi user
-  await pool.query('DELETE FROM users WHERE id = $1', [id]);
+  const user = existingUser.rows[0];
+  const employeeId = user.employee_id;
 
-  res.json({
-    success: true,
-    message: 'Përdoruesi u fshi me sukses'
-  });
+  // Fshi të gjitha të dhënat e lidhura
+  try {
+    // Fshi nga employee_workplaces
+    if (employeeId) {
+      await pool.query('DELETE FROM employee_workplaces WHERE employee_id = $1', [employeeId]);
+      console.log(`✅ Employee workplaces u fshinë për employee_id: ${employeeId}`);
+    }
+
+    // Fshi nga work_hours
+    if (employeeId) {
+      await pool.query('DELETE FROM work_hours WHERE employee_id = $1', [employeeId]);
+      console.log(`✅ Work hours u fshinë për employee_id: ${employeeId}`);
+    }
+
+    // Fshi nga tasks
+    if (employeeId) {
+      await pool.query('DELETE FROM tasks WHERE assigned_to = $1', [employeeId]);
+      console.log(`✅ Tasks u fshinë për employee_id: ${employeeId}`);
+    }
+
+    // Fshi nga payments
+    if (employeeId) {
+      await pool.query('DELETE FROM payments WHERE employee_id = $1', [employeeId]);
+      console.log(`✅ Payments u fshinë për employee_id: ${employeeId}`);
+    }
+
+    // Fshi nga expenses
+    if (employeeId) {
+      await pool.query('DELETE FROM expenses WHERE employee_id = $1', [employeeId]);
+      console.log(`✅ Expenses u fshinë për employee_id: ${employeeId}`);
+    }
+
+    // Fshi nga notifications
+    await pool.query('DELETE FROM notifications WHERE user_id = $1', [id]);
+    console.log(`✅ Notifications u fshinë për user_id: ${id}`);
+
+    // Fshi nga audit_trail
+    await pool.query('DELETE FROM audit_trail WHERE user_id = $1', [id]);
+    console.log(`✅ Audit trail u fshi për user_id: ${id}`);
+
+    // Fshi nga employees
+    if (employeeId) {
+      await pool.query('DELETE FROM employees WHERE id = $1', [employeeId]);
+      console.log(`✅ Employee u fshi me ID: ${employeeId}`);
+    }
+
+    // Fshi nga users
+    await pool.query('DELETE FROM users WHERE id = $1', [id]);
+    console.log(`✅ User u fshi me ID: ${id}`);
+
+    res.json({
+      success: true,
+      message: 'Përdoruesi dhe të gjitha të dhënat e lidhura u fshinë me sukses'
+    });
+  } catch (error) {
+    console.error('❌ Gabim në fshirjen e të dhënave:', error);
+    throw createError('DB_DELETE_ERROR', null, 'Gabim në fshirjen e të dhënave');
+  }
 });
 
 // Merr të gjithë users
