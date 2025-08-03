@@ -59,6 +59,28 @@ exports.createUser = asyncHandler(async (req, res) => {
 
   const newUser = result.rows[0];
 
+  // Krijo punonjës në tabelën employees
+  try {
+    const employeeResult = await pool.query(
+      `INSERT INTO employees (
+        first_name, last_name, residence, start_date, phone, 
+        next_of_kin, next_of_kin_phone, qualification, status, 
+        hourly_rate, username, created_at, created_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), $12)
+      RETURNING *`,
+      [
+        firstName, lastName, address, startDate, phone,
+        nextOfKin, nextOfKinPhone, qualification, status,
+        hourlyRate, email.toLowerCase(), newUser.id
+      ]
+    );
+
+    console.log(`✅ Punonjësi u krijua në tabelën employees me ID: ${employeeResult.rows[0].id}`);
+  } catch (employeeError) {
+    console.error('❌ Gabim në krijimin e punonjësit në tabelën employees:', employeeError);
+    // Mos fshi user-in nëse employee dështon, vetëm log error
+  }
+
   // Dërgo email përshëndetje
   try {
     await sendWelcomeEmail({
