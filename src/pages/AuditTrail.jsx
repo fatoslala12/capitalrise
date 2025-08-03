@@ -16,7 +16,8 @@ import {
 import { 
   Search, Filter, Download, RefreshCw, Eye, 
   AlertTriangle, TrendingUp, Users, Activity,
-  Calendar, Clock, User, Shield, Database
+  Calendar, Clock, User, Shield, Database,
+  Plus, Edit, Trash2, LogIn, CreditCard, Upload, RotateCcw
 } from "lucide-react";
 
 export default function AuditTrail() {
@@ -203,33 +204,56 @@ export default function AuditTrail() {
 
   // Merr ikonën e action
   const getActionIcon = (action) => {
-    if (!action) return '📝';
     switch (action) {
-      case 'CREATE': return '➕';
-      case 'UPDATE': return '✏️';
-      case 'DELETE': return '🗑️';
-      case 'LOGIN': return '🔐';
-      case 'PAYMENT': return '💰';
-      case 'EXPORT': return '📤';
-      case 'IMPORT': return '📥';
-      case 'BACKUP': return '💾';
-      case 'RESTORE': return '🔄';
-      default: return '📝';
+      case 'CREATE':
+        return <Plus className="w-4 h-4" />;
+      case 'UPDATE':
+        return <Edit className="w-4 h-4" />;
+      case 'DELETE':
+        return <Trash2 className="w-4 h-4" />;
+      case 'LOGIN_SUCCESS':
+        return <LogIn className="w-4 h-4" />;
+      case 'LOGIN_FAILED':
+        return <AlertTriangle className="w-4 h-4" />;
+      case 'PAYMENT':
+        return <CreditCard className="w-4 h-4" />;
+      case 'EXPORT':
+        return <Download className="w-4 h-4" />;
+      case 'IMPORT':
+        return <Upload className="w-4 h-4" />;
+      case 'BACKUP':
+        return <Database className="w-4 h-4" />;
+      case 'RESTORE':
+        return <RotateCcw className="w-4 h-4" />;
+      default:
+        return <Activity className="w-4 h-4" />;
     }
   };
 
   const getActionColor = (action) => {
     switch (action) {
-      case 'CREATE': return 'bg-green-100 text-green-800 border-green-200';
-      case 'UPDATE': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'DELETE': return 'bg-red-100 text-red-800 border-red-200';
-      case 'LOGIN': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'PAYMENT': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'EXPORT': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-      case 'IMPORT': return 'bg-pink-100 text-pink-800 border-pink-200';
-      case 'BACKUP': return 'bg-cyan-100 text-cyan-800 border-cyan-200';
-      case 'RESTORE': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'CREATE':
+        return 'green';
+      case 'UPDATE':
+        return 'blue';
+      case 'DELETE':
+        return 'red';
+      case 'LOGIN_SUCCESS':
+        return 'green';
+      case 'LOGIN_FAILED':
+        return 'red';
+      case 'PAYMENT':
+        return 'purple';
+      case 'EXPORT':
+        return 'orange';
+      case 'IMPORT':
+        return 'yellow';
+      case 'BACKUP':
+        return 'blue';
+      case 'RESTORE':
+        return 'red';
+      default:
+        return 'gray';
     }
   };
 
@@ -537,8 +561,13 @@ export default function AuditTrail() {
                     { name: 'Krijo', value: stats.createCount || 0, color: '#10b981' },
                     { name: 'Përditëso', value: stats.updateCount || 0, color: '#3b82f6' },
                     { name: 'Fshi', value: stats.deleteCount || 0, color: '#ef4444' },
-                    { name: 'Kyçje', value: stats.loginCount || 0, color: '#8b5cf6' },
-                    { name: 'Pagesë', value: stats.paymentCount || 0, color: '#f59e0b' }
+                    { name: 'Kyçje Sukses', value: (stats.actionStats?.find(s => s.action === 'LOGIN_SUCCESS')?.count || 0), color: '#10b981' },
+                    { name: 'Kyçje e Dështuar', value: (stats.actionStats?.find(s => s.action === 'LOGIN_FAILED')?.count || 0), color: '#ef4444' },
+                    { name: 'Pagesë', value: stats.paymentCount || 0, color: '#f59e0b' },
+                    { name: 'Eksport', value: (stats.actionStats?.find(s => s.action === 'EXPORT')?.count || 0), color: '#8b5cf6' },
+                    { name: 'Import', value: (stats.actionStats?.find(s => s.action === 'IMPORT')?.count || 0), color: '#f97316' },
+                    { name: 'Backup', value: (stats.actionStats?.find(s => s.action === 'BACKUP')?.count || 0), color: '#06b6d4' },
+                    { name: 'Restore', value: (stats.actionStats?.find(s => s.action === 'RESTORE')?.count || 0), color: '#dc2626' }
                   ].filter(item => item.value > 0);
 
                   return pieData.length > 0 ? (
@@ -560,9 +589,38 @@ export default function AuditTrail() {
                     </text>
                   );
                 })()}
-                <Tooltip />
+                <Tooltip formatter={(value, name) => [`${value} aktivitete`, name]} />
               </PieChart>
             </ResponsiveContainer>
+            
+            {/* Activity Legend */}
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {(() => {
+                const pieData = [
+                  { name: 'Krijo', value: stats.createCount || 0, color: '#10b981' },
+                  { name: 'Përditëso', value: stats.updateCount || 0, color: '#3b82f6' },
+                  { name: 'Fshi', value: stats.deleteCount || 0, color: '#ef4444' },
+                  { name: 'Kyçje Sukses', value: (stats.actionStats?.find(s => s.action === 'LOGIN_SUCCESS')?.count || 0), color: '#10b981' },
+                  { name: 'Kyçje e Dështuar', value: (stats.actionStats?.find(s => s.action === 'LOGIN_FAILED')?.count || 0), color: '#ef4444' },
+                  { name: 'Pagesë', value: stats.paymentCount || 0, color: '#f59e0b' },
+                  { name: 'Eksport', value: (stats.actionStats?.find(s => s.action === 'EXPORT')?.count || 0), color: '#8b5cf6' },
+                  { name: 'Import', value: (stats.actionStats?.find(s => s.action === 'IMPORT')?.count || 0), color: '#f97316' },
+                  { name: 'Backup', value: (stats.actionStats?.find(s => s.action === 'BACKUP')?.count || 0), color: '#06b6d4' },
+                  { name: 'Restore', value: (stats.actionStats?.find(s => s.action === 'RESTORE')?.count || 0), color: '#dc2626' }
+                ].filter(item => item.value > 0);
+
+                return pieData.map((activity, index) => (
+                  <div key={activity.name} className="flex items-center gap-2 text-sm">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: activity.color }}
+                    />
+                    <span className="font-medium">{activity.name}</span>
+                    <span className="text-gray-500">({activity.value})</span>
+                  </div>
+                ));
+              })()}
+            </div>
           </CardContent>
         </Card>
 
@@ -643,9 +701,17 @@ export default function AuditTrail() {
                             {formatDate(log.timestamp)}
                           </span>
                         </div>
-                        <h3 className="font-semibold text-gray-900 mb-2 text-lg">
-                          {log.description}
-                        </h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-gray-900 text-lg">
+                            {log.description}
+                          </h3>
+                          {log.action === 'LOGIN_FAILED' && (
+                            <div className="flex items-center gap-1 text-red-600 text-sm bg-red-50 px-2 py-1 rounded">
+                              <AlertTriangle className="w-4 h-4" />
+                              Tentativë e Dështuar
+                            </div>
+                          )}
+                        </div>
                         <div className="flex items-center space-x-4 text-sm text-gray-600">
                           <span className="flex items-center gap-1">
                             <User className="w-4 h-4" />
