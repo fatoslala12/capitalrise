@@ -24,7 +24,6 @@ const NotificationAnalytics = lazy(() => import("../pages/NotificationAnalytics"
 const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
 const BackupManagement = lazy(() => import("../pages/BackupManagement"));
 const AuditTrail = lazy(() => import("../pages/AuditTrail"));
-const RealTimeAlerts = lazy(() => import("../pages/RealTimeAlerts"));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -70,7 +69,6 @@ export default function AppRouter() {
               <Route path="reports" element={<Reports />} />
               <Route path="backup" element={<BackupManagement />} />
               <Route path="audit-trail" element={<AuditTrail />} />
-              <Route path="real-time-alerts" element={<RealTimeAlerts />} />
               <Route path="my-profile" element={<MyProfile />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="notifications/analytics" element={<NotificationAnalytics />} />
@@ -85,7 +83,6 @@ export default function AppRouter() {
               <Route path="my-tasks" element={<MyTasks />} />
               <Route path="my-profile" element={<MyProfile />} />
               <Route path="reports" element={<Reports />} />
-              <Route path="audit-trail" element={<AuditTrail />} />
               <Route path="notifications" element={<NotificationsPage />} />
             </Route>
 

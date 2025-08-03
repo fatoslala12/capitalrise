@@ -16,7 +16,6 @@ const adminMenu = [
   { path: "/admin/reports", label: "📈 Raportet" },
   { path: "/admin/backup", label: "💾 Backup" },
   { path: "/admin/audit-trail", label: "🔍 Audit Trail" },
-  { path: "/admin/real-time-alerts", label: "🚨 Real-Time Alerts" },
   { path: "/admin/notifications", label: "🔔 Njoftimet" },
   { path: "/admin/notifications/analytics", label: "📊 Analytics" },
 ];
@@ -28,7 +27,6 @@ const managerMenu = [
   { path: "/manager/work-hours", label: "🕒 Orët e Punës" },
   { path: "/manager/payments", label: "💰 Pagesat" },
   { path: "/manager/reports", label: "📊 Raportet" },
-  { path: "/manager/audit-trail", label: "🔍 Audit Trail" },
   { path: "/manager/my-profile", label: "👤 Profili Im" },
 ];
 
