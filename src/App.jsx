@@ -4,6 +4,7 @@ import { NotificationProvider } from "./context/NotificationContext";
 import { ToastProvider } from "./components/ui/Toast";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AppRouter from "./routes/AppRouter";
+import PerformanceOptimizer from "./components/PerformanceOptimizer";
 import "./App.css";
 import { Toaster } from 'react-hot-toast';
 
@@ -14,6 +15,7 @@ function App() {
         <AuthProvider>
           <NotificationProvider>
             <ToastProvider>
+              <PerformanceOptimizer />
               <Toaster position="top-right" reverseOrder={false} />
               <AppRouter />
             </ToastProvider>

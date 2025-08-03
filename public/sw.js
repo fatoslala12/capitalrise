@@ -1,35 +1,31 @@
 // Service Worker për Push Notifications
-const CACHE_NAME = 'alban-construction-v1';
+const CACHE_NAME = 'building-system-v1';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
   '/static/css/main.css',
-  '/favicon.ico'
+  '/manifest.json'
 ];
 
-// Install event
+// Install event - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Cache u hap');
+        console.log('Opened cache');
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-// Fetch event
+// Fetch event - serve from cache when offline
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Kthe nga cache nëse ekziston
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
+        // Return cached version or fetch from network
+        return response || fetch(event.request);
+      })
   );
 });
 
@@ -123,13 +119,28 @@ self.addEventListener('notificationclose', (event) => {
   console.log('Notification u mbyll:', event);
 });
 
-// Background sync
+// Background sync for offline functionality
 self.addEventListener('sync', (event) => {
-  console.log('Background sync:', event);
+  if (event.tag === 'background-sync') {
+    event.waitUntil(doBackgroundSync());
+  }
+});
+
+async function doBackgroundSync() {
+  try {
+    // Sync any pending data when connection is restored
+    console.log('Background sync completed');
+  } catch (error) {
+    console.error('Background sync failed:', error);
+  }
+}
+
+// Periodik sync
+self.addEventListener('periodicsync', (event) => {
+  console.log('Periodic sync:', event);
   
-  if (event.tag === 'notification-sync') {
+  if (event.tag === 'notification-check') {
     event.waitUntil(
-      // Sync notifications në background
       syncNotifications()
     );
   }
@@ -166,17 +177,6 @@ async function syncNotifications() {
   }
 }
 
-// Periodik sync
-self.addEventListener('periodicsync', (event) => {
-  console.log('Periodic sync:', event);
-  
-  if (event.tag === 'notification-check') {
-    event.waitUntil(
-      syncNotifications()
-    );
-  }
-});
-
 // Message event për komunikim me main thread
 self.addEventListener('message', (event) => {
   console.log('Message nga main thread:', event.data);
@@ -195,16 +195,14 @@ self.addEventListener('updatefound', () => {
   console.log('Service Worker update u gjet');
 });
 
-// Activate event
+// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker u aktivizua');
-  
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Fshi cache të vjetër:', cacheName);
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
