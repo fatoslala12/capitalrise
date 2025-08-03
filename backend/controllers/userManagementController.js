@@ -1,10 +1,8 @@
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const { createError } = require('../middleware/errorHandler');
-const EmailService = require('../services/emailService');
+const { sendWelcomeEmail, sendNotificationEmail, testEmailService, getServiceStatus } = require('../services/emailService');
 const { asyncHandler } = require('../middleware/errorHandler');
-
-const emailService = new EmailService();
 
 // Krijimi i user të ri me email
 exports.createUser = asyncHandler(async (req, res) => {
@@ -63,7 +61,7 @@ exports.createUser = asyncHandler(async (req, res) => {
 
   // Dërgo email përshëndetje
   try {
-    await emailService.sendWelcomeEmail({
+    await sendWelcomeEmail({
       firstName: newUser.first_name,
       lastName: newUser.last_name,
       email: newUser.email,
@@ -305,7 +303,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
 
   // Dërgo email njoftim
   try {
-    await emailService.sendNotificationEmail(
+    await sendNotificationEmail(
       user.email,
       'Fjalëkalimi u ndryshua - Alban Construction',
       `Përshëndetje ${user.first_name},\n\nFjalëkalimi juaj u ndryshua me sukses.\n\nNëse nuk keni bërë këtë ndryshim, ju lutem kontaktoni administratorin menjëherë.\n\nSiguria juaj është e rëndësishme për ne.`,
@@ -324,7 +322,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
 // Test email service
 exports.testEmailService = asyncHandler(async (req, res) => {
   try {
-    const result = await emailService.testEmailService();
+    const result = await testEmailService();
     
     res.json({
       success: true,
@@ -338,7 +336,7 @@ exports.testEmailService = asyncHandler(async (req, res) => {
 
 // Merr email service status
 exports.getEmailServiceStatus = asyncHandler(async (req, res) => {
-  const status = emailService.getServiceStatus();
+  const status = getServiceStatus();
   
   res.json({
     success: true,
