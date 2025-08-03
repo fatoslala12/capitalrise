@@ -8,8 +8,11 @@ import Button from "../components/ui/Button";
 import { StatusBadge } from "../components/ui/Badge";
 import { toast } from "react-hot-toast";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line, PieChart, Pie, Cell
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area
 } from "recharts";
+import {
+  AlertTriangle, Shield, Activity, Eye, Clock, Users, TrendingUp, AlertCircle, CheckCircle, XCircle, Zap, RefreshCw, Play, Square, Settings
+} from "lucide-react";
 
 export default function RealTimeAlerts() {
   const { user } = useAuth();
@@ -21,20 +24,36 @@ export default function RealTimeAlerts() {
   const [showRulesConfig, setShowRulesConfig] = useState(false);
   const [showIPConfig, setShowIPConfig] = useState(false);
   const [newIP, setNewIP] = useState({ ipAddress: '', reason: '' });
+  const [liveMode, setLiveMode] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
 
   // Merr të dhënat në fillim
   useEffect(() => {
     fetchData();
   }, []);
 
+  // Live updates
+  useEffect(() => {
+    let interval;
+    if (liveMode) {
+      interval = setInterval(() => {
+        fetchData();
+        setLastUpdate(new Date());
+      }, 10000); // Update every 10 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [liveMode]);
+
   const fetchData = async () => {
     try {
       setLoading(true);
       const [statusRes, alertsRes, statsRes, rulesRes] = await Promise.all([
-        api.get('/api/real-time-alerts/status'),
-        api.get('/api/real-time-alerts/recent'),
-        api.get('/api/real-time-alerts/stats'),
-        api.get('/api/real-time-alerts/rules')
+        api.get('/api/real-time-alerts/test-status'),
+        api.get('/api/real-time-alerts/test-recent'),
+        api.get('/api/real-time-alerts/test-stats'),
+        api.get('/api/real-time-alerts/test-rules')
       ]);
 
       setMonitoringStatus(statusRes.data.data);
@@ -203,17 +222,43 @@ export default function RealTimeAlerts() {
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-red-100 to-orange-100 rounded-2xl shadow-lg p-8 border border-red-200">
-        <div className="flex items-center gap-4">
-          <div className="bg-red-100 rounded-xl p-3 shadow-sm">
-            <span className="text-3xl">🚨</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-red-100 rounded-xl p-3 shadow-sm">
+              <span className="text-3xl">🚨</span>
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-700 to-orange-700">
+                Real-Time Alerts
+              </h1>
+              <p className="text-lg text-red-700 mt-1">
+                Monitorimi dhe menaxhimi i alerts në kohë reale
+              </p>
+              {lastUpdate && (
+                <p className="text-sm text-red-600 mt-2 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Përditësuar: {lastUpdate.toLocaleTimeString()}
+                </p>
+              )}
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-700 to-orange-700">
-              Real-Time Alerts
-            </h1>
-            <p className="text-lg text-red-700 mt-1">
-              Monitorimi dhe menaxhimi i alerts në kohë reale
-            </p>
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={() => setLiveMode(!liveMode)}
+              variant={liveMode ? "primary" : "outline"}
+              className="flex items-center gap-2"
+            >
+              <Activity className="w-4 h-4" />
+              {liveMode ? 'Live ON' : 'Live OFF'}
+            </Button>
+            <Button 
+              onClick={fetchData}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Rifresko
+            </Button>
           </div>
         </div>
       </div>
@@ -421,29 +466,110 @@ export default function RealTimeAlerts() {
         </Card>
       )}
 
-      {/* Statistika të Alerts */}
+      {/* Advanced Statistics Dashboard */}
       {alertStats && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              📈 Statistika të Alerts ({alertStats.period})
+              <TrendingUp className="w-5 h-5" />
+              📊 Dashboard i Avancuar
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="mb-4">
-              <div className="text-2xl font-bold text-blue-700">
+            <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="md" className="mb-6">
+              <div className="bg-red-50 p-4 rounded-xl border border-red-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-red-700">{alertStats?.totalAlerts || 0}</div>
+                    <div className="text-sm text-red-600">Total Alerts</div>
+                  </div>
+                  <AlertTriangle className="w-8 h-8 text-red-500" />
+                </div>
+              </div>
+              <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-orange-700">{alertStats?.todayAlerts || 0}</div>
+                    <div className="text-sm text-orange-600">Alerts Sot</div>
+                  </div>
+                  <Clock className="w-8 h-8 text-orange-500" />
+                </div>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-yellow-700">{alertStats?.criticalAlerts || 0}</div>
+                    <div className="text-sm text-yellow-600">Kritike</div>
+                  </div>
+                  <AlertCircle className="w-8 h-8 text-yellow-500" />
+                </div>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-blue-700">{alertStats?.warningAlerts || 0}</div>
+                    <div className="text-sm text-blue-600">Paralajmërime</div>
+                  </div>
+                  <Eye className="w-8 h-8 text-blue-500" />
+                </div>
+              </div>
+            </Grid>
+
+            {/* Charts */}
+            {alertStats?.alertTypes && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Alert Types Chart */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4">Llojet e Alerts</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={Object.entries(alertStats.alertTypes).map(([type, count]) => ({
+                      type: type.replace('_', ' '),
+                      count
+                    }))}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="type" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#ef4444" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Recent Activity Chart */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200">
+                  <h3 className="text-lg font-semibold mb-4">Aktiviteti i Fundit</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={[
+                      { period: '1 Orë', alerts: alertStats?.recentActivity?.lastHour || 0 },
+                      { period: '24 Orë', alerts: alertStats?.recentActivity?.last24Hours || 0 },
+                      { period: '1 Javë', alerts: alertStats?.recentActivity?.lastWeek || 0 }
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="period" />
+                      <YAxis />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="alerts" stroke="#ef4444" fill="#fef2f2" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {/* Original Chart */}
+            <div className="mt-6">
+              <div className="text-2xl font-bold text-blue-700 mb-4">
                 Total Alerts: {alertStats.totalAlerts}
               </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={alertStats.statsByDate}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="total" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={alertStats.statsByDate}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="total" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
           </CardContent>
         </Card>
       )}
@@ -466,9 +592,9 @@ export default function RealTimeAlerts() {
         <CardContent>
           {recentAlerts.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">📭</div>
+              <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
               <h3 className="text-xl font-bold text-gray-700 mb-2">Nuk ka alerts</h3>
-              <p className="text-gray-500">Nuk u gjetën alerts në 24 orët e fundit</p>
+              <p className="text-gray-500">Sistemi është i sigurt! Nuk u gjetën alerts në 24 orët e fundit</p>
             </div>
           ) : (
             <div className="space-y-4 max-h-96 overflow-y-auto">
