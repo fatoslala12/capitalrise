@@ -18,6 +18,108 @@ router.get('/test', async (req, res) => {
   }
 });
 
+// Test logs endpoint without authentication
+router.get('/test-logs', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        al.id,
+        al.action,
+        al.entity_type as module,
+        al.description,
+        al.user_id,
+        al.timestamp,
+        al.metadata as details,
+        al.severity,
+        al.ip_address,
+        al.entity_type,
+        al.entity_id,
+        al.user_email,
+        al.user_email as user_name
+      FROM audit_trail al
+      ORDER BY al.timestamp DESC
+      LIMIT 10
+    `;
+    
+    const result = await db.query(query);
+    const logs = result.rows;
+
+    res.json({
+      data: logs.map(log => ({
+        ...log,
+        details: log.details || null
+      })),
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: logs.length,
+        pages: 1
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching test logs:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Test stats endpoint without authentication
+router.get('/test-stats', async (req, res) => {
+  try {
+    // Total logs
+    const totalResult = await db.query('SELECT COUNT(*) as total FROM audit_trail');
+    const totalLogs = totalResult.rows[0].total;
+
+    // Today's logs
+    const todayResult = await db.query(`
+      SELECT COUNT(*) as today 
+      FROM audit_trail 
+      WHERE DATE(timestamp) = CURRENT_DATE
+    `);
+    const todayLogs = todayResult.rows[0].today;
+
+    // Action statistics
+    const actionStatsResult = await db.query(`
+      SELECT action, COUNT(*) as count
+      FROM audit_trail
+      GROUP BY action
+      ORDER BY count DESC
+    `);
+    const actionStats = actionStatsResult.rows;
+
+    // Calculate action counts
+    const createCount = actionStats.find(s => s.action === 'CREATE')?.count || 0;
+    const updateCount = actionStats.find(s => s.action === 'UPDATE')?.count || 0;
+    const deleteCount = actionStats.find(s => s.action === 'DELETE')?.count || 0;
+    const loginCount = actionStats.find(s => s.action === 'LOGIN')?.count || 0;
+    const paymentCount = actionStats.find(s => s.action === 'PAYMENT')?.count || 0;
+
+    // Active users (last 7 days)
+    const activeUsersResult = await db.query(`
+      SELECT COUNT(DISTINCT user_id) as active_users
+      FROM audit_trail
+      WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
+    `);
+    const activeUsers = activeUsersResult.rows[0].active_users;
+
+    res.json({
+      data: {
+        totalLogs,
+        todayLogs,
+        activeUsers,
+        createCount,
+        updateCount,
+        deleteCount,
+        loginCount,
+        paymentCount,
+        actionStats
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching test stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get audit logs with advanced filtering
 router.get('/logs', verifyToken, async (req, res) => {
   try {
@@ -271,7 +373,7 @@ router.get('/stats', verifyToken, async (req, res) => {
     const todayQuery = `
       SELECT COUNT(*) as today 
       FROM audit_trail 
-      WHERE DATE(timestamp) = CURDATE()
+      WHERE DATE(timestamp) = CURRENT_DATE
     `;
     const todayResult = await db.query(todayQuery);
     const todayLogs = todayResult.rows[0].today;
@@ -298,7 +400,7 @@ router.get('/stats', verifyToken, async (req, res) => {
     const activeUsersQuery = `
       SELECT COUNT(DISTINCT user_id) as active_users
       FROM audit_trail
-      WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+      WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
     `;
     const activeUsersResult = await db.query(activeUsersQuery);
     const activeUsers = activeUsersResult.rows[0].active_users;

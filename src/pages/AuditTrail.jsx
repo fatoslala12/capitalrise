@@ -67,8 +67,8 @@ export default function AuditTrail() {
       console.log('🔍 Filters:', filters);
       
       const [logsRes, statsRes, suspiciousRes, entitiesRes] = await Promise.all([
-        api.get('/api/audit/logs', { params: { ...filters, ...advancedFilters } }),
-        api.get('/api/audit/stats'),
+        api.get('/api/audit/test-logs', { params: { ...filters, ...advancedFilters } }),
+        api.get('/api/audit/test-stats'),
         api.get('/api/audit/suspicious-activity'),
         api.get('/api/audit/most-active-entities')
       ]);
