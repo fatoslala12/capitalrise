@@ -42,44 +42,48 @@ exports.createUser = asyncHandler(async (req, res) => {
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  // Krijo user
-  const result = await pool.query(
-    `INSERT INTO users (
-      first_name, last_name, email, password, role, phone, address, 
-      position, hourly_rate, start_date, status, qualification, 
-      next_of_kin, next_of_kin_phone, created_at
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
-    RETURNING *`,
-    [
-      firstName, lastName, email.toLowerCase(), hashedPassword, role,
-      phone, address, position, hourlyRate, startDate, status,
-      qualification, nextOfKin, nextOfKinPhone
-    ]
-  );
-
-  const newUser = result.rows[0];
-
-  // Krijo punonjës në tabelën employees
+  // Krijo punonjës në tabelën employees së pari
+  let newEmployee = null;
   try {
     const employeeResult = await pool.query(
       `INSERT INTO employees (
         first_name, last_name, residence, start_date, phone, 
         next_of_kin, next_of_kin_phone, qualification, status, 
-        hourly_rate, username, created_at, created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), $12)
+        hourly_rate, username, created_at, created_by, label_type,
+        dob, pob, nid
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), $12, $13, $14, $15, $16, $17)
       RETURNING *`,
       [
         firstName, lastName, address, startDate, phone,
         nextOfKin, nextOfKinPhone, qualification, status,
-        hourlyRate, email.toLowerCase(), newUser.id
+        hourlyRate, email.toLowerCase(), newUser?.id || 1, 'CSS',
+        req.body.dob || null, req.body.pob || null, req.body.nid || null
       ]
     );
 
-    console.log(`✅ Punonjësi u krijua në tabelën employees me ID: ${employeeResult.rows[0].id}`);
+    newEmployee = employeeResult.rows[0];
+    console.log(`✅ Punonjësi u krijua në tabelën employees me ID: ${newEmployee.id}`);
   } catch (employeeError) {
     console.error('❌ Gabim në krijimin e punonjësit në tabelën employees:', employeeError);
-    // Mos fshi user-in nëse employee dështon, vetëm log error
+    throw employeeError;
   }
+
+  // Krijo user me employee_id
+  const result = await pool.query(
+    `INSERT INTO users (
+      first_name, last_name, email, password, role, phone, address, 
+      position, hourly_rate, start_date, status, qualification, 
+      next_of_kin, next_of_kin_phone, created_at, employee_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), $15)
+    RETURNING *`,
+    [
+      firstName, lastName, email.toLowerCase(), hashedPassword, role,
+      phone, address, position, hourlyRate, startDate, status,
+      qualification, nextOfKin, nextOfKinPhone, newEmployee.id
+    ]
+  );
+
+  const newUser = result.rows[0];
 
   // Dërgo email përshëndetje
   try {

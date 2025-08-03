@@ -3,9 +3,14 @@ const NotificationService = require('../services/notificationService');
 
 exports.getAllEmployees = async (req, res) => {
   try {
-    // Merr të gjithë punonjësit dhe rolet e tyre
+    // Merr të gjithë punonjësit me të gjitha të dhënat nga users dhe employees
     const employeesRes = await pool.query(`
-      SELECT e.*, u.role
+      SELECT 
+        e.*,
+        u.role,
+        u.email,
+        u.first_name as user_first_name,
+        u.last_name as user_last_name
       FROM employees e
       LEFT JOIN users u ON u.employee_id = e.id
       ORDER BY e.id
@@ -24,10 +29,15 @@ exports.getAllEmployees = async (req, res) => {
       workplaceMap[w.employee_id].push(w.site_name);
     });
 
-    // Bashko workplace te çdo employee (camelCase)
+    // Bashko workplace te çdo employee dhe përditëso të dhënat
     const employeesWithWorkplace = employees.map(emp => ({
       ...emp,
-      workplace: workplaceMap[emp.id] || []
+      workplace: workplaceMap[emp.id] || [],
+      // Përditëso të dhënat nga users nëse janë të disponueshme
+      role: emp.role || 'user',
+      email: emp.email || emp.username,
+      first_name: emp.user_first_name || emp.first_name,
+      last_name: emp.user_last_name || emp.last_name
     }));
     res.json(employeesWithWorkplace);
   } catch (err) {
