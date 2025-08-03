@@ -44,15 +44,14 @@ export default function BackupManagement() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [backupsRes, statusRes, tablesRes] = await Promise.all([
-        api.get('/api/backup/list'),
-        api.get('/api/backup/status'),
-        api.get('/api/backup/tables')
+      const [backupsRes, statusRes] = await Promise.all([
+        api.get('/api/backup/test-list'),
+        api.get('/api/backup/test-status')
       ]);
 
       setBackups(backupsRes.data.data || []);
       setDatabaseStatus(statusRes.data.data);
-      setTableInfo(tablesRes.data.data || []);
+      setTableInfo([]); // For now, we'll skip table info
     } catch (error) {
       console.error('Error fetching backup data:', error);
       toast.error('Gabim gjatë ngarkimit të të dhënave');
@@ -65,7 +64,7 @@ export default function BackupManagement() {
   const createFullBackup = async () => {
     try {
       setCreatingBackup(true);
-      const response = await api.post('/api/backup/full', {
+      const response = await api.post('/api/backup/test-backup', {
         description: backupDescription || 'Backup manual i plotë'
       });
 

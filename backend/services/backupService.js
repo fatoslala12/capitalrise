@@ -21,6 +21,16 @@ class BackupService {
     }
   }
 
+  // Kontrollo nëse direktoria e backup-ve ekziston
+  async checkBackupDirectory() {
+    try {
+      await fs.access(this.backupDir);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   // Krijo backup të plotë të databazës
   async createFullBackup(description = '') {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');

@@ -1,0 +1,9 @@
+{
+  "filename": "backup-full-2025-08-03T10-35-07-025Z.sql",
+  "timestamp": "2025-08-03T10:35:20.067Z",
+  "description": "Test backup from API",
+  "type": "full",
+  "size": 4527451,
+  "tables": [],
+  "created_by": "system"
+}
