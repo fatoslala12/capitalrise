@@ -592,6 +592,353 @@ Ju lutem mos përgjigjuni këtij email-i.
     }
   }
 
+  // Dërgo faturë në email
+  async sendInvoiceEmail(invoice, contract, recipientEmail) {
+    try {
+      if (!this.resend) {
+        throw createError('EMAIL_SERVICE_ERROR', null, 'Email service nuk është i disponueshëm');
+      }
+
+      const subject = `Fatura #${invoice.invoice_number} - ${contract.company}`;
+      const htmlContent = this.generateInvoiceEmailHTML(invoice, contract);
+      const textContent = this.generateInvoiceEmailText(invoice, contract);
+
+      const result = await this.resend.emails.send({
+        from: 'Alban Construction <onboarding@resend.dev>',
+        to: [recipientEmail],
+        subject: subject,
+        html: htmlContent,
+        text: textContent
+      });
+      
+      console.log('✅ Invoice email u dërgua me sukses:', result.id);
+      
+      return {
+        success: true,
+        messageId: result.id,
+        email: recipientEmail
+      };
+
+    } catch (error) {
+      console.error('❌ Gabim në dërgimin e invoice email:', error);
+      throw createError('EMAIL_SERVICE_ERROR', {
+        email: recipientEmail,
+        error: error.message
+      }, 'Gabim në dërgimin e email-it të faturës');
+    }
+  }
+
+  // Dërgo contract details në email
+  async sendContractDetailsEmail(contract, recipientEmail) {
+    try {
+      if (!this.resend) {
+        throw createError('EMAIL_SERVICE_ERROR', null, 'Email service nuk është i disponueshëm');
+      }
+
+      const subject = `Detajet e Kontratës #${contract.contract_number} - ${contract.company}`;
+      const htmlContent = this.generateContractDetailsEmailHTML(contract);
+      const textContent = this.generateContractDetailsEmailText(contract);
+
+      const result = await this.resend.emails.send({
+        from: 'Alban Construction <onboarding@resend.dev>',
+        to: [recipientEmail],
+        subject: subject,
+        html: htmlContent,
+        text: textContent
+      });
+      
+      console.log('✅ Contract details email u dërgua me sukses:', result.id);
+      
+      return {
+        success: true,
+        messageId: result.id,
+        email: recipientEmail
+      };
+
+    } catch (error) {
+      console.error('❌ Gabim në dërgimin e contract details email:', error);
+      throw createError('EMAIL_SERVICE_ERROR', {
+        email: recipientEmail,
+        error: error.message
+      }, 'Gabim në dërgimin e email-it të detajeve të kontratës');
+    }
+  }
+
+  // Generate HTML për invoice email
+  generateInvoiceEmailHTML(invoice, contract) {
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('sq-AL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
+
+    const formatCurrency = (amount) => {
+      return new Intl.NumberFormat('sq-AL', { 
+        style: 'currency', 
+        currency: 'GBP' 
+      }).format(amount || 0);
+    };
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Fatura #${invoice.invoice_number}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+          .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+          .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 10px; }
+          .invoice-details { margin-bottom: 30px; }
+          .invoice-details h2 { color: #333; margin-bottom: 20px; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+          .info-item { padding: 15px; background: #f8f9fa; border-radius: 5px; }
+          .info-label { font-weight: bold; color: #007bff; }
+          .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+          .items-table th, .items-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+          .items-table th { background: #007bff; color: white; }
+          .total-section { text-align: right; margin-top: 30px; }
+          .total-row { margin: 10px 0; font-size: 16px; }
+          .grand-total { font-size: 20px; font-weight: bold; color: #007bff; }
+          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">🏗️ Alban Construction</div>
+            <h1>Fatura #${invoice.invoice_number}</h1>
+          </div>
+          
+          <div class="invoice-details">
+            <h2>Detajet e Faturës</h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">Kompania:</div>
+                <div>${contract.company}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Kontrata #:</div>
+                <div>${contract.contract_number}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Data:</div>
+                <div>${formatDate(invoice.date)}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Statusi:</div>
+                <div>${invoice.paid ? 'E paguar' : 'E papaguar'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="items-section">
+            <h2>Artikujt</h2>
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Përshkrimi</th>
+                  <th>Shifte</th>
+                  <th>Çmimi</th>
+                  <th>Shuma</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(invoice.items || []).map(item => `
+                  <tr>
+                    <td>${item.description || ''}</td>
+                    <td>${item.shifts || ''}</td>
+                    <td>${formatCurrency(item.rate)}</td>
+                    <td>${formatCurrency(item.amount)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="total-section">
+            <div class="total-row">
+              <strong>Totali Neto:</strong> ${formatCurrency(invoice.total_net)}
+            </div>
+            <div class="total-row">
+              <strong>TVSH (20%):</strong> ${formatCurrency(invoice.vat)}
+            </div>
+            <div class="total-row">
+              <strong>Të tjera:</strong> ${formatCurrency(invoice.other)}
+            </div>
+            <div class="total-row grand-total">
+              <strong>Totali i Përgjithshëm:</strong> ${formatCurrency(invoice.total)}
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>Falënderojmë për besimin tuaj!</p>
+            <p>Alban Construction</p>
+            <p>Email: info@albanconstruction.com</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  // Generate text për invoice email
+  generateInvoiceEmailText(invoice, contract) {
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('sq-AL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
+
+    const formatCurrency = (amount) => {
+      return new Intl.NumberFormat('sq-AL', { 
+        style: 'currency', 
+        currency: 'GBP' 
+      }).format(amount || 0);
+    };
+
+    return `
+Fatura #${invoice.invoice_number} - ${contract.company}
+
+Detajet e Faturës:
+- Kompania: ${contract.company}
+- Kontrata #: ${contract.contract_number}
+- Data: ${formatDate(invoice.date)}
+- Statusi: ${invoice.paid ? 'E paguar' : 'E papaguar'}
+
+Artikujt:
+${(invoice.items || []).map(item => `
+- ${item.description || ''} | ${item.shifts || ''} shifte | ${formatCurrency(item.rate)} | ${formatCurrency(item.amount)}
+`).join('')}
+
+Totali:
+- Totali Neto: ${formatCurrency(invoice.total_net)}
+- TVSH (20%): ${formatCurrency(invoice.vat)}
+- Të tjera: ${formatCurrency(invoice.other)}
+- Totali i Përgjithshëm: ${formatCurrency(invoice.total)}
+
+Falënderojmë për besimin tuaj!
+Alban Construction
+    `;
+  }
+
+  // Generate HTML për contract details email
+  generateContractDetailsEmailHTML(contract) {
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('sq-AL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Detajet e Kontratës #${contract.contract_number}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+          .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+          .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 10px; }
+          .contract-details { margin-bottom: 30px; }
+          .contract-details h2 { color: #333; margin-bottom: 20px; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+          .info-item { padding: 15px; background: #f8f9fa; border-radius: 5px; }
+          .info-label { font-weight: bold; color: #007bff; }
+          .status-badge { display: inline-block; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+          .status-active { background: #d4edda; color: #155724; }
+          .status-completed { background: #f8d7da; color: #721c24; }
+          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">🏗️ Alban Construction</div>
+            <h1>Detajet e Kontratës #${contract.contract_number}</h1>
+          </div>
+          
+          <div class="contract-details">
+            <h2>Informacionet e Kontratës</h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">Kompania:</div>
+                <div>${contract.company}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Kontrata #:</div>
+                <div>${contract.contract_number}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Vendodhja:</div>
+                <div>${contract.site_name || 'N/A'}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Adresa:</div>
+                <div>${contract.address || 'N/A'}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Data e Fillimit:</div>
+                <div>${formatDate(contract.start_date)}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Data e Mbarimit:</div>
+                <div>${formatDate(contract.finish_date)}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Statusi:</div>
+                <div>
+                  <span class="status-badge ${contract.status === 'Mbyllur' || contract.status === 'Mbyllur me vonese' ? 'status-completed' : 'status-active'}">
+                    ${contract.status}
+                  </span>
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Vlera e Kontratës:</div>
+                <div>£${contract.contract_value || 'N/A'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>Falënderojmë për besimin tuaj!</p>
+            <p>Alban Construction</p>
+            <p>Email: info@albanconstruction.com</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  // Generate text për contract details email
+  generateContractDetailsEmailText(contract) {
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('sq-AL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
+
+    return `
+Detajet e Kontratës #${contract.contract_number} - ${contract.company}
+
+Informacionet e Kontratës:
+- Kompania: ${contract.company}
+- Kontrata #: ${contract.contract_number}
+- Vendodhja: ${contract.site_name || 'N/A'}
+- Adresa: ${contract.address || 'N/A'}
+- Data e Fillimit: ${formatDate(contract.start_date)}
+- Data e Mbarimit: ${formatDate(contract.finish_date)}
+- Statusi: ${contract.status}
+- Vlera e Kontratës: £${contract.contract_value || 'N/A'}
+
+Falënderojmë për besimin tuaj!
+Alban Construction
+    `;
+  }
+
   // Get service status
   getServiceStatus() {
     return {
@@ -604,4 +951,17 @@ Ju lutem mos përgjigjuni këtij email-i.
   }
 }
 
-module.exports = EmailService; 
+// Create instance
+const emailService = new EmailService();
+
+// Export functions for use in controllers
+module.exports = {
+  EmailService,
+  sendInvoiceEmail: (invoice, contract, recipientEmail) => emailService.sendInvoiceEmail(invoice, contract, recipientEmail),
+  sendContractDetailsEmail: (contract, recipientEmail) => emailService.sendContractDetailsEmail(contract, recipientEmail),
+  sendWelcomeEmail: (userData) => emailService.sendWelcomeEmail(userData),
+  sendPasswordResetEmail: (email, resetToken) => emailService.sendPasswordResetEmail(email, resetToken),
+  sendNotificationEmail: (email, subject, message, type) => emailService.sendNotificationEmail(email, subject, message, type),
+  testEmailService: () => emailService.testEmailService(),
+  getServiceStatus: () => emailService.getServiceStatus()
+}; 
