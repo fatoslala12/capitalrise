@@ -615,6 +615,15 @@ export default function ContractDetails() {
               <p><span className="font-bold text-blue-800">#️⃣ Nr Kompanisë:</span> {contract.company_no}</p>
               <p><span className="font-bold text-blue-800">📍 Vendodhja:</span> {contract.site_name}</p>
               <p><span className="font-bold text-blue-800">📬 Adresa:</span> {contract.address}</p>
+              <p><span className="font-bold text-blue-800">📋 Lloji i Kontratës:</span> 
+                <span className={`ml-2 px-3 py-1 rounded-full text-sm font-semibold ${
+                  (contract.contract_type || 'day_work') === 'price_work' 
+                    ? 'bg-orange-100 text-orange-700' 
+                    : 'bg-blue-100 text-blue-700'
+                }`}>
+                  {(contract.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
+                </span>
+              </p>
             </div>
             <div className="space-y-3 text-lg">
               <p><span className="font-bold text-blue-800">🗓 Data e Fillimit:</span> {formatDate(contract.start_date)}</p>

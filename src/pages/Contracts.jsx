@@ -40,6 +40,7 @@ export default function Contracts() {
     finish_date: "",
     address: "",
     company_email: "",
+    contract_type: "day_work", // Added contract_type field
     status: "Ne progres",
     closed_manually: false,
     closed_date: null,
@@ -1306,6 +1307,19 @@ export default function Contracts() {
                     }`}
                   />
                   {formErrors.finish_date && <p className="text-red-500 text-sm mt-1">{formErrors.finish_date}</p>}
+                </div>
+                
+                <div className="col-span-1">
+                  <label className="block text-base font-medium mb-1 text-blue-800">Lloji i Kontratës</label>
+                  <select 
+                    name="contract_type" 
+                    value={newContract.contract_type} 
+                    onChange={handleChange} 
+                    className="p-3 border border-purple-200 rounded-lg text-base focus:ring-2 focus:ring-purple-200 transition-all shadow-sm w-full"
+                  >
+                    <option value="day_work">👷 Day Work</option>
+                    <option value="price_work">🏗️ Price Work</option>
+                  </select>
                 </div>
                 
                 <div className="col-span-1">
