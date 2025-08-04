@@ -44,11 +44,15 @@ exports.createUser = asyncHandler(async (req, res) => {
   // Krijo punonjës në tabelën employees së pari
   let newEmployee = null;
   try {
+    // Përdor ID-në e user-it aktual për created_by dhe updated_by
+    const currentUserId = req.user.id || 1;
+    
     console.log('🔍 Employee data being inserted:', {
       firstName, lastName, address, startDate, phone,
       nextOfKin, nextOfKinPhone, qualification, status,
       hourlyRate,
-      dob: req.body.dob, pob: req.body.pob, nid: req.body.nid
+      dob: req.body.dob, pob: req.body.pob, nid: req.body.nid,
+      createdBy: currentUserId
     });
     
     const employeeResult = await pool.query(
@@ -62,9 +66,9 @@ exports.createUser = asyncHandler(async (req, res) => {
       [
         firstName, lastName, address, startDate, phone,
         nextOfKin, nextOfKinPhone, qualification, status,
-        hourlyRate, 1, 'CSS',
+        hourlyRate, currentUserId, 'CSS',
         req.body.dob || null, req.body.pob || null, req.body.nid || null,
-        null, 1
+        null, currentUserId
       ]
     );
 
@@ -76,21 +80,29 @@ exports.createUser = asyncHandler(async (req, res) => {
   }
 
   // Krijo user me employee_id
-  const result = await pool.query(
-    `INSERT INTO users (
-      first_name, last_name, email, password, role, phone, address, 
-      position, hourly_rate, start_date, status, qualification, 
-      next_of_kin, next_of_kin_phone, created_at, employee_id
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), $15)
-    RETURNING *`,
-    [
-      firstName, lastName, email.toLowerCase(), plainPassword, role,
-      phone, address, position, hourlyRate, startDate, status,
-      qualification, nextOfKin, nextOfKinPhone, newEmployee.id
-    ]
-  );
+  let newUser = null;
+  try {
+    console.log('🔍 Creating user with employee_id:', newEmployee.id);
+    const result = await pool.query(
+      `INSERT INTO users (
+        first_name, last_name, email, password, role, phone, address, 
+        position, hourly_rate, start_date, status, qualification, 
+        next_of_kin, next_of_kin_phone, created_at, employee_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), $15)
+      RETURNING *`,
+      [
+        firstName, lastName, email.toLowerCase(), plainPassword, role,
+        phone, address, position, hourlyRate, startDate, status,
+        qualification, nextOfKin, nextOfKinPhone, newEmployee.id
+      ]
+    );
 
-  const newUser = result.rows[0];
+    newUser = result.rows[0];
+    console.log(`✅ User u krijua me sukses me ID: ${newUser.id}`);
+  } catch (userError) {
+    console.error('❌ Gabim në krijimin e user:', userError);
+    throw userError;
+  }
 
   // Krijo employee_workplaces nëse ka workplace
   if (req.body.workplace && Array.isArray(req.body.workplace) && req.body.workplace.length > 0) {
