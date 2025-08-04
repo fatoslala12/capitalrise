@@ -50,7 +50,7 @@ exports.createUser = asyncHandler(async (req, res) => {
         next_of_kin, next_of_kin_phone, qualification, status, 
         hourly_rate, username, created_at, created_by, label_type,
         dob, pob, nid, photo, updated_at, updated_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), $11, $12, $13, $14, $15, $16, $17, NOW(), $18)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), $12, $13, $14, $15, $16, $17, NOW(), $18)
       RETURNING *`,
       [
         firstName, lastName, address, startDate, phone,
