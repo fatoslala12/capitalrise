@@ -44,6 +44,13 @@ exports.createUser = asyncHandler(async (req, res) => {
   // Krijo punonjës në tabelën employees së pari
   let newEmployee = null;
   try {
+    console.log('🔍 Employee data being inserted:', {
+      firstName, lastName, address, startDate, phone,
+      nextOfKin, nextOfKinPhone, qualification, status,
+      hourlyRate,
+      dob: req.body.dob, pob: req.body.pob, nid: req.body.nid
+    });
+    
     const employeeResult = await pool.query(
       `INSERT INTO employees (
         first_name, last_name, residence, start_date, phone, 
@@ -88,6 +95,7 @@ exports.createUser = asyncHandler(async (req, res) => {
   // Krijo employee_workplaces nëse ka workplace
   if (req.body.workplace && Array.isArray(req.body.workplace) && req.body.workplace.length > 0) {
     try {
+      console.log('🔍 Workplaces to add:', req.body.workplace);
       for (const workplace of req.body.workplace) {
         // Gjej contract_id nga emri i site-it
         const contractRes = await pool.query('SELECT id FROM contracts WHERE site_name = $1 LIMIT 1', [workplace]);
@@ -98,11 +106,15 @@ exports.createUser = asyncHandler(async (req, res) => {
             [newEmployee.id, contractId]
           );
           console.log(`✅ Workplace u shtua: ${workplace} për punonjësin ${newEmployee.id}`);
+        } else {
+          console.log(`⚠️ Nuk u gjet contract për workplace: ${workplace}`);
         }
       }
     } catch (workplaceError) {
       console.error('❌ Gabim në krijimin e workplace:', workplaceError);
     }
+  } else {
+    console.log('ℹ️ Nuk ka workplace për të shtuar');
   }
 
   // Dërgo email përshëndetje

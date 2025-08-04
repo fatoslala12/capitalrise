@@ -227,7 +227,11 @@ export default function EmployeesList() {
         status: newEmployee.status,
         qualification: newEmployee.qualification,
         nextOfKin: newEmployee.nextOfKin,
-        nextOfKinPhone: newEmployee.nextOfKinPhone
+        nextOfKinPhone: newEmployee.nextOfKinPhone,
+        dob: newEmployee.dob,
+        pob: newEmployee.pob,
+        nid: newEmployee.nid,
+        workplace: newEmployee.workplace
       };
 
       const res = await axios.post("https://building-system.onrender.com/api/user-management/create", userData, {
