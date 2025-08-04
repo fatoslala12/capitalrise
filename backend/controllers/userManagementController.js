@@ -57,7 +57,7 @@ exports.createUser = asyncHandler(async (req, res) => {
         nextOfKin, nextOfKinPhone, qualification, status,
         hourlyRate, 1, 'CSS',
         req.body.dob || null, req.body.pob || null, req.body.nid || null,
-        null, 1, 1
+        null, 1
       ]
     );
 
