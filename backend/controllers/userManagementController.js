@@ -47,10 +47,13 @@ exports.createUser = asyncHandler(async (req, res) => {
     // Përdor ID-në e user-it aktual për created_by dhe updated_by
     const currentUserId = req.user.id || 1;
     
+    // Përcakto label_type bazuar në qualification
+    const labelType = qualification === 'NI' ? 'NI' : 'UTR';
+    
     console.log('🔍 Employee data being inserted:', {
       firstName, lastName, address, startDate, phone,
       nextOfKin, nextOfKinPhone, qualification, status,
-      hourlyRate,
+      hourlyRate, labelType,
       dob: req.body.dob, pob: req.body.pob, nid: req.body.nid,
       createdBy: currentUserId
     });
@@ -66,7 +69,7 @@ exports.createUser = asyncHandler(async (req, res) => {
       [
         firstName, lastName, address, startDate, phone,
         nextOfKin, nextOfKinPhone, qualification, status,
-        hourlyRate, currentUserId, 'CSS',
+        hourlyRate, currentUserId, labelType,
         req.body.dob || null, req.body.pob || null, req.body.nid || null,
         null, currentUserId
       ]
@@ -79,21 +82,17 @@ exports.createUser = asyncHandler(async (req, res) => {
     throw employeeError;
   }
 
-  // Krijo user me employee_id
+  // Krijo user me employee_id - vetëm të dhënat e logimit
   let newUser = null;
   try {
     console.log('🔍 Creating user with employee_id:', newEmployee.id);
     const result = await pool.query(
       `INSERT INTO users (
-        first_name, last_name, email, password, role, phone, address, 
-        position, hourly_rate, start_date, status, qualification, 
-        next_of_kin, next_of_kin_phone, created_at, employee_id
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), $15)
+        serial, employee_id, email, password, role, created_at, updated_by
+      ) VALUES ($1, $2, $3, $4, $5, NOW(), $6)
       RETURNING *`,
       [
-        firstName, lastName, email.toLowerCase(), plainPassword, role,
-        phone, address, position, hourlyRate, startDate, status,
-        qualification, nextOfKin, nextOfKinPhone, newEmployee.id
+        newEmployee.id, newEmployee.id, email.toLowerCase(), plainPassword, role, currentUserId
       ]
     );
 
