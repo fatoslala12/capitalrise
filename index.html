@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     <!-- Preload critical resources -->
-    <link rel="preload" href="/src/main.jsx" as="script">
-    <link rel="preload" href="/src/index.css" as="style">
+    <link rel="preload" href="/src/main.jsx" as="script" crossorigin>
+    <link rel="preload" href="/src/index.css" as="style" crossorigin>
     
     <!-- Service Worker registration -->
     <script>
@@ -45,8 +45,8 @@
         document.head.appendChild(link);
       };
       
-      // Preload commonly used libraries
-      preloadLibrary('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+      // Preload commonly used libraries only when needed
+      // preloadLibrary('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
     </script>
   </body>
 </html>

@@ -104,16 +104,28 @@ export default function DashboardStats() {
           console.log('[DEBUG] Calculating dashboard stats manually');
           
           // Manual calculation as fallback
+          console.log('[DEBUG] Manual calculation - thisWeek:', thisWeek);
+          console.log('[DEBUG] Manual calculation - allPayments:', allPayments.length);
+          
           const thisWeekPayments = allPayments.filter(p => p.weekLabel === thisWeek);
+          console.log('[DEBUG] Manual calculation - thisWeekPayments:', thisWeekPayments.length);
+          
           const paidThisWeek = thisWeekPayments.filter(p => p.isPaid === true);
+          console.log('[DEBUG] Manual calculation - paidThisWeek:', paidThisWeek.length);
+          
           const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || 0), 0);
+          console.log('[DEBUG] Manual calculation - totalPaid:', totalPaid);
           
           // Calculate work hours for this week
           let totalWorkHours = 0;
           const siteHours = {};
           
+          console.log('[DEBUG] Manual calculation - structuredWorkHours keys:', Object.keys(structuredWorkHours));
+          
           Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
             const weekData = empData[thisWeek] || {};
+            console.log('[DEBUG] Manual calculation - empId:', empId, 'weekData:', weekData);
+            
             Object.values(weekData).forEach(dayData => {
               if (dayData?.hours) {
                 const hours = parseFloat(dayData.hours);
@@ -125,19 +137,24 @@ export default function DashboardStats() {
             });
           });
           
-          // Top 5 employees by payment amount
-          const top5Employees = thisWeekPayments
+          console.log('[DEBUG] Manual calculation - totalWorkHours:', totalWorkHours);
+          console.log('[DEBUG] Manual calculation - siteHours:', siteHours);
+          
+          // Top 5 employees by payment amount (only paid ones)
+          const top5Employees = paidThisWeek
             .sort((a, b) => parseFloat(b.grossAmount || 0) - parseFloat(a.grossAmount || 0))
             .slice(0, 5)
             .map(p => {
-              const emp = employeesRes.data.find(e => e.id === p.employeeId);
+              const emp = employees.find(e => e.id === p.employeeId);
               return {
                 id: p.employeeId,
-                name: emp ? `${emp.first_name} ${emp.last_name}` : 'Unknown',
+                name: emp ? `${emp.firstName || emp.first_name} ${emp.lastName || emp.last_name}` : 'Unknown',
                 grossAmount: parseFloat(p.grossAmount || 0),
                 isPaid: p.isPaid
               };
             });
+          
+          console.log('[DEBUG] Manual calculation - top5Employees:', top5Employees);
           
           setDashboardStats({
             thisWeek: thisWeek,

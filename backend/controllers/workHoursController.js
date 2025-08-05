@@ -810,9 +810,9 @@ exports.checkManagerAccess = async (req, res) => {
 
 // Dashboard stats endpoint - optimized for dashboard display
 exports.getDashboardStats = async (req, res) => {
-  // Lejo vetëm admin
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Access denied' });
+  // Lejo të gjithë userët e autentikuar
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
   }
   const client = await pool.connect();
   try {
