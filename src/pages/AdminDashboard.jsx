@@ -56,6 +56,7 @@ export default function DashboardStats() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('[DEBUG] fetchData started');
         setLoading(true);
         
         // Try the new optimized API first, fallback to manual calculation if it fails
@@ -85,6 +86,11 @@ export default function DashboardStats() {
         const allExpenses = snakeToCamel(expensesRes.data || []);
         const allPayments = snakeToCamel(paymentsRes.data || []);
         const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
+        
+        console.log('[DEBUG] allPayments count:', allPayments.length);
+        console.log('[DEBUG] allExpenses count:', allExpenses.length);
+        console.log('[DEBUG] structuredWorkHours keys:', Object.keys(structuredWorkHours));
+        console.log('[DEBUG] Sample allPayments:', allPayments.slice(0, 3));
         
         setAllExpenses(allExpenses);
         setStructuredWorkHours(structuredWorkHours);
@@ -261,7 +267,10 @@ export default function DashboardStats() {
           };
         });
         console.log('[DEBUG] weeklyProfitArr:', weeklyProfitArr);
+        console.log('[DEBUG] weeklyProfitArr:', weeklyProfitArr);
         setWeeklyProfitData(weeklyProfitArr);
+        
+        console.log('[DEBUG] fetchData completed successfully');
         
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -291,6 +300,10 @@ export default function DashboardStats() {
   if (loading) {
     return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat..." />;
   }
+
+  console.log('[DEBUG] RENDER - dashboardStats:', dashboardStats);
+  console.log('[DEBUG] RENDER - weeklyProfitData:', weeklyProfitData);
+  console.log('[DEBUG] RENDER - workHoursBysite:', dashboardStats.workHoursBysite);
 
 
 
