@@ -168,6 +168,10 @@ export default function DashboardStats() {
           });
         }
         
+        console.log('[DEBUG] allPayments sample:', allPayments.slice(0, 3));
+        console.log('[DEBUG] allExpenses sample:', allExpenses.slice(0, 3));
+        console.log('[DEBUG] structuredWorkHours keys:', Object.keys(structuredWorkHours));
+        
         setAllTasks(allTasksData);
         
         // Process unpaid invoices
@@ -214,11 +218,16 @@ export default function DashboardStats() {
         // --- FITIMI JAVORE ---
         // 1. Grumbullo pagesat e paguara per cdo jave
         const paidPayments = allPayments.filter(p => p.isPaid === true);
+        console.log('[DEBUG] allPayments count:', allPayments.length);
+        console.log('[DEBUG] paidPayments count:', paidPayments.length);
+        console.log('[DEBUG] Sample paidPayments:', paidPayments.slice(0, 3));
+        
         const paymentsByWeek = {};
         paidPayments.forEach(p => {
           if (!paymentsByWeek[p.weekLabel]) paymentsByWeek[p.weekLabel] = 0;
           paymentsByWeek[p.weekLabel] += parseFloat(p.grossAmount || 0);
         });
+        console.log('[DEBUG] paymentsByWeek:', paymentsByWeek);
         // 2. Grumbullo shpenzimet per cdo jave
         const expensesByWeek = {};
         allExpenses.forEach(e => {
@@ -251,6 +260,7 @@ export default function DashboardStats() {
             profit: totalPaid - totalExpenses
           };
         });
+        console.log('[DEBUG] weeklyProfitArr:', weeklyProfitArr);
         setWeeklyProfitData(weeklyProfitArr);
         
       } catch (error) {
@@ -319,17 +329,30 @@ export default function DashboardStats() {
         <MoneyStatCard
           title="Orë të punuara këtë javë"
           amount={`${(() => {
+            // Debug logs
+            console.log('[DEBUG] dashboardStats:', dashboardStats);
+            console.log('[DEBUG] workHoursBysite:', dashboardStats.workHoursBysite);
+            console.log('[DEBUG] totalHoursThisWeek:', dashboardStats.totalHoursThisWeek);
+            console.log('[DEBUG] totalWorkHours:', dashboardStats.totalWorkHours);
+            
             // Llogarit total orë nga workHoursBysite
             if (dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0) {
-              return dashboardStats.workHoursBysite.reduce((sum, site) => sum + (site.hours || 0), 0);
+              const totalFromSites = dashboardStats.workHoursBysite.reduce((sum, site) => sum + (site.hours || 0), 0);
+              console.log('[DEBUG] Total orë nga workHoursBysite:', totalFromSites);
+              return totalFromSites;
             }
-            return dashboardStats.totalHoursThisWeek ?? dashboardStats.totalWorkHours ?? 0;
+            const fallback = dashboardStats.totalHoursThisWeek ?? dashboardStats.totalWorkHours ?? 0;
+            console.log('[DEBUG] Fallback orë:', fallback);
+            return fallback;
           })()} orë`}
           color="purple"
         />
         <MoneyStatCard
           title="Pagesa këtë javë"
           amount={`£${(() => {
+            // Debug logs
+            console.log('[DEBUG] weeklyProfitData:', weeklyProfitData);
+            
             // Gjej javën aktuale
             const today = new Date();
             const day = today.getDay();
@@ -340,10 +363,15 @@ export default function DashboardStats() {
             const sunday = new Date(monday);
             sunday.setDate(monday.getDate() + 6);
             const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
+            console.log('[DEBUG] This week label:', thisWeek);
             
             // Gjej pagesat për këtë javë nga weeklyProfitData
             const thisWeekData = weeklyProfitData.find(w => w.week === thisWeek);
-            return thisWeekData ? thisWeekData.totalPaid : 0;
+            console.log('[DEBUG] This week data:', thisWeekData);
+            
+            const result = thisWeekData ? thisWeekData.totalPaid : 0;
+            console.log('[DEBUG] Final payment amount:', result);
+            return result;
           })()}`}
           color="amber"
         />
