@@ -63,12 +63,8 @@ export default function DashboardStats() {
         try {
           const dashboardRes = await api.get("/api/work-hours/dashboard-stats");
           dashboardData = snakeToCamel(dashboardRes.data || {});
-          console.log('[DEBUG] Dashboard API success:', dashboardData);
-          console.log('[DEBUG] Dashboard totalPaid:', dashboardData?.totalPaid);
-          console.log('[DEBUG] Dashboard top5Employees:', dashboardData?.top5Employees);
         } catch (dashboardError) {
-          console.log('[DEBUG] Dashboard API failed, using fallback:', dashboardError.message);
-          console.error('[DEBUG] Dashboard API error details:', dashboardError);
+          console.error('[ERROR] Dashboard API failed, using fallback:', dashboardError.message);
         }
         
         const [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
@@ -82,10 +78,6 @@ export default function DashboardStats() {
         ]);
         
         setContracts(snakeToCamel(contractsRes.data || []));
-        // DEBUG kontratat
-        setTimeout(() => {
-          console.log('[KONTRATAT API]', contractsRes.data);
-        }, 1000);
         setEmployees(snakeToCamel(employeesRes.data || []));
         
         const invoices = snakeToCamel(invoicesRes.data || []);
@@ -110,50 +102,34 @@ export default function DashboardStats() {
         
         // Use dashboard API data if available, otherwise calculate manually
         if (dashboardData && Object.keys(dashboardData).length > 0) {
-          console.log('[DEBUG] Using dashboard API data:', dashboardData);
           setDashboardStats(dashboardData);
         } else {
-          console.log('[DEBUG] Calculating dashboard stats manually');
-          console.log('[DEBUG] thisWeek format:', thisWeek);
-          console.log('[DEBUG] allPayments count:', allPayments.length);
-          console.log('[DEBUG] allPayments sample:', allPayments.slice(0, 3));
-          
           // Manual calculation as fallback
           const thisWeekPayments = allPayments.filter(p => p.weekLabel === thisWeek);
-          console.log('[DEBUG] thisWeekPayments count:', thisWeekPayments.length);
-          console.log('[DEBUG] thisWeekPayments sample:', thisWeekPayments.slice(0, 3));
           
           // If no data for current week, try to find the most recent week with data
           let weekToUse = thisWeek;
           let weekPayments = thisWeekPayments;
           
           if (thisWeekPayments.length === 0) {
-            console.log('[DEBUG] No data for current week, looking for most recent week with data');
             const allWeekLabels = [...new Set(allPayments.map(p => p.weekLabel))].sort().reverse();
-            console.log('[DEBUG] Available week labels:', allWeekLabels);
             
             if (allWeekLabels.length > 0) {
               weekToUse = allWeekLabels[0];
               weekPayments = allPayments.filter(p => p.weekLabel === weekToUse);
-              console.log('[DEBUG] Using week:', weekToUse, 'with', weekPayments.length, 'payments');
             }
           }
           
           const paidThisWeek = weekPayments.filter(p => p.isPaid === true);
-          console.log('[DEBUG] paidThisWeek count:', paidThisWeek.length);
           
           const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || 0), 0);
-          console.log('[DEBUG] totalPaid:', totalPaid);
           
           // Calculate work hours for the week we're using
           let totalWorkHours = 0;
           const siteHours = {};
           
-          console.log('[DEBUG] structuredWorkHours keys:', Object.keys(structuredWorkHours));
-          
           Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
             const weekData = empData[weekToUse] || {};
-            console.log('[DEBUG] empId:', empId, 'weekData:', weekData);
             
             Object.values(weekData).forEach(dayData => {
               if (dayData?.hours) {
@@ -165,9 +141,6 @@ export default function DashboardStats() {
               }
             });
           });
-          
-          console.log('[DEBUG] totalWorkHours:', totalWorkHours);
-          console.log('[DEBUG] siteHours:', siteHours);
           
           // Top 5 employees by payment amount (only paid ones)
           const top5Employees = paidThisWeek
@@ -182,8 +155,6 @@ export default function DashboardStats() {
                 isPaid: p.isPaid
               };
             });
-          
-          console.log('[DEBUG] top5Employees:', top5Employees);
           
           setDashboardStats({
             thisWeek: weekToUse,
@@ -311,10 +282,7 @@ export default function DashboardStats() {
     return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat..." />;
   }
 
-  console.log('[DEBUG] dashboardStats:', dashboardStats);
-  console.log('[DEBUG] employees:', employees);
-  console.log('[DEBUG] top5Employees:', dashboardStats.top5Employees);
-  console.log('[DEBUG] totals:', dashboardStats.totals);
+
 
   const progressBarColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"]; // pastel
 
@@ -354,8 +322,8 @@ export default function DashboardStats() {
           color="purple"
         />
         <MoneyStatCard
-          title="Total Bruto"
-          amount={`£${Number(dashboardStats.totalGrossThisWeek ?? dashboardStats.totalPaid ?? 0).toFixed(2)}`}
+          title="Pagesa këtë javë"
+          amount={`£${Number(dashboardStats.totalPaid ?? 0).toFixed(2)}`}
           color="amber"
         />
       </Grid>

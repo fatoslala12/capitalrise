@@ -3,14 +3,11 @@ const NotificationService = require('../services/notificationService');
 
 exports.getAllWorkHours = async (req, res) => {
   try {
-    console.log('[DEBUG] /api/work-hours/all called - SIMPLE QUERY');
+    
     let result = { rows: [] };
     try {
       result = await pool.query('SELECT * FROM work_hours ORDER BY date DESC');
-      console.log('[DEBUG] /api/work-hours/all - rows:', result.rows.length);
-      if (result.rows.length > 0) {
-        console.log('[DEBUG] First row sample:', result.rows[0]);
-      }
+
     } catch (err) {
       console.error('[ERROR] /api/work-hours/all main query:', err.message);
       return res.json([]);
@@ -468,14 +465,13 @@ exports.setPaidStatus = async (req, res) => {
 };
 
 exports.getStructuredWorkHours = async (req, res) => {
-  console.log('[DEBUG] getStructuredWorkHours controller called');
   
   // Debug: kontrollo javët në database
   try {
     const weekLabelsResult = await pool.query('SELECT DISTINCT week_label FROM payments ORDER BY week_label DESC LIMIT 10');
-    console.log('[DEBUG] Week labels in payments table:', weekLabelsResult.rows.map(row => row.week_label));
+    
   } catch (err) {
-    console.log('[DEBUG] Error getting week labels:', err.message);
+    
   }
   let result;
   try {
@@ -491,15 +487,7 @@ exports.getStructuredWorkHours = async (req, res) => {
       console.error('[ERROR] SQL query in /api/work-hours/structured:', queryErr.stack || queryErr);
       return res.status(500).json({ error: queryErr.message });
     }
-    console.log('[DEBUG] /api/work-hours/structured - rows:', result.rows.length);
-    
-    // Debug: kontrollo datat në work_hours
-    const uniqueDates = [...new Set(result.rows.map(row => row.date))].sort();
-    console.log('[DEBUG] Unique dates in work_hours:', uniqueDates);
-    
-    result.rows.forEach((row, idx) => {
-      console.log(`[DEBUG] Row ${idx}:`, row);
-    });
+
     // Strukturo të dhënat për React
     const data = {};
     // Për të mbajtur updated_at për çdo orë të javës

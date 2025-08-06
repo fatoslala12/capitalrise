@@ -3,14 +3,11 @@ const NotificationService = require('../services/notificationService');
 
 exports.getAllPayments = async (req, res) => {
   try {
-    console.log('[DEBUG] /api/payments called');
+    
     let result = { rows: [] };
     try {
       result = await pool.query('SELECT * FROM payments ORDER BY created_at DESC');
-      console.log('[DEBUG] /api/payments - rows:', result.rows.length);
-      if (result.rows.length > 0) {
-        console.log('[DEBUG] Payment Row 0:', result.rows[0]);
-      }
+
     } catch (err) {
       console.error('[ERROR] /api/payments main query:', err.message);
       return res.json([]);
