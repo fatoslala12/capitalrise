@@ -27,6 +27,7 @@ function snakeToCamel(obj) {
 }
 
 export default function DashboardStats() {
+  console.log('[DEBUG] AdminDashboard component rendered');
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
@@ -54,6 +55,7 @@ export default function DashboardStats() {
 
   // useEffect për të marrë të dhënat dhe llogaritë dashboard stats
   useEffect(() => {
+    console.log('[DEBUG] useEffect triggered');
     const fetchData = async () => {
       try {
         console.log('[DEBUG] fetchData started');
