@@ -6,6 +6,24 @@ const { Resend } = require('resend');
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 class NotificationService {
+  // Kontrollo nëse email-i është i lejuar nga Resend.com
+  static isEmailAllowed(email) {
+    const allowedEmails = ['fatoslala12@gmail.com']; // Vetëm email-et e lejuara për test
+    return allowedEmails.includes(email);
+  }
+
+  // Merr listën e email-eve të lejuara
+  static getAllowedEmails() {
+    return ['fatoslala12@gmail.com'];
+  }
+
+  // Shto një email në listën e lejuara (për admin)
+  static addAllowedEmail(email) {
+    // Kjo mund të implementohet me një database table në të ardhmen
+    console.log(`[INFO] Email ${email} u shtua në listën e lejuara`);
+    return true;
+  }
+
   // Krijo një njoftim të ri
   static async createNotification(userId, title, message, type = 'info', category = 'system', relatedId = null, relatedType = null, priority = 1) {
     try {
@@ -71,7 +89,22 @@ class NotificationService {
       // Kontrollo nëse email notifications janë të aktivizuara (për momentin të gjitha janë të aktivizuara)
       // TODO: Implemento notification settings kur të shtohet kolona në databazë
 
-
+      // KONTROLLO NËSE EMAIL-I ËSHTË I LEJUAR NGA RESEND.COM
+      if (!this.isEmailAllowed(user.email)) {
+        console.log(`[WARNING] Email ${user.email} nuk është i lejuar nga Resend.com për test. Email nuk do të dërgohet.`);
+        console.log(`[INFO] Për të dërguar email-e në adresa të tjera, verifikoni domain-in në resend.com/domains`);
+        
+        // Krijo një njoftim në sistem për të informuar përdoruesin
+        await this.createNotification(
+          userId,
+          '📧 Email nuk mund të dërgohet',
+          'Email-i juaj nuk mund të dërgohet për momentin për shkak të kufizimeve të sistemit. Njoftimet do të shfaqen në sistem.',
+          'warning',
+          'email_restriction'
+        );
+        
+        return;
+      }
 
       console.log(`[DEBUG] Sending email notification to ${user.email}: ${title}`);
 
