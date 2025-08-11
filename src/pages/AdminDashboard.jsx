@@ -27,7 +27,6 @@ function snakeToCamel(obj) {
 }
 
 export default function DashboardStats() {
-  console.log('[DEBUG] AdminDashboard component rendered');
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
@@ -38,7 +37,9 @@ export default function DashboardStats() {
     top5Employees: [],
     totalWorkHours: 0,
     paidEmployeesCount: 0,
-    totalEmployeesWithHours: 0
+    totalEmployeesWithHours: 0,
+    totalHoursThisWeek: 0,
+    totalGrossThisWeek: 0
   });
   const [unpaid, setUnpaid] = useState([]);
   const [unpaidExpenses, setUnpaidExpenses] = useState([]);
@@ -55,21 +56,11 @@ export default function DashboardStats() {
 
   // useEffect për të marrë të dhënat dhe llogaritë dashboard stats
   useEffect(() => {
-    console.log('[DEBUG] useEffect triggered');
     const fetchData = async () => {
       try {
-        console.log('[DEBUG] fetchData started');
         setLoading(true);
         
-        // Try the new optimized API first, fallback to manual calculation if it fails
-        let dashboardData = null;
-        try {
-          const dashboardRes = await api.get("/api/work-hours/dashboard-stats");
-          dashboardData = snakeToCamel(dashboardRes.data || {});
-        } catch (dashboardError) {
-          console.error('[ERROR] Dashboard API failed, using fallback:', dashboardError.message);
-        }
-        
+        // Merr të gjitha të dhënat paralelisht
         const [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
           api.get("/api/contracts"),
           api.get("/api/employees"),
@@ -89,11 +80,6 @@ export default function DashboardStats() {
         const allPayments = snakeToCamel(paymentsRes.data || []);
         const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
         
-        console.log('[DEBUG] allPayments count:', allPayments.length);
-        console.log('[DEBUG] allExpenses count:', allExpenses.length);
-        console.log('[DEBUG] structuredWorkHours keys:', Object.keys(structuredWorkHours));
-        console.log('[DEBUG] Sample allPayments:', allPayments.slice(0, 3));
-        
         setAllExpenses(allExpenses);
         setStructuredWorkHours(structuredWorkHours);
         
@@ -108,77 +94,76 @@ export default function DashboardStats() {
         sunday.setDate(monday.getDate() + 6);
         const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
         
-        // Use dashboard API data if available, otherwise calculate manually
-        if (dashboardData && Object.keys(dashboardData).length > 0) {
-          setDashboardStats(dashboardData);
-        } else {
-          // Manual calculation as fallback
-          const thisWeekPayments = allPayments.filter(p => p.weekLabel === thisWeek);
-          
-          // If no data for current week, try to find the most recent week with data
-          let weekToUse = thisWeek;
-          let weekPayments = thisWeekPayments;
-          
-          if (thisWeekPayments.length === 0) {
-            const allWeekLabels = [...new Set(allPayments.map(p => p.weekLabel))].sort().reverse();
-            
-            if (allWeekLabels.length > 0) {
-              weekToUse = allWeekLabels[0];
-              weekPayments = allPayments.filter(p => p.weekLabel === weekToUse);
-            }
-          }
-          
-          const paidThisWeek = weekPayments.filter(p => p.isPaid === true);
-          
-          const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || 0), 0);
-          
-          // Calculate work hours for the week we're using
-          let totalWorkHours = 0;
-          const siteHours = {};
-          
-          Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
-            const weekData = empData[weekToUse] || {};
-            
-            Object.values(weekData).forEach(dayData => {
-              if (dayData?.hours) {
-                const hours = parseFloat(dayData.hours);
-                totalWorkHours += hours;
-                if (dayData.site) {
-                  siteHours[dayData.site] = (siteHours[dayData.site] || 0) + hours;
-                }
-              }
-            });
-          });
-          
-          // Top 5 employees by payment amount (only paid ones)
-          const top5Employees = paidThisWeek
-            .sort((a, b) => parseFloat(b.grossAmount || 0) - parseFloat(a.grossAmount || 0))
-            .slice(0, 5)
-            .map(p => {
-              const emp = employees.find(e => e.id === p.employeeId);
-              return {
-                id: p.employeeId,
-                name: emp ? `${emp.firstName || emp.first_name} ${emp.lastName || emp.last_name}` : 'Unknown',
-                grossAmount: parseFloat(p.grossAmount || 0),
-                isPaid: p.isPaid
-              };
-            });
-          
-          setDashboardStats({
-            thisWeek: weekToUse,
-            totalPaid: totalPaid,
-            totalProfit: totalPaid * 0.20,
-            workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
-            top5Employees: top5Employees,
-            totalWorkHours: totalWorkHours,
-            paidEmployeesCount: paidThisWeek.length,
-            totalEmployeesWithHours: Object.keys(structuredWorkHours).length
-          });
-        }
+        // Llogarit dashboard stats manualisht
+        // Gjej pagesat për këtë javë
+        const thisWeekPayments = allPayments.filter(p => p.weekLabel === thisWeek);
         
-        console.log('[DEBUG] allPayments sample:', allPayments.slice(0, 3));
-        console.log('[DEBUG] allExpenses sample:', allExpenses.slice(0, 3));
-        console.log('[DEBUG] structuredWorkHours keys:', Object.keys(structuredWorkHours));
+        // Gjej pagesat e paguara për këtë javë
+        const paidThisWeek = thisWeekPayments.filter(p => p.isPaid === true);
+        
+        // Llogarit totalin e paguar
+        const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || 0), 0);
+        
+        // Llogarit orët e punuara për këtë javë
+        let totalWorkHours = 0;
+        const siteHours = {};
+        
+        Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
+          const weekData = empData[thisWeek] || {};
+          
+          Object.values(weekData).forEach(dayData => {
+            if (dayData?.hours) {
+              const hours = parseFloat(dayData.hours);
+              totalWorkHours += hours;
+              if (dayData.site) {
+                siteHours[dayData.site] = (siteHours[dayData.site] || 0) + hours;
+              }
+            }
+          });
+        });
+        
+        // Top 5 punonjësit më të paguar (vetëm të paguarat)
+        const top5Employees = paidThisWeek
+          .sort((a, b) => parseFloat(b.grossAmount || 0) - parseFloat(a.grossAmount || 0))
+          .slice(0, 5)
+          .map(p => {
+            const emp = employees.find(e => e.id === p.employeeId);
+            return {
+              id: p.employeeId,
+              name: emp ? `${emp.firstName || emp.first_name} ${emp.lastName || emp.last_name}` : 'Unknown',
+              grossAmount: parseFloat(p.grossAmount || 0),
+              isPaid: p.isPaid,
+              photo: emp?.photo || null
+            };
+          });
+        
+        // Llogarit total gross për këtë javë nga work_hours
+        let totalGrossThisWeek = 0;
+        Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
+          const weekData = empData[thisWeek] || {};
+          const emp = employees.find(e => e.id === empId);
+          const hourlyRate = parseFloat(emp?.hourlyRate || emp?.hourly_rate || 0);
+          
+          Object.values(weekData).forEach(dayData => {
+            if (dayData?.hours) {
+              const hours = parseFloat(dayData.hours);
+              totalGrossThisWeek += hours * hourlyRate;
+            }
+          });
+        });
+        
+        setDashboardStats({
+          thisWeek: thisWeek,
+          totalPaid: totalPaid,
+          totalProfit: totalPaid * 0.20,
+          workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
+          top5Employees: top5Employees,
+          totalWorkHours: totalWorkHours,
+          totalHoursThisWeek: totalWorkHours,
+          totalGrossThisWeek: totalGrossThisWeek,
+          paidEmployeesCount: paidThisWeek.length,
+          totalEmployeesWithHours: Object.keys(structuredWorkHours).length
+        });
         
         setAllTasks(allTasksData);
         
@@ -201,95 +186,46 @@ export default function DashboardStats() {
         });
         setUnpaid(unpaidList);
         
-        // Process tasks
-        const totalTasks = allTasksData.length;
-        const completedTasks = allTasksData.filter(t => t.status === "completed").length;
-        const ongoingTasks = totalTasks - completedTasks;
-        setTaskStats({ totalTasks, completedTasks, ongoingTasks });
-        
         // Process unpaid expenses
-        const unpaidExpensesList = [];
-        allExpenses.forEach(exp => {
-          if (exp && (exp.paid === false || exp.paid === 0 || exp.paid === 'false')) {
-            unpaidExpensesList.push({
-              id: exp.id,
-              date: exp.date,
-              type: exp.expenseType,
-              gross: parseFloat(exp.gross || 0),
-              contract_id: exp.contractId,
-              description: exp.description
-            });
-          }
-        });
+        const unpaidExpensesList = allExpenses.filter(exp => !exp.paid).map(exp => ({
+          id: exp.id,
+          date: exp.date,
+          type: exp.type || exp.description,
+          gross: exp.gross || exp.amount,
+          description: exp.description,
+          contract_id: exp.contractId || exp.contract_id
+        }));
         setUnpaidExpenses(unpaidExpensesList);
         
-        // --- FITIMI JAVORE ---
-        // 1. Grumbullo pagesat e paguara per cdo jave
-        const paidPayments = allPayments.filter(p => p.isPaid === true);
-        console.log('[DEBUG] allPayments count:', allPayments.length);
-        console.log('[DEBUG] paidPayments count:', paidPayments.length);
-        console.log('[DEBUG] Sample paidPayments:', paidPayments.slice(0, 3));
-        
-        const paymentsByWeek = {};
-        paidPayments.forEach(p => {
-          if (!paymentsByWeek[p.weekLabel]) paymentsByWeek[p.weekLabel] = 0;
-          paymentsByWeek[p.weekLabel] += parseFloat(p.grossAmount || 0);
+        // Process weekly profit data
+        const weekLabels = [...new Set(allPayments.map(p => p.weekLabel))].sort();
+        const weeklyData = weekLabels.map(week => {
+          const weekPayments = allPayments.filter(p => p.weekLabel === week);
+          const totalPaid = weekPayments.reduce((sum, p) => sum + parseFloat(p.grossAmount || 0), 0);
+          return { week, totalPaid };
         });
-        console.log('[DEBUG] paymentsByWeek:', paymentsByWeek);
-        // 2. Grumbullo shpenzimet per cdo jave
-        const expensesByWeek = {};
-        allExpenses.forEach(e => {
-          if (!e.date) return;
-          const date = new Date(e.date);
-          // Gjej fillimin dhe fundin e javes per kete date
-          const day = date.getDay();
-          const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-          const monday = new Date(date);
-          monday.setDate(diff);
-          monday.setHours(0, 0, 0, 0);
-          const sunday = new Date(monday);
-          sunday.setDate(monday.getDate() + 6);
-          const weekLabel = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
-          if (!expensesByWeek[weekLabel]) expensesByWeek[weekLabel] = 0;
-          expensesByWeek[weekLabel] += parseFloat(e.gross || 0);
-        });
-        // 3. Bashko javet dhe llogarit fitimin
-        const allWeeks = Array.from(new Set([
-          ...Object.keys(paymentsByWeek),
-          ...Object.keys(expensesByWeek)
-        ])).sort();
-        const weeklyProfitArr = allWeeks.map(week => {
-          const totalPaid = paymentsByWeek[week] || 0;
-          const totalExpenses = expensesByWeek[week] || 0;
-          return {
-            week,
-            totalPaid,
-            totalExpenses,
-            profit: totalPaid - totalExpenses
-          };
-        });
-        console.log('[DEBUG] weeklyProfitArr:', weeklyProfitArr);
-        console.log('[DEBUG] weeklyProfitArr:', weeklyProfitArr);
-        setWeeklyProfitData(weeklyProfitArr);
-        
-        console.log('[DEBUG] fetchData completed successfully');
+        setWeeklyProfitData(weeklyData);
         
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error('[ERROR] Failed to fetch dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
+  // Llogarit site-t aktive dhe punonjësit aktivë
+  const activeSites = contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar");
+  const activeEmployees = employees.filter(e => e.status === "active" || e.status === "Aktiv");
 
-
-  const activeSites = [...new Set(contracts.filter(c => c.status === "Ne progres").map(c => c.siteName))];
-  const activeEmployees = employees.filter(e => e.status === "Aktiv");
-
-  // Filtrim i detyrave sipas statusit
-  const filteredTasks = allTasks.filter(t => taskFilter === 'all' ? true : t.status === taskFilter);
+  // Filtro detyrat
+  const filteredTasks = allTasks.filter(t => {
+    if (taskFilter === 'ongoing') return t.status === 'ongoing';
+    if (taskFilter === 'completed') return t.status === 'completed';
+    return true; // all
+  });
 
   // Merr emër + mbiemër për user-in (mos shfaq email në asnjë rast)
   const user = JSON.parse(localStorage.getItem("user"));
@@ -302,12 +238,6 @@ export default function DashboardStats() {
   if (loading) {
     return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat..." />;
   }
-
-  console.log('[DEBUG] RENDER - dashboardStats:', dashboardStats);
-  console.log('[DEBUG] RENDER - weeklyProfitData:', weeklyProfitData);
-  console.log('[DEBUG] RENDER - workHoursBysite:', dashboardStats.workHoursBysite);
-
-
 
   const progressBarColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"]; // pastel
 
@@ -343,12 +273,12 @@ export default function DashboardStats() {
         />
         <MoneyStatCard
           title="Orë të punuara këtë javë"
-          amount={`${Number(dashboardStats.totalHoursThisWeek ?? dashboardStats.totalWorkHours ?? 0).toFixed(2)} orë`}
+          amount={`${Number(dashboardStats.totalHoursThisWeek || dashboardStats.totalWorkHours || 0).toFixed(2)} orë`}
           color="purple"
         />
         <MoneyStatCard
           title="Pagesa këtë javë"
-          amount={`£${Number((dashboardStats.totals && dashboardStats.totals.weekly && dashboardStats.totals.weekly.totalPaid) ?? dashboardStats.totalGrossThisWeek ?? 0).toFixed(2)}`}
+          amount={`£${Number(dashboardStats.totalPaid || 0).toFixed(2)}`}
           color="amber"
         />
       </Grid>
@@ -502,7 +432,7 @@ export default function DashboardStats() {
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore për stafin</h3>
         {weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={(() => { const filtered = weeklyProfitData.filter(w => w.totalPaid > 0); console.log('[PAGESA JAVORE DEBUG]', filtered); return filtered; })()} margin={{ left: 50 }}>
+            <BarChart data={weeklyProfitData.filter(w => w.totalPaid > 0)} margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
               <YAxis label={{ value: 'Pagesa (£)', angle: -90, position: 'insideLeft', offset: 10 }} />
@@ -583,13 +513,16 @@ export default function DashboardStats() {
 function VonesaFaturashChart() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
     async function fetchInvoices() {
       try {
         const res = await api.get("/api/invoices");
         const invoices = res.data || [];
+        
         // Për çdo faturë, llogarit statusin e pagesës
         const result = { "Paguar në kohë": 0, "Paguar me vonesë": 0, "Pa paguar": 0 };
+        
         invoices.forEach(inv => {
           if (!inv.paid) {
             result["Pa paguar"]++;
@@ -597,82 +530,124 @@ function VonesaFaturashChart() {
             // Përdor updated_at si datë pagese nëse nuk ka paid_date
             const invoiceDate = inv.date ? new Date(inv.date) : null;
             const paidDate = inv.paid_date ? new Date(inv.paid_date) : (inv.updated_at ? new Date(inv.updated_at) : null);
+            
             if (invoiceDate && paidDate) {
-              const diffDays = Math.floor((paidDate - invoiceDate) / (1000 * 60 * 60 * 24));
-              if (diffDays <= 30) result["Paguar në kohë"]++;
-              else result["Paguar me vonesë"]++;
+              const daysDiff = Math.ceil((paidDate - invoiceDate) / (1000 * 60 * 60 * 24));
+              if (daysDiff <= 30) {
+                result["Paguar në kohë"]++;
+              } else {
+                result["Paguar me vonesë"]++;
+              }
             } else {
-              result["Paguar në kohë"]++;
+              result["Pa paguar"]++;
             }
           }
         });
-        setData([
-          { status: "Paguar në kohë", count: result["Paguar në kohë"] },
-          { status: "Paguar me vonesë", count: result["Paguar me vonesë"] },
-          { status: "Pa paguar", count: result["Pa paguar"] },
-        ]);
-      } catch (err) {
+        
+        const chartData = Object.entries(result).map(([name, value]) => ({
+          name,
+          value,
+          color: name === "Paguar në kohë" ? "#10b981" : 
+                 name === "Paguar me vonesë" ? "#f59e0b" : "#ef4444"
+        }));
+        
+        setData(chartData);
+      } catch (error) {
+        console.error('[ERROR] Failed to fetch invoices:', error);
         setData([]);
       } finally {
         setLoading(false);
       }
     }
+    
     fetchInvoices();
   }, []);
-  if (loading) return <div className="text-center text-gray-400 py-8">Duke ngarkuar...</div>;
+
+  if (loading) {
+    return <div className="text-center py-8">Duke ngarkuar...</div>;
+  }
+
+  if (data.length === 0) {
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për vonesat në pagesa</div>;
+  }
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data} margin={{ left: 50 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="status" tick={{ fontSize: 16, fill: '#6366f1' }} />
-        <YAxis allowDecimals={false} />
-        <Tooltip formatter={(v) => [v, 'Numri i faturave']} />
-        <Bar dataKey="count" fill="#fbbf24" radius={[6, 6, 0, 0]} barSize={48} />
-      </BarChart>
+    <ResponsiveContainer width="100%" height={350}>
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          outerRadius={120}
+          innerRadius={60}
+          dataKey="value"
+          label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+          labelLine={true}
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip 
+          contentStyle={{ 
+            background: '#fffbe9', 
+            border: '1px solid #fbbf24', 
+            borderRadius: 12, 
+            fontSize: 16, 
+            color: '#78350f' 
+          }}
+          formatter={(value, name) => [value, name]}
+        />
+      </PieChart>
     </ResponsiveContainer>
   );
 }
 
 function ShpenzimePerSiteChart({ allExpenses, structuredWorkHours, contracts }) {
   const [data, setData] = useState([]);
-  const pastelColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe", "#6ee7b7", "#fcd34d"]; // më shumë ngjyra
+  
   useEffect(() => {
-    // 1. Shpenzimet nga expenses_invoices
+    // Llogarit shpenzimet sipas site-ve
     const expensesBySite = {};
-    allExpenses.forEach(e => {
-      if (!e.contractId && !e.contract_id) return;
-      const contract = contracts.find(c => String(c.id) === String(e.contractId || e.contract_id));
-      const site = contract ? (contract.site_name || contract.siteName || contract.company) : null;
-      if (!site) return; // heq 'Pa site'
-      if (!expensesBySite[site]) expensesBySite[site] = 0;
-      expensesBySite[site] += parseFloat(e.gross || 0);
+    allExpenses.forEach(exp => {
+      if (exp.contract_id) {
+        const contract = contracts.find(c => c.id === exp.contract_id);
+        if (contract) {
+          const site = contract.site_name || contract.siteName || 'Unknown';
+          expensesBySite[site] = (expensesBySite[site] || 0) + parseFloat(exp.gross || exp.amount || 0);
+        }
+      }
     });
-    // 2. Shpenzimet nga work_hours (bruto per site)
+    
+    // Llogarit orët e punuara sipas site-ve
     const workHoursBySite = {};
-    Object.values(structuredWorkHours || {}).forEach(empData => {
-      Object.values(empData || {}).forEach(weekData => {
-        Object.values(weekData || {}).forEach(day => {
-          if (day.site && day.hours && day.rate) {
-            if (!workHoursBySite[day.site]) workHoursBySite[day.site] = 0;
-            workHoursBySite[day.site] += Number(day.hours) * Number(day.rate);
+    Object.values(structuredWorkHours).forEach(empData => {
+      Object.values(empData).forEach(weekData => {
+        Object.values(weekData).forEach(dayData => {
+          if (dayData?.site && dayData?.hours) {
+            workHoursBySite[dayData.site] = (workHoursBySite[dayData.site] || 0) + parseFloat(dayData.hours);
           }
         });
       });
     });
-    // 3. Kombino të dyja
-    const allSites = Array.from(new Set([
-      ...Object.keys(expensesBySite),
-      ...Object.keys(workHoursBySite)
-    ])).filter(site => !!site); // heq null/undefined
-    const combined = allSites.map(site => ({
+    
+    // Bashko të dhënat
+    const combined = Object.keys({ ...expensesBySite, ...workHoursBySite }).map(site => ({
       site,
       expenses: expensesBySite[site] || 0,
       workHours: workHoursBySite[site] || 0,
       total: (expensesBySite[site] || 0) + (workHoursBySite[site] || 0)
     })).sort((a, b) => b.total - a.total);
+    
     setData(combined);
   }, [allExpenses, structuredWorkHours, contracts]);
-  if (data.length === 0) return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
+  
+  if (data.length === 0) {
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
+  }
+  
+  const pastelColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"];
+  
   return (
     <ResponsiveContainer width="100%" height={350}>
       <BarChart data={data} layout="vertical" margin={{ left: 50 }} barCategoryGap={18}>
@@ -692,6 +667,7 @@ function ShpenzimePerSiteChart({ allExpenses, structuredWorkHours, contracts }) 
 
 function StatusiKontrataveChart({ contracts }) {
   const [data, setData] = useState([]);
+  
   // Ngjyra të ndryshme për çdo status
   const statusColors = {
     'active': '#10b981',      // Jeshile
@@ -734,7 +710,9 @@ function StatusiKontrataveChart({ contracts }) {
     setData(chartData);
   }, [contracts]);
 
-  if (data.length === 0) return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e kontratave</div>;
+  if (data.length === 0) {
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e kontratave</div>;
+  }
 
   return (
     <ResponsiveContainer width="100%" height={350}>
