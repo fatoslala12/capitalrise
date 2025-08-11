@@ -343,51 +343,12 @@ export default function DashboardStats() {
         />
         <MoneyStatCard
           title="Orë të punuara këtë javë"
-          amount={`${(() => {
-            // Debug logs
-            console.log('[DEBUG] dashboardStats:', dashboardStats);
-            console.log('[DEBUG] workHoursBysite:', dashboardStats.workHoursBysite);
-            console.log('[DEBUG] totalHoursThisWeek:', dashboardStats.totalHoursThisWeek);
-            console.log('[DEBUG] totalWorkHours:', dashboardStats.totalWorkHours);
-            
-            // Llogarit total orë nga workHoursBysite
-            if (dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0) {
-              const totalFromSites = dashboardStats.workHoursBysite.reduce((sum, site) => sum + (site.hours || 0), 0);
-              console.log('[DEBUG] Total orë nga workHoursBysite:', totalFromSites);
-              return totalFromSites;
-            }
-            const fallback = dashboardStats.totalHoursThisWeek ?? dashboardStats.totalWorkHours ?? 0;
-            console.log('[DEBUG] Fallback orë:', fallback);
-            return fallback;
-          })()} orë`}
+          amount={`${Number(dashboardStats.totalHoursThisWeek ?? dashboardStats.totalWorkHours ?? 0).toFixed(2)} orë`}
           color="purple"
         />
         <MoneyStatCard
           title="Pagesa këtë javë"
-          amount={`£${(() => {
-            // Debug logs
-            console.log('[DEBUG] weeklyProfitData:', weeklyProfitData);
-            
-            // Gjej javën aktuale
-            const today = new Date();
-            const day = today.getDay();
-            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-            const monday = new Date(today);
-            monday.setDate(diff);
-            monday.setHours(0, 0, 0, 0);
-            const sunday = new Date(monday);
-            sunday.setDate(monday.getDate() + 6);
-            const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
-            console.log('[DEBUG] This week label:', thisWeek);
-            
-            // Gjej pagesat për këtë javë nga weeklyProfitData
-            const thisWeekData = weeklyProfitData.find(w => w.week === thisWeek);
-            console.log('[DEBUG] This week data:', thisWeekData);
-            
-            const result = thisWeekData ? thisWeekData.totalPaid : 0;
-            console.log('[DEBUG] Final payment amount:', result);
-            return result;
-          })()}`}
+          amount={`£${Number((dashboardStats.totals && dashboardStats.totals.weekly && dashboardStats.totals.weekly.totalPaid) ?? dashboardStats.totalGrossThisWeek ?? 0).toFixed(2)}`}
           color="amber"
         />
       </Grid>

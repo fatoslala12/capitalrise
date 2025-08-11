@@ -5,9 +5,14 @@ const logger = require('./middleware/logger');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Konfigurimi CORS për të lejuar gjithçka nga vercel
+// Konfigurimi CORS për prodhim dhe dev lokal
 app.use(cors({
-  origin: "https://building-system-seven.vercel.app",
+  origin: [
+    process.env.FRONTEND_ORIGIN,
+    "https://building-system-seven.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+  ].filter(Boolean),
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,

@@ -1,11 +1,10 @@
 import axios from "axios";
 
-// Use localhost for development, production URL for production
-const baseURL = process.env.NODE_ENV === 'production' 
-  ? "https://building-system.onrender.com"
-  : "http://localhost:5000";
-
-console.log('🔧 API Configuration:', { NODE_ENV: process.env.NODE_ENV, baseURL });
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (window?.location?.hostname === "localhost" || window?.location?.hostname === "127.0.0.1"
+    ? "http://localhost:5000"
+    : "https://building-system.onrender.com");
 
 const api = axios.create({
   baseURL,
