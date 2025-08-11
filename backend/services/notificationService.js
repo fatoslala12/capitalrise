@@ -2,7 +2,57 @@ require('dotenv').config();
 const pool = require('../db');
 const { Resend } = require('resend');
 
-// Inicializo Resend
+// Inicializo Resend me API keys të ndryshme për secilin email
+const resendInstances = {};
+
+// Funksion për të inicializuar Resend për një email specifik
+function initializeResendForEmail(email) {
+  // Përcakto API key-n bazuar në email-in
+  let apiKey = null;
+  
+  switch (email) {
+    case 'fatoslala12@gmail.com':
+      apiKey = process.env.RESEND_API_KEY_ADMIN || process.env.RESEND_API_KEY;
+      break;
+    case 'flala24@beder.edu.al':
+      apiKey = process.env.RESEND_API_KEY_FLALA24 || process.env.RESEND_API_KEY;
+      break;
+    case 'adi@albanconstruction.co.uk':
+      apiKey = process.env.RESEND_API_KEY_ADI || process.env.RESEND_API_KEY;
+      break;
+    case 'flala22@beder.edu.al':
+      apiKey = process.env.RESEND_API_KEY_FLALA22 || process.env.RESEND_API_KEY;
+      break;
+    case 'pellumblala10@gmail.com':
+      apiKey = process.env.RESEND_API_KEY_PELLUMB || process.env.RESEND_API_KEY;
+      break;
+    case 'dmyrtollari97@gmail.com':
+      apiKey = process.env.RESEND_API_KEY_DMYR || process.env.RESEND_API_KEY;
+      break;
+    case 'autobigbrotirane@gmail.com':
+      apiKey = process.env.RESEND_API_KEY_AUTO || process.env.RESEND_API_KEY;
+      break;
+    case 'rudinislami1@gmail.com':
+      apiKey = process.env.RESEND_API_KEY_RUDIN || process.env.RESEND_API_KEY;
+      break;
+    default:
+      apiKey = process.env.RESEND_API_KEY;
+  }
+  
+  if (!apiKey) {
+    console.warn(`[WARNING] Nuk ka API key për ${email}`);
+    return null;
+  }
+  
+  if (!resendInstances[email]) {
+    resendInstances[email] = new Resend(apiKey);
+    console.log(`[INFO] Resend inicializuar për ${email} me API key të veçantë`);
+  }
+  
+  return resendInstances[email];
+}
+
+// Inicializo Resend kryesor për backward compatibility
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 class NotificationService {
@@ -184,12 +234,13 @@ class NotificationService {
       };
 
       // Përgatit email-in
-      if (!resend) {
-        console.log('[WARNING] Resend not initialized. Email nuk do të dërgohet.');
+      const resendInstance = initializeResendForEmail(user.email);
+      if (!resendInstance) {
+        console.log(`[WARNING] Nuk mund të inicializohet Resend për ${user.email}. Email nuk do të dërgohet.`);
         return;
       }
       
-      const { data, error } = await resend.emails.send({
+      const { data, error } = await resendInstance.emails.send({
         from: 'Alban Construction <onboarding@resend.dev>',
         to: [user.email],
         subject: `Ju keni një njoftim të ri në Alban Construction`,
@@ -1100,6 +1151,89 @@ class NotificationService {
       return {
         error: 'Gabim në menaxhimin e email-eve të lejuara',
         details: error.message
+      };
+    }
+  }
+
+  // Menaxho API keys për email-e të ndryshme
+  static getApiKeyInfo(email) {
+    const resendInstance = initializeResendForEmail(email);
+    if (!resendInstance) {
+      return {
+        email: email,
+        hasApiKey: false,
+        message: 'Nuk ka API key për këtë email'
+      };
+    }
+    
+    return {
+      email: email,
+      hasApiKey: true,
+      message: 'API key e disponueshme për këtë email',
+      instance: resendInstance ? 'Inicializuar' : 'Jo inicializuar'
+    };
+  }
+
+  // Lista e të gjitha API keys të disponueshme
+  static getAllApiKeysInfo() {
+    const emails = this.getAllowedEmails();
+    const apiKeysInfo = {};
+    
+    emails.forEach(email => {
+      apiKeysInfo[email] = this.getApiKeyInfo(email);
+    });
+    
+    return {
+      totalEmails: emails.length,
+      apiKeysInfo: apiKeysInfo,
+      summary: `Gjithsej ${emails.length} email-e, ${Object.values(apiKeysInfo).filter(info => info.hasApiKey).length} me API key`
+    };
+  }
+
+  // Testo API key për një email specifik
+  static async testApiKey(email) {
+    try {
+      const resendInstance = initializeResendForEmail(email);
+      if (!resendInstance) {
+        return {
+          success: false,
+          message: 'Nuk ka API key për këtë email'
+        };
+      }
+      
+      // Dërgo një email test
+      const { data, error } = await resendInstance.emails.send({
+        from: 'Alban Construction <onboarding@resend.dev>',
+        to: [email],
+        subject: '🧪 Test API Key',
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Test API Key</h2>
+            <p>Ky është një test për të verifikuar nëse API key funksionon për ${email}</p>
+            <p>Nëse e shihni këtë email, API key funksionon normalisht!</p>
+          </div>
+        `
+      });
+      
+      if (error) {
+        return {
+          success: false,
+          message: 'API key test dështoi',
+          error: error.message
+        };
+      }
+      
+      return {
+        success: true,
+        message: 'API key test u krye me sukses!',
+        messageId: data?.id
+      };
+      
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Gabim në testimin e API key',
+        error: error.message
       };
     }
   }
