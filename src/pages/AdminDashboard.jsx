@@ -60,16 +60,54 @@ export default function DashboardStats() {
       try {
         setLoading(true);
         
-        // Merr të gjitha të dhënat paralelisht
-        const [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
-          api.get("/api/contracts"),
-          api.get("/api/employees"),
-          api.get("/api/invoices"),
-          api.get("/api/tasks"),
-          api.get("/api/expenses"),
-          api.get("/api/payments"),
-          api.get("/api/work-hours/structured"),
-        ]);
+        // Kontrollo nëse ka token
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.warn('[WARNING] No token found, dashboard will show empty data');
+          setDashboardStats({
+            thisWeek: '',
+            totalPaid: 0,
+            totalProfit: 0,
+            workHoursBysite: [],
+            top5Employees: [],
+            totalWorkHours: 0,
+            totalHoursThisWeek: 0,
+            totalGrossThisWeek: 0,
+            paidEmployeesCount: 0,
+            totalEmployeesWithHours: 0
+          });
+          setAllTasks([]);
+          setUnpaid([]);
+          setUnpaidExpenses([]);
+          setWeeklyProfitData([]);
+          setLoading(false);
+          return;
+        }
+        
+        // Merr të gjitha të dhënat paralelisht me error handling
+        let contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes;
+        
+        try {
+          [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
+            api.get("/api/contracts"),
+            api.get("/api/employees"),
+            api.get("/api/invoices"),
+            api.get("/api/tasks"),
+            api.get("/api/expenses"),
+            api.get("/api/payments"),
+            api.get("/api/work-hours/structured"),
+          ]);
+        } catch (apiError) {
+          console.error('[ERROR] API call failed:', apiError);
+          // Nëse API call dështon, përdor të dhëna bosh
+          contractsRes = { data: [] };
+          employeesRes = { data: [] };
+          invoicesRes = { data: [] };
+          tasksRes = { data: [] };
+          expensesRes = { data: [] };
+          paymentsRes = { data: [] };
+          workHoursRes = { data: {} };
+        }
         
         setContracts(snakeToCamel(contractsRes.data || []));
         setEmployees(snakeToCamel(employeesRes.data || []));
@@ -208,6 +246,23 @@ export default function DashboardStats() {
         
       } catch (error) {
         console.error('[ERROR] Failed to fetch dashboard data:', error);
+        // Nëse ka error, vendos të dhëna bosh
+        setDashboardStats({
+          thisWeek: '',
+          totalPaid: 0,
+          totalProfit: 0,
+          workHoursBysite: [],
+          top5Employees: [],
+          totalWorkHours: 0,
+          totalHoursThisWeek: 0,
+          totalGrossThisWeek: 0,
+          paidEmployeesCount: 0,
+          totalEmployeesWithHours: 0
+        });
+        setAllTasks([]);
+        setUnpaid([]);
+        setUnpaidExpenses([]);
+        setWeeklyProfitData([]);
       } finally {
         setLoading(false);
       }
@@ -517,6 +572,7 @@ function VonesaFaturashChart() {
   useEffect(() => {
     async function fetchInvoices() {
       try {
+        setLoading(true);
         const res = await api.get("/api/invoices");
         const invoices = res.data || [];
         
@@ -554,7 +610,12 @@ function VonesaFaturashChart() {
         setData(chartData);
       } catch (error) {
         console.error('[ERROR] Failed to fetch invoices:', error);
-        setData([]);
+        // Nëse ka error, vendos të dhëna bosh
+        setData([
+          { name: "Paguar në kohë", value: 0, color: "#10b981" },
+          { name: "Paguar me vonesë", value: 0, color: "#f59e0b" },
+          { name: "Pa paguar", value: 0, color: "#ef4444" }
+        ]);
       } finally {
         setLoading(false);
       }
