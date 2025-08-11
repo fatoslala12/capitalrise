@@ -529,7 +529,7 @@ export default function DashboardStats() {
                   }
                   return c ? `${c.site_name || c.siteName || ''}` : '';
                 })()}</span>
-                <span className="font-bold text-lg flex items-center gap-1">💷 {item.total !== undefined ? `£${item.total.toFixed(2)}` : ''}</span>
+                <span className="font-bold text-lg flex items-center gap-1">💷 {item.total !== undefined ? `£${Number(item.total).toFixed(2)}` : ''}</span>
               </li>
             ))}
           </ul>
@@ -547,7 +547,7 @@ export default function DashboardStats() {
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
                 <span className="font-bold flex items-center gap-1">📅 {item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
                 <span className="font-bold text-lg">{item.type || ''}</span>
-                <span className="font-bold text-lg flex items-center gap-1">💷 {item.gross !== undefined ? `£${item.gross.toFixed(2)}` : ''}</span>
+                <span className="font-bold text-lg flex items-center gap-1">💷 {item.gross !== undefined ? `£${Number(item.gross).toFixed(2)}` : ''}</span>
                 <span className="font-bold text-blue-700 flex items-center gap-1">
                   🏢 {(() => {
                     if (!item.contract_id || !contracts.length) return '';
@@ -642,7 +642,7 @@ function VonesaFaturashChart() {
           outerRadius={120}
           innerRadius={60}
           dataKey="value"
-          label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+          label={({ name, value, percent }) => `${name}: ${value} (${Number(percent * 100).toFixed(0)}%)`}
           labelLine={true}
         >
           {data.map((entry, index) => (
@@ -785,7 +785,7 @@ function StatusiKontrataveChart({ contracts }) {
           outerRadius={120}
           innerRadius={60}
           dataKey="value"
-          label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+          label={({ name, value, percent }) => `${name}: ${value} (${Number(percent * 100).toFixed(0)}%)`}
           labelLine={true}
         >
           {data.map((entry, index) => (
