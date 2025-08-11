@@ -376,19 +376,19 @@ export default function DashboardStats() {
           icon="👷"
           color="green"
         />
+        {/* Orë të punuara këtë javë */}
         <CountStatCard
-          title={`Orë të punuara ${dashboardStats.isCurrentWeek ? 'këtë javë' : 'javën e kaluar'}`}
-          count={`${Number(dashboardStats.totalHoursThisWeek || dashboardStats.totalWorkHours || 0).toFixed(2)} orë`}
+          title="Orë të punuara këtë javë"
+          value={dashboardStats.totalHoursThisWeek || 0}
           icon="⏰"
           color="purple"
-          subtitle={dashboardStats.isCurrentWeek ? 'Jawa aktuale' : `Jawa: ${dashboardStats.weekLabel}`}
         />
+        {/* Pagesa këtë javë */}
         <MoneyStatCard
-          title={`Pagesa ${dashboardStats.isCurrentWeek ? 'këtë javë' : 'javën e kaluar'}`}
-          amount={dashboardStats.totalPaid}
-          icon="💰"
+          title="Pagesa këtë javë"
+          value={dashboardStats.totalGrossThisWeek || 0}
+          icon="��"
           color="yellow"
-          subtitle={dashboardStats.isCurrentWeek ? 'Jawa aktuale' : `Jawa: ${dashboardStats.weekLabel}`}
         />
       </Grid>
 
@@ -428,7 +428,7 @@ export default function DashboardStats() {
       {/* Grafik për site */}
       <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
-            📊 Ora të punuara {dashboardStats.isCurrentWeek ? 'këtë javë' : 'javën e kaluar'} sipas site-ve ({dashboardStats.weekLabel})
+            📊 Ora të punuara këtë javë sipas site-ve
           </h3>
         <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
           Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
@@ -490,7 +490,7 @@ export default function DashboardStats() {
       {/* Top 5 më të paguar */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            🏅 Top 5 punonjësit më të paguar {dashboardStats.isCurrentWeek ? 'këtë javë' : 'javën e kaluar'} ({dashboardStats.weekLabel})
+            🏅 Top 5 punonjësit më të paguar
           </h3>
         {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
