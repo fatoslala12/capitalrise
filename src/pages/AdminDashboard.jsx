@@ -132,6 +132,28 @@ export default function DashboardStats() {
         sunday.setDate(monday.getDate() + 6);
         const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
         
+        // Gjej javën e fundit që ka të dhëna
+        let weekToUse = thisWeek;
+        let weekHasData = false;
+        
+        // Kontrollo nëse jawa aktuale ka të dhëna
+        const currentWeekData = allPayments.filter(p => p.weekLabel === thisWeek);
+        if (currentWeekData.length > 0) {
+          weekToUse = thisWeek;
+          weekHasData = true;
+        } else {
+          // Gjej javën e fundit që ka të dhëna
+          const allWeeks = [...new Set(allPayments.map(p => p.weekLabel))].sort();
+          if (allWeeks.length > 0) {
+            weekToUse = allWeeks[allWeeks.length - 1]; // Jawa e fundit
+            weekHasData = true;
+          }
+        }
+        
+        console.log('[DEBUG] - thisWeek (current):', thisWeek);
+        console.log('[DEBUG] - weekToUse (with data):', weekToUse);
+        console.log('[DEBUG] - weekHasData:', weekHasData);
+        
         // Llogarit dashboard stats manualisht
         console.log('[DEBUG] Dashboard data received:');
         console.log('[DEBUG] - contracts:', contractsRes.data?.length || 0);
@@ -143,7 +165,7 @@ export default function DashboardStats() {
         console.log('[DEBUG] - workHours:', Object.keys(workHoursRes.data || {}).length);
         
         // Gjej pagesat për këtë javë
-        const thisWeekPayments = allPayments.filter(p => p.weekLabel === thisWeek);
+        const thisWeekPayments = allPayments.filter(p => p.weekLabel === weekToUse);
         console.log('[DEBUG] - thisWeekPayments:', thisWeekPayments.length);
         
         // Gjej pagesat e paguara për këtë javë
@@ -159,7 +181,7 @@ export default function DashboardStats() {
         const siteHours = {};
         
         Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
-          const weekData = empData[thisWeek] || {};
+          const weekData = empData[weekToUse] || {};
           console.log('[DEBUG] - empId:', empId, 'weekData:', weekData);
           
           Object.values(weekData).forEach(dayData => {
@@ -196,7 +218,7 @@ export default function DashboardStats() {
         // Llogarit total gross për këtë javë nga work_hours
         let totalGrossThisWeek = 0;
         Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
-          const weekData = empData[thisWeek] || {};
+          const weekData = empData[weekToUse] || {};
           const emp = employees.find(e => e.id === empId);
           const hourlyRate = parseFloat(emp?.hourlyRate || emp?.hourly_rate || 0);
           
@@ -209,7 +231,7 @@ export default function DashboardStats() {
         });
         
         setDashboardStats({
-          thisWeek: thisWeek,
+          thisWeek: weekToUse,
           totalPaid: totalPaid,
           totalProfit: totalPaid * 0.20,
           workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
@@ -218,11 +240,13 @@ export default function DashboardStats() {
           totalHoursThisWeek: totalWorkHours,
           totalGrossThisWeek: totalGrossThisWeek,
           paidEmployeesCount: paidThisWeek.length,
-          totalEmployeesWithHours: Object.keys(structuredWorkHours).length
+          totalEmployeesWithHours: Object.keys(structuredWorkHours).length,
+          isCurrentWeek: weekToUse === thisWeek,
+          weekLabel: weekToUse
         });
         
         console.log('[DEBUG] Final dashboardStats:', {
-          thisWeek: thisWeek,
+          thisWeek: weekToUse,
           totalPaid: totalPaid,
           totalWorkHours: totalWorkHours,
           workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
@@ -353,15 +377,18 @@ export default function DashboardStats() {
           color="green"
         />
         <CountStatCard
-          title="Orë të punuara këtë javë"
+          title={`Orë të punuara ${dashboardStats.isCurrentWeek ? 'këtë javë' : 'javën e kaluar'}`}
           count={`${Number(dashboardStats.totalHoursThisWeek || dashboardStats.totalWorkHours || 0).toFixed(2)} orë`}
           icon="⏰"
           color="purple"
+          subtitle={dashboardStats.isCurrentWeek ? 'Jawa aktuale' : `Jawa: ${dashboardStats.weekLabel}`}
         />
         <MoneyStatCard
-          title="Pagesa këtë javë"
-          amount={`£${Number(dashboardStats.totalPaid || 0).toFixed(2)}`}
-          color="amber"
+          title={`Pagesa ${dashboardStats.isCurrentWeek ? 'këtë javë' : 'javën e kaluar'}`}
+          amount={dashboardStats.totalPaid}
+          icon="💰"
+          color="yellow"
+          subtitle={dashboardStats.isCurrentWeek ? 'Jawa aktuale' : `Jawa: ${dashboardStats.weekLabel}`}
         />
       </Grid>
 
@@ -400,7 +427,9 @@ export default function DashboardStats() {
 
       {/* Grafik për site */}
       <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve ({dashboardStats.thisWeek})</h3>
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+            📊 Ora të punuara {dashboardStats.isCurrentWeek ? 'këtë javë' : 'javën e kaluar'} sipas site-ve ({dashboardStats.weekLabel})
+          </h3>
         <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
           Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
         </div>
@@ -460,7 +489,9 @@ export default function DashboardStats() {
 
       {/* Top 5 më të paguar */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            🏅 Top 5 punonjësit më të paguar {dashboardStats.isCurrentWeek ? 'këtë javë' : 'javën e kaluar'} ({dashboardStats.weekLabel})
+          </h3>
         {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
             {dashboardStats.top5Employees.map((e, i) => {
