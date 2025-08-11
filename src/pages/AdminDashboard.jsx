@@ -133,14 +133,26 @@ export default function DashboardStats() {
         const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
         
         // Llogarit dashboard stats manualisht
+        console.log('[DEBUG] Dashboard data received:');
+        console.log('[DEBUG] - contracts:', contractsRes.data?.length || 0);
+        console.log('[DEBUG] - employees:', employeesRes.data?.length || 0);
+        console.log('[DEBUG] - invoices:', invoicesRes.data?.length || 0);
+        console.log('[DEBUG] - tasks:', tasksRes.data?.length || 0);
+        console.log('[DEBUG] - expenses:', expensesRes.data?.length || 0);
+        console.log('[DEBUG] - payments:', paymentsRes.data?.length || 0);
+        console.log('[DEBUG] - workHours:', Object.keys(workHoursRes.data || {}).length);
+        
         // Gjej pagesat për këtë javë
         const thisWeekPayments = allPayments.filter(p => p.weekLabel === thisWeek);
+        console.log('[DEBUG] - thisWeekPayments:', thisWeekPayments.length);
         
         // Gjej pagesat e paguara për këtë javë
         const paidThisWeek = thisWeekPayments.filter(p => p.isPaid === true);
+        console.log('[DEBUG] - paidThisWeek:', paidThisWeek.length);
         
         // Llogarit totalin e paguar
         const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || 0), 0);
+        console.log('[DEBUG] - totalPaid:', totalPaid);
         
         // Llogarit orët e punuara për këtë javë
         let totalWorkHours = 0;
@@ -148,6 +160,7 @@ export default function DashboardStats() {
         
         Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
           const weekData = empData[thisWeek] || {};
+          console.log('[DEBUG] - empId:', empId, 'weekData:', weekData);
           
           Object.values(weekData).forEach(dayData => {
             if (dayData?.hours) {
@@ -159,6 +172,9 @@ export default function DashboardStats() {
             }
           });
         });
+        
+        console.log('[DEBUG] - totalWorkHours:', totalWorkHours);
+        console.log('[DEBUG] - siteHours:', siteHours);
         
         // Top 5 punonjësit më të paguar (vetëm të paguarat)
         const top5Employees = paidThisWeek
@@ -174,6 +190,8 @@ export default function DashboardStats() {
               photo: emp?.photo || null
             };
           });
+        
+        console.log('[DEBUG] - top5Employees:', top5Employees);
         
         // Llogarit total gross për këtë javë nga work_hours
         let totalGrossThisWeek = 0;
@@ -201,6 +219,14 @@ export default function DashboardStats() {
           totalGrossThisWeek: totalGrossThisWeek,
           paidEmployeesCount: paidThisWeek.length,
           totalEmployeesWithHours: Object.keys(structuredWorkHours).length
+        });
+        
+        console.log('[DEBUG] Final dashboardStats:', {
+          thisWeek: thisWeek,
+          totalPaid: totalPaid,
+          totalWorkHours: totalWorkHours,
+          workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
+          top5Employees: top5Employees
         });
         
         setAllTasks(allTasksData);
@@ -326,9 +352,10 @@ export default function DashboardStats() {
           icon="👷"
           color="green"
         />
-        <MoneyStatCard
+        <CountStatCard
           title="Orë të punuara këtë javë"
-          amount={`${Number(dashboardStats.totalHoursThisWeek || dashboardStats.totalWorkHours || 0).toFixed(2)} orë`}
+          count={`${Number(dashboardStats.totalHoursThisWeek || dashboardStats.totalWorkHours || 0).toFixed(2)} orë`}
+          icon="⏰"
           color="purple"
         />
         <MoneyStatCard
