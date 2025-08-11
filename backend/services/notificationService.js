@@ -14,7 +14,14 @@ class NotificationService {
       'admin@demo.com',            // Admin demo
       'igli@gmail.com',            // Igli
       'pellumb@gmail.com',         // Pellumb
-      'admin@gmail.com'            // Admin
+      'admin@gmail.com',           // Admin
+      'pellumblala10@gmail.com',   // Pellumb Lala
+      'adi@albanconstruction.co.uk', // Adi - Alban Construction
+      'flala24@beder.edu.al',      // Flala 24
+      'flala@beder.edu.al',        // Flala
+      'dmyrtollari97@gmail.com',   // Dmyr Tollari
+      'autobigbrotirane@gmail.com', // Auto Big Bro Tirane
+      'rudinislami1@gmail.com'     // Rudin Islami
     ];
     return allowedEmails.includes(email);
   }
@@ -27,7 +34,14 @@ class NotificationService {
       'admin@demo.com',            // Admin demo
       'igli@gmail.com',            // Igli
       'pellumb@gmail.com',         // Pellumb
-      'admin@gmail.com'            // Admin
+      'admin@gmail.com',           // Admin
+      'pellumblala10@gmail.com',   // Pellumb Lala
+      'adi@albanconstruction.co.uk', // Adi - Alban Construction
+      'flala24@beder.edu.al',      // Flala 24
+      'flala@beder.edu.al',        // Flala
+      'dmyrtollari97@gmail.com',   // Dmyr Tollari
+      'autobigbrotirane@gmail.com', // Auto Big Bro Tirane
+      'rudinislami1@gmail.com'     // Rudin Islami
     ];
   }
 
