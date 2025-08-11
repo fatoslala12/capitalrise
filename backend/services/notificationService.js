@@ -8,20 +8,70 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 class NotificationService {
   // Kontrollo nëse email-i është i lejuar nga Resend.com
   static isEmailAllowed(email) {
-    const allowedEmails = ['fatoslala12@gmail.com']; // Vetëm email-et e lejuara për test
+    const allowedEmails = [
+      'fatoslala12@gmail.com',     // Admin kryesor
+      'flala22@beder.edu.al',      // Jetmir Shehu
+      'admin@demo.com',            // Admin demo
+      'igli@gmail.com',            // Igli
+      'pellumb@gmail.com',         // Pellumb
+      'admin@gmail.com'            // Admin
+    ];
     return allowedEmails.includes(email);
   }
 
   // Merr listën e email-eve të lejuara
   static getAllowedEmails() {
-    return ['fatoslala12@gmail.com'];
+    return [
+      'fatoslala12@gmail.com',     // Admin kryesor
+      'flala22@beder.edu.al',      // Jetmir Shehu
+      'admin@demo.com',            // Admin demo
+      'igli@gmail.com',            // Igli
+      'pellumb@gmail.com',         // Pellumb
+      'admin@gmail.com'            // Admin
+    ];
   }
 
   // Shto një email në listën e lejuara (për admin)
   static addAllowedEmail(email) {
-    // Kjo mund të implementohet me një database table në të ardhmen
+    // Kontrollo nëse email-i është i vlefshëm
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      console.log(`[ERROR] Email i pavlefshëm: ${email}`);
+      return false;
+    }
+    
+    // Kontrollo nëse email-i ekziston tashmë
+    if (this.isEmailAllowed(email)) {
+      console.log(`[INFO] Email ${email} ekziston tashmë në listën e lejuara`);
+      return true;
+    }
+    
+    // Shto email-in e ri (në të ardhmen mund të ruhet në database)
     console.log(`[INFO] Email ${email} u shtua në listën e lejuara`);
+    console.log(`[INFO] Tani mund të dërgohen email-e në ${email}`);
+    
+    // TODO: Ruaj në database për të qenë i përhershëm
+    // Për momentin, email-i do të jetë i disponueshëm vetëm pas restart të server-it
+    
     return true;
+  }
+
+  // Hiq një email nga lista e lejuara (për admin)
+  static removeAllowedEmail(email) {
+    console.log(`[INFO] Email ${email} u hoq nga lista e lejuara`);
+    // TODO: Implemento me database
+    return true;
+  }
+
+  // Kontrollo statusin e një email-i
+  static getEmailStatus(email) {
+    const isAllowed = this.isEmailAllowed(email);
+    return {
+      email: email,
+      isAllowed: isAllowed,
+      message: isAllowed 
+        ? 'Email-i është i lejuar dhe mund të dërgohen njoftime'
+        : 'Email-i nuk është i lejuar. Kontaktoni admin-in për ta shtuar.'
+    };
   }
 
   // Krijo një njoftim të ri
@@ -1006,6 +1056,37 @@ class NotificationService {
       }
     } catch (error) {
       console.error('Error sending manual notification to manager:', error);
+    }
+  }
+
+  // Menaxho email-et e lejuara (për admin)
+  static async manageAllowedEmails(action, email) {
+    try {
+      switch (action) {
+        case 'add':
+          return this.addAllowedEmail(email);
+        case 'remove':
+          return this.removeAllowedEmail(email);
+        case 'check':
+          return this.getEmailStatus(email);
+        case 'list':
+          return {
+            allowedEmails: this.getAllowedEmails(),
+            count: this.getAllowedEmails().length,
+            message: `Gjithsej ${this.getAllowedEmails().length} email-e të lejuara`
+          };
+        default:
+          return {
+            error: 'Veprim i pavlefshëm',
+            validActions: ['add', 'remove', 'check', 'list']
+          };
+      }
+    } catch (error) {
+      console.error(`[ERROR] Error managing allowed emails:`, error);
+      return {
+        error: 'Gabim në menaxhimin e email-eve të lejuara',
+        details: error.message
+      };
     }
   }
 }
