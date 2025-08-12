@@ -1,15 +1,34 @@
 // src/pages/AdminDashboard.jsx
+console.log('[FILE LOADED] AdminDashboard.jsx file is being loaded...');
+
 import { useEffect, useState } from "react";
+console.log('[IMPORT] React hooks imported successfully');
+
 import api from "../api";
+console.log('[IMPORT] API imported successfully');
+
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie, Cell as PieCell
 } from "recharts";
+console.log('[IMPORT] Recharts imported successfully');
+
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+console.log('[IMPORT] LoadingSpinner imported successfully');
+
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
+console.log('[IMPORT] Card components imported successfully');
+
 import { Container, Grid, Stack } from "../components/ui/Layout";
+console.log('[IMPORT] Layout components imported successfully');
+
 import { CountStatCard, MoneyStatCard } from "../components/ui/StatCard";
+console.log('[IMPORT] StatCard components imported successfully');
+
 import { StatusBadge, PaymentBadge } from "../components/ui/Badge";
+console.log('[IMPORT] Badge components imported successfully');
+
 import EmptyState, { NoTasksEmpty } from "../components/ui/EmptyState";
+console.log('[IMPORT] EmptyState components imported successfully');
 
 // Funksion për të kthyer snake_case në camelCase për një objekt ose array
 function snakeToCamel(obj) {
