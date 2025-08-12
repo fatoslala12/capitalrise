@@ -626,8 +626,18 @@ exports.getStructuredWorkHoursForEmployee = async (req, res) => {
 function getWeekLabel(date) {
   const startOfWeek = new Date(date);
   const day = startOfWeek.getDay();
-  const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-  startOfWeek.setDate(diff);
+  
+  // Fix: Calculate days to Monday (Monday = 1, Sunday = 0)
+  let diff;
+  if (day === 0) {
+    // Sunday - go back 6 days to get to Monday
+    diff = -6;
+  } else {
+    // Monday-Saturday - go back (day-1) days to get to Monday
+    diff = -(day - 1);
+  }
+  
+  startOfWeek.setDate(startOfWeek.getDate() + diff);
   
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 6);
