@@ -332,23 +332,44 @@ export default function BackupManagement() {
 
       {/* Statusi i Databazës */}
       {databaseStatus && (
-        <Card>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               📊 Statusi i Databazës
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="md">
-              {Object.entries(databaseStatus.stats || {}).map(([key, value]) => (
-                <div key={key} className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-xl border border-green-200">
-                  <div className="text-2xl font-bold text-green-700">{value}</div>
-                  <div className="text-sm text-green-600 capitalize">
-                    {key.replace(/_/g, ' ')}
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  {databaseStatus.database?.name || 'N/A'}
                 </div>
-              ))}
-            </Grid>
+                <div className="text-sm text-blue-800">Emri i Databazës</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {databaseStatus.database?.status || 'N/A'}
+                </div>
+                <div className="text-sm text-green-800">Statusi</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  {databaseStatus.backup?.exists ? '✅' : '❌'}
+                </div>
+                <div className="text-sm text-purple-800">Direktoria e Backup-ve</div>
+              </div>
+            </div>
+            
+            {/* Database Version Info */}
+            {databaseStatus.database?.version && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-semibold text-gray-700 mb-2">ℹ️ Informacione të Detajuara:</h4>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p><strong>Versioni:</strong> {databaseStatus.database.version}</p>
+                  <p><strong>Direktoria e Backup-ve:</strong> {databaseStatus.backup?.directory || 'N/A'}</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
