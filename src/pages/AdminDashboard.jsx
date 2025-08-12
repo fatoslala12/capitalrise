@@ -8,7 +8,7 @@ import api from "../api";
 console.log('[IMPORT] API imported successfully');
 
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie, Legend
 } from "recharts";
 console.log('[IMPORT] Recharts imported successfully');
 
@@ -527,7 +527,7 @@ export default function AdminDashboard() {
           Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
         </div>
         {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
-          <ResponsiveContainer width="100%" height={350}>
+          <ResponsiveContainer width="100%" height={450}>
             <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
@@ -545,7 +545,7 @@ export default function AdminDashboard() {
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 Progresi i kontratave aktive (%)</h3>
         {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
-          <ResponsiveContainer width="100%" height={350}>
+          <ResponsiveContainer width="100%" height={450}>
             <BarChart
               data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
                 const start = c.startDate ? new Date(c.startDate) : (c.start_date ? new Date(c.start_date) : null);
@@ -663,8 +663,8 @@ export default function AdminDashboard() {
 
       {/* Grafik për shpenzimet sipas site-ve */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet Totale sipas Site-ve</h3>
-        <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} />
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet & Fatura + Orët e Punës & Pagesat sipas Site-ve</h3>
+        <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} structuredWorkHours={structuredWorkHours} allPayments={allPayments} />
       </div>
 
       {/* Grafik për statusin e kontratave */}
@@ -677,7 +677,7 @@ export default function AdminDashboard() {
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore për stafin</h3>
         {weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
-          <ResponsiveContainer width="100%" height={350}>
+          <ResponsiveContainer width="100%" height={450}>
             <BarChart data={weeklyProfitData.filter(w => w.totalPaid > 0)} margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
@@ -789,10 +789,10 @@ function VonesaFaturashChart() {
         console.log('[DEBUG] VonesaFaturashChart - result:', result);
         
         const totalInvoices = invoices.length;
-        const chartData = Object.entries(result).map(([name, value]) => ({
+        const chartData = Object.entries(result).map(([name, value], index) => ({
           name: `${name}: ${value} (${totalInvoices > 0 ? ((value / totalInvoices) * 100).toFixed(1) : 0}%)`,
           value,
-          color: name === "Paguar" ? "#10b981" : "#ef4444"
+          color: progressBarColors[index % progressBarColors.length]
         }));
         
         setData(chartData);
@@ -800,8 +800,8 @@ function VonesaFaturashChart() {
         console.error('[ERROR] Failed to fetch invoices:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar: 0 (0%)", value: 0, color: "#10b981" },
-          { name: "Pa paguar: 0 (0%)", value: 0, color: "#ef4444" }
+          { name: "Paguar: 0 (0%)", value: 0, color: progressBarColors[0] },
+          { name: "Pa paguar: 0 (0%)", value: 0, color: progressBarColors[1] }
         ]);
       } finally {
         setLoading(false);
@@ -820,14 +820,14 @@ function VonesaFaturashChart() {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={350}>
+    <ResponsiveContainer width="100%" height={400}>
       <PieChart>
         <Pie
           data={data}
           cx="50%"
           cy="50%"
-          outerRadius={120}
-          innerRadius={60}
+          outerRadius={140}
+          innerRadius={70}
           dataKey="value"
           label={({ name, value, percent }) => `${name}`}
           labelLine={true}
@@ -879,10 +879,10 @@ function StatusiShpenzimeveChart() {
         console.log('[DEBUG] StatusiShpenzimeveChart - result:', result);
         
         const totalExpenses = expenses.length;
-        const chartData = Object.entries(result).map(([name, value]) => ({
+        const chartData = Object.entries(result).map(([name, value], index) => ({
           name: `${name}: ${value} (${totalExpenses > 0 ? ((value / totalExpenses) * 100).toFixed(1) : 0}%)`,
           value,
-          color: name === "Paguar" ? "#10b981" : "#ef4444"
+          color: progressBarColors[index % progressBarColors.length]
         }));
         
         setData(chartData);
@@ -890,8 +890,8 @@ function StatusiShpenzimeveChart() {
         console.error('[ERROR] Failed to fetch expenses:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar: 0 (0%)", value: 0, color: "#10b981" },
-          { name: "Pa paguar: 0 (0%)", value: 0, color: "#ef4444" }
+          { name: "Paguar: 0 (0%)", value: 0, color: progressBarColors[0] },
+          { name: "Pa paguar: 0 (0%)", value: 0, color: progressBarColors[1] }
         ]);
       } finally {
         setLoading(false);
@@ -910,14 +910,14 @@ function StatusiShpenzimeveChart() {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={350}>
+    <ResponsiveContainer width="100%" height={400}>
       <PieChart>
         <Pie
           data={data}
           cx="50%"
           cy="50%"
-          outerRadius={120}
-          innerRadius={60}
+          outerRadius={140}
+          innerRadius={70}
           dataKey="value"
           label={({ name, value, percent }) => `${name}`}
           labelLine={true}
@@ -941,7 +941,7 @@ function StatusiShpenzimeveChart() {
   );
 }
 
-function ShpenzimePerSiteChart({ allExpenses, contracts }) {
+function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, allPayments }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -969,7 +969,8 @@ function ShpenzimePerSiteChart({ allExpenses, contracts }) {
             const contract = contracts.find(c => c.id === exp.contract_id);
             if (contract) {
               const site = contract.site_name || contract.siteName || 'Unknown';
-              expensesBySite[site] = (expensesBySite[site] || 0) + parseFloat(exp.gross || exp.amount || 0);
+              expensesBySite[site] = expensesBySite[site] || { expenses: 0, invoices: 0, workHours: 0, payments: 0 };
+              expensesBySite[site].expenses += parseFloat(exp.gross || exp.amount || 0);
             }
           }
         });
@@ -982,16 +983,45 @@ function ShpenzimePerSiteChart({ allExpenses, contracts }) {
               const site = contract.site_name || contract.siteName || 'Unknown';
               // Llogarit totalin nga items
               const invoiceTotal = inv.items ? inv.items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0) : 0;
-              expensesBySite[site] = (expensesBySite[site] || 0) + invoiceTotal;
+              if (!expensesBySite[site]) expensesBySite[site] = { expenses: 0, invoices: 0, workHours: 0, payments: 0 };
+              expensesBySite[site].invoices += invoiceTotal;
+            }
+          }
+        });
+        
+        // Shto orët e punuara sipas site-ve
+        Object.values(structuredWorkHours).forEach(empData => {
+          Object.values(empData).forEach(weekData => {
+            Object.values(weekData).forEach(dayData => {
+              if (dayData?.site && dayData?.hours) {
+                if (!expensesBySite[dayData.site]) expensesBySite[dayData.site] = { expenses: 0, invoices: 0, workHours: 0, payments: 0 };
+                expensesBySite[dayData.site].workHours += parseFloat(dayData.hours);
+              }
+            });
+          });
+        });
+        
+        // Shto pagesat sipas site-ve
+        allPayments.forEach(payment => {
+          if (payment.contract_id) {
+            const contract = contracts.find(c => c.id === payment.contract_id);
+            if (contract) {
+              const site = contract.site_name || contract.siteName || 'Unknown';
+              if (!expensesBySite[site]) expensesBySite[site] = { expenses: 0, invoices: 0, workHours: 0, payments: 0 };
+              expensesBySite[site].payments += parseFloat(payment.grossAmount || payment.gross_amount || 0);
             }
           }
         });
         
         // Konverto në array dhe sorto
         const chartData = Object.entries(expensesBySite)
-          .map(([site, total]) => ({
+          .map(([site, data]) => ({
             site,
-            total: parseFloat(total)
+            expenses: parseFloat(data.expenses),
+            invoices: parseFloat(data.invoices),
+            workHours: parseFloat(data.workHours),
+            payments: parseFloat(data.payments),
+            total: parseFloat(data.expenses + data.invoices + data.workHours + data.payments)
           }))
           .sort((a, b) => b.total - a.total);
         
@@ -1007,7 +1037,7 @@ function ShpenzimePerSiteChart({ allExpenses, contracts }) {
     }
     
     fetchAllExpensesData();
-  }, [allExpenses, contracts]);
+  }, [allExpenses, contracts, structuredWorkHours, allPayments]);
   
   if (loading) {
     return <div className="text-center py-8">Duke ngarkuar...</div>;
@@ -1017,20 +1047,21 @@ function ShpenzimePerSiteChart({ allExpenses, contracts }) {
     return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
   }
   
-  const pastelColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"];
-  
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data} layout="vertical" margin={{ left: 50 }} barCategoryGap={18}>
+    <ResponsiveContainer width="100%" height={450}>
+      <BarChart data={data} layout="vertical" margin={{ left: 50, right: 50, top: 20, bottom: 20 }} barCategoryGap={18}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis type="number" label={{ value: "Shpenzime totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
-        <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#0284c7' }} />
-        <Tooltip contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} />
-        <Bar dataKey="total" radius={[0, 12, 12, 0]} barSize={32} >
-          {data.map((_, i) => (
-            <Cell key={i} fill={pastelColors[i % pastelColors.length]} />
-          ))}
-        </Bar>
+        <XAxis type="number" label={{ value: "Shuma totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
+        <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0284c7' }} />
+        <Tooltip 
+          contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} 
+          formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} 
+        />
+        <Legend />
+        <Bar dataKey="expenses" stackId="a" fill={progressBarColors[0]} name="Shpenzime" radius={[0, 0, 0, 0]} />
+        <Bar dataKey="invoices" stackId="a" fill={progressBarColors[1]} name="Fatura" radius={[0, 0, 0, 0]} />
+        <Bar dataKey="workHours" stackId="a" fill={progressBarColors[2]} name="Orët e Punës" radius={[0, 0, 0, 0]} />
+        <Bar dataKey="payments" stackId="a" fill={progressBarColors[3]} name="Pagesat" radius={[0, 0, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
