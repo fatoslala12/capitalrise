@@ -1,34 +1,18 @@
 // src/pages/AdminDashboard.jsx
-console.log('[FILE LOADED] AdminDashboard.jsx file is being loaded...');
-
 import { useEffect, useState } from "react";
-console.log('[IMPORT] React hooks imported successfully');
-
 import api from "../api";
-console.log('[IMPORT] API imported successfully');
-
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie, Legend
 } from "recharts";
-console.log('[IMPORT] Recharts imported successfully');
-
 import LoadingSpinner from "../components/ui/LoadingSpinner";
-console.log('[IMPORT] LoadingSpinner imported successfully');
-
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
-console.log('[IMPORT] Card components imported successfully');
-
 import { Container, Grid, Stack } from "../components/ui/Layout";
-console.log('[IMPORT] Layout components imported successfully');
-
 import { CountStatCard, MoneyStatCard } from "../components/ui/StatCard";
-console.log('[IMPORT] StatCard components imported successfully');
-
 import { StatusBadge, PaymentBadge } from "../components/ui/Badge";
-console.log('[IMPORT] Badge components imported successfully');
-
 import EmptyState, { NoTasksEmpty } from "../components/ui/EmptyState";
-console.log('[IMPORT] EmptyState components imported successfully');
+
+// Global color palette for charts
+const CHART_COLORS = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"];
 
 // Funksion për të kthyer snake_case në camelCase për një objekt ose array
 function snakeToCamel(obj) {
@@ -46,9 +30,6 @@ function snakeToCamel(obj) {
 }
 
 export default function AdminDashboard() {
-  console.log('[TEST] AdminDashboard component is loading...');
-  console.log('[TEST] Component name is correct now');
-  
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
@@ -72,22 +53,19 @@ export default function AdminDashboard() {
   const [weeklyProfitData, setWeeklyProfitData] = useState([]);
   const [allExpenses, setAllExpenses] = useState([]);
   const [structuredWorkHours, setStructuredWorkHours] = useState({});
+  const [allPayments, setAllPayments] = useState([]);
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
   // useEffect për të marrë të dhënat dhe llogaritë dashboard stats
   useEffect(() => {
-    console.log('[DEBUG] === AdminDashboard useEffect STARTED ===');
-    
     const fetchData = async () => {
       try {
-        console.log('[DEBUG] fetchData function started');
         setLoading(true);
         
         // Kontrollo nëse ka token
         const token = localStorage.getItem("token");
-        console.log('[DEBUG] Token found:', !!token);
         
         if (!token) {
           console.warn('[WARNING] No token found, dashboard will show empty data');
@@ -111,13 +89,10 @@ export default function AdminDashboard() {
           return;
         }
         
-        console.log('[DEBUG] Starting API calls...');
-        
         // Merr të gjitha të dhënat paralelisht me error handling
         let contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes;
         
         try {
-          console.log('[DEBUG] Making Promise.all API calls...');
           [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
             api.get("/api/contracts"),
             api.get("/api/employees"),
@@ -127,7 +102,6 @@ export default function AdminDashboard() {
             api.get("/api/payments"),
             api.get("/api/work-hours/structured"),
           ]);
-          console.log('[DEBUG] All API calls completed successfully');
         } catch (apiError) {
           console.error('[ERROR] API call failed:', apiError);
           // Nëse API call dështon, përdor të dhëna bosh
@@ -140,8 +114,6 @@ export default function AdminDashboard() {
           workHoursRes = { data: {} };
         }
         
-        console.log('[DEBUG] Processing API responses...');
-        
         setContracts(snakeToCamel(contractsRes.data || []));
         setEmployees(snakeToCamel(employeesRes.data || []));
         
@@ -151,20 +123,11 @@ export default function AdminDashboard() {
         const allPayments = snakeToCamel(paymentsRes.data || []);
         const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
         
-        console.log('[DEBUG] Data processed:', {
-          contracts: contractsRes.data?.length || 0,
-          employees: employeesRes.data?.length || 0,
-          invoices: invoices.length,
-          tasks: allTasksData.length,
-          expenses: allExpenses.length,
-          payments: allPayments.length,
-          workHours: Object.keys(structuredWorkHours).length
-        });
-        
         setAllExpenses(allExpenses);
         setStructuredWorkHours(structuredWorkHours);
         
-        console.log('[DEBUG] Starting week calculation...');
+        // Store allPayments in component state for use in charts
+        setAllPayments(allPayments);
         
         // Calculate current week - FIXED to match backend getWeekLabel exactly
         const today = new Date();
@@ -189,14 +152,6 @@ export default function AdminDashboard() {
         
         const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
         
-        console.log('[DEBUG] Frontend week calculation:');
-        console.log('[DEBUG] - today:', today.toISOString().slice(0, 10));
-        console.log('[DEBUG] - day of week:', day);
-        console.log('[DEBUG] - calculated diff:', diff);
-        console.log('[DEBUG] - monday:', monday.toISOString().slice(0, 10));
-        console.log('[DEBUG] - sunday:', sunday.toISOString().slice(0, 10));
-        console.log('[DEBUG] - thisWeek:', thisWeek);
-        
         // Gjej javën e fundit që ka të dhëna
         let weekToUse = thisWeek;
         let weekHasData = false;
@@ -215,34 +170,14 @@ export default function AdminDashboard() {
           }
         }
         
-        console.log('[DEBUG] - thisWeek (current):', thisWeek);
-        console.log('[DEBUG] - weekToUse (with data):', weekToUse);
-        console.log('[DEBUG] - weekHasData:', weekHasData);
-        
-        // Llogarit dashboard stats manualisht
-        console.log('[DEBUG] Dashboard data received:');
-        console.log('[DEBUG] - contracts:', contractsRes.data?.length || 0);
-        console.log('[DEBUG] - employees:', employeesRes.data?.length || 0);
-        console.log('[DEBUG] - invoices:', invoicesRes.data?.length || 0);
-        console.log('[DEBUG] - tasks:', tasksRes.data?.length || 0);
-        console.log('[DEBUG] - expenses:', expensesRes.data?.length || 0);
-        console.log('[DEBUG] - payments:', paymentsRes.data?.length || 0);
-        console.log('[DEBUG] - workHours:', Object.keys(workHoursRes.data || {}).length);
-        
         // Gjej pagesat për këtë javë
         const thisWeekPayments = allPayments.filter(p => (p.weekLabel || p.week_label) === weekToUse);
-        console.log('[DEBUG] - thisWeekPayments:', thisWeekPayments.length);
-        console.log('[DEBUG] - thisWeekPayments sample:', thisWeekPayments.slice(0, 2));
         
         // Gjej pagesat e paguara për këtë javë
         const paidThisWeek = thisWeekPayments.filter(p => (p.isPaid || p.is_paid) === true);
-        console.log('[DEBUG] - paidThisWeek:', paidThisWeek.length);
-        console.log('[DEBUG] - paidThisWeek sample:', paidThisWeek.slice(0, 2));
-        console.log('[DEBUG] - allPayments sample:', allPayments.slice(0, 2));
         
         // Llogarit totalin e paguar
         const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || p.gross_amount || 0), 0);
-        console.log('[DEBUG] - totalPaid:', totalPaid);
         
         // Llogarit orët e punuara për këtë javë
         let totalWorkHours = 0;
@@ -250,7 +185,6 @@ export default function AdminDashboard() {
         
         Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
           const weekData = empData[weekToUse] || {};
-          console.log('[DEBUG] - empId:', empId, 'weekData:', weekData);
           
           Object.values(weekData).forEach(dayData => {
             if (dayData?.hours) {
@@ -262,9 +196,6 @@ export default function AdminDashboard() {
             }
           });
         });
-        
-        console.log('[DEBUG] - totalWorkHours:', totalWorkHours);
-        console.log('[DEBUG] - siteHours:', siteHours);
         
         // Llogarit total gross për këtë javë nga work_hours
         let totalGrossThisWeek = 0;
@@ -300,20 +231,6 @@ export default function AdminDashboard() {
             };
           });
         
-        console.log('[DEBUG] - top5Employees:', top5Employees);
-        console.log('[DEBUG] - totalGrossThisWeek:', totalGrossThisWeek);
-        
-        // Log all data before setting dashboard stats
-        console.log('[DEBUG] === FINAL DATA BEFORE setDashboardStats ===');
-        console.log('[DEBUG] weekToUse:', weekToUse);
-        console.log('[DEBUG] totalPaid:', totalPaid);
-        console.log('[DEBUG] totalWorkHours:', totalWorkHours);
-        console.log('[DEBUG] totalGrossThisWeek:', totalGrossThisWeek);
-        console.log('[DEBUG] siteHours:', siteHours);
-        console.log('[DEBUG] top5Employees:', top5Employees);
-        console.log('[DEBUG] paidThisWeek.length:', paidThisWeek.length);
-        console.log('[DEBUG] Object.keys(structuredWorkHours).length:', Object.keys(structuredWorkHours).length);
-        
         const finalStats = {
           thisWeek: weekToUse,
           totalPaid: totalPaid,
@@ -329,18 +246,7 @@ export default function AdminDashboard() {
           weekLabel: weekToUse
         };
         
-        console.log('[DEBUG] === CALLING setDashboardStats WITH ===');
-        console.log('[DEBUG] finalStats:', finalStats);
-        
         setDashboardStats(finalStats);
-        
-        console.log('[DEBUG] Final dashboardStats:', {
-          thisWeek: weekToUse,
-          totalPaid: totalPaid,
-          totalWorkHours: totalWorkHours,
-          workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
-          top5Employees: top5Employees
-        });
         
         setAllTasks(allTasksData);
         
@@ -433,8 +339,6 @@ export default function AdminDashboard() {
     return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat..." />;
   }
 
-  const progressBarColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"]; // pastel
-
   return (
     <div className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-8 lg:py-10 space-y-4 md:space-y-8 lg:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
       {/* HEADER MODERN */}
@@ -475,11 +379,7 @@ export default function AdminDashboard() {
         {/* Pagesa për punëtorët këtë javë */}
         <MoneyStatCard
           title="Pagesa për punëtorët këtë javë"
-          value={(() => {
-            console.log('[DEBUG] Pagesa për punëtorët këtë javë - dashboardStats.totalPaid:', dashboardStats.totalPaid);
-            console.log('[DEBUG] Pagesa për punëtorët këtë javë - weeklyProfitData:', weeklyProfitData);
-            return `£${dashboardStats.totalPaid || 0}`;
-          })()}
+          value={`£${dashboardStats.totalPaid || 0}`}
           icon="💰"
           color="yellow"
         />
@@ -570,7 +470,7 @@ export default function AdminDashboard() {
               <Tooltip formatter={v => [`${v}%`, "Progresi"]} />
               <Bar dataKey="progress" radius={[0, 6, 6, 0]} barSize={30}>
                 {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map((_, i) => (
-                  <Cell key={i} fill={progressBarColors[i % progressBarColors.length]} />
+                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                 ))}
               </Bar>
             </BarChart>
@@ -592,9 +492,6 @@ export default function AdminDashboard() {
               
               // Merr të dhënat e plota të punonjësit nga employees array
               const employeeData = employees.find(emp => emp.id === e.employee_id || emp.id === e.id);
-              console.log('[DEBUG] Top5 - e:', e);
-              console.log('[DEBUG] Top5 - employeeData:', employeeData);
-              console.log('[DEBUG] Top5 - employees array length:', employees.length);
               
               const employeeName = employeeData 
                 ? `${employeeData.firstName || employeeData.first_name || employeeData.user_first_name || ''} ${employeeData.lastName || employeeData.last_name || employeeData.user_last_name || ''}`.trim()
@@ -773,8 +670,6 @@ function VonesaFaturashChart() {
         const res = await api.get("/api/invoices");
         const invoices = res.data || [];
         
-        console.log('[DEBUG] VonesaFaturashChart - invoices received:', invoices.length);
-        
         // Thjeshtëzo: vetëm paid TRUE vs FALSE
         const result = { "Paguar": 0, "Pa paguar": 0 };
         
@@ -786,13 +681,11 @@ function VonesaFaturashChart() {
           }
         });
         
-        console.log('[DEBUG] VonesaFaturashChart - result:', result);
-        
         const totalInvoices = invoices.length;
         const chartData = Object.entries(result).map(([name, value], index) => ({
           name: `${name}: ${value} (${totalInvoices > 0 ? ((value / totalInvoices) * 100).toFixed(1) : 0}%)`,
           value,
-          color: progressBarColors[index % progressBarColors.length]
+          color: CHART_COLORS[index % CHART_COLORS.length]
         }));
         
         setData(chartData);
@@ -800,8 +693,8 @@ function VonesaFaturashChart() {
         console.error('[ERROR] Failed to fetch invoices:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar: 0 (0%)", value: 0, color: progressBarColors[0] },
-          { name: "Pa paguar: 0 (0%)", value: 0, color: progressBarColors[1] }
+          { name: "Paguar: 0 (0%)", value: 0, color: CHART_COLORS[0] },
+          { name: "Pa paguar: 0 (0%)", value: 0, color: CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
@@ -863,8 +756,6 @@ function StatusiShpenzimeveChart() {
         const res = await api.get("/api/expenses");
         const expenses = res.data || [];
         
-        console.log('[DEBUG] StatusiShpenzimeveChart - expenses received:', expenses.length);
-        
         // Llogarit statusin e pagesës për shpenzimet
         const result = { "Paguar": 0, "Pa paguar": 0 };
         
@@ -876,13 +767,11 @@ function StatusiShpenzimeveChart() {
           }
         });
         
-        console.log('[DEBUG] StatusiShpenzimeveChart - result:', result);
-        
         const totalExpenses = expenses.length;
         const chartData = Object.entries(result).map(([name, value], index) => ({
           name: `${name}: ${value} (${totalExpenses > 0 ? ((value / totalExpenses) * 100).toFixed(1) : 0}%)`,
           value,
-          color: progressBarColors[index % progressBarColors.length]
+          color: CHART_COLORS[index % CHART_COLORS.length]
         }));
         
         setData(chartData);
@@ -890,8 +779,8 @@ function StatusiShpenzimeveChart() {
         console.error('[ERROR] Failed to fetch expenses:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar: 0 (0%)", value: 0, color: progressBarColors[0] },
-          { name: "Pa paguar: 0 (0%)", value: 0, color: progressBarColors[1] }
+          { name: "Paguar: 0 (0%)", value: 0, color: CHART_COLORS[0] },
+          { name: "Pa paguar: 0 (0%)", value: 0, color: CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
@@ -958,8 +847,6 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
         const invoicesRes = await api.get("/api/invoices");
         const invoices = invoicesRes.data || [];
         
-        console.log('[DEBUG] ShpenzimePerSiteChart - expenses:', expenses.length, 'invoices:', invoices.length);
-        
         // Llogarit shpenzimet totale sipas site-ve (përfshirë invoice_expenses)
         const expensesBySite = {};
         
@@ -1025,7 +912,6 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
           }))
           .sort((a, b) => b.total - a.total);
         
-        console.log('[DEBUG] ShpenzimePerSiteChart - chartData:', chartData);
         setData(chartData);
         
       } catch (error) {
@@ -1058,10 +944,10 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
           formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} 
         />
         <Legend />
-        <Bar dataKey="expenses" stackId="a" fill={progressBarColors[0]} name="Shpenzime" radius={[0, 0, 0, 0]} />
-        <Bar dataKey="invoices" stackId="a" fill={progressBarColors[1]} name="Fatura" radius={[0, 0, 0, 0]} />
-        <Bar dataKey="workHours" stackId="a" fill={progressBarColors[2]} name="Orët e Punës" radius={[0, 0, 0, 0]} />
-        <Bar dataKey="payments" stackId="a" fill={progressBarColors[3]} name="Pagesat" radius={[0, 0, 0, 0]} />
+        <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name="Shpenzime" radius={[0, 0, 0, 0]} />
+        <Bar dataKey="invoices" stackId="a" fill={CHART_COLORS[1]} name="Fatura" radius={[0, 0, 0, 0]} />
+        <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[2]} name="Orët e Punës" radius={[0, 0, 0, 0]} />
+        <Bar dataKey="payments" stackId="a" fill={CHART_COLORS[3]} name="Pagesat" radius={[0, 0, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
