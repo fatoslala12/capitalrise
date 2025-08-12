@@ -19,6 +19,8 @@ export default function BackupManagement() {
   const [showPartialBackupModal, setShowPartialBackupModal] = useState(false);
   const [selectedTables, setSelectedTables] = useState([]);
   const [backupDescription, setBackupDescription] = useState("");
+  const [connectionStatus, setConnectionStatus] = useState("checking");
+  const [currentBackend, setCurrentBackend] = useState("");
 
   // Tabelat e disponueshme për backup të pjesshëm
   const availableTables = [
@@ -38,12 +40,53 @@ export default function BackupManagement() {
 
   // Merr të dhënat në fillim
   useEffect(() => {
-    fetchData();
+    checkConnectionAndFetchData();
   }, []);
+
+  // Kontrollo lidhjen dhe merr të dhënat
+  const checkConnectionAndFetchData = async () => {
+    try {
+      setLoading(true);
+      setConnectionStatus("checking");
+      
+      // Kontrollo statusin e lidhjes
+      const healthCheck = await api.get('/api/health');
+      setConnectionStatus("connected");
+      setCurrentBackend(api.defaults.baseURL);
+      
+      // Nëse lidhja është OK, merr të dhënat
+      await fetchData();
+      
+    } catch (error) {
+      console.error('Connection error:', error);
+      setConnectionStatus("disconnected");
+      
+      // Provo të lidhesh me localhost nëse production nuk funksionon
+      if (api.defaults.baseURL !== "http://localhost:5000") {
+        try {
+          console.log('🔄 Trying localhost fallback...');
+          api.defaults.baseURL = "http://localhost:5000";
+          
+          const localHealthCheck = await api.get('/api/health');
+          setConnectionStatus("connected");
+          setCurrentBackend("http://localhost:5000");
+          
+          // Merr të dhënat nga localhost
+          await fetchData();
+          
+        } catch (localError) {
+          console.error('Localhost also failed:', localError);
+          setConnectionStatus("disconnected");
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    }
+  };
 
   const fetchData = async () => {
     try {
-      setLoading(true);
       const [backupsRes, statusRes] = await Promise.all([
         api.get('/api/backup/test-list'),
         api.get('/api/backup/test-status')
@@ -99,8 +142,7 @@ export default function BackupManagement() {
         toast.success('Backup i pjesshëm u krijua me sukses!');
         setSelectedTables([]);
         setBackupDescription("");
-        setShowPartialBackupModal(false);
-        fetchData();
+        fetchData(); // Rifresko listën
       }
     } catch (error) {
       console.error('Error creating partial backup:', error);
@@ -213,8 +255,48 @@ export default function BackupManagement() {
     });
   };
 
+  // Rifresko lidhjen
+  const refreshConnection = () => {
+    checkConnectionAndFetchData();
+  };
+
+  // Nëse nuk ka lidhje, shfaq mesazh përkatës
+  if (connectionStatus === "disconnected") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center p-8">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+            <h2 className="text-xl font-bold mb-2">🔌 Lidhja me Backend u humb</h2>
+            <p className="text-sm">
+              Nuk mund të lidhem me serverin e backend. Ju lutem kontrolloni:
+            </p>
+            <ul className="text-sm mt-2 text-left list-disc list-inside">
+              <li>Nëse backend është duke punuar</li>
+              <li>Nëse URL-ja e API është e saktë</li>
+              <li>Nëse ka probleme me rrjetin</li>
+            </ul>
+          </div>
+          
+          <div className="space-y-3">
+            <Button 
+              onClick={refreshConnection}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              🔄 Provoni përsëri
+            </Button>
+            
+            <div className="text-sm text-gray-600">
+              <p><strong>Backend aktual:</strong> {api.defaults.baseURL}</p>
+              <p><strong>Status:</strong> {connectionStatus}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar menaxhimin e backup-ve..." />;
+    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat e backup..." />;
   }
 
   if (user?.role !== 'admin' && user?.role !== 'manager') {
