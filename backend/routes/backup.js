@@ -95,6 +95,44 @@ router.get('/test-list', async (req, res) => {
   }
 });
 
+// Get table counts without authentication
+router.get('/table-counts', async (req, res) => {
+  try {
+    const db = require('../db');
+    
+    // Lista e tabelave që duam të kontrollojmë
+    const tables = [
+      'users', 'employees', 'contracts', 'work_hours', 'payments', 
+      'tasks', 'expenses_invoices', 'invoices', 'notifications', 
+      'employee_workplaces', 'attachments', 'todos'
+    ];
+    
+    const tableCounts = {};
+    
+    // Merr numrin e regjistrimeve për çdo tabelë
+    for (const table of tables) {
+      try {
+        const result = await db.query(`SELECT COUNT(*) as count FROM ${table}`);
+        tableCounts[table] = parseInt(result.rows[0].count);
+      } catch (tableError) {
+        console.warn(`Warning: Could not count table ${table}:`, tableError.message);
+        tableCounts[table] = 0; // Nëse tabela nuk ekziston, vendos 0
+      }
+    }
+    
+    res.json({
+      success: true,
+      data: tableCounts
+    });
+  } catch (error) {
+    console.error('Error getting table counts:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+});
+
 // Të gjitha routes kërkojnë autentikim
 router.use(verifyToken);
 
