@@ -35,24 +35,68 @@ router.get('/test-logs', async (req, res) => {
         al.entity_type,
         al.entity_id,
         al.user_email,
-        al.user_email as user_name
+        al.user_email as user_name,
+        CASE 
+          WHEN al.action = 'LOGIN_FAILED' THEN 
+            CASE 
+              WHEN al.description ILIKE '%password%' THEN 'Fjalëkalim i gabuar'
+              WHEN al.description ILIKE '%email%' THEN 'Email i gabuar'
+              WHEN al.description ILIKE '%user%' THEN 'Përdorues nuk ekziston'
+              ELSE 'Kredencialet e gabuara'
+            END
+          ELSE NULL
+        END as failure_reason
       FROM audit_trail al
       ORDER BY al.timestamp DESC
-      LIMIT 10
+      LIMIT 50
     `;
     
     const result = await db.query(query);
     const logs = result.rows;
 
+    // Enhance the logs with better metadata
+    const enhancedLogs = logs.map(log => {
+      let enhancedLog = { ...log };
+      
+      // For failed logins, create better details structure
+      if (log.action === 'LOGIN_FAILED') {
+        enhancedLog.details = {
+          reason: log.failure_reason || 'Kredencialet e gabuara',
+          error: log.description || 'Kyçje e dështuar',
+          attemptedEmail: log.user_email || 'Email i panjohur',
+          timestamp: log.timestamp,
+          ipAddress: log.ip_address
+        };
+      }
+      
+      // For successful logins
+      if (log.action === 'LOGIN_SUCCESS') {
+        enhancedLog.details = {
+          success: true,
+          userEmail: log.user_email,
+          timestamp: log.timestamp,
+          ipAddress: log.ip_address
+        };
+      }
+      
+      // For other actions, preserve existing details
+      if (!enhancedLog.details && log.details) {
+        try {
+          enhancedLog.details = typeof log.details === 'string' ? JSON.parse(log.details) : log.details;
+        } catch (e) {
+          enhancedLog.details = { raw: log.details };
+        }
+      }
+      
+      return enhancedLog;
+    });
+
     res.json({
-      data: logs.map(log => ({
-        ...log,
-        details: log.details || null
-      })),
+      data: enhancedLogs,
       pagination: {
         page: 1,
-        limit: 10,
-        total: logs.length,
+        limit: 50,
+        total: enhancedLogs.length,
         pages: 1
       }
     });
