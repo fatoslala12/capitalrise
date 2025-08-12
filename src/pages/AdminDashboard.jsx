@@ -232,10 +232,13 @@ export default function AdminDashboard() {
         // Gjej pagesat për këtë javë
         const thisWeekPayments = allPayments.filter(p => (p.weekLabel || p.week_label) === weekToUse);
         console.log('[DEBUG] - thisWeekPayments:', thisWeekPayments.length);
+        console.log('[DEBUG] - thisWeekPayments sample:', thisWeekPayments.slice(0, 2));
         
         // Gjej pagesat e paguara për këtë javë
         const paidThisWeek = thisWeekPayments.filter(p => (p.isPaid || p.is_paid) === true);
         console.log('[DEBUG] - paidThisWeek:', paidThisWeek.length);
+        console.log('[DEBUG] - paidThisWeek sample:', paidThisWeek.slice(0, 2));
+        console.log('[DEBUG] - allPayments sample:', allPayments.slice(0, 2));
         
         // Llogarit totalin e paguar
         const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || p.gross_amount || 0), 0);
