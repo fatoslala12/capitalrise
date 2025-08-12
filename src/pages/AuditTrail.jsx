@@ -606,9 +606,56 @@ export default function AuditTrail() {
                     {log.ip_address && (
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span>🌐 IP: {log.ip_address}</span>
-                          {log.entity_id && <span>🆔 ID: {log.entity_id}</span>}
+                          <span className="flex items-center gap-1">
+                            🌐 IP: <span className="font-medium">{log.ip_address}</span>
+                            {log.details?.ipInfo && (
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                log.details.ipInfo.isLocal 
+                                  ? 'bg-blue-100 text-blue-700' 
+                                  : log.details.ipInfo.isProxy 
+                                    ? 'bg-purple-100 text-purple-700'
+                                    : 'bg-green-100 text-green-700'
+                              }`}>
+                                {log.details.ipInfo.type}
+                              </span>
+                            )}
+                          </span>
+                          {log.entity_id && (
+                            <span className="flex items-center gap-1">
+                              🆔 ID: <span className="font-medium">{log.entity_id}</span>
+                            </span>
+                          )}
+                          {log.details?.ipInfo?.location && (
+                            <span className="flex items-center gap-1">
+                              📍 <span className="font-medium">{log.details.ipInfo.location}</span>
+                            </span>
+                          )}
                         </div>
+                        {/* Enhanced IP information */}
+                        {log.details?.ipInfo && (
+                          <div className="mt-2 p-2 bg-gray-50 rounded-lg">
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <span className="text-gray-500">Tipi:</span>
+                                <span className="ml-1 font-medium">{log.details.ipInfo.type}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Lokacioni:</span>
+                                <span className="ml-1 font-medium">{log.details.ipInfo.location}</span>
+                              </div>
+                              {log.details.ipInfo.isLocal && (
+                                <div className="col-span-2">
+                                  <span className="text-blue-600 text-xs">🔒 Lidhje lokale/private</span>
+                                </div>
+                              )}
+                              {log.details.ipInfo.isProxy && (
+                                <div className="col-span-2">
+                                  <span className="text-purple-600 text-xs">☁️ Lidhje përmes cloud/proxy</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

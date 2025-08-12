@@ -108,7 +108,9 @@ router.get('/test-logs', async (req, res) => {
           error: log.description || 'Kyçje e dështuar',
           attemptedEmail: log.user_email || 'Email i panjohur',
           timestamp: log.timestamp,
-          ipAddress: log.ip_address
+          ipAddress: log.ip_address,
+          // Enhanced IP information
+          ipInfo: getIPInfo(log.ip_address)
         };
       }
       
@@ -118,7 +120,9 @@ router.get('/test-logs', async (req, res) => {
           success: true,
           userEmail: log.user_email,
           timestamp: log.timestamp,
-          ipAddress: log.ip_address
+          ipAddress: log.ip_address,
+          // Enhanced IP information
+          ipInfo: getIPInfo(log.ip_address)
         };
       }
       
@@ -148,6 +152,118 @@ router.get('/test-logs', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Helper function to get IP information
+function getIPInfo(ip) {
+  if (!ip) return null;
+  
+  const ipInfo = {
+    ip: ip,
+    isLocal: isLocalIP(ip),
+    isProxy: isProxyIP(ip),
+    type: getIPType(ip),
+    location: getIPLocation(ip)
+  };
+  
+  return ipInfo;
+}
+
+// Helper function to check if IP is local
+function isLocalIP(ip) {
+  if (!ip) return false;
+  
+  return ip === '127.0.0.1' || 
+         ip === '::1' || 
+         ip.startsWith('192.168.') || 
+         ip.startsWith('10.') ||
+         ip.startsWith('172.16.') ||
+         ip.startsWith('172.17.') ||
+         ip.startsWith('172.18.') ||
+         ip.startsWith('172.19.') ||
+         ip.startsWith('172.20.') ||
+         ip.startsWith('172.21.') ||
+         ip.startsWith('172.22.') ||
+         ip.startsWith('172.23.') ||
+         ip.startsWith('172.24.') ||
+         ip.startsWith('172.25.') ||
+         ip.startsWith('172.26.') ||
+         ip.startsWith('172.27.') ||
+         ip.startsWith('172.28.') ||
+         ip.startsWith('172.29.') ||
+         ip.startsWith('172.30.') ||
+         ip.startsWith('172.31.');
+}
+
+// Helper function to check if IP is proxy/cloud service
+function isProxyIP(ip) {
+  if (!ip) return false;
+  
+  return ip === '8.8.8.8' || 
+         ip === '1.1.1.1' || 
+         ip.startsWith('52.') || 
+         ip.startsWith('35.') ||
+         ip.startsWith('13.') ||
+         ip.startsWith('54.') ||
+         ip.startsWith('18.') ||
+         ip.startsWith('3.') ||
+         ip.startsWith('34.') ||
+         ip.startsWith('104.') ||
+         ip.startsWith('151.') ||
+         ip.startsWith('185.') ||
+         ip.startsWith('199.') ||
+         ip.startsWith('45.') ||
+         ip.startsWith('66.') ||
+         ip.startsWith('69.') ||
+         ip.startsWith('70.') ||
+         ip.startsWith('71.') ||
+         ip.startsWith('72.') ||
+         ip.startsWith('73.') ||
+         ip.startsWith('74.') ||
+         ip.startsWith('75.') ||
+         ip.startsWith('76.') ||
+         ip.startsWith('77.') ||
+         ip.startsWith('78.') ||
+         ip.startsWith('79.') ||
+         ip.startsWith('80.') ||
+         ip.startsWith('81.') ||
+         ip.startsWith('82.') ||
+         ip.startsWith('83.') ||
+         ip.startsWith('84.') ||
+         ip.startsWith('85.') ||
+         ip.startsWith('86.') ||
+         ip.startsWith('87.') ||
+         ip.startsWith('88.') ||
+         ip.startsWith('89.') ||
+         ip.startsWith('90.') ||
+         ip.startsWith('91.') ||
+         ip.startsWith('92.') ||
+         ip.startsWith('93.') ||
+         ip.startsWith('94.') ||
+         ip.startsWith('95.') ||
+         ip.startsWith('96.') ||
+         ip.startsWith('97.') ||
+         ip.startsWith('98.') ||
+         ip.startsWith('99.');
+}
+
+// Helper function to get IP type
+function getIPType(ip) {
+  if (!ip) return 'Unknown';
+  
+  if (isLocalIP(ip)) return 'Local/Private';
+  if (isProxyIP(ip)) return 'Cloud/Proxy';
+  if (ip.includes(':')) return 'IPv6';
+  return 'IPv4 Public';
+}
+
+// Helper function to get IP location (simplified)
+function getIPLocation(ip) {
+  if (!ip || isLocalIP(ip)) return 'Local Network';
+  if (isProxyIP(ip)) return 'Cloud Service';
+  
+  // This could be enhanced with a real IP geolocation service
+  return 'External Network';
+}
 
 // Test stats endpoint without authentication
 router.get('/test-stats', async (req, res) => {

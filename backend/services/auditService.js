@@ -110,12 +110,13 @@ class AuditService {
   }
 
   // Log login events
-  async logLogin(userId, userEmail, userRole, ipAddress, userAgent, success = true) {
-    let metadata = { success };
+  async logLogin(userId, userEmail, userRole, ipAddress, userAgent, success = true, metadata = null) {
+    let loginMetadata = metadata || { success };
     
     if (success) {
       // For successful logins, include user details
-      metadata = {
+      loginMetadata = {
+        ...loginMetadata,
         success: {
           id: userId,
           role: userRole,
@@ -125,7 +126,8 @@ class AuditService {
       };
     } else {
       // For failed logins, include failure details
-      metadata = {
+      loginMetadata = {
+        ...loginMetadata,
         failure: {
           attemptedEmail: userEmail,
           reason: 'Kredencialet e gabuara',
@@ -146,7 +148,7 @@ class AuditService {
       userAgent,
       severity: success ? 'info' : 'warning',
       description: success ? 'Përdoruesi u logua me sukses' : 'Tentativë e dështuar e login',
-      metadata
+      metadata: loginMetadata
     });
   }
 
