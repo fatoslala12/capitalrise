@@ -47,35 +47,27 @@ router.get('/test-analytics', async (req, res) => {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysAgo);
     
-    // Check if notifications table exists
+    // Check if notifications table exists and return mock data if not
     try {
-      const tableCheck = await pool.query(`
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_schema = 'public' 
-          AND table_name = 'notifications'
-        );
-      `);
-      
+      const tableCheck = await pool.query(`SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'notifications');`);
       if (!tableCheck.rows[0].exists) {
-        // Return mock data if table doesn't exist
+        console.log('Notifications table does not exist, returning mock data');
+        
         const mockAnalytics = {
           totalNotifications: 156,
           unreadNotifications: 23,
           readNotifications: 133,
-          emailSent: 142,
-          emailFailed: 8,
           notificationsByType: {
-            'contract': 45,
-            'payment': 38,
-            'task': 32,
-            'work_hours': 28,
-            'system': 13
+            contract: 45,
+            payment: 38,
+            task: 32,
+            work_hours: 28,
+            system: 13
           },
           notificationsByRole: {
-            'admin': 67,
-            'manager': 45,
-            'employee': 44
+            admin: 67,
+            manager: 45,
+            employee: 44
           },
           notificationsByDay: [
             { date: '12 Gus', count: 12 },
@@ -127,7 +119,76 @@ router.get('/test-analytics', async (req, res) => {
       }
     } catch (error) {
       console.error('Error checking table:', error);
+      // If there's an error checking the table, return mock data as fallback
+      console.log('Error checking table, returning mock data as fallback');
+      
+      const mockAnalytics = {
+        totalNotifications: 156,
+        unreadNotifications: 23,
+        readNotifications: 133,
+        notificationsByType: {
+          contract: 45,
+          payment: 38,
+          task: 32,
+          work_hours: 28,
+          system: 13
+        },
+        notificationsByRole: {
+          admin: 67,
+          manager: 45,
+          employee: 44
+        },
+        notificationsByDay: [
+          { date: '12 Gus', count: 12 },
+          { date: '11 Gus', count: 18 },
+          { date: '10 Gus', count: 15 },
+          { date: '9 Gus', count: 22 },
+          { date: '8 Gus', count: 19 },
+          { date: '7 Gus', count: 16 },
+          { date: '6 Gus', count: 14 }
+        ],
+        engagementRate: 85.3,
+        averageResponseTime: 12,
+        topNotificationTypes: [
+          { name: 'contract', count: 45, percentage: 28.8 },
+          { name: 'payment', count: 38, percentage: 24.4 },
+          { name: 'task', count: 32, percentage: 20.5 },
+          { name: 'work_hours', count: 28, percentage: 17.9 },
+          { name: 'system', count: 13, percentage: 8.3 }
+        ],
+        recentActivity: [
+          {
+            action: 'Kontratë',
+            description: 'Kontratë e re u krijua për projektin e ri',
+            time: '2 orë më parë',
+            user: 'admin@example.com',
+            type: 'contract'
+          },
+          {
+            action: 'Pagesë',
+            description: 'Pagesa u procesua me sukses',
+            time: '4 orë më parë',
+            user: 'manager@example.com',
+            type: 'payment'
+          },
+          {
+            action: 'Detyrë',
+            description: 'Detyrë e re u caktua për punonjësin',
+            time: '6 orë më parë',
+            user: 'admin@example.com',
+            type: 'task'
+          }
+        ]
+      };
+      
+      return res.json({
+        success: true,
+        data: mockAnalytics
+      });
     }
+    
+    // Only execute database queries if the table exists
+    console.log('Notifications table exists, fetching real data');
     
     // Total notifications
     const totalResult = await pool.query('SELECT COUNT(*) as total FROM notifications');
