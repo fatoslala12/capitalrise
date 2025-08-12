@@ -251,7 +251,18 @@ export default function DashboardStats() {
         console.log('[DEBUG] - top5Employees:', top5Employees);
         console.log('[DEBUG] - totalGrossThisWeek:', totalGrossThisWeek);
         
-        setDashboardStats({
+        // Log all data before setting dashboard stats
+        console.log('[DEBUG] === FINAL DATA BEFORE setDashboardStats ===');
+        console.log('[DEBUG] weekToUse:', weekToUse);
+        console.log('[DEBUG] totalPaid:', totalPaid);
+        console.log('[DEBUG] totalWorkHours:', totalWorkHours);
+        console.log('[DEBUG] totalGrossThisWeek:', totalGrossThisWeek);
+        console.log('[DEBUG] siteHours:', siteHours);
+        console.log('[DEBUG] top5Employees:', top5Employees);
+        console.log('[DEBUG] paidThisWeek.length:', paidThisWeek.length);
+        console.log('[DEBUG] Object.keys(structuredWorkHours).length:', Object.keys(structuredWorkHours).length);
+        
+        const finalStats = {
           thisWeek: weekToUse,
           totalPaid: totalPaid,
           totalProfit: totalPaid * 0.20,
@@ -264,7 +275,12 @@ export default function DashboardStats() {
           totalEmployeesWithHours: Object.keys(structuredWorkHours).length,
           isCurrentWeek: weekToUse === thisWeek,
           weekLabel: weekToUse
-        });
+        };
+        
+        console.log('[DEBUG] === CALLING setDashboardStats WITH ===');
+        console.log('[DEBUG] finalStats:', finalStats);
+        
+        setDashboardStats(finalStats);
         
         console.log('[DEBUG] Final dashboardStats:', {
           thisWeek: weekToUse,
