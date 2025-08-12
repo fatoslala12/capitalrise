@@ -567,7 +567,7 @@ export default function AdminDashboard() {
 
       {/* Grafik për shpenzimet sipas site-ve */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet & Fatura + Orët e Punës & Pagesat sipas Site-ve</h3>
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet (expenses_invoice.gross) + Orët e Punës (work_hours.hours × rate) sipas Site-ve</h3>
         <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} structuredWorkHours={structuredWorkHours} allPayments={allPayments} />
       </div>
 
@@ -850,22 +850,22 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
       try {
         setLoading(true);
         
-        // Merr të gjitha shpenzimet nga expenses (expenses_invoices)
+        // Merr të gjitha shpenzimet nga expenses_invoice table
         const expensesRes = await api.get("/api/expenses");
         const expenses = expensesRes.data || [];
         
-        // Merr të gjitha invoice_expenses nga invoices
-        const invoicesRes = await api.get("/api/invoices");
-        const invoices = invoicesRes.data || [];
+        // Merr të gjitha work_hours për të llogaritur hours * rate
+        const workHoursRes = await api.get("/api/work-hours");
+        const workHours = workHoursRes.data || [];
         
         // Merr të gjitha punonjësit për hourly rates
         const employeesRes = await api.get("/api/employees");
         const employees = employeesRes.data || [];
         
-        // Llogarit shpenzimet totale sipas site-ve (si tek PaymentDetails)
+        // Llogarit shpenzimet totale sipas site-ve
         const expensesBySite = {};
         
-        // 1. Shto shpenzimet nga expenses (expenses_invoices)
+        // 1. Shto shpenzimet nga expenses_invoice table - kolona [gross] sipas site-ve
         expenses.forEach(exp => {
           if (exp.contract_id) {
             const contract = contracts.find(c => c.id === exp.contract_id);
@@ -874,92 +874,40 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
               if (!expensesBySite[site]) {
                 expensesBySite[site] = { 
                   expenses: 0, 
-                  invoices: 0, 
                   workHours: 0, 
-                  payments: 0,
                   total: 0
                 };
               }
-              expensesBySite[site].expenses += parseFloat(exp.gross || exp.amount || 0);
+              // Përdor kolonën [gross] nga expenses_invoice
+              expensesBySite[site].expenses += parseFloat(exp.gross || 0);
             }
           }
         });
         
-        // 2. Shto shpenzimet nga invoice_expenses
-        invoices.forEach(inv => {
-          if (inv.contract_id) {
-            const contract = contracts.find(c => c.id === inv.contract_id);
-            if (contract) {
-              const site = contract.site_name || contract.siteName || 'Unknown';
-              // Llogarit totalin nga items
-              const invoiceTotal = inv.items ? inv.items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0) : 0;
-              if (!expensesBySite[site]) {
-                expensesBySite[site] = { 
-                  expenses: 0, 
-                  invoices: 0, 
-                  workHours: 0, 
-                  payments: 0,
-                  total: 0
-                };
-              }
-              expensesBySite[site].invoices += invoiceTotal;
+        // 2. Shto work_hours: kolona [hours] × kolona [rate] sipas site-ve
+        workHours.forEach(wh => {
+          if (wh.contract_id && wh.site) {
+            const site = wh.site;
+            if (!expensesBySite[site]) {
+              expensesBySite[site] = { 
+                expenses: 0, 
+                workHours: 0, 
+                total: 0
+              };
             }
+            // Llogarit si: hours * rate nga work_hours table
+            const hours = parseFloat(wh.hours || 0);
+            const rate = parseFloat(wh.rate || 0);
+            const workHoursCost = hours * rate;
+            expensesBySite[site].workHours += workHoursCost;
           }
         });
         
-        // 3. Shto orët e punuara * hourly rate sipas site-ve (si tek PaymentDetails)
-        Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
-          const emp = employees.find(e => e.id === empId);
-          const hourlyRate = parseFloat(emp?.hourlyRate || emp?.hourly_rate || 0);
-          
-          Object.values(empData).forEach(weekData => {
-            Object.values(weekData).forEach(dayData => {
-              if (dayData?.site && dayData?.hours && dayData?.contract_id) {
-                const site = dayData.site;
-                if (!expensesBySite[site]) {
-                  expensesBySite[site] = { 
-                    expenses: 0, 
-                    invoices: 0, 
-                    workHours: 0, 
-                    payments: 0,
-                    total: 0
-                  };
-                }
-                // Llogarit si tek PaymentDetails: hours * hourly rate
-                const workHoursCost = parseFloat(dayData.hours) * hourlyRate;
-                expensesBySite[site].workHours += workHoursCost;
-              }
-            });
-          });
-        });
-        
-        // 4. Shto pagesat sipas site-ve
-        allPayments.forEach(payment => {
-          if (payment.contract_id) {
-            const contract = contracts.find(c => c.id === payment.contract_id);
-            if (contract) {
-              const site = contract.site_name || contract.siteName || 'Unknown';
-              if (!expensesBySite[site]) {
-                expensesBySite[site] = { 
-                  expenses: 0, 
-                  invoices: 0, 
-                  workHours: 0, 
-                  payments: 0,
-                  total: 0
-                };
-              }
-              expensesBySite[site].payments += parseFloat(payment.grossAmount || payment.gross_amount || 0);
-            }
-          }
-        });
-        
-        // 5. Llogarit totalin për çdo site (si tek PaymentDetails: totalBruto + totalInvoicesGross)
+        // 3. Llogarit totalin për çdo site
         Object.keys(expensesBySite).forEach(site => {
           expensesBySite[site].total = 
             expensesBySite[site].expenses + 
-            expensesBySite[site].invoices + 
-            expensesBySite[site].workHours + 
-            expensesBySite[site].payments;
+            expensesBySite[site].workHours;
         });
         
         // Konverto në array dhe sorto
@@ -967,9 +915,7 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
           .map(([site, data]) => ({
             site,
             expenses: parseFloat(data.expenses),
-            invoices: parseFloat(data.invoices),
             workHours: parseFloat(data.workHours),
-            payments: parseFloat(data.payments),
             total: parseFloat(data.total)
           }))
           .sort((a, b) => b.total - a.total);
@@ -1000,11 +946,9 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
       <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
         <h4 className="font-semibold text-blue-800 mb-2">📊 Shpjegim i llogaritjes:</h4>
         <div className="text-sm text-blue-700 space-y-1">
-          <p><strong>Shpenzime:</strong> Shpenzimet direkte nga tabela expenses (expenses_invoices)</p>
-          <p><strong>Fatura:</strong> Shpenzimet nga invoice_expenses (items nga tabela invoices)</p>
-          <p><strong>Orët e Punës:</strong> Orët e punuara × hourly rate për çdo punonjës (si tek PaymentDetails)</p>
-          <p><strong>Pagesat:</strong> Pagesat e bëra për punonjësit</p>
-          <p><strong>Totali:</strong> Shpenzime + Fatura + Orët e Punës + Pagesat</p>
+          <p><strong>Shpenzime:</strong> Shpenzimet nga tabela expenses_invoice - kolona [gross] sipas site-ve</p>
+          <p><strong>Orët e Punës:</strong> Orët e punuara × rate nga tabela work_hours - kolona [hours] × kolona [rate]</p>
+          <p><strong>Totali:</strong> Shpenzime + Orët e Punës</p>
         </div>
       </div>
       
@@ -1018,10 +962,8 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
             formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} 
           />
           <Legend />
-          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name="Shpenzime" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="invoices" stackId="a" fill={CHART_COLORS[1]} name="Fatura" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[2]} name="Orët e Punës" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="payments" stackId="a" fill={CHART_COLORS[3]} name="Pagesat" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name="Shpenzime (expenses_invoice.gross)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[1]} name="Orët e Punës (work_hours.hours × rate)" radius={[0, 0, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
