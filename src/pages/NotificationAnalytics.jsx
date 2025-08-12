@@ -12,9 +12,30 @@ import {
   DollarSign,
   Settings,
   Calendar,
-  Activity
+  Activity,
+  RefreshCw,
+  Download,
+  Filter,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  Info
 } from 'lucide-react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, Legend
+} from 'recharts';
 import api from '../api';
+import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+
+// Color palette for charts
+const CHART_COLORS = [
+  '#3b82f6', '#10b981', '#f59e0b', '#ef4444', 
+  '#8b5cf6', '#06b6d4', '#f97316', '#ec4899'
+];
 
 const NotificationAnalytics = () => {
   const { user } = useAuth();
@@ -33,287 +54,441 @@ const NotificationAnalytics = () => {
     recentActivity: []
   });
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState('7d'); // 7d, 30d, 90d
+  const [error, setError] = useState(null);
+  const [dateRange, setDateRange] = useState('7d');
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Merr analytics data
+  // Fetch analytics data
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/api/notifications/analytics?range=${dateRange}`);
-      setAnalytics(response.data);
+      setError(null);
+      const response = await api.get(`/api/notifications/test-analytics?range=${dateRange}`);
+      
+      if (response.data.success) {
+        setAnalytics(response.data.data);
+      } else {
+        throw new Error(response.data.error || 'Gabim në marrjen e të dhënave');
+      }
     } catch (error) {
       console.error('Gabim në marrjen e analytics:', error);
+      setError(error.message || 'Gabim në marrjen e analytics');
     } finally {
       setLoading(false);
     }
   };
 
+  // Refresh data
+  const refreshData = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   useEffect(() => {
     fetchAnalytics();
-  }, [dateRange]);
+  }, [dateRange, refreshKey]);
+
+  // Get notification type icon
+  const getNotificationTypeIcon = (type) => {
+    const icons = {
+      'contract': <FileText size={20} className="text-blue-600" />,
+      'payment': <DollarSign size={20} className="text-green-600" />,
+      'task': <Clock size={20} className="text-purple-600" />,
+      'work_hours': <Activity size={20} className="text-orange-600" />,
+      'system': <Settings size={20} className="text-gray-600" />,
+      'reminder': <AlertTriangle size={20} className="text-red-600" />,
+      'alert': <AlertTriangle size={20} className="text-red-600" />,
+      'info': <Info size={20} className="text-blue-600" />
+    };
+    return icons[type] || <Bell size={20} className="text-gray-600" />;
+  };
+
+  // Get notification type label
+  const getNotificationTypeLabel = (type) => {
+    const labels = {
+      'contract': 'Kontratat',
+      'payment': 'Pagesat',
+      'task': 'Detyrat',
+      'work_hours': 'Orët e punës',
+      'system': 'Sistemi',
+      'reminder': 'Kujtues',
+      'alert': 'Alarm',
+      'info': 'Informacion'
+    };
+    return labels[type] || type;
+  };
+
+  // Prepare data for charts
+  const prepareChartData = () => {
+    // Daily activity data
+    const dailyData = analytics.notificationsByDay.map(day => ({
+      date: day.date,
+      count: day.count,
+      unread: Math.floor(day.count * (analytics.unreadNotifications / analytics.totalNotifications))
+    }));
+
+    // Type distribution data
+    const typeData = Object.entries(analytics.notificationsByType).map(([type, count], index) => ({
+      name: getNotificationTypeLabel(type),
+      value: count,
+      type: type,
+      color: CHART_COLORS[index % CHART_COLORS.length]
+    }));
+
+    // Role distribution data
+    const roleData = Object.entries(analytics.notificationsByRole).map(([role, count], index) => ({
+      name: role || 'Pa rol',
+      value: count,
+      color: CHART_COLORS[index % CHART_COLORS.length]
+    }));
+
+    return { dailyData, typeData, roleData };
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar analytics..." />
       </div>
     );
   }
 
-  const getNotificationTypeIcon = (type) => {
-    switch (type) {
-      case 'contract': return <FileText size={20} className="text-blue-600" />;
-      case 'payment': return <DollarSign size={20} className="text-green-600" />;
-      case 'task': return <Clock size={20} className="text-purple-600" />;
-      case 'work_hours': return <Activity size={20} className="text-orange-600" />;
-      case 'system': return <Settings size={20} className="text-gray-600" />;
-      case 'reminder': return <AlertTriangle size={20} className="text-red-600" />;
-      default: return <Bell size={20} className="text-gray-600" />;
-    }
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="text-6xl mb-4">❌</div>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Gabim</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Button onClick={refreshData} className="bg-red-600 hover:bg-red-700">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Provoni përsëri
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-  const getNotificationTypeLabel = (type) => {
-    switch (type) {
-      case 'contract': return 'Kontratat';
-      case 'payment': return 'Pagesat';
-      case 'task': return 'Detyrat';
-      case 'work_hours': return 'Orët e punës';
-      case 'system': return 'Sistemi';
-      case 'reminder': return 'Kujtues';
-      default: return type;
-    }
-  };
+  const { dailyData, typeData, roleData } = prepareChartData();
 
   return (
-    <div className="p-2 md:p-4 lg:p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-6 md:mb-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-          <div className="p-2 md:p-3 bg-blue-100 rounded-xl">
-            <BarChart3 size={20} className="md:w-6 md:h-6 text-blue-600" />
-          </div>
-          <div>
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">Analytics i Njoftimeve</h1>
-            <p className="text-sm md:text-base text-gray-600">Statistikat dhe insights për sistemin e njoftimeve</p>
-          </div>
-        </div>
-
-        {/* Date Range Selector */}
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">Periudha:</label>
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="7d">7 ditët e fundit</option>
-            <option value="30d">30 ditët e fundit</option>
-            <option value="90d">90 ditët e fundit</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Njoftime</p>
-              <p className="text-3xl font-bold text-gray-900">{analytics.totalNotifications}</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl text-white">
+                <BarChart3 size={24} />
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
+                  Analytics i Njoftimeve
+                </h1>
+                <p className="text-gray-600 text-sm md:text-base">
+                  Statistikat dhe insights për sistemin e njoftimeve
+                </p>
+              </div>
             </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Bell size={24} className="text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Të Palexuara</p>
-              <p className="text-3xl font-bold text-red-600">{analytics.unreadNotifications}</p>
-            </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <AlertTriangle size={24} className="text-red-600" />
+            
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+                  variant={showUnreadOnly ? "primary" : "outline"}
+                  size="sm"
+                >
+                  {showUnreadOnly ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showUnreadOnly ? 'Të gjitha' : 'Vetëm të palexuara'}
+                </Button>
+              </div>
+              
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="1d">1 Ditë</option>
+                <option value="7d">7 Ditë</option>
+                <option value="30d">30 Ditë</option>
+                <option value="90d">90 Ditë</option>
+              </select>
+              
+              <Button onClick={refreshData} variant="outline" size="sm">
+                <RefreshCw size={16} />
+              </Button>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Email të Dërguar</p>
-              <p className="text-3xl font-bold text-green-600">{analytics.emailSent}</p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Mail size={24} className="text-green-600" />
-            </div>
-          </div>
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-600 mb-1">Total Njoftime</p>
+                  <p className="text-3xl font-bold text-blue-900">{analytics.totalNotifications}</p>
+                  <p className="text-xs text-blue-600 mt-1">Gjithsej</p>
+                </div>
+                <div className="p-3 bg-blue-200 rounded-full">
+                  <Bell className="w-6 h-6 text-blue-700" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-600 mb-1">Të Lexuara</p>
+                  <p className="text-3xl font-bold text-green-900">{analytics.readNotifications}</p>
+                  <p className="text-xs text-green-600 mt-1">Sukses</p>
+                </div>
+                <div className="p-3 bg-green-200 rounded-full">
+                  <CheckCircle className="w-6 h-6 text-green-700" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-yellow-600 mb-1">Të Palexuara</p>
+                  <p className="text-3xl font-bold text-yellow-900">{analytics.unreadNotifications}</p>
+                  <p className="text-xs text-yellow-600 mt-1">Kërkojnë vëmendje</p>
+                </div>
+                <div className="p-3 bg-yellow-200 rounded-full">
+                  <EyeOff className="w-6 h-6 text-yellow-700" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-600 mb-1">Engagement</p>
+                  <p className="text-3xl font-bold text-purple-900">{analytics.engagementRate}%</p>
+                  <p className="text-xs text-purple-600 mt-1">Rate</p>
+                </div>
+                <div className="p-3 bg-purple-200 rounded-full">
+                  <TrendingUp className="w-6 h-6 text-purple-700" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Engagement Rate</p>
-              <p className="text-3xl font-bold text-purple-600">{analytics.engagementRate}%</p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <TrendingUp size={24} className="text-purple-600" />
-            </div>
-          </div>
-        </div>
-      </div>
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Daily Activity Chart */}
+          <Card className="border-2 border-gray-100 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
+              <CardTitle className="flex items-center gap-2 text-blue-800">
+                <TrendingUp className="w-5 h-5" />
+                Aktiviteti Ditor
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={dailyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="date" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      background: '#ffffff', 
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Total" />
+                  <Bar dataKey="unread" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Të palexuara" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Notifications by Type */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Njoftimet sipas Tipit</h2>
-          <div className="space-y-4">
-            {Object.entries(analytics.notificationsByType).map(([type, count]) => (
-              <div key={type} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
-                <div className="flex items-center gap-3">
-                  {getNotificationTypeIcon(type)}
-                  <div>
-                    <p className="font-medium text-gray-900">{getNotificationTypeLabel(type)}</p>
-                    <p className="text-sm text-gray-600">{count} njoftime</p>
+          {/* Type Distribution Chart */}
+          <Card className="border-2 border-gray-100 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
+              <CardTitle className="flex items-center gap-2 text-green-800">
+                <PieChart className="w-5 h-5" />
+                Shpërndarja sipas Llojit
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={typeData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    innerRadius={40}
+                    dataKey="value"
+                    label={({ name, value, percent }) => `${name}: ${value}`}
+                  >
+                    {typeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      background: '#ffffff', 
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Top Notification Types */}
+        <Card className="mb-8 border-2 border-gray-100 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100">
+            <CardTitle className="flex items-center gap-2 text-purple-800">
+              <BarChart3 className="w-5 h-5" />
+              Llojet më të Popullarizuara
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {analytics.topNotificationTypes.map((type, index) => (
+                <div key={type.name} className="group relative">
+                  <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 rounded-xl border border-blue-200 hover:border-blue-400 transition-all duration-300 hover:shadow-lg cursor-pointer">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-2xl">{getNotificationTypeIcon(type.name)}</span>
+                      <div className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-1 rounded-full">
+                        #{index + 1}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-700 mb-1">
+                        {type.count}
+                      </div>
+                      <div className="text-sm text-gray-600 font-medium">
+                        {getNotificationTypeLabel(type.name)}
+                      </div>
+                      <div className="text-xs text-blue-600 mt-1">
+                        {type.percentage}% e totalit
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-semibold text-gray-900">{count}</p>
-                  <p className="text-sm text-gray-600">
-                    {((count / analytics.totalNotifications) * 100).toFixed(1)}%
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Notifications by Role */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Njoftimet sipas Rolit</h2>
-          <div className="space-y-4">
-            {Object.entries(analytics.notificationsByRole).map(([role, count]) => (
-              <div key={role} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-100 rounded-lg">
-                    <Users size={20} className="text-gray-600" />
+        {/* Recent Activity & Performance */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Recent Activity */}
+          <Card className="border-2 border-gray-100 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100">
+              <CardTitle className="flex items-center gap-2 text-indigo-800">
+                <Activity className="w-5 h-5" />
+                Aktiviteti i Fundit
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4 max-h-80 overflow-y-auto">
+                {analytics.recentActivity.map((activity, index) => (
+                  <div key={index} className="flex items-start gap-4 p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="p-2 bg-indigo-100 rounded-lg flex-shrink-0">
+                      <Calendar size={16} className="text-indigo-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate">{activity.action}</p>
+                      <p className="text-sm text-gray-600 truncate">{activity.description}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-gray-500">{activity.time}</span>
+                        <span className="text-xs text-indigo-600 font-medium">{activity.user}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 capitalize">{role}</p>
-                    <p className="text-sm text-gray-600">{count} njoftime</p>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Performance Metrics */}
+          <Card className="border-2 border-gray-100 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100">
+              <CardTitle className="flex items-center gap-2 text-orange-800">
+                <Settings className="w-5 h-5" />
+                Performanca & Insights
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-6">
+                {/* Email Performance */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-800">Performanca e Email-ve</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Email të dërguar</span>
+                      <span className="font-semibold text-green-600">{analytics.emailSent}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Email të dështuar</span>
+                      <span className="font-semibold text-red-600">{analytics.emailFailed}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Suksesi</span>
+                      <span className="font-semibold text-green-600">
+                        {analytics.emailSent > 0 ? ((analytics.emailSent / (analytics.emailSent + analytics.emailFailed)) * 100).toFixed(1) : 0}%
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-semibold text-gray-900">{count}</p>
-                  <p className="text-sm text-gray-600">
-                    {((count / analytics.totalNotifications) * 100).toFixed(1)}%
-                  </p>
+
+                {/* Response Time */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-800">Koha e Përgjigjes</h3>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                    <span className="text-2xl font-bold text-blue-600">{analytics.averageResponseTime}</span>
+                    <span className="text-gray-600">min mesatarisht</span>
+                  </div>
+                </div>
+
+                {/* Insights */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-800">Insights</h3>
+                  <div className="space-y-2">
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <strong>💡</strong> {analytics.topNotificationTypes[0]?.name ? 
+                          `${getNotificationTypeLabel(analytics.topNotificationTypes[0].name)} është lloji më i popullarizuar` : 
+                          'Sistemi po funksionon mirë'}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-green-50 rounded-lg">
+                      <p className="text-sm text-green-800">
+                        <strong>✅</strong> Engagement rate është {analytics.engagementRate}%
+                      </p>
+                    </div>
+                    {analytics.unreadNotifications > 0 && (
+                      <div className="p-3 bg-orange-50 rounded-lg">
+                        <p className="text-sm text-orange-800">
+                          <strong>⚠️</strong> {analytics.unreadNotifications} njoftime janë ende të palexuara
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Daily Activity Chart */}
-      <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Aktiviteti Ditor</h2>
-        <div className="h-64 flex items-end justify-between gap-2">
-          {analytics.notificationsByDay.map((day, index) => (
-            <div key={index} className="flex-1 flex flex-col items-center">
-              <div 
-                className="w-full bg-blue-500 rounded-t-lg transition-all duration-300 hover:bg-blue-600"
-                style={{ height: `${(day.count / Math.max(...analytics.notificationsByDay.map(d => d.count))) * 200}px` }}
-              ></div>
-              <p className="text-xs text-gray-600 mt-2">{day.date}</p>
-              <p className="text-xs font-medium text-gray-900">{day.count}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Top Notification Types */}
-      <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Llojet më të Popullarizuara</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {analytics.topNotificationTypes.map((type, index) => (
-            <div key={type.name} className="p-4 border border-gray-100 rounded-lg">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-lg font-bold text-gray-400">#{index + 1}</span>
-                {getNotificationTypeIcon(type.name)}
-                <span className="font-medium text-gray-900">{getNotificationTypeLabel(type.name)}</span>
-              </div>
-              <p className="text-2xl font-bold text-gray-900">{type.count}</p>
-              <p className="text-sm text-gray-600">{type.percentage}% e totalit</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Aktiviteti i Fundit</h2>
-        <div className="space-y-4">
-          {analytics.recentActivity.map((activity, index) => (
-            <div key={index} className="flex items-center gap-4 p-4 border border-gray-100 rounded-lg">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Calendar size={16} className="text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">{activity.action}</p>
-                <p className="text-sm text-gray-600">{activity.description}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{activity.time}</p>
-                <p className="text-xs text-gray-600">{activity.user}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Performance Metrics */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Performanca</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Koha mesatare e përgjigjes</span>
-              <span className="font-semibold text-gray-900">{analytics.averageResponseTime} min</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Email të dështuar</span>
-              <span className="font-semibold text-red-600">{analytics.emailFailed}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Suksesi i email-ve</span>
-              <span className="font-semibold text-green-600">
-                {analytics.emailSent > 0 ? ((analytics.emailSent / (analytics.emailSent + analytics.emailFailed)) * 100).toFixed(1) : 0}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Insights</h2>
-          <div className="space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <strong>💡 Insight:</strong> {analytics.topNotificationTypes[0]?.name} është lloji më i popullarizuar i njoftimit.
-              </p>
-            </div>
-            <div className="p-4 bg-green-50 rounded-lg">
-              <p className="text-sm text-green-800">
-                <strong>✅ Sukses:</strong> Engagement rate është {analytics.engagementRate}%, që tregon përdorim të mirë të sistemit.
-              </p>
-            </div>
-            <div className="p-4 bg-orange-50 rounded-lg">
-              <p className="text-sm text-orange-800">
-                <strong>⚠️ Vëmendje:</strong> {analytics.unreadNotifications} njoftime janë ende të palexuara.
-              </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
