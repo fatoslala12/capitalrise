@@ -100,11 +100,10 @@ router.get('/table-counts', async (req, res) => {
   try {
     const db = require('../db');
     
-    // Lista e tabelave që duam të kontrollojmë
+    // Lista e tabelave që duam të kontrollojmë (vetëm ato që shfaqen në frontend)
     const tables = [
-      'users', 'employees', 'contracts', 'work_hours', 'payments', 
-      'tasks', 'expenses_invoices', 'invoices', 'notifications', 
-      'employee_workplaces', 'attachments', 'todos'
+      'employees', 'contracts', 'work_hours', 'payments', 
+      'tasks', 'expenses_invoices', 'invoices', 'notifications'
     ];
     
     const tableCounts = {};

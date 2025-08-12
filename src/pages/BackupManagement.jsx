@@ -24,7 +24,6 @@ export default function BackupManagement() {
 
   // Tabelat e disponueshme për backup të pjesshëm
   const [availableTables, setAvailableTables] = useState([
-    { name: 'users', label: 'Përdoruesit', icon: '👥', count: 0 },
     { name: 'employees', label: 'Punonjësit', icon: '👷', count: 0 },
     { name: 'contracts', label: 'Kontratat', icon: '📄', count: 0 },
     { name: 'work_hours', label: 'Orët e Punës', icon: '🕒', count: 0 },
@@ -32,10 +31,7 @@ export default function BackupManagement() {
     { name: 'tasks', label: 'Detyrat', icon: '📋', count: 0 },
     { name: 'expenses_invoices', label: 'Shpenzimet', icon: '💸', count: 0 },
     { name: 'invoices', label: 'Faturat', icon: '🧾', count: 0 },
-    { name: 'notifications', label: 'Njoftimet', icon: '🔔', count: 0 },
-    { name: 'employee_workplaces', label: 'Vendet e Punës', icon: '🏢', count: 0 },
-    { name: 'attachments', label: 'Bashkëngjitjet', icon: '📎', count: 0 },
-    { name: 'todos', label: 'Detyrat e Vogla', icon: '✅', count: 0 }
+    { name: 'notifications', label: 'Njoftimet', icon: '🔔', count: 0 }
   ]);
 
   // Merr të dhënat në fillim
@@ -421,7 +417,7 @@ export default function BackupManagement() {
           </div>
           
           {/* Loading state for table counts */}
-          {!tableInfo.length && (
+          {availableTables.some(table => table.count === 0) && (
             <div className="text-center py-6">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
               <p className="text-gray-500">Duke ngarkuar numrin e regjistrimeve...</p>
