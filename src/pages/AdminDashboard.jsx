@@ -198,23 +198,6 @@ export default function DashboardStats() {
         console.log('[DEBUG] - totalWorkHours:', totalWorkHours);
         console.log('[DEBUG] - siteHours:', siteHours);
         
-        // Top 5 punonjësit më të paguar (vetëm të paguarat)
-        const top5Employees = paidThisWeek
-          .sort((a, b) => parseFloat(b.grossAmount || 0) - parseFloat(a.grossAmount || 0))
-          .slice(0, 5)
-          .map(p => {
-            const emp = employees.find(e => e.id === p.employeeId);
-            return {
-              id: p.employeeId,
-              name: emp ? `${emp.firstName || emp.first_name} ${emp.lastName || emp.last_name}` : 'Unknown',
-              grossAmount: parseFloat(p.grossAmount || 0),
-              isPaid: p.isPaid,
-              photo: emp?.photo || null
-            };
-          });
-        
-        console.log('[DEBUG] - top5Employees:', top5Employees);
-        
         // Llogarit total gross për këtë javë nga work_hours
         let totalGrossThisWeek = 0;
         Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
@@ -229,6 +212,24 @@ export default function DashboardStats() {
             }
           });
         });
+        
+        // Top 5 punonjësit më të paguar (vetëm të paguarat)
+        const top5Employees = paidThisWeek
+          .sort((a, b) => parseFloat(b.grossAmount || 0) - parseFloat(a.grossAmount || 0))
+          .slice(0, 5)
+          .map(p => {
+            const emp = employees.find(e => e.id === p.employeeId);
+            return {
+              id: p.employeeId,
+              name: emp ? `${emp.firstName || emp.first_name || emp.name || 'Unknown'} ${emp.lastName || emp.last_name || ''}` : 'Unknown',
+              grossAmount: parseFloat(p.grossAmount || 0),
+              isPaid: p.isPaid,
+              photo: emp?.photo || null
+            };
+          });
+        
+        console.log('[DEBUG] - top5Employees:', top5Employees);
+        console.log('[DEBUG] - totalGrossThisWeek:', totalGrossThisWeek);
         
         setDashboardStats({
           thisWeek: weekToUse,
@@ -634,6 +635,8 @@ function VonesaFaturashChart() {
         const res = await api.get("/api/invoices");
         const invoices = res.data || [];
         
+        console.log('[DEBUG] VonesaFaturashChart - invoices received:', invoices.length);
+        
         // Për çdo faturë, llogarit statusin e pagesës
         const result = { "Paguar në kohë": 0, "Paguar me vonesë": 0, "Pa paguar": 0 };
         
@@ -657,6 +660,8 @@ function VonesaFaturashChart() {
             }
           }
         });
+        
+        console.log('[DEBUG] VonesaFaturashChart - result:', result);
         
         const chartData = Object.entries(result).map(([name, value]) => ({
           name,

@@ -1489,76 +1489,41 @@ exports.updatePaymentStatus = async (req, res) => {
         [employeeId, week]
       );
       
+      // Gjej të gjitha orët e punës për këtë punonjës dhe javë
+      const [weekStart, weekEnd] = week.split(' - ');
+      const workHoursRes = await client.query(
+        `SELECT wh.hours, e.hourly_rate, e.label_type
+         FROM work_hours wh
+         JOIN employees e ON wh.employee_id = e.id
+         WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3`,
+        [employeeId, weekStart, weekEnd]
+      );
+      
+      let totalHours = 0;
+      let hourlyRate = 0;
+      let labelType = 'UTR';
+      
+      if (workHoursRes.rows.length > 0) {
+        hourlyRate = Number(workHoursRes.rows[0].hourly_rate || 0);
+        labelType = workHoursRes.rows[0].label_type || 'UTR';
+        workHoursRes.rows.forEach(row => {
+          if (row.hours && row.hours > 0) totalHours += Number(row.hours);
+        });
+      }
+      
+      const gross_amount = totalHours * hourlyRate;
+      const net_amount = gross_amount * (labelType === 'UTR' ? 0.8 : 0.7);
+      
+      console.log(`[DEBUG] updatePaymentStatus - Employee ${employeeId}, Week ${week}: ${totalHours}h × £${hourlyRate} = £${gross_amount} gross, £${net_amount} net`);
+      
       if (checkPay.rows.length > 0) {
         // Përditëso pagesën ekzistuese
-        const payment = checkPay.rows[0];
-        let gross_amount = payment.gross_amount;
-        let net_amount = payment.net_amount;
-        
-        // Nëse po bëhet pagesa (paid = true) dhe nuk ka gross/net, llogarit ato
-        if (paid && (!gross_amount || !net_amount)) {
-          // Merr të gjitha orët e punës për këtë punonjës dhe javë
-          const [weekStart, weekEnd] = week.split(' - ');
-          const workHoursRes = await client.query(
-            `SELECT wh.hours, e.hourly_rate, e.label_type
-             FROM work_hours wh
-             JOIN employees e ON wh.employee_id = e.id
-             WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3`,
-            [employeeId, weekStart, weekEnd]
-          );
-          
-          let totalHours = 0;
-          let hourlyRate = 0;
-          let labelType = 'UTR';
-          
-          if (workHoursRes.rows.length > 0) {
-            hourlyRate = Number(workHoursRes.rows[0].hourly_rate || 0);
-            labelType = workHoursRes.rows[0].label_type || 'UTR';
-            workHoursRes.rows.forEach(row => {
-              if (row.hours && row.hours > 0) totalHours += Number(row.hours);
-            });
-          }
-          
-          gross_amount = totalHours * hourlyRate;
-          net_amount = gross_amount * (labelType === 'UTR' ? 0.8 : 0.7);
-        }
-        
         await client.query(
           `UPDATE payments SET is_paid = $1, gross_amount = $2, net_amount = $3, updated_at = NOW() WHERE employee_id = $4 AND week_label = $5`,
           [paid, gross_amount, net_amount, employeeId, week]
         );
       } else {
-        // Krijo pagesë të re me llogaritjen e gross/net
-        let gross_amount = 0;
-        let net_amount = 0;
-        
-        if (paid) {
-          // Merr të gjitha orët e punës për këtë punonjës dhe javë
-          const [weekStart, weekEnd] = week.split(' - ');
-          const workHoursRes = await client.query(
-            `SELECT wh.hours, e.hourly_rate, e.label_type
-             FROM work_hours wh
-             JOIN employees e ON wh.employee_id = e.id
-             WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3`,
-            [employeeId, weekStart, weekEnd]
-          );
-          
-          let totalHours = 0;
-          let hourlyRate = 0;
-          let labelType = 'UTR';
-          
-          if (workHoursRes.rows.length > 0) {
-            hourlyRate = Number(workHoursRes.rows[0].hourly_rate || 0);
-            labelType = workHoursRes.rows[0].label_type || 'UTR';
-            workHoursRes.rows.forEach(row => {
-              if (row.hours && row.hours > 0) totalHours += Number(row.hours);
-            });
-          }
-          
-          gross_amount = totalHours * hourlyRate;
-          net_amount = gross_amount * (labelType === 'UTR' ? 0.8 : 0.7);
-        }
-        
+        // Krijo pagesë të re
         await client.query(
           `INSERT INTO payments (employee_id, week_label, is_paid, gross_amount, net_amount, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
           [employeeId, week, paid, gross_amount, net_amount]
