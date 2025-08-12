@@ -290,7 +290,10 @@ export default function AdminDashboard() {
               name: emp ? `${emp.firstName || emp.first_name || emp.name || 'Unknown'} ${emp.lastName || emp.last_name || ''}`.trim() : 'Unknown',
               grossAmount: parseFloat(p.grossAmount || p.gross_amount || 0),
               isPaid: p.isPaid || p.is_paid,
-              photo: emp?.photo || null
+              photo: emp?.photo || null,
+              // Add these fields for better name display
+              firstName: emp?.firstName || emp?.first_name || '',
+              lastName: emp?.lastName || emp?.last_name || ''
             };
           });
         
@@ -470,33 +473,9 @@ export default function AdminDashboard() {
         <MoneyStatCard
           title="Pagesa këtë javë"
           value={(() => {
-            // Përdor të njëjtat të dhëna si "Pagesa Javore për stafin"
-            // Calculate current week - FIXED to match backend getWeekLabel exactly
-            const today = new Date();
-            const day = today.getDay();
-            
-            // Backend uses Monday-Sunday week, so we need to match exactly
-            let diff;
-            if (day === 0) {
-              // Sunday - go back 6 days to get to Monday
-              diff = -6;
-            } else {
-              // Monday-Saturday - go back (day-1) days to get to Monday
-              diff = -(day - 1);
-            }
-            
-            const monday = new Date(today);
-            monday.setDate(today.getDate() + diff);
-            monday.setHours(0, 0, 0, 0);
-            
-            const sunday = new Date(monday);
-            sunday.setDate(monday.getDate() + 6);
-            
-            const currentWeekLabel = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
-            
-            // Gjej pagesat për javën aktuale nga weeklyProfitData
-            const currentWeekPayment = weeklyProfitData.find(w => w.week === currentWeekLabel);
-            return currentWeekPayment ? currentWeekPayment.totalPaid : 0;
+            console.log('[DEBUG] Pagesa këtë javë - dashboardStats.totalPaid:', dashboardStats.totalPaid);
+            console.log('[DEBUG] Pagesa këtë javë - weeklyProfitData:', weeklyProfitData);
+            return dashboardStats.totalPaid || 0;
           })()}
           icon="💰"
           color="yellow"
@@ -610,9 +589,18 @@ export default function AdminDashboard() {
               
               // Merr të dhënat e plota të punonjësit nga employees array
               const employeeData = employees.find(emp => emp.id === e.employee_id || emp.id === e.id);
+              console.log('[DEBUG] Top5 - e:', e);
+              console.log('[DEBUG] Top5 - employeeData:', employeeData);
+              console.log('[DEBUG] Top5 - employees array length:', employees.length);
+              
               const employeeName = employeeData 
-                ? `${employeeData.first_name || employeeData.user_first_name || ''} ${employeeData.last_name || employeeData.user_last_name || ''}`.trim()
+                ? `${employeeData.firstName || employeeData.first_name || employeeData.user_first_name || ''} ${employeeData.lastName || employeeData.last_name || employeeData.user_last_name || ''}`.trim()
                 : e.name || 'Unknown';
+              
+              // Use the name from the top5Employees data if available
+              const displayName = e.firstName && e.lastName 
+                ? `${e.firstName} ${e.lastName}`.trim()
+                : employeeName;
               
               const photoSrc = employeeData?.photo
                 ? employeeData.photo.startsWith('data:image')
@@ -626,7 +614,7 @@ export default function AdminDashboard() {
                     {employeeData?.photo ? (
                       <img 
                         src={photoSrc} 
-                        alt={employeeName} 
+                        alt={displayName} 
                         className="w-full h-full rounded-full object-cover border-2 border-blue-300 shadow"
                         onError={(e) => {
                           e.target.style.display = 'none';
@@ -641,7 +629,7 @@ export default function AdminDashboard() {
                         display: employeeData?.photo ? 'none' : 'flex'
                       }}
                     >
-                      {employeeName
+                      {displayName
                         .split(" ")
                         .map((n) => n[0])
                         .join("")
@@ -651,7 +639,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-lg">
-                      {employeeName}
+                      {displayName}
                     </p>
                     <p className="text-sm text-gray-600">
                       {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
