@@ -26,8 +26,9 @@ function snakeToCamel(obj) {
   return obj;
 }
 
-export default function DashboardStats() {
+export default function AdminDashboard() {
   console.log('[TEST] AdminDashboard component is loading...');
+  console.log('[TEST] Component name is correct now');
   
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
