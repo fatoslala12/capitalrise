@@ -436,7 +436,7 @@ export default function AdminDashboard() {
   const progressBarColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"]; // pastel
 
   return (
-    <div className="max-w-7xl mx-auto px-2 md:px-4 py-6 md:py-10 space-y-6 md:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+    <div className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-8 lg:py-10 space-y-4 md:space-y-8 lg:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
       {/* HEADER MODERN */}
       <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-4 md:px-10 py-4 md:py-6 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
         <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 md:p-3 shadow-sm">
@@ -452,7 +452,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Statistika kryesore */}
-      <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="lg" className="mb-8 md:mb-12">
+      <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="md" className="mb-6 md:mb-12">
         <CountStatCard
           title="Site aktive"
           count={activeSites.length}
@@ -486,7 +486,7 @@ export default function AdminDashboard() {
       </Grid>
 
       {/* Detyrat - më të dukshme */}
-      <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-4 md:p-8 rounded-xl md:rounded-2xl shadow-xl col-span-full border border-yellow-200">
+      <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-xl col-span-full border border-yellow-200">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📋 Detyrat</h3>
         <div className="mb-4 flex flex-col sm:flex-row gap-2 md:gap-4 items-start sm:items-center">
           <label className="font-medium text-sm md:text-base">Filtro:</label>
@@ -519,7 +519,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Grafik për site */}
-      <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
             📊 Ora të punuara këtë javë sipas site-ve
           </h3>
@@ -542,7 +542,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Grafik për progresin e kontratave aktive */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 Progresi i kontratave aktive (%)</h3>
         {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
           <ResponsiveContainer width="100%" height={350}>
@@ -581,7 +581,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Top 5 më të paguar */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
             🏅 Top 5 punonjësit më të paguar
           </h3>
@@ -662,19 +662,19 @@ export default function AdminDashboard() {
       
 
       {/* Grafik për shpenzimet sipas site-ve */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet sipas Site-ve</h3>
-        <ShpenzimePerSiteChart allExpenses={allExpenses} structuredWorkHours={structuredWorkHours} contracts={contracts} />
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet Totale sipas Site-ve</h3>
+        <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} />
       </div>
 
       {/* Grafik për statusin e kontratave */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i kontratave</h3>
         <StatusiKontrataveChart contracts={contracts} />
       </div>
 
       {/* Grafik për pagesat javore */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore për stafin</h3>
         {weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
           <ResponsiveContainer width="100%" height={350}>
@@ -692,19 +692,19 @@ export default function AdminDashboard() {
       </div>
 
       {/* Grafik për vonesat në pagesa/fatura */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i Invoice-ve të dërguar</h3>
+      <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i Invoice-ve të dërguar</h3>
         <VonesaFaturashChart />
       </div>
 
       {/* Grafik për statusin e faturave të shpenzimeve */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 Statusi i faturave të shpenzimeve</h3>
+      <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📈 Statusi i faturave të shpenzimeve</h3>
         <StatusiShpenzimeveChart />
       </div>
 
       {/* Faturat e papaguara */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
         {unpaid.length === 0 ? (
           <p className="text-gray-500 italic">Të gjitha faturat janë të paguara ✅</p>
@@ -734,7 +734,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Shpenzimet e papaguara */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full mb-8">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full mb-6 md:mb-8">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
         {unpaidExpenses.length === 0 ? (
           <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
@@ -775,27 +775,14 @@ function VonesaFaturashChart() {
         
         console.log('[DEBUG] VonesaFaturashChart - invoices received:', invoices.length);
         
-        // Për çdo faturë, llogarit statusin e pagesës
-        const result = { "Paguar më kohë": 0, "Paguar me vonesë": 0, "Pa paguar": 0 };
+        // Thjeshtëzo: vetëm paid TRUE vs FALSE
+        const result = { "Paguar": 0, "Pa paguar": 0 };
         
         invoices.forEach(inv => {
-          if (!inv.paid) {
-            result["Pa paguar"]++;
+          if (inv.paid) {
+            result["Paguar"]++;
           } else {
-            // Përdor updated_at si datë pagese nëse nuk ka paid_date
-            const invoiceDate = inv.date ? new Date(inv.date) : null;
-            const paidDate = inv.paid_date ? new Date(inv.paid_date) : (inv.updated_at ? new Date(inv.updated_at) : null);
-            
-            if (invoiceDate && paidDate) {
-              const daysDiff = Math.ceil((paidDate - invoiceDate) / (1000 * 60 * 60 * 24));
-              if (daysDiff <= 30) {
-                result["Paguar më kohë"]++;
-              } else {
-                result["Paguar me vonesë"]++;
-              }
-            } else {
-              result["Pa paguar"]++;
-            }
+            result["Pa paguar"]++;
           }
         });
         
@@ -805,8 +792,7 @@ function VonesaFaturashChart() {
         const chartData = Object.entries(result).map(([name, value]) => ({
           name: `${name}: ${value} (${totalInvoices > 0 ? ((value / totalInvoices) * 100).toFixed(1) : 0}%)`,
           value,
-          color: name === "Paguar më kohë" ? "#10b981" : 
-                 name === "Paguar me vonesë" ? "#f59e0b" : "#ef4444"
+          color: name === "Paguar" ? "#10b981" : "#ef4444"
         }));
         
         setData(chartData);
@@ -814,8 +800,7 @@ function VonesaFaturashChart() {
         console.error('[ERROR] Failed to fetch invoices:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar më kohë: 0 (0%)", value: 0, color: "#10b981" },
-          { name: "Paguar me vonesë: 0 (0%)", value: 0, color: "#f59e0b" },
+          { name: "Paguar: 0 (0%)", value: 0, color: "#10b981" },
           { name: "Pa paguar: 0 (0%)", value: 0, color: "#ef4444" }
         ]);
       } finally {
@@ -956,44 +941,77 @@ function StatusiShpenzimeveChart() {
   );
 }
 
-function ShpenzimePerSiteChart({ allExpenses, structuredWorkHours, contracts }) {
+function ShpenzimePerSiteChart({ allExpenses, contracts }) {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Llogarit shpenzimet sipas site-ve
-    const expensesBySite = {};
-    allExpenses.forEach(exp => {
-      if (exp.contract_id) {
-        const contract = contracts.find(c => c.id === exp.contract_id);
-        if (contract) {
-          const site = contract.site_name || contract.siteName || 'Unknown';
-          expensesBySite[site] = (expensesBySite[site] || 0) + parseFloat(exp.gross || exp.amount || 0);
-        }
-      }
-    });
-    
-    // Llogarit orët e punuara sipas site-ve
-    const workHoursBySite = {};
-    Object.values(structuredWorkHours).forEach(empData => {
-      Object.values(empData).forEach(weekData => {
-        Object.values(weekData).forEach(dayData => {
-          if (dayData?.site && dayData?.hours) {
-            workHoursBySite[dayData.site] = (workHoursBySite[dayData.site] || 0) + parseFloat(dayData.hours);
+    async function fetchAllExpensesData() {
+      try {
+        setLoading(true);
+        
+        // Merr të gjitha shpenzimet nga expenses
+        const expensesRes = await api.get("/api/expenses");
+        const expenses = expensesRes.data || [];
+        
+        // Merr të gjitha invoice_expenses nga invoices
+        const invoicesRes = await api.get("/api/invoices");
+        const invoices = invoicesRes.data || [];
+        
+        console.log('[DEBUG] ShpenzimePerSiteChart - expenses:', expenses.length, 'invoices:', invoices.length);
+        
+        // Llogarit shpenzimet totale sipas site-ve (përfshirë invoice_expenses)
+        const expensesBySite = {};
+        
+        // Shto shpenzimet nga expenses
+        expenses.forEach(exp => {
+          if (exp.contract_id) {
+            const contract = contracts.find(c => c.id === exp.contract_id);
+            if (contract) {
+              const site = contract.site_name || contract.siteName || 'Unknown';
+              expensesBySite[site] = (expensesBySite[site] || 0) + parseFloat(exp.gross || exp.amount || 0);
+            }
           }
         });
-      });
-    });
+        
+        // Shto shpenzimet nga invoice_expenses
+        invoices.forEach(inv => {
+          if (inv.contract_id) {
+            const contract = contracts.find(c => c.id === inv.contract_id);
+            if (contract) {
+              const site = contract.site_name || contract.siteName || 'Unknown';
+              // Llogarit totalin nga items
+              const invoiceTotal = inv.items ? inv.items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0) : 0;
+              expensesBySite[site] = (expensesBySite[site] || 0) + invoiceTotal;
+            }
+          }
+        });
+        
+        // Konverto në array dhe sorto
+        const chartData = Object.entries(expensesBySite)
+          .map(([site, total]) => ({
+            site,
+            total: parseFloat(total)
+          }))
+          .sort((a, b) => b.total - a.total);
+        
+        console.log('[DEBUG] ShpenzimePerSiteChart - chartData:', chartData);
+        setData(chartData);
+        
+      } catch (error) {
+        console.error('[ERROR] Failed to fetch expenses data:', error);
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    }
     
-    // Bashko të dhënat
-    const combined = Object.keys({ ...expensesBySite, ...workHoursBySite }).map(site => ({
-      site,
-      expenses: expensesBySite[site] || 0,
-      workHours: workHoursBySite[site] || 0,
-      total: (expensesBySite[site] || 0) + (workHoursBySite[site] || 0)
-    })).sort((a, b) => b.total - a.total);
-    
-    setData(combined);
-  }, [allExpenses, structuredWorkHours, contracts]);
+    fetchAllExpensesData();
+  }, [allExpenses, contracts]);
+  
+  if (loading) {
+    return <div className="text-center py-8">Duke ngarkuar...</div>;
+  }
   
   if (data.length === 0) {
     return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
