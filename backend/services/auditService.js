@@ -111,6 +111,30 @@ class AuditService {
 
   // Log login events
   async logLogin(userId, userEmail, userRole, ipAddress, userAgent, success = true) {
+    let metadata = { success };
+    
+    if (success) {
+      // For successful logins, include user details
+      metadata = {
+        success: {
+          id: userId,
+          role: userRole,
+          email: userEmail,
+          employee_id: null // This could be enhanced later
+        }
+      };
+    } else {
+      // For failed logins, include failure details
+      metadata = {
+        failure: {
+          attemptedEmail: userEmail,
+          reason: 'Kredencialet e gabuara',
+          timestamp: new Date().toISOString(),
+          ipAddress: ipAddress
+        }
+      };
+    }
+
     return this.logAuditEvent({
       userId,
       userEmail,
@@ -122,7 +146,7 @@ class AuditService {
       userAgent,
       severity: success ? 'info' : 'warning',
       description: success ? 'Përdoruesi u logua me sukses' : 'Tentativë e dështuar e login',
-      metadata: { success }
+      metadata
     });
   }
 

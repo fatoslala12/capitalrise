@@ -21,6 +21,46 @@ router.get('/test', async (req, res) => {
 // Test logs endpoint without authentication
 router.get('/test-logs', async (req, res) => {
   try {
+    const { action, user, module, dateFrom, dateTo, severity, limit = 50 } = req.query;
+    
+    let whereConditions = [];
+    let queryParams = [];
+    let paramIndex = 1;
+    
+    // Build WHERE clause based on filters
+    if (action) {
+      whereConditions.push(`al.action = $${paramIndex++}`);
+      queryParams.push(action);
+    }
+    
+    if (user) {
+      whereConditions.push(`(al.user_email ILIKE $${paramIndex++} OR al.user_name ILIKE $${paramIndex++})`);
+      queryParams.push(`%${user}%`);
+      queryParams.push(`%${user}%`);
+    }
+    
+    if (module) {
+      whereConditions.push(`al.entity_type = $${paramIndex++}`);
+      queryParams.push(module);
+    }
+    
+    if (severity) {
+      whereConditions.push(`al.severity = $${paramIndex++}`);
+      queryParams.push(severity);
+    }
+    
+    if (dateFrom) {
+      whereConditions.push(`al.timestamp >= $${paramIndex++}`);
+      queryParams.push(dateFrom);
+    }
+    
+    if (dateTo) {
+      whereConditions.push(`al.timestamp <= $${paramIndex++}`);
+      queryParams.push(dateTo + ' 23:59:59');
+    }
+    
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    
     const query = `
       SELECT 
         al.id,
@@ -47,11 +87,14 @@ router.get('/test-logs', async (req, res) => {
           ELSE NULL
         END as failure_reason
       FROM audit_trail al
+      ${whereClause}
       ORDER BY al.timestamp DESC
-      LIMIT 50
+      LIMIT $${paramIndex++}
     `;
     
-    const result = await db.query(query);
+    queryParams.push(parseInt(limit));
+    
+    const result = await db.query(query, queryParams);
     const logs = result.rows;
 
     // Enhance the logs with better metadata
@@ -95,7 +138,7 @@ router.get('/test-logs', async (req, res) => {
       data: enhancedLogs,
       pagination: {
         page: 1,
-        limit: 50,
+        limit: parseInt(limit),
         total: enhancedLogs.length,
         pages: 1
       }

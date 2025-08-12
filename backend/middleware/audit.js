@@ -215,14 +215,17 @@ const authAuditMiddleware = (req, res, next) => {
   const originalJson = res.json;
   
   let responseData = null;
+  let responseStatus = 200;
 
   res.send = function(data) {
     responseData = data;
+    responseStatus = res.statusCode;
     return originalSend.call(this, data);
   };
 
   res.json = function(data) {
     responseData = data;
+    responseStatus = res.statusCode;
     return originalJson.call(this, data);
   };
 
@@ -237,21 +240,27 @@ const authAuditMiddleware = (req, res, next) => {
       if (req.path.includes('/login')) {
         let success = false;
         let userData = null;
+        let attemptedEmail = req.body?.email || 'Email i panjohur';
 
         try {
           if (responseData) {
             const parsed = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
-            success = parsed.token && parsed.user;
+            success = parsed.token && parsed.user && responseStatus < 400;
             userData = parsed.user;
           }
         } catch (e) {
           success = false;
         }
 
+        // If status code indicates failure, it's a failed login
+        if (responseStatus >= 400) {
+          success = false;
+        }
+
         await auditService.logLogin(
-          userData?.id,
-          userData?.email,
-          userData?.role,
+          userData?.id || null,
+          attemptedEmail,
+          userData?.role || null,
           ipAddress,
           userAgent,
           success

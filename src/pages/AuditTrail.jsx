@@ -211,7 +211,16 @@ export default function AuditTrail() {
       }
     });
     
-    return Object.entries(dailyData).map(([date, count]) => ({ date, count }));
+    // Only return dates that have activities (count > 0)
+    return Object.entries(dailyData)
+      .filter(([date, count]) => count > 0)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => {
+        // Sort by actual date, not by formatted string
+        const dateA = new Date(a.date + ' ' + new Date().getFullYear());
+        const dateB = new Date(b.date + ' ' + new Date().getFullYear());
+        return dateA - dateB;
+      });
   };
 
   // Generate activity distribution data for pie chart
