@@ -56,12 +56,17 @@ export default function DashboardStats() {
 
   // useEffect për të marrë të dhënat dhe llogaritë dashboard stats
   useEffect(() => {
+    console.log('[DEBUG] === AdminDashboard useEffect STARTED ===');
+    
     const fetchData = async () => {
       try {
+        console.log('[DEBUG] fetchData function started');
         setLoading(true);
         
         // Kontrollo nëse ka token
         const token = localStorage.getItem("token");
+        console.log('[DEBUG] Token found:', !!token);
+        
         if (!token) {
           console.warn('[WARNING] No token found, dashboard will show empty data');
           setDashboardStats({
@@ -84,10 +89,13 @@ export default function DashboardStats() {
           return;
         }
         
+        console.log('[DEBUG] Starting API calls...');
+        
         // Merr të gjitha të dhënat paralelisht me error handling
         let contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes;
         
         try {
+          console.log('[DEBUG] Making Promise.all API calls...');
           [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
             api.get("/api/contracts"),
             api.get("/api/employees"),
@@ -97,6 +105,7 @@ export default function DashboardStats() {
             api.get("/api/payments"),
             api.get("/api/work-hours/structured"),
           ]);
+          console.log('[DEBUG] All API calls completed successfully');
         } catch (apiError) {
           console.error('[ERROR] API call failed:', apiError);
           // Nëse API call dështon, përdor të dhëna bosh
@@ -109,6 +118,8 @@ export default function DashboardStats() {
           workHoursRes = { data: {} };
         }
         
+        console.log('[DEBUG] Processing API responses...');
+        
         setContracts(snakeToCamel(contractsRes.data || []));
         setEmployees(snakeToCamel(employeesRes.data || []));
         
@@ -118,8 +129,20 @@ export default function DashboardStats() {
         const allPayments = snakeToCamel(paymentsRes.data || []);
         const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
         
+        console.log('[DEBUG] Data processed:', {
+          contracts: contractsRes.data?.length || 0,
+          employees: employeesRes.data?.length || 0,
+          invoices: invoices.length,
+          tasks: allTasksData.length,
+          expenses: allExpenses.length,
+          payments: allPayments.length,
+          workHours: Object.keys(structuredWorkHours).length
+        });
+        
         setAllExpenses(allExpenses);
         setStructuredWorkHours(structuredWorkHours);
+        
+        console.log('[DEBUG] Starting week calculation...');
         
         // Calculate current week - FIXED to match backend getWeekLabel exactly
         const today = new Date();
@@ -586,7 +609,7 @@ export default function DashboardStats() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
               <YAxis label={{ value: 'Pagesa (£)', angle: -90, position: 'insideLeft', offset: 10 }} />
-              <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'totalPaid' ? 'Pagesa' : n]} />
+              <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n]} />
               <Bar dataKey="totalPaid" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={24} />
             </BarChart>
           </ResponsiveContainer>
