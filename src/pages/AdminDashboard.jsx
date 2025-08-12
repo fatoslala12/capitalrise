@@ -8,7 +8,7 @@ import api from "../api";
 console.log('[IMPORT] API imported successfully');
 
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie, Cell as PieCell
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie
 } from "recharts";
 console.log('[IMPORT] Recharts imported successfully');
 
@@ -286,7 +286,8 @@ export default function AdminDashboard() {
             const emp = employees.find(e => e.id === (p.employeeId || p.employee_id));
             return {
               id: p.employeeId || p.employee_id,
-              name: emp ? `${emp.firstName || emp.first_name || emp.name || 'Unknown'} ${emp.lastName || emp.last_name || ''}` : 'Unknown',
+              employee_id: p.employeeId || p.employee_id, // Add this for consistency
+              name: emp ? `${emp.firstName || emp.first_name || emp.name || 'Unknown'} ${emp.lastName || emp.last_name || ''}`.trim() : 'Unknown',
               grossAmount: parseFloat(p.grossAmount || p.gross_amount || 0),
               isPaid: p.isPaid || p.is_paid,
               photo: emp?.photo || null
@@ -468,8 +469,36 @@ export default function AdminDashboard() {
         {/* Pagesa këtë javë */}
         <MoneyStatCard
           title="Pagesa këtë javë"
-          value={dashboardStats.totalGrossThisWeek || 0}
-          icon="��"
+          value={(() => {
+            // Përdor të njëjtat të dhëna si "Pagesa Javore për stafin"
+            // Calculate current week - FIXED to match backend getWeekLabel exactly
+            const today = new Date();
+            const day = today.getDay();
+            
+            // Backend uses Monday-Sunday week, so we need to match exactly
+            let diff;
+            if (day === 0) {
+              // Sunday - go back 6 days to get to Monday
+              diff = -6;
+            } else {
+              // Monday-Saturday - go back (day-1) days to get to Monday
+              diff = -(day - 1);
+            }
+            
+            const monday = new Date(today);
+            monday.setDate(today.getDate() + diff);
+            monday.setHours(0, 0, 0, 0);
+            
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            
+            const currentWeekLabel = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
+            
+            // Gjej pagesat për javën aktuale nga weeklyProfitData
+            const currentWeekPayment = weeklyProfitData.find(w => w.week === currentWeekLabel);
+            return currentWeekPayment ? currentWeekPayment.totalPaid : 0;
+          })()}
+          icon="💰"
           color="yellow"
         />
       </Grid>
@@ -578,20 +607,51 @@ export default function AdminDashboard() {
           <ul className="space-y-3 text-gray-800">
             {dashboardStats.top5Employees.map((e, i) => {
               const amount = e.grossAmount ?? e.amount ?? 0;
-              const photoSrc = e.photo
-                ? e.photo.startsWith('data:image')
-                  ? e.photo
-                  : e.photo
+              
+              // Merr të dhënat e plota të punonjësit nga employees array
+              const employeeData = employees.find(emp => emp.id === e.employee_id || emp.id === e.id);
+              const employeeName = employeeData 
+                ? `${employeeData.first_name || employeeData.user_first_name || ''} ${employeeData.last_name || employeeData.user_last_name || ''}`.trim()
+                : e.name || 'Unknown';
+              
+              const photoSrc = employeeData?.photo
+                ? employeeData.photo.startsWith('data:image')
+                  ? employeeData.photo
+                  : employeeData.photo
                 : '/placeholder.png';
+              
               return (
                 <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
                   <div className="relative w-14 h-14">
-                    <img src={photoSrc} alt="foto" className="w-full h-full rounded-full object-cover border-2 border-blue-300 shadow" />
+                    {employeeData?.photo ? (
+                      <img 
+                        src={photoSrc} 
+                        alt={employeeName} 
+                        className="w-full h-full rounded-full object-cover border-2 border-blue-300 shadow"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className={`w-full h-full rounded-full border-2 border-blue-300 shadow flex items-center justify-center text-blue-600 font-bold text-lg ${employeeData?.photo ? 'hidden' : 'flex'}`}
+                      style={{
+                        background: '#e0e7ef',
+                        display: employeeData?.photo ? 'none' : 'flex'
+                      }}
+                    >
+                      {employeeName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()}
+                    </div>
                     <span className="absolute -top-2 -left-2 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">{i + 1}</span>
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-lg">
-                      {e.name}
+                      {employeeName}
                     </p>
                     <p className="text-sm text-gray-600">
                       {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
@@ -719,7 +779,7 @@ function VonesaFaturashChart() {
         console.log('[DEBUG] VonesaFaturashChart - invoices received:', invoices.length);
         
         // Për çdo faturë, llogarit statusin e pagesës
-        const result = { "Paguar në kohë": 0, "Paguar me vonesë": 0, "Pa paguar": 0 };
+        const result = { "Paguar më kohë": 0, "Paguar me vonesë": 0, "Pa paguar": 0 };
         
         invoices.forEach(inv => {
           if (!inv.paid) {
@@ -732,7 +792,7 @@ function VonesaFaturashChart() {
             if (invoiceDate && paidDate) {
               const daysDiff = Math.ceil((paidDate - invoiceDate) / (1000 * 60 * 60 * 24));
               if (daysDiff <= 30) {
-                result["Paguar në kohë"]++;
+                result["Paguar më kohë"]++;
               } else {
                 result["Paguar me vonesë"]++;
               }
@@ -747,7 +807,7 @@ function VonesaFaturashChart() {
         const chartData = Object.entries(result).map(([name, value]) => ({
           name,
           value,
-          color: name === "Paguar në kohë" ? "#10b981" : 
+          color: name === "Paguar më kohë" ? "#10b981" : 
                  name === "Paguar me vonesë" ? "#f59e0b" : "#ef4444"
         }));
         
@@ -756,7 +816,7 @@ function VonesaFaturashChart() {
         console.error('[ERROR] Failed to fetch invoices:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar në kohë", value: 0, color: "#10b981" },
+          { name: "Paguar më kohë", value: 0, color: "#10b981" },
           { name: "Paguar me vonesë", value: 0, color: "#f59e0b" },
           { name: "Pa paguar", value: 0, color: "#ef4444" }
         ]);
