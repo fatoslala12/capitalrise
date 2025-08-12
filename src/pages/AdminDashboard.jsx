@@ -14,6 +14,9 @@ import EmptyState, { NoTasksEmpty } from "../components/ui/EmptyState";
 // Global color palette for charts
 const CHART_COLORS = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"];
 
+// Stronger colors for status charts (better readability)
+const STATUS_CHART_COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899"];
+
 // Funksion për të kthyer snake_case në camelCase për një objekt ose array
 function snakeToCamel(obj) {
   if (Array.isArray(obj)) {
@@ -431,9 +434,13 @@ export default function AdminDashboard() {
             <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
-              <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#3b82f6' }} />
-              <Tooltip />
-              <Bar dataKey="hours" fill="#3b82f6" radius={[0, 6, 6, 0]} barSize={30} />
+              <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
+              <Tooltip formatter={v => [v, "Orë"]} />
+              <Bar dataKey="hours" radius={[0, 6, 6, 0]} barSize={32}>
+                {dashboardStats.workHoursBysite.map((_, i) => (
+                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (
@@ -578,13 +585,17 @@ export default function AdminDashboard() {
             <BarChart data={weeklyProfitData.filter(w => w.totalPaid > 0)} margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
-              <YAxis label={{ value: 'Pagesa (£)', angle: -90, position: 'insideLeft', offset: 10 }} />
-              <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n]} />
-              <Bar dataKey="totalPaid" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={24} />
+              <YAxis label={{ value: "Pagesa totale (£)", angle: -90, position: "insideLeft", offset: 0 }} tick={{ fontSize: 14, fill: '#6366f1' }} />
+              <Tooltip formatter={v => [`£${Number(v).toFixed(2)}`, "Pagesa"]} />
+              <Bar dataKey="totalPaid" radius={[6, 6, 0, 0]} barSize={32}>
+                {weeklyProfitData.filter(w => w.totalPaid > 0).map((_, i) => (
+                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka të dhëna të mjaftueshme për pagesat javore</p>
+          <p className="text-gray-500 italic text-center py-8">Nuk ka pagesa të regjistruara për këtë javë</p>
         )}
       </div>
 
@@ -685,7 +696,7 @@ function VonesaFaturashChart() {
         const chartData = Object.entries(result).map(([name, value], index) => ({
           name: `${name}: ${value} (${totalInvoices > 0 ? ((value / totalInvoices) * 100).toFixed(1) : 0}%)`,
           value,
-          color: CHART_COLORS[index % CHART_COLORS.length]
+          color: STATUS_CHART_COLORS[index % STATUS_CHART_COLORS.length]
         }));
         
         setData(chartData);
@@ -693,8 +704,8 @@ function VonesaFaturashChart() {
         console.error('[ERROR] Failed to fetch invoices:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar: 0 (0%)", value: 0, color: CHART_COLORS[0] },
-          { name: "Pa paguar: 0 (0%)", value: 0, color: CHART_COLORS[1] }
+          { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
+          { name: "Pa paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
@@ -771,7 +782,7 @@ function StatusiShpenzimeveChart() {
         const chartData = Object.entries(result).map(([name, value], index) => ({
           name: `${name}: ${value} (${totalExpenses > 0 ? ((value / totalExpenses) * 100).toFixed(1) : 0}%)`,
           value,
-          color: CHART_COLORS[index % CHART_COLORS.length]
+          color: STATUS_CHART_COLORS[index % STATUS_CHART_COLORS.length]
         }));
         
         setData(chartData);
@@ -779,8 +790,8 @@ function StatusiShpenzimeveChart() {
         console.error('[ERROR] Failed to fetch expenses:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar: 0 (0%)", value: 0, color: CHART_COLORS[0] },
-          { name: "Pa paguar: 0 (0%)", value: 0, color: CHART_COLORS[1] }
+          { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
+          { name: "Pa paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
@@ -839,7 +850,7 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
       try {
         setLoading(true);
         
-        // Merr të gjitha shpenzimet nga expenses
+        // Merr të gjitha shpenzimet nga expenses (expenses_invoices)
         const expensesRes = await api.get("/api/expenses");
         const expenses = expensesRes.data || [];
         
@@ -847,22 +858,34 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
         const invoicesRes = await api.get("/api/invoices");
         const invoices = invoicesRes.data || [];
         
-        // Llogarit shpenzimet totale sipas site-ve (përfshirë invoice_expenses)
+        // Merr të gjitha punonjësit për hourly rates
+        const employeesRes = await api.get("/api/employees");
+        const employees = employeesRes.data || [];
+        
+        // Llogarit shpenzimet totale sipas site-ve (si tek PaymentDetails)
         const expensesBySite = {};
         
-        // Shto shpenzimet nga expenses
+        // 1. Shto shpenzimet nga expenses (expenses_invoices)
         expenses.forEach(exp => {
           if (exp.contract_id) {
             const contract = contracts.find(c => c.id === exp.contract_id);
             if (contract) {
               const site = contract.site_name || contract.siteName || 'Unknown';
-              expensesBySite[site] = expensesBySite[site] || { expenses: 0, invoices: 0, workHours: 0, payments: 0 };
+              if (!expensesBySite[site]) {
+                expensesBySite[site] = { 
+                  expenses: 0, 
+                  invoices: 0, 
+                  workHours: 0, 
+                  payments: 0,
+                  total: 0
+                };
+              }
               expensesBySite[site].expenses += parseFloat(exp.gross || exp.amount || 0);
             }
           }
         });
         
-        // Shto shpenzimet nga invoice_expenses
+        // 2. Shto shpenzimet nga invoice_expenses
         invoices.forEach(inv => {
           if (inv.contract_id) {
             const contract = contracts.find(c => c.id === inv.contract_id);
@@ -870,34 +893,73 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
               const site = contract.site_name || contract.siteName || 'Unknown';
               // Llogarit totalin nga items
               const invoiceTotal = inv.items ? inv.items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0) : 0;
-              if (!expensesBySite[site]) expensesBySite[site] = { expenses: 0, invoices: 0, workHours: 0, payments: 0 };
+              if (!expensesBySite[site]) {
+                expensesBySite[site] = { 
+                  expenses: 0, 
+                  invoices: 0, 
+                  workHours: 0, 
+                  payments: 0,
+                  total: 0
+                };
+              }
               expensesBySite[site].invoices += invoiceTotal;
             }
           }
         });
         
-        // Shto orët e punuara sipas site-ve
-        Object.values(structuredWorkHours).forEach(empData => {
+        // 3. Shto orët e punuara * hourly rate sipas site-ve (si tek PaymentDetails)
+        Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
+          const emp = employees.find(e => e.id === empId);
+          const hourlyRate = parseFloat(emp?.hourlyRate || emp?.hourly_rate || 0);
+          
           Object.values(empData).forEach(weekData => {
             Object.values(weekData).forEach(dayData => {
-              if (dayData?.site && dayData?.hours) {
-                if (!expensesBySite[dayData.site]) expensesBySite[dayData.site] = { expenses: 0, invoices: 0, workHours: 0, payments: 0 };
-                expensesBySite[dayData.site].workHours += parseFloat(dayData.hours);
+              if (dayData?.site && dayData?.hours && dayData?.contract_id) {
+                const site = dayData.site;
+                if (!expensesBySite[site]) {
+                  expensesBySite[site] = { 
+                    expenses: 0, 
+                    invoices: 0, 
+                    workHours: 0, 
+                    payments: 0,
+                    total: 0
+                  };
+                }
+                // Llogarit si tek PaymentDetails: hours * hourly rate
+                const workHoursCost = parseFloat(dayData.hours) * hourlyRate;
+                expensesBySite[site].workHours += workHoursCost;
               }
             });
           });
         });
         
-        // Shto pagesat sipas site-ve
+        // 4. Shto pagesat sipas site-ve
         allPayments.forEach(payment => {
           if (payment.contract_id) {
             const contract = contracts.find(c => c.id === payment.contract_id);
             if (contract) {
               const site = contract.site_name || contract.siteName || 'Unknown';
-              if (!expensesBySite[site]) expensesBySite[site] = { expenses: 0, invoices: 0, workHours: 0, payments: 0 };
+              if (!expensesBySite[site]) {
+                expensesBySite[site] = { 
+                  expenses: 0, 
+                  invoices: 0, 
+                  workHours: 0, 
+                  payments: 0,
+                  total: 0
+                };
+              }
               expensesBySite[site].payments += parseFloat(payment.grossAmount || payment.gross_amount || 0);
             }
           }
+        });
+        
+        // 5. Llogarit totalin për çdo site (si tek PaymentDetails: totalBruto + totalInvoicesGross)
+        Object.keys(expensesBySite).forEach(site => {
+          expensesBySite[site].total = 
+            expensesBySite[site].expenses + 
+            expensesBySite[site].invoices + 
+            expensesBySite[site].workHours + 
+            expensesBySite[site].payments;
         });
         
         // Konverto në array dhe sorto
@@ -908,7 +970,7 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
             invoices: parseFloat(data.invoices),
             workHours: parseFloat(data.workHours),
             payments: parseFloat(data.payments),
-            total: parseFloat(data.expenses + data.invoices + data.workHours + data.payments)
+            total: parseFloat(data.total)
           }))
           .sort((a, b) => b.total - a.total);
         
@@ -934,22 +996,35 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
   }
   
   return (
-    <ResponsiveContainer width="100%" height={450}>
-      <BarChart data={data} layout="vertical" margin={{ left: 50, right: 50, top: 20, bottom: 20 }} barCategoryGap={18}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis type="number" label={{ value: "Shuma totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
-        <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0284c7' }} />
-        <Tooltip 
-          contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} 
-          formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} 
-        />
-        <Legend />
-        <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name="Shpenzime" radius={[0, 0, 0, 0]} />
-        <Bar dataKey="invoices" stackId="a" fill={CHART_COLORS[1]} name="Fatura" radius={[0, 0, 0, 0]} />
-        <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[2]} name="Orët e Punës" radius={[0, 0, 0, 0]} />
-        <Bar dataKey="payments" stackId="a" fill={CHART_COLORS[3]} name="Pagesat" radius={[0, 0, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+    <div>
+      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <h4 className="font-semibold text-blue-800 mb-2">📊 Shpjegim i llogaritjes:</h4>
+        <div className="text-sm text-blue-700 space-y-1">
+          <p><strong>Shpenzime:</strong> Shpenzimet direkte nga tabela expenses (expenses_invoices)</p>
+          <p><strong>Fatura:</strong> Shpenzimet nga invoice_expenses (items nga tabela invoices)</p>
+          <p><strong>Orët e Punës:</strong> Orët e punuara × hourly rate për çdo punonjës (si tek PaymentDetails)</p>
+          <p><strong>Pagesat:</strong> Pagesat e bëra për punonjësit</p>
+          <p><strong>Totali:</strong> Shpenzime + Fatura + Orët e Punës + Pagesat</p>
+        </div>
+      </div>
+      
+      <ResponsiveContainer width="100%" height={450}>
+        <BarChart data={data} layout="vertical" margin={{ left: 50, right: 50, top: 20, bottom: 20 }} barCategoryGap={18}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis type="number" label={{ value: "Shuma totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
+          <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0284c7' }} />
+          <Tooltip 
+            contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} 
+            formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} 
+          />
+          <Legend />
+          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name="Shpenzime" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="invoices" stackId="a" fill={CHART_COLORS[1]} name="Fatura" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[2]} name="Orët e Punës" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="payments" stackId="a" fill={CHART_COLORS[3]} name="Pagesat" radius={[0, 0, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
