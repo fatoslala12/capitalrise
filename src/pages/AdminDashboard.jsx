@@ -472,13 +472,13 @@ export default function AdminDashboard() {
           icon="⏰"
           color="purple"
         />
-        {/* Pagesa këtë javë */}
+        {/* Pagesa për punëtorët këtë javë */}
         <MoneyStatCard
-          title="Pagesa këtë javë"
+          title="Pagesa për punëtorët këtë javë"
           value={(() => {
-            console.log('[DEBUG] Pagesa këtë javë - dashboardStats.totalPaid:', dashboardStats.totalPaid);
-            console.log('[DEBUG] Pagesa këtë javë - weeklyProfitData:', weeklyProfitData);
-            return dashboardStats.totalPaid || 0;
+            console.log('[DEBUG] Pagesa për punëtorët këtë javë - dashboardStats.totalPaid:', dashboardStats.totalPaid);
+            console.log('[DEBUG] Pagesa për punëtorët këtë javë - weeklyProfitData:', weeklyProfitData);
+            return `£${dashboardStats.totalPaid || 0}`;
           })()}
           icon="💰"
           color="yellow"
@@ -693,8 +693,14 @@ export default function AdminDashboard() {
 
       {/* Grafik për vonesat në pagesa/fatura */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">⏰ Vonesat në Pagesa/Fatura</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i Invoice-ve të dërguar</h3>
         <VonesaFaturashChart />
+      </div>
+
+      {/* Grafik për statusin e faturave të shpenzimeve */}
+      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 Statusi i faturave të shpenzimeve</h3>
+        <StatusiShpenzimeveChart />
       </div>
 
       {/* Faturat e papaguara */}
@@ -795,8 +801,9 @@ function VonesaFaturashChart() {
         
         console.log('[DEBUG] VonesaFaturashChart - result:', result);
         
+        const totalInvoices = invoices.length;
         const chartData = Object.entries(result).map(([name, value]) => ({
-          name,
+          name: `${name}: ${value} (${totalInvoices > 0 ? ((value / totalInvoices) * 100).toFixed(1) : 0}%)`,
           value,
           color: name === "Paguar më kohë" ? "#10b981" : 
                  name === "Paguar me vonesë" ? "#f59e0b" : "#ef4444"
@@ -807,9 +814,9 @@ function VonesaFaturashChart() {
         console.error('[ERROR] Failed to fetch invoices:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar më kohë", value: 0, color: "#10b981" },
-          { name: "Paguar me vonesë", value: 0, color: "#f59e0b" },
-          { name: "Pa paguar", value: 0, color: "#ef4444" }
+          { name: "Paguar më kohë: 0 (0%)", value: 0, color: "#10b981" },
+          { name: "Paguar me vonesë: 0 (0%)", value: 0, color: "#f59e0b" },
+          { name: "Pa paguar: 0 (0%)", value: 0, color: "#ef4444" }
         ]);
       } finally {
         setLoading(false);
@@ -824,7 +831,7 @@ function VonesaFaturashChart() {
   }
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për vonesat në pagesa</div>;
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e invoice-ve</div>;
   }
 
   return (
@@ -837,7 +844,97 @@ function VonesaFaturashChart() {
           outerRadius={120}
           innerRadius={60}
           dataKey="value"
-          label={({ name, value, percent }) => `${name}: ${value} (${Number(percent * 100).toFixed(0)}%)`}
+          label={({ name, value, percent }) => `${name}`}
+          labelLine={true}
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip 
+          contentStyle={{ 
+            background: '#fffbe9', 
+            border: '1px solid #fbbf24', 
+            borderRadius: 12, 
+            fontSize: 16, 
+            color: '#78350f' 
+          }}
+          formatter={(value, name) => [value, name]}
+        />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+function StatusiShpenzimeveChart() {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    async function fetchExpensesInvoices() {
+      try {
+        setLoading(true);
+        // Merr të gjitha shpenzimet nga expenses
+        const res = await api.get("/api/expenses");
+        const expenses = res.data || [];
+        
+        console.log('[DEBUG] StatusiShpenzimeveChart - expenses received:', expenses.length);
+        
+        // Llogarit statusin e pagesës për shpenzimet
+        const result = { "Paguar": 0, "Pa paguar": 0 };
+        
+        expenses.forEach(exp => {
+          if (exp.paid) {
+            result["Paguar"]++;
+          } else {
+            result["Pa paguar"]++;
+          }
+        });
+        
+        console.log('[DEBUG] StatusiShpenzimeveChart - result:', result);
+        
+        const totalExpenses = expenses.length;
+        const chartData = Object.entries(result).map(([name, value]) => ({
+          name: `${name}: ${value} (${totalExpenses > 0 ? ((value / totalExpenses) * 100).toFixed(1) : 0}%)`,
+          value,
+          color: name === "Paguar" ? "#10b981" : "#ef4444"
+        }));
+        
+        setData(chartData);
+      } catch (error) {
+        console.error('[ERROR] Failed to fetch expenses:', error);
+        // Nëse ka error, vendos të dhëna bosh
+        setData([
+          { name: "Paguar: 0 (0%)", value: 0, color: "#10b981" },
+          { name: "Pa paguar: 0 (0%)", value: 0, color: "#ef4444" }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchExpensesInvoices();
+  }, []);
+
+  if (loading) {
+    return <div className="text-center py-8">Duke ngarkuar...</div>;
+  }
+
+  if (data.length === 0) {
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e faturave të shpenzimeve</div>;
+  }
+
+  return (
+    <ResponsiveContainer width="100%" height={350}>
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          outerRadius={120}
+          innerRadius={60}
+          dataKey="value"
+          label={({ name, value, percent }) => `${name}`}
           labelLine={true}
         >
           {data.map((entry, index) => (
