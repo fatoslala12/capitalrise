@@ -121,9 +121,10 @@ export default function DashboardStats() {
         setAllExpenses(allExpenses);
         setStructuredWorkHours(structuredWorkHours);
         
-        // Calculate current week - FIXED to match backend format
+        // Calculate current week - FIXED to match backend getWeekLabel exactly
         const today = new Date();
         const day = today.getDay();
+        
         // Backend uses Monday-Sunday week, so we need to match exactly
         let diff;
         if (day === 0) {
@@ -137,14 +138,16 @@ export default function DashboardStats() {
         const monday = new Date(today);
         monday.setDate(today.getDate() + diff);
         monday.setHours(0, 0, 0, 0);
+        
         const sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
+        
         const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
         
-        console.log('[DEBUG] Week calculation:');
+        console.log('[DEBUG] Frontend week calculation:');
         console.log('[DEBUG] - today:', today.toISOString().slice(0, 10));
         console.log('[DEBUG] - day of week:', day);
-        console.log('[DEBUG] - diff:', diff);
+        console.log('[DEBUG] - calculated diff:', diff);
         console.log('[DEBUG] - monday:', monday.toISOString().slice(0, 10));
         console.log('[DEBUG] - sunday:', sunday.toISOString().slice(0, 10));
         console.log('[DEBUG] - thisWeek:', thisWeek);
