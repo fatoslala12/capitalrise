@@ -121,29 +121,46 @@ export default function DashboardStats() {
         setAllExpenses(allExpenses);
         setStructuredWorkHours(structuredWorkHours);
         
-        // Calculate current week
+        // Calculate current week - FIXED to match backend format
         const today = new Date();
         const day = today.getDay();
-        const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+        // Backend uses Monday-Sunday week, so we need to match exactly
+        let diff;
+        if (day === 0) {
+          // Sunday - go back 6 days to get to Monday
+          diff = -6;
+        } else {
+          // Monday-Saturday - go back (day-1) days to get to Monday
+          diff = -(day - 1);
+        }
+        
         const monday = new Date(today);
-        monday.setDate(diff);
+        monday.setDate(today.getDate() + diff);
         monday.setHours(0, 0, 0, 0);
         const sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
         const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
+        
+        console.log('[DEBUG] Week calculation:');
+        console.log('[DEBUG] - today:', today.toISOString().slice(0, 10));
+        console.log('[DEBUG] - day of week:', day);
+        console.log('[DEBUG] - diff:', diff);
+        console.log('[DEBUG] - monday:', monday.toISOString().slice(0, 10));
+        console.log('[DEBUG] - sunday:', sunday.toISOString().slice(0, 10));
+        console.log('[DEBUG] - thisWeek:', thisWeek);
         
         // Gjej javën e fundit që ka të dhëna
         let weekToUse = thisWeek;
         let weekHasData = false;
         
         // Kontrollo nëse jawa aktuale ka të dhëna
-        const currentWeekData = allPayments.filter(p => p.weekLabel === thisWeek);
+        const currentWeekData = allPayments.filter(p => (p.weekLabel || p.week_label) === thisWeek);
         if (currentWeekData.length > 0) {
           weekToUse = thisWeek;
           weekHasData = true;
         } else {
           // Gjej javën e fundit që ka të dhëna
-          const allWeeks = [...new Set(allPayments.map(p => p.weekLabel))].sort();
+          const allWeeks = [...new Set(allPayments.map(p => p.weekLabel || p.week_label))].sort();
           if (allWeeks.length > 0) {
             weekToUse = allWeeks[allWeeks.length - 1]; // Jawa e fundit
             weekHasData = true;
@@ -165,15 +182,15 @@ export default function DashboardStats() {
         console.log('[DEBUG] - workHours:', Object.keys(workHoursRes.data || {}).length);
         
         // Gjej pagesat për këtë javë
-        const thisWeekPayments = allPayments.filter(p => p.weekLabel === weekToUse);
+        const thisWeekPayments = allPayments.filter(p => (p.weekLabel || p.week_label) === weekToUse);
         console.log('[DEBUG] - thisWeekPayments:', thisWeekPayments.length);
         
         // Gjej pagesat e paguara për këtë javë
-        const paidThisWeek = thisWeekPayments.filter(p => p.isPaid === true);
+        const paidThisWeek = thisWeekPayments.filter(p => (p.isPaid || p.is_paid) === true);
         console.log('[DEBUG] - paidThisWeek:', paidThisWeek.length);
         
         // Llogarit totalin e paguar
-        const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || 0), 0);
+        const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || p.gross_amount || 0), 0);
         console.log('[DEBUG] - totalPaid:', totalPaid);
         
         // Llogarit orët e punuara për këtë javë
@@ -215,15 +232,15 @@ export default function DashboardStats() {
         
         // Top 5 punonjësit më të paguar (vetëm të paguarat)
         const top5Employees = paidThisWeek
-          .sort((a, b) => parseFloat(b.grossAmount || 0) - parseFloat(a.grossAmount || 0))
+          .sort((a, b) => parseFloat(b.grossAmount || b.gross_amount || 0) - parseFloat(a.grossAmount || a.gross_amount || 0))
           .slice(0, 5)
           .map(p => {
-            const emp = employees.find(e => e.id === p.employeeId);
+            const emp = employees.find(e => e.id === (p.employeeId || p.employee_id));
             return {
-              id: p.employeeId,
+              id: p.employeeId || p.employee_id,
               name: emp ? `${emp.firstName || emp.first_name || emp.name || 'Unknown'} ${emp.lastName || emp.last_name || ''}` : 'Unknown',
-              grossAmount: parseFloat(p.grossAmount || 0),
-              isPaid: p.isPaid,
+              grossAmount: parseFloat(p.grossAmount || p.gross_amount || 0),
+              isPaid: p.isPaid || p.is_paid,
               photo: emp?.photo || null
             };
           });
@@ -287,10 +304,10 @@ export default function DashboardStats() {
         setUnpaidExpenses(unpaidExpensesList);
         
         // Process weekly profit data
-        const weekLabels = [...new Set(allPayments.map(p => p.weekLabel))].sort();
+        const weekLabels = [...new Set(allPayments.map(p => p.weekLabel || p.week_label))].sort();
         const weeklyData = weekLabels.map(week => {
-          const weekPayments = allPayments.filter(p => p.weekLabel === week);
-          const totalPaid = weekPayments.reduce((sum, p) => sum + parseFloat(p.grossAmount || 0), 0);
+          const weekPayments = allPayments.filter(p => (p.weekLabel || p.week_label) === week);
+          const totalPaid = weekPayments.reduce((sum, p) => sum + parseFloat(p.grossAmount || p.gross_amount || 0), 0);
           return { week, totalPaid };
         });
         setWeeklyProfitData(weeklyData);
