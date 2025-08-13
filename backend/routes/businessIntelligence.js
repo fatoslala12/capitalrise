@@ -35,7 +35,7 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
     const contractsQuery = `
       SELECT COUNT(*) as active_contracts 
       FROM contracts c
-      WHERE c.status = 'Ne progres'
+      WHERE LOWER(c.status) = LOWER('Ne progres')
     `;
     
     const contractsResult = await pool.query(contractsQuery);
@@ -335,7 +335,8 @@ router.get('/site-performance', verifyToken, async (req, res) => {
         COALESCE(AVG(wh.hours), 0) as avg_hours_per_day,
         COALESCE(SUM(ei.gross), 0) as total_expenses
       FROM work_hours wh
-      LEFT JOIN expenses_invoices ei ON wh.contract_id::text = ei.contract_id::text
+      LEFT JOIN contracts c ON wh.contract_id::text = c.contract_number::text
+      LEFT JOIN expenses_invoices ei ON c.contract_number::text = ei.contract_id::text
       ${dateFilter}
       GROUP BY wh.site
       ORDER BY total_hours DESC
@@ -400,8 +401,8 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
     const result = await pool.query(contractQuery, params);
     
     const contractData = result.rows.map(row => {
-      const totalCost = parseFloat(row.total_labor_cost) + parseFloat(row.total_expenses);
-      const profit = parseFloat(row.contract_value) - totalCost;
+      const totalSpent = parseFloat(row.total_labor_cost) + parseFloat(row.total_expenses);
+      const profit = parseFloat(row.contract_value) - totalSpent;
       const profitMargin = parseFloat(row.contract_value) > 0 ? (profit / parseFloat(row.contract_value)) * 100 : 0;
       
       return {
@@ -415,7 +416,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
         contractType: row.contract_type,
         totalLaborCost: parseFloat(row.total_labor_cost) || 0,
         totalExpenses: parseFloat(row.total_expenses) || 0,
-        totalCost: totalCost,
+        totalSpent: totalSpent,
         totalHours: parseFloat(row.total_hours) || 0,
         activeEmployees: parseInt(row.active_employees) || 0,
         profit: profit,
