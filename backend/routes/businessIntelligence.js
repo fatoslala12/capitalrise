@@ -381,7 +381,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
         c.contract_value,
         c.status,
         c.start_date,
-        c.end_date,
+        c.finish_date,
         COALESCE(SUM(wh.hours * wh.rate), 0) as total_labor_cost,
         COALESCE(SUM(ei.gross), 0) as total_expenses,
         COALESCE(SUM(wh.hours), 0) as total_hours,
@@ -390,7 +390,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
       LEFT JOIN work_hours wh ON c.contract_number::text = wh.contract_id::text
       LEFT JOIN expenses_invoices ei ON c.contract_number::text = ei.contract_id::text
       ${statusFilter}
-      GROUP BY c.contract_number, c.site_name, c.contract_value, c.status, c.start_date, c.end_date
+      GROUP BY c.contract_number, c.site_name, c.contract_value, c.status, c.start_date, c.finish_date
       ORDER BY c.contract_value DESC
     `;
 
@@ -407,7 +407,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
         contractValue: parseFloat(row.contract_value) || 0,
         status: row.status,
         startDate: row.start_date,
-        endDate: row.end_date,
+        endDate: row.finish_date,
         totalLaborCost: parseFloat(row.total_labor_cost) || 0,
         totalExpenses: parseFloat(row.total_expenses) || 0,
         totalCost: totalCost,
@@ -415,8 +415,8 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
         activeEmployees: parseInt(row.active_employees) || 0,
         profit: profit,
         profitMargin: profitMargin,
-        completion: row.end_date ? 
-          Math.min(100, Math.max(0, ((new Date() - new Date(row.start_date)) / (new Date(row.end_date) - new Date(row.start_date))) * 100)) : 0
+        completion: row.finish_date ? 
+          Math.min(100, Math.max(0, ((new Date() - new Date(row.start_date)) / (new Date(row.finish_date) - new Date(row.start_date))) * 100)) : 0
       };
     });
 
@@ -545,7 +545,7 @@ router.get('/export-data', verifyToken, async (req, res) => {
             c.contract_value,
             c.status,
             c.start_date,
-            c.end_date
+            c.finish_date
           FROM contracts c
           ORDER BY c.created_at DESC
         `;
@@ -765,14 +765,14 @@ router.get('/contract-performance-simple', verifyToken, async (req, res) => {
         c.contract_value,
         c.status,
         c.start_date,
-        c.end_date,
+        c.finish_date,
         COALESCE(SUM(wh.hours * wh.rate), 0) as total_work_hours_cost,
         COALESCE(c.contract_value - SUM(wh.hours * wh.rate), c.contract_value) as remaining_budget
       FROM contracts c
       LEFT JOIN expenses_invoices ei ON c.contract_number::text = ei.contract_id::text
       LEFT JOIN work_hours wh ON c.contract_number::text = wh.contract_id::text
       ${statusFilter}
-      GROUP BY c.contract_number, c.contract_value, c.status, c.start_date, c.end_date
+      GROUP BY c.contract_number, c.contract_value, c.status, c.start_date, c.finish_date
       ORDER BY c.start_date DESC
       LIMIT 10
     `;
@@ -783,7 +783,7 @@ router.get('/contract-performance-simple', verifyToken, async (req, res) => {
       contractValue: parseFloat(row.contract_value) || 0,
       status: row.status,
       startDate: row.start_date,
-      endDate: row.end_date,
+      endDate: row.finish_date,
       totalWorkHoursCost: parseFloat(row.total_work_hours_cost) || 0,
       remainingBudget: parseFloat(row.remaining_budget) || 0
     }));
