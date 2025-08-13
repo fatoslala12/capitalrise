@@ -30,8 +30,7 @@ router.get('/test-status', async (req, res) => {
     const backupService = new BackupService();
     
     // Test database connection
-    const db = require('../db');
-    const result = await db.query('SELECT version() as version, current_database() as database');
+    const result = await pool.query('SELECT version() as version, current_database() as database');
     
     res.json({
       success: true,
@@ -99,8 +98,6 @@ router.get('/test-list', async (req, res) => {
 // Get table counts without authentication
 router.get('/table-counts', async (req, res) => {
   try {
-    const db = require('../db');
-    
     // Lista e tabelave që duam të kontrollojmë (vetëm ato që shfaqen në frontend)
     const tables = [
       'employees', 'contracts', 'work_hours', 'payments', 
@@ -112,7 +109,7 @@ router.get('/table-counts', async (req, res) => {
     // Merr numrin e regjistrimeve për çdo tabelë
     for (const table of tables) {
       try {
-        const result = await db.query(`SELECT COUNT(*) as count FROM ${table}`);
+        const result = await pool.query(`SELECT COUNT(*) as count FROM ${table}`);
         tableCounts[table] = parseInt(result.rows[0].count);
       } catch (tableError) {
         console.warn(`Warning: Could not count table ${table}:`, tableError.message);
