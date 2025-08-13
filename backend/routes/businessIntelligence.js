@@ -88,48 +88,100 @@ router.get('/financial-report', verifyToken, async (req, res) => {
     }
 
     // Total revenue from contracts
-    const revenueQuery = `
-      SELECT 
-        COALESCE(SUM(c.contract_value), 0) as total_revenue,
-        COUNT(*) as total_contracts,
-        COUNT(CASE WHEN c.status = 'Mbyllur' THEN 1 END) as completed_contracts,
-        COUNT(CASE WHEN c.status = 'Ne progres' THEN 1 END) as active_contracts
-      FROM contracts c
-      ${dateFilter.replace('date', 'c.created_at')}
-    `;
+    let revenueQuery = '';
+    if (startDate && endDate) {
+      revenueQuery = `
+        SELECT 
+          COALESCE(SUM(c.contract_value), 0) as total_revenue,
+          COUNT(*) as total_contracts,
+          COUNT(CASE WHEN c.status = 'Mbyllur' THEN 1 END) as completed_contracts,
+          COUNT(CASE WHEN c.status = 'Ne progres' THEN 1 END) as active_contracts
+        FROM contracts c
+        WHERE c.created_at >= $1 AND c.created_at <= $2
+      `;
+    } else {
+      revenueQuery = `
+        SELECT 
+          COALESCE(SUM(c.contract_value), 0) as total_revenue,
+          COUNT(*) as total_contracts,
+          COUNT(CASE WHEN c.status = 'Mbyllur' THEN 1 END) as completed_contracts,
+          COUNT(CASE WHEN c.status = 'Ne progres' THEN 1 END) as active_contracts
+        FROM contracts c
+        ${dateFilter.replace('date', 'c.created_at')}
+      `;
+    }
     
     // Total expenses
-    const expensesQuery = `
-      SELECT 
-        COALESCE(SUM(ei.gross), 0) as total_expenses,
-        COUNT(*) as total_expenses_count,
-        COUNT(CASE WHEN ei.paid = true THEN 1 END) as paid_expenses,
-        COUNT(CASE WHEN ei.paid = false THEN 1 END) as unpaid_expenses
-      FROM expenses_invoices ei
-      ${dateFilter.replace('date', 'ei.date')}
-    `;
+    let expensesQuery = '';
+    if (startDate && endDate) {
+      expensesQuery = `
+        SELECT 
+          COALESCE(SUM(ei.gross), 0) as total_expenses,
+          COUNT(*) as total_expenses_count,
+          COUNT(CASE WHEN ei.paid = true THEN 1 END) as paid_expenses,
+          COUNT(CASE WHEN ei.paid = false THEN 1 END) as unpaid_expenses
+        FROM expenses_invoices ei
+        WHERE ei.date >= $1 AND ei.date <= $2
+      `;
+    } else {
+      expensesQuery = `
+        SELECT 
+          COALESCE(SUM(ei.gross), 0) as total_expenses,
+          COUNT(*) as total_expenses_count,
+          COUNT(CASE WHEN ei.paid = true THEN 1 END) as paid_expenses,
+          COUNT(CASE WHEN ei.paid = false THEN 1 END) as unpaid_expenses
+        FROM expenses_invoices ei
+        ${dateFilter.replace('date', 'ei.date')}
+      `;
+    }
     
     // Work hours costs
-    const workHoursQuery = `
-      SELECT 
-        COALESCE(SUM(wh.hours * wh.rate), 0) as total_labor_cost,
-        COALESCE(SUM(wh.hours), 0) as total_hours,
-        COUNT(DISTINCT wh.employee_id) as active_employees
-      FROM work_hours wh
-      ${dateFilter.replace('date', 'wh.date')}
-    `;
+    let workHoursQuery = '';
+    if (startDate && endDate) {
+      workHoursQuery = `
+        SELECT 
+          COALESCE(SUM(wh.hours * wh.rate), 0) as total_labor_cost,
+          COALESCE(SUM(wh.hours), 0) as total_hours,
+          COUNT(DISTINCT wh.employee_id) as active_employees
+        FROM work_hours wh
+        WHERE wh.date >= $1 AND wh.date <= $2
+      `;
+    } else {
+      workHoursQuery = `
+        SELECT 
+          COALESCE(SUM(wh.hours * wh.rate), 0) as total_labor_cost,
+          COALESCE(SUM(wh.hours), 0) as total_hours,
+          COUNT(DISTINCT wh.employee_id) as active_employees
+        FROM work_hours wh
+        ${dateFilter.replace('date', 'wh.date')}
+      `;
+    }
     
     // Invoice status
-    const invoicesQuery = `
-      SELECT 
-        COUNT(*) as total_invoices,
-        COUNT(CASE WHEN i.paid = true THEN 1 END) as paid_invoices,
-        COUNT(CASE WHEN i.paid = false THEN 1 END) as unpaid_invoices,
-        COALESCE(SUM(CASE WHEN i.paid = true THEN i.total ELSE 0 END), 0) as paid_amount,
-        COALESCE(SUM(CASE WHEN i.paid = false THEN i.total ELSE 0 END), 0) as unpaid_amount
-      FROM invoices i
-      ${dateFilter.replace('date', 'i.created_at')}
-    `;
+    let invoicesQuery = '';
+    if (startDate && endDate) {
+      invoicesQuery = `
+        SELECT 
+          COUNT(*) as total_invoices,
+          COUNT(CASE WHEN i.paid = true THEN 1 END) as paid_invoices,
+          COUNT(CASE WHEN i.paid = false THEN 1 END) as unpaid_invoices,
+          COALESCE(SUM(CASE WHEN i.paid = true THEN i.total ELSE 0 END), 0) as paid_amount,
+          COALESCE(SUM(CASE WHEN i.paid = false THEN i.total ELSE 0 END), 0) as unpaid_amount
+        FROM invoices i
+        WHERE i.created_at >= $1 AND i.created_at <= $2
+      `;
+    } else {
+      invoicesQuery = `
+        SELECT 
+          COUNT(*) as total_invoices,
+          COUNT(CASE WHEN i.paid = true THEN 1 END) as paid_invoices,
+          COUNT(CASE WHEN i.paid = false THEN 1 END) as unpaid_invoices,
+          COALESCE(SUM(CASE WHEN i.paid = true THEN i.total ELSE 0 END), 0) as paid_amount,
+          COALESCE(SUM(CASE WHEN i.paid = false THEN i.total ELSE 0 END), 0) as unpaid_amount
+        FROM invoices i
+        ${dateFilter.replace('date', 'i.created_at')}
+      `;
+    }
 
     const [revenueResult, expensesResult, workHoursResult, invoicesResult] = await Promise.all([
       pool.query(revenueQuery, params),
@@ -317,7 +369,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
     let statusFilter = '';
     let params = [];
     
-    if (status) {
+    if (status && status.trim() !== '') {
       statusFilter = 'WHERE c.status = $1';
       params.push(status);
     }
@@ -337,7 +389,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
       FROM contracts c
       LEFT JOIN work_hours wh ON c.contract_number = wh.contract_id
       LEFT JOIN expenses_invoices ei ON c.contract_number = ei.contract_number
-      ${statusFilter ? statusFilter : ''}
+      ${statusFilter}
       GROUP BY c.contract_number, c.site_name, c.contract_value, c.status, c.start_date, c.end_date
       ORDER BY c.contract_value DESC
     `;
@@ -433,6 +485,8 @@ router.get('/export-data', verifyToken, async (req, res) => {
     const { type, format = 'json', period = 'month' } = req.query;
     
     let dateFilter = '';
+    let params = [];
+    
     if (period === 'month') {
       dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 month\'';
     } else if (period === 'quarter') {
