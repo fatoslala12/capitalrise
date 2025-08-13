@@ -78,7 +78,7 @@ export default function Reports() {
   const [statusFilter, setStatusFilter] = useState("");
   
   // Data states
-  const [financialData, setFinancialData] = useState(null);
+  const [financialData, setFinancialData] = useState({});
   const [employeePerformance, setEmployeePerformance] = useState([]);
   const [sitePerformance, setSitePerformance] = useState([]);
   const [contractPerformance, setContractPerformance] = useState([]);
@@ -124,7 +124,7 @@ export default function Reports() {
         api.get('/api/business-intelligence/dashboard-stats')
       ]);
 
-      setFinancialData(financialRes.data);
+      setFinancialData(financialRes.data || {});
       setEmployeePerformance(employeeRes.data || []);
       setSitePerformance(siteRes.data || []);
       setContractPerformance(contractRes.data || []);
@@ -346,7 +346,7 @@ export default function Reports() {
                     <div>
                       <p className="text-sm font-medium text-blue-600">Total Orë</p>
                       <p className="text-2xl font-bold text-blue-900">
-                        {financialData?.workHours?.total?.toFixed(1) || '0.0'}
+                        {(financialData?.workHours?.total || 0).toFixed(1)}
                       </p>
                     </div>
                     <Clock className="w-8 h-8 text-blue-600" />
@@ -360,7 +360,7 @@ export default function Reports() {
                     <div>
                       <p className="text-sm font-medium text-green-600">Total Fitim</p>
                       <p className="text-2xl font-bold text-green-900">
-                        £{financialData?.profit?.total?.toFixed(2) || '0.00'}
+                        £{(financialData?.profit?.total || 0).toFixed(2)}
                       </p>
                     </div>
                     <DollarSign className="w-8 h-8 text-green-600" />
@@ -443,7 +443,7 @@ export default function Reports() {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                         outerRadius={80}
                         dataKey="value"
                       />
@@ -506,7 +506,7 @@ export default function Reports() {
                   <div className="text-center p-6 bg-green-50 rounded-lg border border-green-200">
                     <DollarSign className="w-8 h-8 text-green-600 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-green-600">
-                      £{financialData?.revenue?.total?.toFixed(2) || '0.00'}
+                      £{(financialData?.revenue?.total || 0).toFixed(2)}
                     </div>
                     <div className="text-sm text-green-600">Total Të Ardhura</div>
                   </div>
@@ -514,7 +514,7 @@ export default function Reports() {
                   <div className="text-center p-6 bg-red-50 rounded-lg border border-red-200">
                     <DollarSign className="w-8 h-8 text-red-600 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-red-600">
-                      £{financialData?.expenses?.total?.toFixed(2) || '0.00'}
+                      £{(financialData?.expenses?.total || 0).toFixed(2)}
                     </div>
                     <div className="text-sm text-red-600">Total Shpenzime</div>
                   </div>
@@ -522,7 +522,7 @@ export default function Reports() {
                   <div className="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
                     <DollarSign className="w-8 h-8 text-blue-600 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-blue-600">
-                      £{financialData?.profit?.total?.toFixed(2) || '0.00'}
+                      £{(financialData?.profit?.total || 0).toFixed(2)}
                     </div>
                     <div className="text-sm text-blue-600">Total Fitim</div>
                   </div>
@@ -556,7 +556,7 @@ export default function Reports() {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                         outerRadius={80}
                         dataKey="value"
                       />
@@ -626,19 +626,19 @@ export default function Reports() {
                               <span className="font-medium">{emp.name}</span>
                             </div>
                           </td>
-                          <td className="p-3">{emp.totalHours.toFixed(1)}h</td>
-                          <td className="p-3 font-medium text-green-600">£{emp.totalEarnings.toFixed(2)}</td>
-                          <td className="p-3">{emp.workingDays}</td>
-                          <td className="p-3">{emp.avgHoursPerDay.toFixed(1)}h</td>
+                          <td className="p-3">{(emp.totalHours || 0).toFixed(1)}h</td>
+                          <td className="p-3 font-medium text-green-600">£{(emp.totalEarnings || 0).toFixed(2)}</td>
+                          <td className="p-3">{emp.workingDays || 0}</td>
+                          <td className="p-3">{(emp.avgHoursPerDay || 0).toFixed(1)}h</td>
                           <td className="p-3">
                             <div className="flex items-center gap-2">
                               <div className="w-20 bg-gray-200 rounded-full h-2">
                                 <div 
                                   className="bg-blue-600 h-2 rounded-full" 
-                                  style={{ width: `${Math.min(emp.efficiency, 100)}%` }}
+                                  style={{ width: `${Math.min(emp.efficiency || 0, 100)}%` }}
                                 ></div>
                               </div>
-                              <span className="text-sm text-gray-600">{emp.efficiency.toFixed(1)}%</span>
+                              <span className="text-sm text-gray-600">{(emp.efficiency || 0).toFixed(1)}%</span>
                             </div>
                           </td>
                         </tr>
@@ -689,24 +689,24 @@ export default function Reports() {
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Total Orë:</span>
-                        <span className="font-medium">{site.totalHours.toFixed(1)}h</span>
+                        <span className="font-medium">{(site.totalHours || 0).toFixed(1)}h</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Kosto e Punës:</span>
-                        <span className="font-medium text-blue-600">£{site.totalLaborCost.toFixed(2)}</span>
+                        <span className="font-medium text-blue-600">£{(site.totalLaborCost || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Shpenzime:</span>
-                        <span className="font-medium text-red-600">£{site.totalExpenses.toFixed(2)}</span>
+                        <span className="font-medium text-red-600">£{(site.totalExpenses || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Punonjës:</span>
-                        <span className="font-medium">{site.activeEmployees}</span>
+                        <span className="font-medium">{site.activeEmployees || 0}</span>
                       </div>
                       <div className="pt-2 border-t border-gray-100">
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-600">Efikasiteti:</span>
-                          <span className="font-medium text-green-600">{site.efficiency.toFixed(1)}%</span>
+                          <span className="font-medium text-green-600">{(site.efficiency || 0).toFixed(1)}%</span>
                         </div>
                       </div>
                     </div>
@@ -733,38 +733,39 @@ export default function Reports() {
                         <th className="text-left p-3 font-medium text-gray-700">Site</th>
                         <th className="text-left p-3 font-medium text-gray-700">Vlera</th>
                         <th className="text-left p-3 font-medium text-gray-700">Statusi</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Kosto Totale</th>
+                        <th className="text-left p-3 font-medium text-gray-700">Kosto e Përgjithshme</th>
                         <th className="text-left p-3 font-medium text-gray-700">Fitimi</th>
                         <th className="text-left p-3 font-medium text-gray-700">Marzhi</th>
                         <th className="text-left p-3 font-medium text-gray-700">Përfundimi</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {contractPerformance.map((contract, index) => (
-                        <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                      {contractPerformance && contractPerformance.length > 0 ? (
+                        contractPerformance.map((contract, index) => (
+                          <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="p-3 font-medium">{contract.contractNumber}</td>
                           <td className="p-3">{contract.siteName}</td>
-                          <td className="p-3 font-medium">£{contract.contractValue.toFixed(2)}</td>
+                          <td className="p-3 font-medium">£{(contract.contractValue || 0).toFixed(2)}</td>
                           <td className="p-3">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               contract.status === 'Mbyllur' ? 'bg-green-100 text-green-800' :
                               contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-800' :
                               'bg-gray-100 text-gray-800'
                             }`}>
-                              {contract.status}
+                              {contract.status || 'Aktive'}
                             </span>
                           </td>
-                          <td className="p-3">£{contract.totalCost.toFixed(2)}</td>
+                          <td className="p-3">£{(contract.totalSpent || 0).toFixed(2)}</td>
                           <td className={`p-3 font-medium ${
-                            contract.profit >= 0 ? 'text-green-600' : 'text-red-600'
+                            (contract.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'
                           }`}>
-                            £{contract.profit.toFixed(2)}
+                            £{(contract.profit || 0).toFixed(2)}
                           </td>
                           <td className="p-3">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              contract.profitMargin >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              (contract.profitMargin || 0) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                             }`}>
-                              {contract.profitMargin.toFixed(1)}%
+                              {(contract.profitMargin || 0).toFixed(1)}%
                             </span>
                           </td>
                           <td className="p-3">
@@ -772,10 +773,10 @@ export default function Reports() {
                               <div className="w-16 bg-gray-200 rounded-full h-2">
                                 <div 
                                   className="bg-blue-600 h-2 rounded-full" 
-                                  style={{ width: `${contract.completion}%` }}
+                                  style={{ width: `${contract.completion || 0}%` }}
                                 ></div>
                               </div>
-                              <span className="text-sm text-gray-600">{contract.completion.toFixed(0)}%</span>
+                              <span className="text-sm text-gray-600">{(contract.completion || 0).toFixed(0)}%</span>
                             </div>
                           </td>
                         </tr>

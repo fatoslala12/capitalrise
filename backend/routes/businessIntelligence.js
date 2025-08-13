@@ -410,6 +410,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
         c.finish_date,
         c.address,
         c.contract_type,
+        c.status,
         COALESCE(SUM(wh.hours * wh.rate), 0) as total_labor_cost,
         COALESCE(SUM(ei.gross), 0) as total_expenses,
         COALESCE(SUM(wh.hours), 0) as total_hours,
@@ -418,7 +419,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
       LEFT JOIN work_hours wh ON c.contract_number::text = wh.contract_id::text
       LEFT JOIN expenses_invoices ei ON c.contract_number::text = ei.contract_id::text
       ${statusFilter}
-      GROUP BY c.contract_number, c.company, c.site_name, c.contract_value, c.start_date, c.finish_date, c.address, c.contract_type
+      GROUP BY c.contract_number, c.company, c.site_name, c.contract_value, c.start_date, c.finish_date, c.address, c.contract_type, c.status
       ORDER BY c.contract_value DESC
     `;
 
@@ -438,6 +439,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
         finishDate: row.finish_date ? new Date(row.finish_date).toLocaleDateString('sq-AL') : null,
         address: row.address,
         contractType: row.contract_type,
+        status: row.status || 'Aktive',
         totalLaborCost: parseFloat(row.total_labor_cost) || 0,
         totalExpenses: parseFloat(row.total_expenses) || 0,
         totalSpent: totalSpent,
