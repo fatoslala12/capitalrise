@@ -12,10 +12,10 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
     // Get work hours stats
     const workHoursQuery = `
       SELECT 
-        COALESCE(SUM(hours), 0) as total_hours,
-        COALESCE(SUM(hours * rate), 0) as total_gross
-      FROM work_hours 
-      WHERE date >= CURRENT_DATE - INTERVAL '7 days'
+        COALESCE(SUM(wh.hours), 0) as total_hours,
+        COALESCE(SUM(wh.hours * wh.rate), 0) as total_gross
+      FROM work_hours wh
+      WHERE wh.date >= CURRENT_DATE - INTERVAL '7 days'
     `;
     
     const workHoursResult = await pool.query(workHoursQuery);
@@ -34,8 +34,8 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
     // Get active contracts count
     const contractsQuery = `
       SELECT COUNT(*) as active_contracts 
-      FROM contracts 
-      WHERE status IN ('Ne progres', 'Draft')
+      FROM contracts c
+      WHERE c.status IN ('Ne progres', 'Draft')
     `;
     
     const contractsResult = await pool.query(contractsQuery);
@@ -45,9 +45,9 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
     const tasksQuery = `
       SELECT 
         COUNT(*) as total_tasks,
-        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_tasks,
-        COUNT(CASE WHEN status = 'ongoing' THEN 1 END) as ongoing_tasks
-      FROM tasks
+        COUNT(CASE WHEN t.status = 'completed' THEN 1 END) as completed_tasks,
+        COUNT(CASE WHEN t.status = 'ongoing' THEN 1 END) as ongoing_tasks
+      FROM tasks t
     `;
     
     const tasksResult = await pool.query(tasksQuery);
@@ -77,45 +77,45 @@ router.get('/financial-report', verifyToken, async (req, res) => {
     let params = [];
     
     if (startDate && endDate) {
-      dateFilter = 'WHERE date >= $1 AND date <= $2';
+      dateFilter = 'WHERE wh.date >= $1 AND wh.date <= $2';
       params = [startDate, endDate];
     } else if (period === 'month') {
-      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 month\'';
+      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'1 month\'';
     } else if (period === 'quarter') {
-      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'3 months\'';
+      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'3 months\'';
     } else if (period === 'year') {
-      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 year\'';
+      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'1 year\'';
     }
 
     // Total revenue from contracts
     const revenueQuery = `
       SELECT 
-        COALESCE(SUM(contract_value), 0) as total_revenue,
+        COALESCE(SUM(c.contract_value), 0) as total_revenue,
         COUNT(*) as total_contracts,
-        COUNT(CASE WHEN status = 'Mbyllur' THEN 1 END) as completed_contracts,
-        COUNT(CASE WHEN status = 'Ne progres' THEN 1 END) as active_contracts
-      FROM contracts
-      ${dateFilter.replace('date', 'created_at')}
+        COUNT(CASE WHEN c.status = 'Mbyllur' THEN 1 END) as completed_contracts,
+        COUNT(CASE WHEN c.status = 'Ne progres' THEN 1 END) as active_contracts
+      FROM contracts c
+      ${dateFilter.replace('wh.date', 'c.created_at')}
     `;
     
     // Total expenses
     const expensesQuery = `
       SELECT 
-        COALESCE(SUM(gross), 0) as total_expenses,
+        COALESCE(SUM(ei.gross), 0) as total_expenses,
         COUNT(*) as total_expenses_count,
-        COUNT(CASE WHEN paid = true THEN 1 END) as paid_expenses,
-        COUNT(CASE WHEN paid = false THEN 1 END) as unpaid_expenses
-      FROM expenses_invoices
-      ${dateFilter}
+        COUNT(CASE WHEN ei.paid = true THEN 1 END) as paid_expenses,
+        COUNT(CASE WHEN ei.paid = false THEN 1 END) as unpaid_expenses
+      FROM expenses_invoices ei
+      ${dateFilter.replace('wh.date', 'ei.date')}
     `;
     
     // Work hours costs
     const workHoursQuery = `
       SELECT 
-        COALESCE(SUM(hours * rate), 0) as total_labor_cost,
-        COALESCE(SUM(hours), 0) as total_hours,
-        COUNT(DISTINCT employee_id) as active_employees
-      FROM work_hours
+        COALESCE(SUM(wh.hours * wh.rate), 0) as total_labor_cost,
+        COALESCE(SUM(wh.hours), 0) as total_hours,
+        COUNT(DISTINCT wh.employee_id) as active_employees
+      FROM work_hours wh
       ${dateFilter}
     `;
     
@@ -123,12 +123,12 @@ router.get('/financial-report', verifyToken, async (req, res) => {
     const invoicesQuery = `
       SELECT 
         COUNT(*) as total_invoices,
-        COUNT(CASE WHEN paid = true THEN 1 END) as paid_invoices,
-        COUNT(CASE WHEN paid = false THEN 1 END) as unpaid_invoices,
-        COALESCE(SUM(CASE WHEN paid = true THEN total ELSE 0 END), 0) as paid_amount,
-        COALESCE(SUM(CASE WHEN paid = false THEN total ELSE 0 END), 0) as unpaid_amount
-      FROM invoices
-      ${dateFilter.replace('date', 'created_at')}
+        COUNT(CASE WHEN i.paid = true THEN 1 END) as paid_invoices,
+        COUNT(CASE WHEN i.paid = false THEN 1 END) as unpaid_invoices,
+        COALESCE(SUM(CASE WHEN i.paid = true THEN i.total ELSE 0 END), 0) as paid_amount,
+        COALESCE(SUM(CASE WHEN i.paid = false THEN i.total ELSE 0 END), 0) as unpaid_amount
+      FROM invoices i
+      ${dateFilter.replace('wh.date', 'i.created_at')}
     `;
 
     const [revenueResult, expensesResult, workHoursResult, invoicesResult] = await Promise.all([
@@ -281,9 +281,8 @@ router.get('/site-performance', verifyToken, async (req, res) => {
         COUNT(DISTINCT wh.employee_id) as active_employees,
         COUNT(DISTINCT wh.date) as working_days,
         COALESCE(AVG(wh.hours), 0) as avg_hours_per_day,
-        COALESCE(SUM(ei.gross), 0) as total_expenses
+        0 as total_expenses
       FROM work_hours wh
-      LEFT JOIN expenses_invoices ei ON wh.site = ei.site
       ${dateFilter}
       GROUP BY wh.site
       ORDER BY total_hours DESC
@@ -336,7 +335,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
         COALESCE(SUM(wh.hours), 0) as total_hours,
         COUNT(DISTINCT wh.employee_id) as active_employees
       FROM contracts c
-      LEFT JOIN work_hours wh ON c.contract_number = wh.contract_number
+      LEFT JOIN work_hours wh ON c.contract_number = wh.contract_id
       LEFT JOIN expenses_invoices ei ON c.contract_number = ei.contract_number
       ${statusFilter}
       GROUP BY c.contract_number, c.site_name, c.contract_value, c.status, c.start_date, c.end_date
@@ -385,30 +384,30 @@ router.get('/time-series', verifyToken, async (req, res) => {
     let groupByClause = '';
     
     if (period === 'month') {
-      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 month\'';
-      groupByClause = 'DATE(date)';
+      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'1 month\'';
+      groupByClause = 'DATE(wh.date)';
     } else if (period === 'quarter') {
-      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'3 months\'';
-      groupByClause = 'DATE_TRUNC(\'week\', date)';
+      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'3 months\'';
+      groupByClause = 'DATE_TRUNC(\'week\', wh.date)';
     } else if (period === 'year') {
-      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 year\'';
-      groupByClause = 'DATE_TRUNC(\'month\', date)';
+      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'1 year\'';
+      groupByClause = 'DATE_TRUNC(\'month\', wh.date)';
     }
 
     let metricColumn = '';
     if (metric === 'hours') {
-      metricColumn = 'SUM(hours)';
+      metricColumn = 'SUM(wh.hours)';
     } else if (metric === 'cost') {
-      metricColumn = 'SUM(hours * rate)';
+      metricColumn = 'SUM(wh.hours * wh.rate)';
     } else if (metric === 'employees') {
-      metricColumn = 'COUNT(DISTINCT employee_id)';
+      metricColumn = 'COUNT(DISTINCT wh.employee_id)';
     }
 
     const timeSeriesQuery = `
       SELECT 
         ${groupByClause} as period,
         ${metricColumn} as value
-      FROM work_hours
+      FROM work_hours wh
       ${dateFilter}
       GROUP BY ${groupByClause}
       ORDER BY period ASC
@@ -435,11 +434,11 @@ router.get('/export-data', verifyToken, async (req, res) => {
     
     let dateFilter = '';
     if (period === 'month') {
-      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 month\'';
+      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'1 month\'';
     } else if (period === 'quarter') {
-      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'3 months\'';
+      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'3 months\'';
     } else if (period === 'year') {
-      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 year\'';
+      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'1 year\'';
     }
 
     let data = [];
@@ -469,15 +468,15 @@ router.get('/export-data', verifyToken, async (req, res) => {
       case 'expenses':
         const expensesQuery = `
           SELECT 
-            site,
-            description,
-            gross,
-            paid,
-            date,
-            contract_number
-          FROM expenses_invoices
+            ei.site,
+            ei.description,
+            ei.gross,
+            ei.paid,
+            ei.date,
+            ei.contract_number
+          FROM expenses_invoices ei
           ${dateFilter}
-          ORDER BY date DESC
+          ORDER BY ei.date DESC
         `;
         const expensesResult = await pool.query(expensesQuery);
         data = expensesResult.rows;
@@ -487,14 +486,14 @@ router.get('/export-data', verifyToken, async (req, res) => {
       case 'contracts':
         const contractsQuery = `
           SELECT 
-            contract_number,
-            site_name,
-            contract_value,
-            status,
-            start_date,
-            end_date
-          FROM contracts
-          ORDER BY created_at DESC
+            c.contract_number,
+            c.site_name,
+            c.contract_value,
+            c.status,
+            c.start_date,
+            c.end_date
+          FROM contracts c
+          ORDER BY c.created_at DESC
         `;
         const contractsResult = await pool.query(contractsQuery);
         data = contractsResult.rows;
@@ -504,13 +503,13 @@ router.get('/export-data', verifyToken, async (req, res) => {
       case 'employees':
         const employeesQuery = `
           SELECT 
-            first_name,
-            last_name,
-            hourly_rate,
-            status,
-            workplace
-          FROM employees
-          ORDER BY first_name
+            e.first_name,
+            e.last_name,
+            e.hourly_rate,
+            e.status,
+            e.workplace
+          FROM employees e
+          ORDER BY e.first_name
         `;
         const employeesResult = await pool.query(employeesQuery);
         data = employeesResult.rows;
@@ -554,7 +553,7 @@ router.get('/profit-metrics', verifyToken, async (req, res) => {
         COALESCE(SUM(e.gross), 0) as total_expenses,
         COALESCE(SUM(c.contract_value) - SUM(e.gross), 0) as total_profit
       FROM contracts c
-      LEFT JOIN expenses e ON c.contract_number = e.contract_number
+      LEFT JOIN expenses_invoices e ON c.contract_number = e.contract_number
       WHERE c.status IN ('Ne progres', 'Mbyllur')
     `;
     
@@ -565,8 +564,8 @@ router.get('/profit-metrics', verifyToken, async (req, res) => {
     const growthQuery = `
       SELECT 
         COUNT(*) as active_contracts
-      FROM contracts 
-      WHERE status IN ('Ne progres', 'Draft')
+      FROM contracts c
+      WHERE c.status IN ('Ne progres', 'Draft')
     `;
     
     const growthResult = await pool.query(growthQuery);
@@ -591,11 +590,11 @@ router.get('/weekly-profit', verifyToken, async (req, res) => {
     // Get weekly profit data for the last 4 weeks
     const weeklyQuery = `
       SELECT 
-        DATE_TRUNC('week', date) as week_start,
-        COALESCE(SUM(hours * rate), 0) as weekly_profit
-      FROM work_hours 
-      WHERE date >= CURRENT_DATE - INTERVAL '4 weeks'
-      GROUP BY DATE_TRUNC('week', date)
+        DATE_TRUNC('week', wh.date) as week_start,
+        COALESCE(SUM(wh.hours * wh.rate), 0) as weekly_profit
+      FROM work_hours wh
+      WHERE wh.date >= CURRENT_DATE - INTERVAL '4 weeks'
+      GROUP BY DATE_TRUNC('week', wh.date)
       ORDER BY week_start DESC
       LIMIT 4
     `;
