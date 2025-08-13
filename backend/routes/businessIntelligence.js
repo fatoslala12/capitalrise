@@ -388,7 +388,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
         COUNT(DISTINCT wh.employee_id) as active_employees
       FROM contracts c
       LEFT JOIN work_hours wh ON c.contract_number::text = wh.contract_id::text
-      LEFT JOIN expenses_invoices ei ON c.contract_number::text = ei.contract_number::text
+      LEFT JOIN expenses_invoices ei ON c.contract_number::text = ei.contract_id::text
       ${statusFilter}
       GROUP BY c.contract_number, c.site_name, c.contract_value, c.status, c.start_date, c.end_date
       ORDER BY c.contract_value DESC
@@ -607,7 +607,7 @@ router.get('/profit-metrics', verifyToken, async (req, res) => {
         COALESCE(SUM(e.gross), 0) as total_expenses,
         COALESCE(SUM(c.contract_value) - SUM(e.gross), 0) as total_profit
       FROM contracts c
-      LEFT JOIN expenses_invoices e ON c.contract_number = e.contract_number
+      LEFT JOIN expenses_invoices e ON c.contract_number::text = e.contract_id::text
       WHERE c.status IN ('Ne progres', 'Mbyllur')
     `;
     
@@ -769,8 +769,8 @@ router.get('/contract-performance-simple', verifyToken, async (req, res) => {
         COALESCE(SUM(wh.hours * wh.rate), 0) as total_work_hours_cost,
         COALESCE(c.contract_value - SUM(wh.hours * wh.rate), c.contract_value) as remaining_budget
       FROM contracts c
-      LEFT JOIN expenses_invoices ei ON c.contract_number = ei.contract_number
-      LEFT JOIN work_hours wh ON c.contract_number = wh.contract_id
+      LEFT JOIN expenses_invoices ei ON c.contract_number::text = ei.contract_id::text
+      LEFT JOIN work_hours wh ON c.contract_number::text = wh.contract_id::text
       ${statusFilter}
       GROUP BY c.contract_number, c.contract_value, c.status, c.start_date, c.end_date
       ORDER BY c.start_date DESC
