@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 const { verifyToken } = require('../middleware/auth');
 
 // Dashboard stats

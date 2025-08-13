@@ -1,4 +1,4 @@
-const pool = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 
 // Simple in-memory cache
 const queryCache = new Map();

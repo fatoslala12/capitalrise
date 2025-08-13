@@ -1,4 +1,4 @@
-const pool = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 
 exports.getAllRelations = async (req, res) => {
   try {
