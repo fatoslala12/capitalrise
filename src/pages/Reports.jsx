@@ -753,53 +753,62 @@ export default function Reports() {
                             console.log('Rendering contract:', contract, 'at index:', index);
                             return (
                               <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                                                      <td className="p-3 font-medium">{(() => {
-                              console.log('contract.contractNumber:', contract.contractNumber);
-                              return contract.contractNumber;
-                            })()}</td>
-                            <td className="p-3">{(() => {
-                              console.log('contract.siteName:', contract.siteName);
-                              return contract.siteName;
-                            })()}</td>
-                            <td className="p-3 font-medium">£{(() => {
-                              console.log('contract.contractValue:', contract.contractValue, 'type:', typeof contract.contractValue);
-                              return (contract.contractValue || 0).toFixed(2);
-                            })()}</td>
-                          <td className="p-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              contract.status === 'Mbyllur' ? 'bg-green-100 text-green-800' :
-                              contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {contract.status || 'Aktive'}
-                            </span>
-                          </td>
-                          <td className="p-3">£{(contract.totalSpent || 0).toFixed(2)}</td>
-                          <td className={`p-3 font-medium ${
-                            (contract.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'
-                          }`}>
-                            £{(contract.profit || 0).toFixed(2)}
-                          </td>
-                          <td className="p-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              (contract.profitMargin || 0) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              {(contract.profitMargin || 0).toFixed(1)}%
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-16 bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-blue-600 h-2 rounded-full" 
-                                  style={{ width: `${contract.completion || 0}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-sm text-gray-600">{(contract.completion || 0).toFixed(0)}%</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                                <td className="p-3 font-medium">{(() => {
+                                  console.log('contract.contractNumber:', contract.contractNumber);
+                                  return contract.contractNumber;
+                                })()}</td>
+                                <td className="p-3">{(() => {
+                                  console.log('contract.siteName:', contract.siteName);
+                                  return contract.siteName;
+                                })()}</td>
+                                <td className="p-3 font-medium">£{(() => {
+                                  console.log('contract.contractValue:', contract.contractValue, 'type:', typeof contract.contractValue);
+                                  return (contract.contractValue || 0).toFixed(2);
+                                })()}</td>
+                                <td className="p-3">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    contract.status === 'Mbyllur' ? 'bg-green-100 text-green-800' :
+                                    contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {contract.status || 'Aktive'}
+                                  </span>
+                                </td>
+                                <td className="p-3">£{(contract.totalSpent || 0).toFixed(2)}</td>
+                                <td className={`p-3 font-medium ${
+                                  (contract.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                  £{(contract.profit || 0).toFixed(2)}
+                                </td>
+                                <td className="p-3">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    (contract.profitMargin || 0) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                  }`}>
+                                    {(contract.profitMargin || 0).toFixed(1)}%
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                                      <div 
+                                        className="bg-blue-600 h-2 rounded-full" 
+                                        style={{ width: `${contract.completion || 0}%` }}
+                                      ></div>
+                                    </div>
+                                    <span className="text-sm text-gray-600">{(contract.completion || 0).toFixed(0)}%</span>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan="8" className="p-6 text-center text-gray-500">
+                              Nuk ka të dhëna për kontratat
+                            </td>
+                          </tr>
+                        );
+                      })()}
                     </tbody>
                   </table>
                 </div>
