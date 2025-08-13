@@ -220,6 +220,9 @@ router.get('/financial-report', verifyToken, async (req, res) => {
     
     // Absolute final safety check - ensure finalProfitMargin is a valid number
     const absoluteFinalProfitMargin = (typeof finalProfitMargin === 'number' && Number.isFinite(finalProfitMargin) && !Number.isNaN(finalProfitMargin)) ? finalProfitMargin : 0;
+    
+    // Super absolute final safety check - ensure absoluteFinalProfitMargin is a valid number
+    const superAbsoluteFinalProfitMargin = (typeof absoluteFinalProfitMargin === 'number' && Number.isFinite(absoluteFinalProfitMargin) && !Number.isNaN(absoluteFinalProfitMargin)) ? absoluteFinalProfitMargin : 0;
 
     res.json({
       period: period,
@@ -252,8 +255,8 @@ router.get('/financial-report', verifyToken, async (req, res) => {
       },
       profit: {
         total: totalProfit,
-        margin: absoluteFinalProfitMargin,
-        percentage: absoluteFinalProfitMargin.toFixed(2)
+        margin: superAbsoluteFinalProfitMargin,
+        percentage: superAbsoluteFinalProfitMargin.toFixed(2)
       }
     });
   } catch (error) {
