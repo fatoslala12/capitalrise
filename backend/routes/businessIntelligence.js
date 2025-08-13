@@ -77,14 +77,14 @@ router.get('/financial-report', verifyToken, async (req, res) => {
     let params = [];
     
     if (startDate && endDate) {
-      dateFilter = 'WHERE wh.date >= $1 AND wh.date <= $2';
+      dateFilter = 'WHERE date >= $1 AND date <= $2';
       params = [startDate, endDate];
     } else if (period === 'month') {
-      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'1 month\'';
+      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 month\'';
     } else if (period === 'quarter') {
-      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'3 months\'';
+      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'3 months\'';
     } else if (period === 'year') {
-      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'1 year\'';
+      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 year\'';
     }
 
     // Total revenue from contracts
@@ -95,7 +95,7 @@ router.get('/financial-report', verifyToken, async (req, res) => {
         COUNT(CASE WHEN c.status = 'Mbyllur' THEN 1 END) as completed_contracts,
         COUNT(CASE WHEN c.status = 'Ne progres' THEN 1 END) as active_contracts
       FROM contracts c
-      ${dateFilter.replace('wh.date', 'c.created_at')}
+      ${dateFilter.replace('date', 'c.created_at')}
     `;
     
     // Total expenses
@@ -106,7 +106,7 @@ router.get('/financial-report', verifyToken, async (req, res) => {
         COUNT(CASE WHEN ei.paid = true THEN 1 END) as paid_expenses,
         COUNT(CASE WHEN ei.paid = false THEN 1 END) as unpaid_expenses
       FROM expenses_invoices ei
-      ${dateFilter.replace('wh.date', 'ei.date')}
+      ${dateFilter.replace('date', 'ei.date')}
     `;
     
     // Work hours costs
@@ -116,7 +116,7 @@ router.get('/financial-report', verifyToken, async (req, res) => {
         COALESCE(SUM(wh.hours), 0) as total_hours,
         COUNT(DISTINCT wh.employee_id) as active_employees
       FROM work_hours wh
-      ${dateFilter}
+      ${dateFilter.replace('date', 'wh.date')}
     `;
     
     // Invoice status
@@ -128,7 +128,7 @@ router.get('/financial-report', verifyToken, async (req, res) => {
         COALESCE(SUM(CASE WHEN i.paid = true THEN i.total ELSE 0 END), 0) as paid_amount,
         COALESCE(SUM(CASE WHEN i.paid = false THEN i.total ELSE 0 END), 0) as unpaid_amount
       FROM invoices i
-      ${dateFilter.replace('wh.date', 'i.created_at')}
+      ${dateFilter.replace('date', 'i.created_at')}
     `;
 
     const [revenueResult, expensesResult, workHoursResult, invoicesResult] = await Promise.all([
@@ -337,7 +337,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
       FROM contracts c
       LEFT JOIN work_hours wh ON c.contract_number = wh.contract_id
       LEFT JOIN expenses_invoices ei ON c.contract_number = ei.contract_number
-      ${statusFilter}
+      ${statusFilter ? statusFilter : ''}
       GROUP BY c.contract_number, c.site_name, c.contract_value, c.status, c.start_date, c.end_date
       ORDER BY c.contract_value DESC
     `;
@@ -434,11 +434,11 @@ router.get('/export-data', verifyToken, async (req, res) => {
     
     let dateFilter = '';
     if (period === 'month') {
-      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'1 month\'';
+      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 month\'';
     } else if (period === 'quarter') {
-      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'3 months\'';
+      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'3 months\'';
     } else if (period === 'year') {
-      dateFilter = 'WHERE wh.date >= CURRENT_DATE - INTERVAL \'1 year\'';
+      dateFilter = 'WHERE date >= CURRENT_DATE - INTERVAL \'1 year\'';
     }
 
     let data = [];
@@ -457,7 +457,7 @@ router.get('/export-data', verifyToken, async (req, res) => {
             (wh.hours * wh.rate) as total_cost
           FROM work_hours wh
           JOIN employees e ON wh.employee_id = e.id
-          ${dateFilter}
+          ${dateFilter.replace('date', 'wh.date')}
           ORDER BY wh.date DESC
         `;
         const workHoursResult = await pool.query(workHoursQuery);
@@ -475,7 +475,7 @@ router.get('/export-data', verifyToken, async (req, res) => {
             ei.date,
             ei.contract_number
           FROM expenses_invoices ei
-          ${dateFilter}
+          ${dateFilter.replace('date', 'ei.date')}
           ORDER BY ei.date DESC
         `;
         const expensesResult = await pool.query(expensesQuery);
@@ -615,8 +615,8 @@ router.get('/weekly-profit', verifyToken, async (req, res) => {
   }
 });
 
-// Financial report endpoint
-router.get('/financial-report', verifyToken, async (req, res) => {
+// Financial report endpoint (simplified)
+router.get('/financial-report-simple', verifyToken, async (req, res) => {
   try {
     const { period = 'month', startDate, endDate } = req.query;
     
@@ -657,8 +657,8 @@ router.get('/financial-report', verifyToken, async (req, res) => {
   }
 });
 
-// Site performance endpoint
-router.get('/site-performance', verifyToken, async (req, res) => {
+// Site performance endpoint (simplified)
+router.get('/site-performance-simple', verifyToken, async (req, res) => {
   try {
     const { period = 'month' } = req.query;
     
@@ -695,8 +695,8 @@ router.get('/site-performance', verifyToken, async (req, res) => {
   }
 });
 
-// Contract performance endpoint
-router.get('/contract-performance', verifyToken, async (req, res) => {
+// Contract performance endpoint (simplified)
+router.get('/contract-performance-simple', verifyToken, async (req, res) => {
   try {
     const { status = '' } = req.query;
     
@@ -715,6 +715,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
         COALESCE(SUM(wh.hours * wh.rate), 0) as total_work_hours_cost,
         COALESCE(c.contract_value - SUM(wh.hours * wh.rate), c.contract_value) as remaining_budget
       FROM contracts c
+      LEFT JOIN expenses_invoices ei ON c.contract_number = ei.contract_number
       LEFT JOIN work_hours wh ON c.contract_number = wh.contract_id
       ${statusFilter}
       GROUP BY c.contract_number, c.contract_value, c.status, c.start_date, c.end_date
@@ -740,8 +741,8 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
   }
 });
 
-// Employee performance endpoint
-router.get('/employee-performance', verifyToken, async (req, res) => {
+// Employee performance endpoint (simplified)
+router.get('/employee-performance-simple', verifyToken, async (req, res) => {
   try {
     const employeeQuery = `
       SELECT 
@@ -778,8 +779,8 @@ router.get('/employee-performance', verifyToken, async (req, res) => {
   }
 });
 
-// Time series data endpoint
-router.get('/time-series', verifyToken, async (req, res) => {
+// Time series data endpoint (simplified)
+router.get('/time-series-simple', verifyToken, async (req, res) => {
   try {
     const timeSeriesQuery = `
       SELECT 
