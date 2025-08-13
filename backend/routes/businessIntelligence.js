@@ -168,7 +168,7 @@ router.get('/financial-report', verifyToken, async (req, res) => {
           COALESCE(SUM(CASE WHEN i.paid = true THEN i.total ELSE 0 END), 0) as paid_amount,
           COALESCE(SUM(CASE WHEN i.paid = false THEN i.total ELSE 0 END), 0) as unpaid_amount
         FROM invoices i
-        WHERE i.created_at >= $1 AND i.created_at <= $2
+        WHERE i.created_on >= $1 AND i.created_on <= $2
       `;
     } else {
       invoicesQuery = `
@@ -179,7 +179,7 @@ router.get('/financial-report', verifyToken, async (req, res) => {
           COALESCE(SUM(CASE WHEN i.paid = true THEN i.total ELSE 0 END), 0) as paid_amount,
           COALESCE(SUM(CASE WHEN i.paid = false THEN i.total ELSE 0 END), 0) as unpaid_amount
         FROM invoices i
-        ${dateFilter.replace('date', 'i.created_at')}
+        ${dateFilter.replace('date', 'i.created_on')}
       `;
     }
 
@@ -387,8 +387,8 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
         COALESCE(SUM(wh.hours), 0) as total_hours,
         COUNT(DISTINCT wh.employee_id) as active_employees
       FROM contracts c
-      LEFT JOIN work_hours wh ON c.contract_number = wh.contract_id
-      LEFT JOIN expenses_invoices ei ON c.contract_number = ei.contract_number
+      LEFT JOIN work_hours wh ON c.contract_number::text = wh.contract_id::text
+      LEFT JOIN expenses_invoices ei ON c.contract_number::text = ei.contract_number::text
       ${statusFilter}
       GROUP BY c.contract_number, c.site_name, c.contract_value, c.status, c.start_date, c.end_date
       ORDER BY c.contract_value DESC
