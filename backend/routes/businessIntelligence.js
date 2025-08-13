@@ -232,7 +232,7 @@ router.get('/financial-report', verifyToken, async (req, res) => {
       profit: {
         total: totalProfit,
         margin: profitMargin,
-        percentage: (profitMargin || 0).toFixed(2)
+        percentage: (isFinite(profitMargin) && !isNaN(profitMargin) ? profitMargin : 0).toFixed(2)
       }
     });
   } catch (error) {
