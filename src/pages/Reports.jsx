@@ -99,7 +99,13 @@ export default function Reports() {
     success: '#22C55E',
     warning: '#F97316',
     info: '#06B6D4',
-    purple: '#8B5CF6'
+    purple: '#8B5CF6',
+    gradient: {
+      blue: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      green: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      purple: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      orange: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+    }
   };
 
   // Fetch comprehensive data
@@ -222,27 +228,29 @@ export default function Reports() {
   }
 
   return (
-    <Container>
-      <div className="mb-8">
+    <Container className="px-4 md:px-6">
+      <div className="mb-6 md:mb-8">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">📊 Raportet e Administrimit</h1>
-              <p className="text-blue-100">Analiza e plotë e performancës dhe eksportimi i të dhënave</p>
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4 md:p-6 text-white mb-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="text-center md:text-left">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">📊 Raportet e Administrimit</h1>
+              <p className="text-blue-100 text-sm md:text-base">Analiza e plotë e performancës dhe eksportimi i të dhënave</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 w-full md:w-auto">
               <Button 
                 onClick={() => setShowFilters(!showFilters)} 
                 variant="secondary"
-                className="bg-white/20 hover:bg-white/30 border-white/30"
+                className="bg-white/20 hover:bg-white/30 border-white/30 text-sm"
               >
                 <Filter className="w-4 h-4 mr-2" />
-                {showFilters ? 'Fsheh Filtra' : 'Shfaq Filtra'}
+                <span className="hidden sm:inline">{showFilters ? 'Fsheh Filtra' : 'Shfaq Filtra'}</span>
+                <span className="sm:hidden">Filtra</span>
               </Button>
-              <Button onClick={fetchData} variant="secondary" className="bg-white/20 hover:bg-white/30 border-white/30">
+              <Button onClick={fetchData} variant="secondary" className="bg-white/20 hover:bg-white/30 border-white/30 text-sm">
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Rifresko
+                <span className="hidden sm:inline">Rifresko</span>
+                <span className="sm:hidden">🔄</span>
               </Button>
             </div>
           </div>
@@ -312,7 +320,7 @@ export default function Reports() {
         )}
 
         {/* Navigation Tabs */}
-        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6">
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6 overflow-x-auto scrollbar-hide">
           {[
             { id: 'overview', label: 'Përmbledhja', icon: BarChart3 },
             { id: 'financial', label: 'Financiare', icon: DollarSign },
@@ -326,14 +334,15 @@ export default function Reports() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all ${
+                className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 rounded-md font-medium transition-all whitespace-nowrap text-xs md:text-sm ${
                   activeTab === tab.id
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                {tab.label}
+                <Icon className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.label.charAt(0)}</span>
               </button>
             );
           })}
@@ -343,81 +352,82 @@ export default function Reports() {
         {activeTab === 'overview' && (
           <div id="overview-section">
             {/* Key Metrics */}
-            <Grid cols={4} gap={6} className="mb-8">
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                <CardContent className="p-6">
+            <Grid cols={1} md:cols={2} lg:cols={4} gap={4} md:gap={6} className="mb-6 md:mb-8">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-blue-600">Total Orë</p>
-                      <p className="text-2xl font-bold text-blue-900">
+                      <p className="text-xs md:text-sm font-medium text-blue-600">Total Orë</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-blue-900">
                         {(financialData?.workHours?.total || 0).toFixed(1)}
                       </p>
                     </div>
-                    <Clock className="w-8 h-8 text-blue-600" />
+                    <Clock className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                <CardContent className="p-6">
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-green-600">Total Fitim</p>
-                      <p className="text-2xl font-bold text-green-900">
+                      <p className="text-xs md:text-sm font-medium text-green-600">Total Fitim</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-green-900">
                         £{(financialData?.profit?.total || 0).toFixed(2)}
                       </p>
                     </div>
-                    <DollarSign className="w-8 h-8 text-green-600" />
+                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                <CardContent className="p-6">
+              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-purple-600">Kontrata Aktive</p>
-                      <p className="text-2xl font-bold text-purple-900">
+                      <p className="text-xs md:text-sm font-medium text-purple-600">Kontrata Aktive</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-purple-900">
                         {financialData?.revenue?.active || '0'}
                       </p>
                     </div>
-                    <Target className="w-8 h-8 text-purple-600" />
+                    <Target className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-                <CardContent className="p-6">
+              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-orange-600">Punonjës Aktive</p>
-                      <p className="text-2xl font-bold text-orange-900">
+                      <p className="text-xs md:text-sm font-medium text-orange-600">Punonjës Aktive</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-orange-900">
                         {financialData?.workHours?.employees || '0'}
                       </p>
                     </div>
-                    <Users className="w-8 h-8 text-orange-600" />
+                    <Users className="w-6 h-6 md:w-8 md:h-8 text-orange-600" />
                   </div>
                 </CardContent>
               </Card>
             </Grid>
 
             {/* Charts */}
-            <Grid cols={2} gap={6} className="mb-8">
-              <Card>
+            <Grid cols={1} lg:cols={2} gap={4} md:gap={6} className="mb-6 md:mb-8">
+              <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle>📈 Aktiviteti i Orëve në Kohë</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">📈 Aktiviteti i Orëve në Kohë</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <AreaChart data={timeSeriesData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="period" stroke="#6b7280" />
-                      <YAxis stroke="#6b7280" />
+                      <XAxis dataKey="period" stroke="#6b7280" fontSize={12} />
+                      <YAxis stroke="#6b7280" fontSize={12} />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
                           border: '1px solid #e5e7eb', 
-                          borderRadius: '8px' 
+                          borderRadius: '8px',
+                          fontSize: '12px'
                         }} 
                       />
                       <Area 
@@ -432,12 +442,12 @@ export default function Reports() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle>📊 Statusi i Faturave</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">📊 Statusi i Faturave</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <PieChart>
                       <Pie
                         data={[
@@ -448,7 +458,7 @@ export default function Reports() {
                         cy="50%"
                         labelLine={false}
                         label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                        outerRadius={80}
+                        outerRadius={60}
                         dataKey="value"
                       />
                       <Tooltip />
@@ -459,38 +469,41 @@ export default function Reports() {
             </Grid>
 
             {/* Export Buttons */}
-            <Card className="mb-8">
+            <Card className="mb-6 md:mb-8 hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle>📤 Eksportimi i Raporteve</CardTitle>
+                <CardTitle className="text-lg md:text-xl">📤 Eksportimi i Raporteve</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
                   <Button 
                     onClick={() => exportToExcel('work-hours')} 
                     variant="primary"
                     disabled={exporting}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
                   >
                     <FileSpreadsheet className="w-4 h-4" />
-                    Eksporto Orët e Punës (Excel)
+                    <span className="hidden sm:inline">Eksporto Orët e Punës (Excel)</span>
+                    <span className="sm:hidden">Eksporto Orët</span>
                   </Button>
                   <Button 
                     onClick={() => exportToExcel('expenses')} 
                     variant="secondary"
                     disabled={exporting}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
                   >
                     <FileSpreadsheet className="w-4 h-4" />
-                    Eksporto Shpenzimet (Excel)
+                    <span className="hidden sm:inline">Eksporto Shpenzimet (Excel)</span>
+                    <span className="sm:hidden">Eksporto Shpenzimet</span>
                   </Button>
                   <Button 
                     onClick={() => exportToPDF('overview-section')} 
                     variant="secondary"
                     disabled={exporting}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
                   >
                     <FileText className="w-4 h-4" />
-                    Eksporto PDF
+                    <span className="hidden sm:inline">Eksporto PDF</span>
+                    <span className="sm:hidden">Eksporto PDF</span>
                   </Button>
                 </div>
               </CardContent>
@@ -501,41 +514,41 @@ export default function Reports() {
         {activeTab === 'financial' && (
           <div id="financial-section">
             {/* Financial Summary */}
-            <Card className="mb-6">
+            <Card className="mb-6 hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle>💰 Përmbledhja Financiare</CardTitle>
+                <CardTitle className="text-lg md:text-xl">💰 Përmbledhja Financiare</CardTitle>
               </CardHeader>
               <CardContent>
-                <Grid cols={3} gap={6}>
-                  <div className="text-center p-6 bg-green-50 rounded-lg border border-green-200">
-                    <DollarSign className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-green-600">
+                <Grid cols={1} md:cols={3} gap={4} md:gap={6}>
+                  <div className="text-center p-4 md:p-6 bg-green-50 rounded-lg border border-green-200 hover:shadow-md transition-all duration-300">
+                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-green-600 mx-auto mb-2" />
+                    <div className="text-xl md:text-2xl font-bold text-green-600">
                       £{(financialData?.revenue?.total || 0).toFixed(2)}
                     </div>
-                    <div className="text-sm text-green-600">Total Të Ardhura</div>
+                    <div className="text-xs md:text-sm text-green-600">Total Të Ardhura</div>
                   </div>
                   
-                  <div className="text-center p-6 bg-red-50 rounded-lg border border-red-200">
-                    <DollarSign className="w-8 h-8 text-red-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-red-600">
+                  <div className="text-center p-4 md:p-6 bg-red-50 rounded-lg border border-red-200 hover:shadow-md transition-all duration-300">
+                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-red-600 mx-auto mb-2" />
+                    <div className="text-xl md:text-2xl font-bold text-red-600">
                       £{(financialData?.expenses?.total || 0).toFixed(2)}
                     </div>
-                    <div className="text-sm text-red-600">Total Shpenzime</div>
+                    <div className="text-xs md:text-sm text-red-600">Total Shpenzime</div>
                   </div>
                   
-                  <div className="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
-                    <DollarSign className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-center p-4 md:p-6 bg-blue-50 rounded-lg border border-blue-200 hover:shadow-md transition-all duration-300">
+                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-blue-600 mx-auto mb-2" />
+                    <div className="text-xl md:text-2xl font-bold text-blue-600">
                       £{(financialData?.profit?.total || 0).toFixed(2)}
                     </div>
-                    <div className="text-sm text-blue-600">Total Fitim</div>
+                    <div className="text-xs md:text-sm text-blue-600">Total Fitim</div>
                   </div>
                 </Grid>
                 
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <div className="mt-4 md:mt-6 p-3 md:p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-600">Marzhi i Fitimit:</span>
-                    <span className="text-lg font-bold text-green-600">
+                    <span className="text-xs md:text-sm font-medium text-gray-600">Marzhi i Fitimit:</span>
+                    <span className="text-base md:text-lg font-bold text-green-600">
                       {financialData?.profit?.percentage || '0'}%
                     </span>
                   </div>
@@ -544,13 +557,13 @@ export default function Reports() {
             </Card>
 
             {/* Detailed Breakdown */}
-            <Grid cols={2} gap={6} className="mb-8">
-              <Card>
+            <Grid cols={1} lg:cols={2} gap={4} md:gap={6} className="mb-6 md:mb-8">
+              <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle>📊 Shpërndarja e Shpenzimeve</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">📊 Shpërndarja e Shpenzimeve</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <PieChart>
                       <Pie
                         data={[
@@ -561,7 +574,7 @@ export default function Reports() {
                         cy="50%"
                         labelLine={false}
                         label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                        outerRadius={80}
+                        outerRadius={60}
                         dataKey="value"
                       />
                       <Tooltip />
@@ -570,24 +583,25 @@ export default function Reports() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle>📈 Të Ardhurat vs Shpenzimet</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">📈 Të Ardhurat vs Shpenzimet</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <BarChart data={[
                       { category: 'Të Ardhura', value: financialData?.revenue?.total || 0, fill: chartColors.success },
                       { category: 'Shpenzime', value: financialData?.expenses?.total || 0, fill: chartColors.danger }
                     ]}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="category" stroke="#6b7280" />
-                      <YAxis stroke="#6b7280" />
+                      <XAxis dataKey="category" stroke="#6b7280" fontSize={12} />
+                      <YAxis stroke="#6b7280" fontSize={12} />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
                           border: '1px solid #e5e7eb', 
-                          borderRadius: '8px' 
+                          borderRadius: '8px',
+                          fontSize: '12px'
                         }} 
                       />
                       <Bar dataKey="value" />
@@ -602,47 +616,47 @@ export default function Reports() {
         {activeTab === 'employees' && (
           <div id="employees-section">
             {/* Employee Performance Table */}
-            <Card className="mb-6">
+            <Card className="mb-6 hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle>👥 Performanca e Punonjësve</CardTitle>
+                <CardTitle className="text-lg md:text-xl">👥 Performanca e Punonjësve</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="text-left p-3 font-medium text-gray-700">Punonjësi</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Orë Totale</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Fitimi Total</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Ditët e Punës</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Mesatarja/Ditë</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Efikasiteti</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Punonjësi</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden md:table-cell">Orë Totale</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden md:table-cell">Fitimi Total</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden sm:table-cell">Ditët e Punës</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden lg:table-cell">Mesatarja/Ditë</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Efikasiteti</th>
                       </tr>
                     </thead>
                     <tbody>
                       {employeePerformance.map((emp, index) => (
                         <tr key={emp.id} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="p-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-semibold">
+                          <td className="p-2 md:p-3">
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm">
                                 {emp.name.charAt(0)}
                               </div>
-                              <span className="font-medium">{emp.name}</span>
+                              <span className="font-medium text-xs md:text-sm">{emp.name}</span>
                             </div>
                           </td>
-                          <td className="p-3">{(emp.totalHours || 0).toFixed(1)}h</td>
-                          <td className="p-3 font-medium text-green-600">£{(emp.totalEarnings || 0).toFixed(2)}</td>
-                          <td className="p-3">{emp.workingDays || 0}</td>
-                          <td className="p-3">{(emp.avgHoursPerDay || 0).toFixed(1)}h</td>
-                          <td className="p-3">
+                          <td className="p-2 md:p-3 hidden md:table-cell text-xs md:text-sm">{(emp.totalHours || 0).toFixed(1)}h</td>
+                          <td className="p-2 md:p-3 font-medium text-green-600 hidden md:table-cell text-xs md:text-sm">£{(emp.totalEarnings || 0).toFixed(2)}</td>
+                          <td className="p-2 md:p-3 hidden sm:table-cell text-xs md:text-sm">{emp.workingDays || 0}</td>
+                          <td className="p-2 md:p-3 hidden lg:table-cell text-xs md:text-sm">{(emp.avgHoursPerDay || 0).toFixed(1)}h</td>
+                          <td className="p-2 md:p-3">
                             <div className="flex items-center gap-2">
-                              <div className="w-20 bg-gray-200 rounded-full h-2">
+                              <div className="w-16 md:w-20 bg-gray-200 rounded-full h-2">
                                 <div 
                                   className="bg-blue-600 h-2 rounded-full" 
                                   style={{ width: `${Math.min(emp.efficiency || 0, 100)}%` }}
                                 ></div>
                               </div>
-                              <span className="text-sm text-gray-600">{(emp.efficiency || 0).toFixed(1)}%</span>
+                              <span className="text-xs md:text-sm text-gray-600">{(emp.efficiency || 0).toFixed(1)}%</span>
                             </div>
                           </td>
                         </tr>
@@ -680,37 +694,37 @@ export default function Reports() {
         {activeTab === 'sites' && (
           <div id="sites-section">
             {/* Site Performance Cards */}
-            <Grid cols={3} gap={6} className="mb-8">
+            <Grid cols={1} md:cols={2} lg:cols={3} gap={4} md:gap={6} className="mb-6 md:mb-8">
               {sitePerformance.map((site, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
+                <Card key={index} className="hover:shadow-lg transition-all duration-300">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Building2 className="w-5 h-5 text-blue-600" />
+                    <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                      <Building2 className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
                       {site.site}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
+                    <div className="space-y-2 md:space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Total Orë:</span>
-                        <span className="font-medium">{(site.totalHours || 0).toFixed(1)}h</span>
+                        <span className="text-xs md:text-sm text-gray-600">Total Orë:</span>
+                        <span className="font-medium text-xs md:text-sm">{(site.totalHours || 0).toFixed(1)}h</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Kosto e Punës:</span>
-                        <span className="font-medium text-blue-600">£{(site.totalLaborCost || 0).toFixed(2)}</span>
+                        <span className="text-xs md:text-sm text-gray-600">Kosto e Punës:</span>
+                        <span className="font-medium text-blue-600 text-xs md:text-sm">£{(site.totalLaborCost || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Shpenzime:</span>
-                        <span className="font-medium text-red-600">£{(site.totalExpenses || 0).toFixed(2)}</span>
+                        <span className="text-xs md:text-sm text-gray-600">Shpenzime:</span>
+                        <span className="font-medium text-red-600 text-xs md:text-sm">£{(site.totalExpenses || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Punonjës:</span>
-                        <span className="font-medium">{site.activeEmployees || 0}</span>
+                        <span className="text-xs md:text-sm text-gray-600">Punonjës:</span>
+                        <span className="font-medium text-xs md:text-sm">{site.activeEmployees || 0}</span>
                       </div>
                       <div className="pt-2 border-t border-gray-100">
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Efikasiteti:</span>
-                          <span className="font-medium text-green-600">{(site.efficiency || 0).toFixed(1)}%</span>
+                          <span className="text-xs md:text-sm text-gray-600">Efikasiteti:</span>
+                          <span className="font-medium text-green-600 text-xs md:text-sm">{(site.efficiency || 0).toFixed(1)}%</span>
                         </div>
                       </div>
                     </div>
@@ -724,23 +738,23 @@ export default function Reports() {
         {activeTab === 'contracts' && (
           <div id="contracts-section">
             {/* Contract Performance Table */}
-            <Card className="mb-6">
+            <Card className="mb-6 hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle>📄 Performanca e Kontratave</CardTitle>
+                <CardTitle className="text-lg md:text-xl">📄 Performanca e Kontratave</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="text-left p-3 font-medium text-gray-700">Kontrata</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Site</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Vlera</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Statusi</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Kosto e Përgjithshme</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Fitimi</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Marzhi</th>
-                        <th className="text-left p-3 font-medium text-gray-700">Përfundimi</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Kontrata</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden md:table-cell">Site</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Vlera</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Statusi</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden lg:table-cell">Kosto e Përgjithshme</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Fitimi</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden xl:table-cell">Marzhi</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Përfundimi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -752,53 +766,53 @@ export default function Reports() {
                           contractPerformance.map((contract, index) => {
                             console.log('Rendering contract:', contract, 'at index:', index);
                             return (
-                              <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                                <td className="p-3 font-medium">{(() => {
-                                  console.log('contract.contractNumber:', contract.contractNumber);
-                                  return contract.contractNumber;
-                                })()}</td>
-                                <td className="p-3">{(() => {
-                                  console.log('contract.siteName:', contract.siteName);
-                                  return contract.siteName;
-                                })()}</td>
-                                <td className="p-3 font-medium">£{(() => {
-                                  console.log('contract.contractValue:', contract.contractValue, 'type:', typeof contract.contractValue);
-                                  return (contract.contractValue || 0).toFixed(2);
-                                })()}</td>
-                                <td className="p-3">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    contract.status === 'Mbyllur' ? 'bg-green-100 text-green-800' :
-                                    contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-800' :
-                                    'bg-gray-100 text-gray-800'
-                                  }`}>
-                                    {contract.status || 'Aktive'}
-                                  </span>
-                                </td>
-                                <td className="p-3">£{(contract.totalSpent || 0).toFixed(2)}</td>
-                                <td className={`p-3 font-medium ${
-                                  (contract.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'
-                                }`}>
-                                  £{(contract.profit || 0).toFixed(2)}
-                                </td>
-                                <td className="p-3">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    (contract.profitMargin || 0) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                  }`}>
-                                    {(contract.profitMargin || 0).toFixed(1)}%
-                                  </span>
-                                </td>
-                                <td className="p-3">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                                      <div 
-                                        className="bg-blue-600 h-2 rounded-full" 
-                                        style={{ width: `${contract.completion || 0}%` }}
-                                      ></div>
-                                    </div>
-                                    <span className="text-sm text-gray-600">{(contract.completion || 0).toFixed(0)}%</span>
-                                  </div>
-                                </td>
-                              </tr>
+                                                        <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="p-2 md:p-3 font-medium text-xs md:text-sm">{(() => {
+                              console.log('contract.contractNumber:', contract.contractNumber);
+                              return contract.contractNumber;
+                            })()}</td>
+                            <td className="p-2 md:p-3 hidden md:table-cell text-xs md:text-sm">{(() => {
+                              console.log('contract.siteName:', contract.siteName);
+                              return contract.siteName;
+                            })()}</td>
+                            <td className="p-2 md:p-3 font-medium text-xs md:text-sm">£{(() => {
+                              console.log('contract.contractValue:', contract.contractValue, 'type:', typeof contract.contractValue);
+                              return (contract.contractValue || 0).toFixed(2);
+                            })()}</td>
+                            <td className="p-2 md:p-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                contract.status === 'Mbyllur' ? 'bg-green-100 text-green-800' :
+                                contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {contract.status || 'Aktive'}
+                              </span>
+                            </td>
+                            <td className="p-2 md:p-3 hidden lg:table-cell text-xs md:text-sm">£{(contract.totalSpent || 0).toFixed(2)}</td>
+                            <td className={`p-2 md:p-3 font-medium text-xs md:text-sm ${
+                              (contract.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                            }`}>
+                              £{(contract.profit || 0).toFixed(2)}
+                            </td>
+                            <td className="p-2 md:p-3 hidden xl:table-cell">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                (contract.profitMargin || 0) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {(contract.profitMargin || 0).toFixed(1)}%
+                              </span>
+                            </td>
+                            <td className="p-2 md:p-3">
+                              <div className="flex items-center gap-2">
+                                <div className="w-12 md:w-16 bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className="bg-blue-600 h-2 rounded-full" 
+                                    style={{ width: `${contract.completion || 0}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-xs md:text-sm text-gray-600">{(contract.completion || 0).toFixed(0)}%</span>
+                              </div>
+                            </td>
+                          </tr>
                             );
                           })
                         ) : (
@@ -816,24 +830,26 @@ export default function Reports() {
             </Card>
 
             {/* Export Buttons */}
-            <div className="flex gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-6 md:mb-8">
               <Button 
                 onClick={() => exportToExcel('contracts')} 
                 variant="primary"
                 disabled={exporting}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
               >
                 <FileSpreadsheet className="w-4 h-4" />
-                Eksporto Excel
+                <span className="hidden sm:inline">Eksporto Excel</span>
+                <span className="sm:hidden">Eksporto Excel</span>
               </Button>
               <Button 
                 onClick={() => exportToPDF('contracts-section')} 
                 variant="secondary"
                 disabled={exporting}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
               >
                 <FileText className="w-4 h-4" />
-                Eksporto PDF
+                <span className="hidden sm:inline">Eksporto PDF</span>
+                <span className="sm:hidden">Eksporto PDF</span>
               </Button>
             </div>
           </div>
@@ -842,22 +858,23 @@ export default function Reports() {
         {activeTab === 'analytics' && (
           <div id="analytics-section">
             {/* Advanced Analytics */}
-            <Grid cols={2} gap={6} className="mb-8">
-              <Card>
+            <Grid cols={1} lg:cols={2} gap={4} md:gap={6} className="mb-6 md:mb-8">
+              <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle>📊 Analiza e Trendit</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">📊 Analiza e Trendit</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <LineChart data={timeSeriesData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="period" stroke="#6b7280" />
-                      <YAxis stroke="#6b7280" />
+                      <XAxis dataKey="period" stroke="#6b7280" fontSize={12} />
+                      <YAxis stroke="#6b7280" fontSize={12} />
                       <Tooltip 
                         contentStyle={{ 
                           background: '#ffffff', 
                           border: '1px solid #e5e7eb', 
-                          borderRadius: '8px' 
+                          borderRadius: '8px',
+                          fontSize: '12px'
                         }} 
                       />
                       <Line 
@@ -872,12 +889,12 @@ export default function Reports() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle>🎯 Metrikat e Performancës</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">🎯 Metrikat e Performancës</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <RadarChart data={[
                       { metric: 'Orët', value: 85, fullMark: 100 },
                       { metric: 'Efikasiteti', value: 78, fullMark: 100 },
@@ -886,8 +903,8 @@ export default function Reports() {
                       { metric: 'Punonjësit', value: 95, fullMark: 100 }
                     ]}>
                       <PolarGrid stroke="#e5e7eb" />
-                      <PolarAngleAxis dataKey="metric" stroke="#6b7280" />
-                      <PolarRadiusAxis stroke="#6b7280" />
+                      <PolarAngleAxis dataKey="metric" stroke="#6b7280" fontSize={12} />
+                      <PolarRadiusAxis stroke="#6b7280" fontSize={12} />
                       <Radar 
                         name="Performanca" 
                         dataKey="value" 
