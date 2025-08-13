@@ -206,6 +206,11 @@ router.get('/financial-report', verifyToken, async (req, res) => {
         profitMargin = 0;
       }
     }
+    
+    // Ensure profitMargin is always a valid number
+    if (typeof profitMargin !== 'number' || !isFinite(profitMargin) || isNaN(profitMargin)) {
+      profitMargin = 0;
+    }
 
     res.json({
       period: period,
@@ -239,7 +244,7 @@ router.get('/financial-report', verifyToken, async (req, res) => {
       profit: {
         total: totalProfit,
         margin: profitMargin,
-        percentage: profitMargin.toFixed(2)
+        percentage: (typeof profitMargin === 'number' && isFinite(profitMargin) && !isNaN(profitMargin) ? profitMargin : 0).toFixed(2)
       }
     });
   } catch (error) {
