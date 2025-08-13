@@ -1,4 +1,4 @@
-const pool = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 const { sendInvoiceEmail, sendContractDetailsEmail } = require('../services/emailService');
 
 exports.getInvoicesByContract = async (req, res) => {

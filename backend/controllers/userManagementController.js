@@ -1,4 +1,4 @@
-const pool = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 const bcrypt = require('bcryptjs');
 const { createError } = require('../middleware/errorHandler');
 const { sendWelcomeEmail, sendNotificationEmail, testEmailService, getServiceStatus } = require('../services/emailService');

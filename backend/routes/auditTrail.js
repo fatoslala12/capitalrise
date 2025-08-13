@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 const { verifyToken } = require('../middleware/auth');
 
 // Get all audit logs with pagination and filtering
@@ -56,7 +56,7 @@ router.get('/', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
 
-    const [logs] = await db.execute(query, params);
+    const [logs] = await pool.query(query, params);
 
     // Get total count for pagination
     let countQuery = `
@@ -94,7 +94,7 @@ router.get('/', verifyToken, async (req, res) => {
       countParams.push(dateTo + ' 23:59:59');
     }
 
-    const [countResult] = await db.execute(countQuery, countParams);
+    const [countResult] = await pool.query(countQuery, countParams);
     const total = countResult[0].total;
 
     res.json({
@@ -126,7 +126,7 @@ router.post('/', verifyToken, async (req, res) => {
       VALUES (?, ?, ?, ?, NOW(), ?)
     `;
 
-    await db.execute(query, [
+    await pool.query(query, [
       action,
       module,
       description,
@@ -170,7 +170,7 @@ router.get('/stats', verifyToken, async (req, res) => {
       GROUP BY action
       ORDER BY count DESC
     `;
-    const [actionStats] = await db.execute(actionStatsQuery, params);
+    const [actionStats] = await pool.query(actionStatsQuery, params);
 
     // Module statistics
     const moduleStatsQuery = `
@@ -180,7 +180,7 @@ router.get('/stats', verifyToken, async (req, res) => {
       GROUP BY module
       ORDER BY count DESC
     `;
-    const [moduleStats] = await db.execute(moduleStatsQuery, params);
+    const [moduleStats] = await pool.query(moduleStatsQuery, params);
 
     // User statistics
     const userStatsQuery = `
@@ -195,7 +195,7 @@ router.get('/stats', verifyToken, async (req, res) => {
       ORDER BY count DESC
       LIMIT 10
     `;
-    const [userStats] = await db.execute(userStatsQuery, params);
+    const [userStats] = await pool.query(userStatsQuery, params);
 
     res.json({
       actionStats,

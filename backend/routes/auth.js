@@ -1,7 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 // const bcrypt = require("bcryptjs"); // Komentohet për test
-const pool = require("../db");
+const { pool } = require("../db"); // Updated to use new structure
 const { authAuditMiddleware } = require("../middleware/audit");
 require("dotenv").config();
 

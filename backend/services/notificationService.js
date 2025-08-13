@@ -1,5 +1,5 @@
 require('dotenv').config();
-const pool = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 const { Resend } = require('resend');
 
 // Inicializo Resend me API keys të ndryshme për secilin email

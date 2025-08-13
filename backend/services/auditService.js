@@ -1,4 +1,4 @@
-const pool = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 
 class AuditService {
   constructor() {
@@ -110,7 +110,33 @@ class AuditService {
   }
 
   // Log login events
-  async logLogin(userId, userEmail, userRole, ipAddress, userAgent, success = true) {
+  async logLogin(userId, userEmail, userRole, ipAddress, userAgent, success = true, metadata = null) {
+    let loginMetadata = metadata || { success };
+    
+    if (success) {
+      // For successful logins, include user details
+      loginMetadata = {
+        ...loginMetadata,
+        success: {
+          id: userId,
+          role: userRole,
+          email: userEmail,
+          employee_id: null // This could be enhanced later
+        }
+      };
+    } else {
+      // For failed logins, include failure details
+      loginMetadata = {
+        ...loginMetadata,
+        failure: {
+          attemptedEmail: userEmail,
+          reason: 'Kredencialet e gabuara',
+          timestamp: new Date().toISOString(),
+          ipAddress: ipAddress
+        }
+      };
+    }
+
     return this.logAuditEvent({
       userId,
       userEmail,
@@ -122,7 +148,7 @@ class AuditService {
       userAgent,
       severity: success ? 'info' : 'warning',
       description: success ? 'Përdoruesi u logua me sukses' : 'Tentativë e dështuar e login',
-      metadata: { success }
+      metadata: loginMetadata
     });
   }
 

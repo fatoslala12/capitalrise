@@ -19,7 +19,7 @@ async function runScheduledBackup() {
     
     // Dërgo notification për të gjithë adminët
     try {
-      const pool = require('../db');
+      const { pool } = require('../db');
       const adminUsers = await pool.query("SELECT id FROM users WHERE role = 'admin'");
       
       for (const admin of adminUsers.rows) {
@@ -55,7 +55,7 @@ async function runScheduledBackup() {
     
     // Dërgo notification për gabimin
     try {
-      const pool = require('../db');
+      const { pool } = require('../db');
       const adminUsers = await pool.query("SELECT id FROM users WHERE role = 'admin'");
       
       for (const admin of adminUsers.rows) {
@@ -114,7 +114,7 @@ async function verifyBackups() {
       
       // Dërgo alert për adminët
       try {
-        const pool = require('../db');
+        const { pool } = require('../db');
         const adminUsers = await pool.query("SELECT id FROM users WHERE role = 'admin'");
         
         for (const admin of adminUsers.rows) {

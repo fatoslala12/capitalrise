@@ -47,8 +47,7 @@ exports.reportError = async (req, res) => {
     // Dërgo notification për adminët për errors kritike
     if (message.includes('Critical') || message.includes('Fatal') || stack?.includes('TypeError')) {
       try {
-        const pool = require('../db');
-        const result = await pool.query(`
+        const result = await require('../db').pool.query(`
           SELECT id, email FROM users WHERE role = 'admin' AND status = 'active'
         `);
 
@@ -93,7 +92,7 @@ exports.getErrorStats = async (req, res) => {
   try {
     const { days = 7 } = req.query;
     
-    const result = await pool.query(`
+    const result = await require('../db').pool.query(`
       SELECT 
         DATE(timestamp) as date,
         action,
@@ -150,7 +149,7 @@ exports.getRecentErrors = async (req, res) => {
   try {
     const { limit = 50, hours = 24 } = req.query;
     
-    const result = await pool.query(`
+    const result = await require('../db').pool.query(`
       SELECT *
       FROM audit_trail
       WHERE action IN ('FRONTEND_ERROR', 'ERROR_CRITICAL')
@@ -180,7 +179,7 @@ exports.cleanupOldErrors = async (req, res) => {
   try {
     const { days = 30 } = req.body;
     
-    const result = await pool.query(`
+    const result = await require('../db').pool.query(`
       DELETE FROM audit_trail
       WHERE action IN ('FRONTEND_ERROR', 'ERROR_CRITICAL')
       AND timestamp < NOW() - INTERVAL '${days} days'
@@ -211,7 +210,7 @@ exports.getErrorDetails = async (req, res) => {
   try {
     const { errorId } = req.params;
     
-    const result = await pool.query(`
+    const result = await require('../db').pool.query(`
       SELECT *
       FROM audit_trail
       WHERE metadata::text LIKE $1
@@ -249,7 +248,7 @@ exports.getErrorTrends = async (req, res) => {
   try {
     const { days = 7 } = req.query;
     
-    const result = await pool.query(`
+    const result = await require('../db').pool.query(`
       SELECT 
         DATE(timestamp) as date,
         HOUR(timestamp) as hour,

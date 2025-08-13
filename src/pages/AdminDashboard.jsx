@@ -1,34 +1,21 @@
 // src/pages/AdminDashboard.jsx
-console.log('[FILE LOADED] AdminDashboard.jsx file is being loaded...');
-
 import { useEffect, useState } from "react";
-console.log('[IMPORT] React hooks imported successfully');
-
 import api from "../api";
-console.log('[IMPORT] API imported successfully');
-
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie, Cell as PieCell
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie, Legend
 } from "recharts";
-console.log('[IMPORT] Recharts imported successfully');
-
 import LoadingSpinner from "../components/ui/LoadingSpinner";
-console.log('[IMPORT] LoadingSpinner imported successfully');
-
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
-console.log('[IMPORT] Card components imported successfully');
-
 import { Container, Grid, Stack } from "../components/ui/Layout";
-console.log('[IMPORT] Layout components imported successfully');
-
 import { CountStatCard, MoneyStatCard } from "../components/ui/StatCard";
-console.log('[IMPORT] StatCard components imported successfully');
-
 import { StatusBadge, PaymentBadge } from "../components/ui/Badge";
-console.log('[IMPORT] Badge components imported successfully');
-
 import EmptyState, { NoTasksEmpty } from "../components/ui/EmptyState";
-console.log('[IMPORT] EmptyState components imported successfully');
+
+// Global color palette for charts
+const CHART_COLORS = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"];
+
+// Stronger colors for status charts (better readability)
+const STATUS_CHART_COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899"];
 
 // Funksion për të kthyer snake_case në camelCase për një objekt ose array
 function snakeToCamel(obj) {
@@ -46,9 +33,6 @@ function snakeToCamel(obj) {
 }
 
 export default function AdminDashboard() {
-  console.log('[TEST] AdminDashboard component is loading...');
-  console.log('[TEST] Component name is correct now');
-  
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
@@ -72,22 +56,19 @@ export default function AdminDashboard() {
   const [weeklyProfitData, setWeeklyProfitData] = useState([]);
   const [allExpenses, setAllExpenses] = useState([]);
   const [structuredWorkHours, setStructuredWorkHours] = useState({});
+  const [allPayments, setAllPayments] = useState([]);
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
   // useEffect për të marrë të dhënat dhe llogaritë dashboard stats
   useEffect(() => {
-    console.log('[DEBUG] === AdminDashboard useEffect STARTED ===');
-    
     const fetchData = async () => {
       try {
-        console.log('[DEBUG] fetchData function started');
         setLoading(true);
         
         // Kontrollo nëse ka token
         const token = localStorage.getItem("token");
-        console.log('[DEBUG] Token found:', !!token);
         
         if (!token) {
           console.warn('[WARNING] No token found, dashboard will show empty data');
@@ -111,13 +92,10 @@ export default function AdminDashboard() {
           return;
         }
         
-        console.log('[DEBUG] Starting API calls...');
-        
         // Merr të gjitha të dhënat paralelisht me error handling
         let contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes;
         
         try {
-          console.log('[DEBUG] Making Promise.all API calls...');
           [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
             api.get("/api/contracts"),
             api.get("/api/employees"),
@@ -127,7 +105,6 @@ export default function AdminDashboard() {
             api.get("/api/payments"),
             api.get("/api/work-hours/structured"),
           ]);
-          console.log('[DEBUG] All API calls completed successfully');
         } catch (apiError) {
           console.error('[ERROR] API call failed:', apiError);
           // Nëse API call dështon, përdor të dhëna bosh
@@ -140,8 +117,6 @@ export default function AdminDashboard() {
           workHoursRes = { data: {} };
         }
         
-        console.log('[DEBUG] Processing API responses...');
-        
         setContracts(snakeToCamel(contractsRes.data || []));
         setEmployees(snakeToCamel(employeesRes.data || []));
         
@@ -151,20 +126,11 @@ export default function AdminDashboard() {
         const allPayments = snakeToCamel(paymentsRes.data || []);
         const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
         
-        console.log('[DEBUG] Data processed:', {
-          contracts: contractsRes.data?.length || 0,
-          employees: employeesRes.data?.length || 0,
-          invoices: invoices.length,
-          tasks: allTasksData.length,
-          expenses: allExpenses.length,
-          payments: allPayments.length,
-          workHours: Object.keys(structuredWorkHours).length
-        });
-        
         setAllExpenses(allExpenses);
         setStructuredWorkHours(structuredWorkHours);
         
-        console.log('[DEBUG] Starting week calculation...');
+        // Store allPayments in component state for use in charts
+        setAllPayments(allPayments);
         
         // Calculate current week - FIXED to match backend getWeekLabel exactly
         const today = new Date();
@@ -189,14 +155,6 @@ export default function AdminDashboard() {
         
         const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
         
-        console.log('[DEBUG] Frontend week calculation:');
-        console.log('[DEBUG] - today:', today.toISOString().slice(0, 10));
-        console.log('[DEBUG] - day of week:', day);
-        console.log('[DEBUG] - calculated diff:', diff);
-        console.log('[DEBUG] - monday:', monday.toISOString().slice(0, 10));
-        console.log('[DEBUG] - sunday:', sunday.toISOString().slice(0, 10));
-        console.log('[DEBUG] - thisWeek:', thisWeek);
-        
         // Gjej javën e fundit që ka të dhëna
         let weekToUse = thisWeek;
         let weekHasData = false;
@@ -215,31 +173,14 @@ export default function AdminDashboard() {
           }
         }
         
-        console.log('[DEBUG] - thisWeek (current):', thisWeek);
-        console.log('[DEBUG] - weekToUse (with data):', weekToUse);
-        console.log('[DEBUG] - weekHasData:', weekHasData);
-        
-        // Llogarit dashboard stats manualisht
-        console.log('[DEBUG] Dashboard data received:');
-        console.log('[DEBUG] - contracts:', contractsRes.data?.length || 0);
-        console.log('[DEBUG] - employees:', employeesRes.data?.length || 0);
-        console.log('[DEBUG] - invoices:', invoicesRes.data?.length || 0);
-        console.log('[DEBUG] - tasks:', tasksRes.data?.length || 0);
-        console.log('[DEBUG] - expenses:', expensesRes.data?.length || 0);
-        console.log('[DEBUG] - payments:', paymentsRes.data?.length || 0);
-        console.log('[DEBUG] - workHours:', Object.keys(workHoursRes.data || {}).length);
-        
         // Gjej pagesat për këtë javë
         const thisWeekPayments = allPayments.filter(p => (p.weekLabel || p.week_label) === weekToUse);
-        console.log('[DEBUG] - thisWeekPayments:', thisWeekPayments.length);
         
         // Gjej pagesat e paguara për këtë javë
         const paidThisWeek = thisWeekPayments.filter(p => (p.isPaid || p.is_paid) === true);
-        console.log('[DEBUG] - paidThisWeek:', paidThisWeek.length);
         
         // Llogarit totalin e paguar
         const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || p.gross_amount || 0), 0);
-        console.log('[DEBUG] - totalPaid:', totalPaid);
         
         // Llogarit orët e punuara për këtë javë
         let totalWorkHours = 0;
@@ -247,7 +188,6 @@ export default function AdminDashboard() {
         
         Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
           const weekData = empData[weekToUse] || {};
-          console.log('[DEBUG] - empId:', empId, 'weekData:', weekData);
           
           Object.values(weekData).forEach(dayData => {
             if (dayData?.hours) {
@@ -259,9 +199,6 @@ export default function AdminDashboard() {
             }
           });
         });
-        
-        console.log('[DEBUG] - totalWorkHours:', totalWorkHours);
-        console.log('[DEBUG] - siteHours:', siteHours);
         
         // Llogarit total gross për këtë javë nga work_hours
         let totalGrossThisWeek = 0;
@@ -286,26 +223,16 @@ export default function AdminDashboard() {
             const emp = employees.find(e => e.id === (p.employeeId || p.employee_id));
             return {
               id: p.employeeId || p.employee_id,
-              name: emp ? `${emp.firstName || emp.first_name || emp.name || 'Unknown'} ${emp.lastName || emp.last_name || ''}` : 'Unknown',
+              employee_id: p.employeeId || p.employee_id, // Add this for consistency
+              name: emp ? `${emp.firstName || emp.first_name || emp.name || 'Unknown'} ${emp.lastName || emp.last_name || ''}`.trim() : 'Unknown',
               grossAmount: parseFloat(p.grossAmount || p.gross_amount || 0),
               isPaid: p.isPaid || p.is_paid,
-              photo: emp?.photo || null
+              photo: emp?.photo || null,
+              // Add these fields for better name display
+              firstName: emp?.firstName || emp?.first_name || '',
+              lastName: emp?.lastName || emp?.last_name || ''
             };
           });
-        
-        console.log('[DEBUG] - top5Employees:', top5Employees);
-        console.log('[DEBUG] - totalGrossThisWeek:', totalGrossThisWeek);
-        
-        // Log all data before setting dashboard stats
-        console.log('[DEBUG] === FINAL DATA BEFORE setDashboardStats ===');
-        console.log('[DEBUG] weekToUse:', weekToUse);
-        console.log('[DEBUG] totalPaid:', totalPaid);
-        console.log('[DEBUG] totalWorkHours:', totalWorkHours);
-        console.log('[DEBUG] totalGrossThisWeek:', totalGrossThisWeek);
-        console.log('[DEBUG] siteHours:', siteHours);
-        console.log('[DEBUG] top5Employees:', top5Employees);
-        console.log('[DEBUG] paidThisWeek.length:', paidThisWeek.length);
-        console.log('[DEBUG] Object.keys(structuredWorkHours).length:', Object.keys(structuredWorkHours).length);
         
         const finalStats = {
           thisWeek: weekToUse,
@@ -322,18 +249,7 @@ export default function AdminDashboard() {
           weekLabel: weekToUse
         };
         
-        console.log('[DEBUG] === CALLING setDashboardStats WITH ===');
-        console.log('[DEBUG] finalStats:', finalStats);
-        
         setDashboardStats(finalStats);
-        
-        console.log('[DEBUG] Final dashboardStats:', {
-          thisWeek: weekToUse,
-          totalPaid: totalPaid,
-          totalWorkHours: totalWorkHours,
-          workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
-          top5Employees: top5Employees
-        });
         
         setAllTasks(allTasksData);
         
@@ -426,10 +342,8 @@ export default function AdminDashboard() {
     return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat..." />;
   }
 
-  const progressBarColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"]; // pastel
-
   return (
-    <div className="max-w-7xl mx-auto px-2 md:px-4 py-6 md:py-10 space-y-6 md:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+    <div className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-8 lg:py-10 space-y-4 md:space-y-8 lg:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
       {/* HEADER MODERN */}
       <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-4 md:px-10 py-4 md:py-6 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
         <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 md:p-3 shadow-sm">
@@ -445,7 +359,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Statistika kryesore */}
-      <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="lg" className="mb-8 md:mb-12">
+      <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="md" className="mb-6 md:mb-12">
         <CountStatCard
           title="Site aktive"
           count={activeSites.length}
@@ -465,17 +379,17 @@ export default function AdminDashboard() {
           icon="⏰"
           color="purple"
         />
-        {/* Pagesa këtë javë */}
+        {/* Pagesa për punëtorët këtë javë */}
         <MoneyStatCard
-          title="Pagesa këtë javë"
-          value={dashboardStats.totalGrossThisWeek || 0}
-          icon="��"
+          title="Pagesa për punëtorët këtë javë"
+          value={`£${dashboardStats.totalPaid || 0}`}
+          icon="💰"
           color="yellow"
         />
       </Grid>
 
       {/* Detyrat - më të dukshme */}
-      <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-4 md:p-8 rounded-xl md:rounded-2xl shadow-xl col-span-full border border-yellow-200">
+      <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-xl col-span-full border border-yellow-200">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📋 Detyrat</h3>
         <div className="mb-4 flex flex-col sm:flex-row gap-2 md:gap-4 items-start sm:items-center">
           <label className="font-medium text-sm md:text-base">Filtro:</label>
@@ -508,7 +422,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Grafik për site */}
-      <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
             📊 Ora të punuara këtë javë sipas site-ve
           </h3>
@@ -516,13 +430,17 @@ export default function AdminDashboard() {
           Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
         </div>
         {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
-          <ResponsiveContainer width="100%" height={350}>
+          <ResponsiveContainer width="100%" height={450}>
             <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
-              <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#3b82f6' }} />
-              <Tooltip />
-              <Bar dataKey="hours" fill="#3b82f6" radius={[0, 6, 6, 0]} barSize={30} />
+              <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
+              <Tooltip formatter={v => [v, "Orë"]} />
+              <Bar dataKey="hours" radius={[0, 6, 6, 0]} barSize={32}>
+                {dashboardStats.workHoursBysite.map((_, i) => (
+                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (
@@ -531,10 +449,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* Grafik për progresin e kontratave aktive */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 Progresi i kontratave aktive (%)</h3>
         {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
-          <ResponsiveContainer width="100%" height={350}>
+          <ResponsiveContainer width="100%" height={450}>
             <BarChart
               data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
                 const start = c.startDate ? new Date(c.startDate) : (c.start_date ? new Date(c.start_date) : null);
@@ -559,7 +477,7 @@ export default function AdminDashboard() {
               <Tooltip formatter={v => [`${v}%`, "Progresi"]} />
               <Bar dataKey="progress" radius={[0, 6, 6, 0]} barSize={30}>
                 {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map((_, i) => (
-                  <Cell key={i} fill={progressBarColors[i % progressBarColors.length]} />
+                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                 ))}
               </Bar>
             </BarChart>
@@ -570,7 +488,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Top 5 më të paguar */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
             🏅 Top 5 punonjësit më të paguar
           </h3>
@@ -578,20 +496,57 @@ export default function AdminDashboard() {
           <ul className="space-y-3 text-gray-800">
             {dashboardStats.top5Employees.map((e, i) => {
               const amount = e.grossAmount ?? e.amount ?? 0;
-              const photoSrc = e.photo
-                ? e.photo.startsWith('data:image')
-                  ? e.photo
-                  : e.photo
+              
+              // Merr të dhënat e plota të punonjësit nga employees array
+              const employeeData = employees.find(emp => emp.id === e.employee_id || emp.id === e.id);
+              
+              const employeeName = employeeData 
+                ? `${employeeData.firstName || employeeData.first_name || employeeData.user_first_name || ''} ${employeeData.lastName || employeeData.last_name || employeeData.user_last_name || ''}`.trim()
+                : e.name || 'Unknown';
+              
+              // Use the name from the top5Employees data if available
+              const displayName = e.firstName && e.lastName 
+                ? `${e.firstName} ${e.lastName}`.trim()
+                : employeeName;
+              
+              const photoSrc = employeeData?.photo
+                ? employeeData.photo.startsWith('data:image')
+                  ? employeeData.photo
+                  : employeeData.photo
                 : '/placeholder.png';
+              
               return (
                 <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
                   <div className="relative w-14 h-14">
-                    <img src={photoSrc} alt="foto" className="w-full h-full rounded-full object-cover border-2 border-blue-300 shadow" />
+                    {employeeData?.photo ? (
+                      <img 
+                        src={photoSrc} 
+                        alt={displayName} 
+                        className="w-full h-full rounded-full object-cover border-2 border-blue-300 shadow"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className={`w-full h-full rounded-full border-2 border-blue-300 shadow flex items-center justify-center text-blue-600 font-bold text-lg ${employeeData?.photo ? 'hidden' : 'flex'}`}
+                      style={{
+                        background: '#e0e7ef',
+                        display: employeeData?.photo ? 'none' : 'flex'
+                      }}
+                    >
+                      {displayName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()}
+                    </div>
                     <span className="absolute -top-2 -left-2 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">{i + 1}</span>
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-lg">
-                      {e.name}
+                      {displayName}
                     </p>
                     <p className="text-sm text-gray-600">
                       {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
@@ -611,43 +566,53 @@ export default function AdminDashboard() {
       
 
       {/* Grafik për shpenzimet sipas site-ve */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet sipas Site-ve</h3>
-        <ShpenzimePerSiteChart allExpenses={allExpenses} structuredWorkHours={structuredWorkHours} contracts={contracts} />
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet (expenses_invoice.gross) + Orët e Punës (work_hours.hours × rate) sipas Site-ve</h3>
+        <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} structuredWorkHours={structuredWorkHours} allPayments={allPayments} />
       </div>
 
       {/* Grafik për statusin e kontratave */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i kontratave</h3>
         <StatusiKontrataveChart contracts={contracts} />
       </div>
 
       {/* Grafik për pagesat javore */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore për stafin</h3>
         {weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
-          <ResponsiveContainer width="100%" height={350}>
+          <ResponsiveContainer width="100%" height={450}>
             <BarChart data={weeklyProfitData.filter(w => w.totalPaid > 0)} margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
-              <YAxis label={{ value: 'Pagesa (£)', angle: -90, position: 'insideLeft', offset: 10 }} />
-              <Tooltip formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n]} />
-              <Bar dataKey="totalPaid" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={24} />
+              <YAxis label={{ value: "Pagesa totale (£)", angle: -90, position: "insideLeft", offset: 0 }} tick={{ fontSize: 14, fill: '#6366f1' }} />
+              <Tooltip formatter={v => [`£${Number(v).toFixed(2)}`, "Pagesa"]} />
+              <Bar dataKey="totalPaid" radius={[6, 6, 0, 0]} barSize={32}>
+                {weeklyProfitData.filter(w => w.totalPaid > 0).map((_, i) => (
+                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka të dhëna të mjaftueshme për pagesat javore</p>
+          <p className="text-gray-500 italic text-center py-8">Nuk ka pagesa të regjistruara për këtë javë</p>
         )}
       </div>
 
       {/* Grafik për vonesat në pagesa/fatura */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">⏰ Vonesat në Pagesa/Fatura</h3>
+      <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i Invoice-ve të dërguar</h3>
         <VonesaFaturashChart />
       </div>
 
+      {/* Grafik për statusin e faturave të shpenzimeve */}
+      <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📈 Statusi i faturave të shpenzimeve</h3>
+        <StatusiShpenzimeveChart />
+      </div>
+
       {/* Faturat e papaguara */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
         {unpaid.length === 0 ? (
           <p className="text-gray-500 italic">Të gjitha faturat janë të paguara ✅</p>
@@ -677,7 +642,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Shpenzimet e papaguara */}
-      <div className="bg-white p-8 rounded-2xl shadow-md col-span-full mb-8">
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full mb-6 md:mb-8">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
         {unpaidExpenses.length === 0 ? (
           <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
@@ -716,39 +681,22 @@ function VonesaFaturashChart() {
         const res = await api.get("/api/invoices");
         const invoices = res.data || [];
         
-        console.log('[DEBUG] VonesaFaturashChart - invoices received:', invoices.length);
-        
-        // Për çdo faturë, llogarit statusin e pagesës
-        const result = { "Paguar në kohë": 0, "Paguar me vonesë": 0, "Pa paguar": 0 };
+        // Thjeshtëzo: vetëm paid TRUE vs FALSE
+        const result = { "Paguar": 0, "Pa paguar": 0 };
         
         invoices.forEach(inv => {
-          if (!inv.paid) {
-            result["Pa paguar"]++;
+          if (inv.paid) {
+            result["Paguar"]++;
           } else {
-            // Përdor updated_at si datë pagese nëse nuk ka paid_date
-            const invoiceDate = inv.date ? new Date(inv.date) : null;
-            const paidDate = inv.paid_date ? new Date(inv.paid_date) : (inv.updated_at ? new Date(inv.updated_at) : null);
-            
-            if (invoiceDate && paidDate) {
-              const daysDiff = Math.ceil((paidDate - invoiceDate) / (1000 * 60 * 60 * 24));
-              if (daysDiff <= 30) {
-                result["Paguar në kohë"]++;
-              } else {
-                result["Paguar me vonesë"]++;
-              }
-            } else {
-              result["Pa paguar"]++;
-            }
+            result["Pa paguar"]++;
           }
         });
         
-        console.log('[DEBUG] VonesaFaturashChart - result:', result);
-        
-        const chartData = Object.entries(result).map(([name, value]) => ({
-          name,
+        const totalInvoices = invoices.length;
+        const chartData = Object.entries(result).map(([name, value], index) => ({
+          name: `${name}: ${value} (${totalInvoices > 0 ? ((value / totalInvoices) * 100).toFixed(1) : 0}%)`,
           value,
-          color: name === "Paguar në kohë" ? "#10b981" : 
-                 name === "Paguar me vonesë" ? "#f59e0b" : "#ef4444"
+          color: STATUS_CHART_COLORS[index % STATUS_CHART_COLORS.length]
         }));
         
         setData(chartData);
@@ -756,9 +704,8 @@ function VonesaFaturashChart() {
         console.error('[ERROR] Failed to fetch invoices:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar në kohë", value: 0, color: "#10b981" },
-          { name: "Paguar me vonesë", value: 0, color: "#f59e0b" },
-          { name: "Pa paguar", value: 0, color: "#ef4444" }
+          { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
+          { name: "Pa paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
@@ -773,20 +720,20 @@ function VonesaFaturashChart() {
   }
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për vonesat në pagesa</div>;
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e invoice-ve</div>;
   }
 
   return (
-    <ResponsiveContainer width="100%" height={350}>
+    <ResponsiveContainer width="100%" height={400}>
       <PieChart>
         <Pie
           data={data}
           cx="50%"
           cy="50%"
-          outerRadius={120}
-          innerRadius={60}
+          outerRadius={140}
+          innerRadius={70}
           dataKey="value"
-          label={({ name, value, percent }) => `${name}: ${value} (${Number(percent * 100).toFixed(0)}%)`}
+          label={({ name, value, percent }) => `${name}`}
           labelLine={true}
         >
           {data.map((entry, index) => (
@@ -808,65 +755,218 @@ function VonesaFaturashChart() {
   );
 }
 
-function ShpenzimePerSiteChart({ allExpenses, structuredWorkHours, contracts }) {
+function StatusiShpenzimeveChart() {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Llogarit shpenzimet sipas site-ve
-    const expensesBySite = {};
-    allExpenses.forEach(exp => {
-      if (exp.contract_id) {
-        const contract = contracts.find(c => c.id === exp.contract_id);
-        if (contract) {
-          const site = contract.site_name || contract.siteName || 'Unknown';
-          expensesBySite[site] = (expensesBySite[site] || 0) + parseFloat(exp.gross || exp.amount || 0);
-        }
-      }
-    });
-    
-    // Llogarit orët e punuara sipas site-ve
-    const workHoursBySite = {};
-    Object.values(structuredWorkHours).forEach(empData => {
-      Object.values(empData).forEach(weekData => {
-        Object.values(weekData).forEach(dayData => {
-          if (dayData?.site && dayData?.hours) {
-            workHoursBySite[dayData.site] = (workHoursBySite[dayData.site] || 0) + parseFloat(dayData.hours);
+    async function fetchExpensesInvoices() {
+      try {
+        setLoading(true);
+        // Merr të gjitha shpenzimet nga expenses
+        const res = await api.get("/api/expenses");
+        const expenses = res.data || [];
+        
+        // Llogarit statusin e pagesës për shpenzimet
+        const result = { "Paguar": 0, "Pa paguar": 0 };
+        
+        expenses.forEach(exp => {
+          if (exp.paid) {
+            result["Paguar"]++;
+          } else {
+            result["Pa paguar"]++;
           }
         });
-      });
-    });
+        
+        const totalExpenses = expenses.length;
+        const chartData = Object.entries(result).map(([name, value], index) => ({
+          name: `${name}: ${value} (${totalExpenses > 0 ? ((value / totalExpenses) * 100).toFixed(1) : 0}%)`,
+          value,
+          color: STATUS_CHART_COLORS[index % STATUS_CHART_COLORS.length]
+        }));
+        
+        setData(chartData);
+      } catch (error) {
+        console.error('[ERROR] Failed to fetch expenses:', error);
+        // Nëse ka error, vendos të dhëna bosh
+        setData([
+          { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
+          { name: "Pa paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[1] }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    }
     
-    // Bashko të dhënat
-    const combined = Object.keys({ ...expensesBySite, ...workHoursBySite }).map(site => ({
-      site,
-      expenses: expensesBySite[site] || 0,
-      workHours: workHoursBySite[site] || 0,
-      total: (expensesBySite[site] || 0) + (workHoursBySite[site] || 0)
-    })).sort((a, b) => b.total - a.total);
+    fetchExpensesInvoices();
+  }, []);
+
+  if (loading) {
+    return <div className="text-center py-8">Duke ngarkuar...</div>;
+  }
+
+  if (data.length === 0) {
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e faturave të shpenzimeve</div>;
+  }
+
+  return (
+    <ResponsiveContainer width="100%" height={400}>
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          outerRadius={140}
+          innerRadius={70}
+          dataKey="value"
+          label={({ name, value, percent }) => `${name}`}
+          labelLine={true}
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip 
+          contentStyle={{ 
+            background: '#fffbe9', 
+            border: '1px solid #fbbf24', 
+            borderRadius: 12, 
+            fontSize: 16, 
+            color: '#78350f' 
+          }}
+          formatter={(value, name) => [value, name]}
+        />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, allPayments }) {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    async function fetchAllExpensesData() {
+      try {
+        setLoading(true);
+        
+        // Merr të gjitha shpenzimet nga expenses_invoice table
+        const expensesRes = await api.get("/api/expenses");
+        const expenses = expensesRes.data || [];
+        
+        // Merr të gjitha work_hours për të llogaritur hours * rate
+        const workHoursRes = await api.get("/api/work-hours");
+        const workHours = workHoursRes.data || [];
+        
+        // Merr të gjitha punonjësit për hourly rates
+        const employeesRes = await api.get("/api/employees");
+        const employees = employeesRes.data || [];
+        
+        // Llogarit shpenzimet totale sipas site-ve
+        const expensesBySite = {};
+        
+        // 1. Shto shpenzimet nga expenses_invoice table - kolona [gross] sipas site-ve
+        expenses.forEach(exp => {
+          if (exp.contract_id) {
+            const contract = contracts.find(c => c.id === exp.contract_id);
+            if (contract) {
+              const site = contract.site_name || contract.siteName || 'Unknown';
+              if (!expensesBySite[site]) {
+                expensesBySite[site] = { 
+                  expenses: 0, 
+                  workHours: 0, 
+                  total: 0
+                };
+              }
+              // Përdor kolonën [gross] nga expenses_invoice
+              expensesBySite[site].expenses += parseFloat(exp.gross || 0);
+            }
+          }
+        });
+        
+        // 2. Shto work_hours: kolona [hours] × kolona [rate] sipas site-ve
+        workHours.forEach(wh => {
+          if (wh.contract_id && wh.site) {
+            const site = wh.site;
+            if (!expensesBySite[site]) {
+              expensesBySite[site] = { 
+                expenses: 0, 
+                workHours: 0, 
+                total: 0
+              };
+            }
+            // Llogarit si: hours * rate nga work_hours table
+            const hours = parseFloat(wh.hours || 0);
+            const rate = parseFloat(wh.rate || 0);
+            const workHoursCost = hours * rate;
+            expensesBySite[site].workHours += workHoursCost;
+          }
+        });
+        
+        // 3. Llogarit totalin për çdo site
+        Object.keys(expensesBySite).forEach(site => {
+          expensesBySite[site].total = 
+            expensesBySite[site].expenses + 
+            expensesBySite[site].workHours;
+        });
+        
+        // Konverto në array dhe sorto
+        const chartData = Object.entries(expensesBySite)
+          .map(([site, data]) => ({
+            site,
+            expenses: parseFloat(data.expenses),
+            workHours: parseFloat(data.workHours),
+            total: parseFloat(data.total)
+          }))
+          .sort((a, b) => b.total - a.total);
+        
+        setData(chartData);
+        
+      } catch (error) {
+        console.error('[ERROR] Failed to fetch expenses data:', error);
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    }
     
-    setData(combined);
-  }, [allExpenses, structuredWorkHours, contracts]);
+    fetchAllExpensesData();
+  }, [allExpenses, contracts, structuredWorkHours, allPayments]);
+  
+  if (loading) {
+    return <div className="text-center py-8">Duke ngarkuar...</div>;
+  }
   
   if (data.length === 0) {
     return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
   }
   
-  const pastelColors = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"];
-  
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data} layout="vertical" margin={{ left: 50 }} barCategoryGap={18}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis type="number" label={{ value: "Shpenzime totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
-        <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#0284c7' }} />
-        <Tooltip contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} />
-        <Bar dataKey="total" radius={[0, 12, 12, 0]} barSize={32} >
-          {data.map((_, i) => (
-            <Cell key={i} fill={pastelColors[i % pastelColors.length]} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div>
+      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <h4 className="font-semibold text-blue-800 mb-2">📊 Shpjegim i llogaritjes:</h4>
+        <div className="text-sm text-blue-700 space-y-1">
+          <p><strong>Shpenzime:</strong> Shpenzimet nga tabela expenses_invoice - kolona [gross] sipas site-ve</p>
+          <p><strong>Orët e Punës:</strong> Orët e punuara × rate nga tabela work_hours - kolona [hours] × kolona [rate]</p>
+          <p><strong>Totali:</strong> Shpenzime + Orët e Punës</p>
+        </div>
+      </div>
+      
+      <ResponsiveContainer width="100%" height={450}>
+        <BarChart data={data} layout="vertical" margin={{ left: 50, right: 50, top: 20, bottom: 20 }} barCategoryGap={18}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis type="number" label={{ value: "Shuma totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
+          <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0284c7' }} />
+          <Tooltip 
+            contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} 
+            formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} 
+          />
+          <Legend />
+          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name="Shpenzime (expenses_invoice.gross)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[1]} name="Orët e Punës (work_hours.hours × rate)" radius={[0, 0, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 

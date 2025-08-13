@@ -150,8 +150,7 @@ async function logError(error, req, res) {
     if (error.statusCode >= 500) {
       try {
         // Merr adminët
-        const pool = require('../db');
-        const result = await pool.query(`
+        const result = await require('../db').pool.query(`
           SELECT id, email FROM users WHERE role = 'admin' AND status = 'active'
         `);
 

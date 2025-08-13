@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 const { verifyToken } = require('../middleware/auth');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
@@ -8,7 +8,7 @@ const PDFDocument = require('pdfkit');
 // Test endpoint without authentication
 router.get('/test', async (req, res) => {
   try {
-    const result = await db.query('SELECT COUNT(*) as count FROM audit_trail');
+    const result = await pool.query('SELECT COUNT(*) as count FROM audit_trail');
     res.json({ 
       message: 'Audit API is working!', 
       totalLogs: result.rows[0].count 
@@ -21,6 +21,46 @@ router.get('/test', async (req, res) => {
 // Test logs endpoint without authentication
 router.get('/test-logs', async (req, res) => {
   try {
+    const { action, user, module, dateFrom, dateTo, severity, limit = 50 } = req.query;
+    
+    let whereConditions = [];
+    let queryParams = [];
+    let paramIndex = 1;
+    
+    // Build WHERE clause based on filters
+    if (action) {
+      whereConditions.push(`al.action = $${paramIndex++}`);
+      queryParams.push(action);
+    }
+    
+    if (user) {
+      whereConditions.push(`(al.user_email ILIKE $${paramIndex++} OR al.user_name ILIKE $${paramIndex++})`);
+      queryParams.push(`%${user}%`);
+      queryParams.push(`%${user}%`);
+    }
+    
+    if (module) {
+      whereConditions.push(`al.entity_type = $${paramIndex++}`);
+      queryParams.push(module);
+    }
+    
+    if (severity) {
+      whereConditions.push(`al.severity = $${paramIndex++}`);
+      queryParams.push(severity);
+    }
+    
+    if (dateFrom) {
+      whereConditions.push(`al.timestamp >= $${paramIndex++}`);
+      queryParams.push(dateFrom);
+    }
+    
+    if (dateTo) {
+      whereConditions.push(`al.timestamp <= $${paramIndex++}`);
+      queryParams.push(dateTo + ' 23:59:59');
+    }
+    
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    
     const query = `
       SELECT 
         al.id,
@@ -35,24 +75,75 @@ router.get('/test-logs', async (req, res) => {
         al.entity_type,
         al.entity_id,
         al.user_email,
-        al.user_email as user_name
+        al.user_email as user_name,
+        CASE 
+          WHEN al.action = 'LOGIN_FAILED' THEN 
+            CASE 
+              WHEN al.description ILIKE '%password%' THEN 'Fjalëkalim i gabuar'
+              WHEN al.description ILIKE '%email%' THEN 'Email i gabuar'
+              WHEN al.description ILIKE '%user%' THEN 'Përdorues nuk ekziston'
+              ELSE 'Kredencialet e gabuara'
+            END
+          ELSE NULL
+        END as failure_reason
       FROM audit_trail al
+      ${whereClause}
       ORDER BY al.timestamp DESC
-      LIMIT 10
+      LIMIT $${paramIndex++}
     `;
     
-    const result = await db.query(query);
+    queryParams.push(parseInt(limit));
+    
+    const result = await pool.query(query, queryParams);
     const logs = result.rows;
 
+    // Enhance the logs with better metadata
+    const enhancedLogs = logs.map(log => {
+      let enhancedLog = { ...log };
+      
+      // For failed logins, create better details structure
+      if (log.action === 'LOGIN_FAILED') {
+        enhancedLog.details = {
+          reason: log.failure_reason || 'Kredencialet e gabuara',
+          error: log.description || 'Kyçje e dështuar',
+          attemptedEmail: log.user_email || 'Email i panjohur',
+          timestamp: log.timestamp,
+          ipAddress: log.ip_address,
+          // Enhanced IP information
+          ipInfo: getIPInfo(log.ip_address)
+        };
+      }
+      
+      // For successful logins
+      if (log.action === 'LOGIN_SUCCESS') {
+        enhancedLog.details = {
+          success: true,
+          userEmail: log.user_email,
+          timestamp: log.timestamp,
+          ipAddress: log.ip_address,
+          // Enhanced IP information
+          ipInfo: getIPInfo(log.ip_address)
+        };
+      }
+      
+      // For other actions, preserve existing details
+      if (!enhancedLog.details && log.details) {
+        try {
+          enhancedLog.details = typeof log.details === 'string' ? JSON.parse(log.details) : log.details;
+        } catch (e) {
+          enhancedLog.details = { raw: log.details };
+        }
+      }
+      
+      return enhancedLog;
+    });
+
     res.json({
-      data: logs.map(log => ({
-        ...log,
-        details: log.details || null
-      })),
+      data: enhancedLogs,
       pagination: {
         page: 1,
-        limit: 10,
-        total: logs.length,
+        limit: parseInt(limit),
+        total: enhancedLogs.length,
         pages: 1
       }
     });
@@ -62,15 +153,127 @@ router.get('/test-logs', async (req, res) => {
   }
 });
 
+// Helper function to get IP information
+function getIPInfo(ip) {
+  if (!ip) return null;
+  
+  const ipInfo = {
+    ip: ip,
+    isLocal: isLocalIP(ip),
+    isProxy: isProxyIP(ip),
+    type: getIPType(ip),
+    location: getIPLocation(ip)
+  };
+  
+  return ipInfo;
+}
+
+// Helper function to check if IP is local
+function isLocalIP(ip) {
+  if (!ip) return false;
+  
+  return ip === '127.0.0.1' || 
+         ip === '::1' || 
+         ip.startsWith('192.168.') || 
+         ip.startsWith('10.') ||
+         ip.startsWith('172.16.') ||
+         ip.startsWith('172.17.') ||
+         ip.startsWith('172.18.') ||
+         ip.startsWith('172.19.') ||
+         ip.startsWith('172.20.') ||
+         ip.startsWith('172.21.') ||
+         ip.startsWith('172.22.') ||
+         ip.startsWith('172.23.') ||
+         ip.startsWith('172.24.') ||
+         ip.startsWith('172.25.') ||
+         ip.startsWith('172.26.') ||
+         ip.startsWith('172.27.') ||
+         ip.startsWith('172.28.') ||
+         ip.startsWith('172.29.') ||
+         ip.startsWith('172.30.') ||
+         ip.startsWith('172.31.');
+}
+
+// Helper function to check if IP is proxy/cloud service
+function isProxyIP(ip) {
+  if (!ip) return false;
+  
+  return ip === '8.8.8.8' || 
+         ip === '1.1.1.1' || 
+         ip.startsWith('52.') || 
+         ip.startsWith('35.') ||
+         ip.startsWith('13.') ||
+         ip.startsWith('54.') ||
+         ip.startsWith('18.') ||
+         ip.startsWith('3.') ||
+         ip.startsWith('34.') ||
+         ip.startsWith('104.') ||
+         ip.startsWith('151.') ||
+         ip.startsWith('185.') ||
+         ip.startsWith('199.') ||
+         ip.startsWith('45.') ||
+         ip.startsWith('66.') ||
+         ip.startsWith('69.') ||
+         ip.startsWith('70.') ||
+         ip.startsWith('71.') ||
+         ip.startsWith('72.') ||
+         ip.startsWith('73.') ||
+         ip.startsWith('74.') ||
+         ip.startsWith('75.') ||
+         ip.startsWith('76.') ||
+         ip.startsWith('77.') ||
+         ip.startsWith('78.') ||
+         ip.startsWith('79.') ||
+         ip.startsWith('80.') ||
+         ip.startsWith('81.') ||
+         ip.startsWith('82.') ||
+         ip.startsWith('83.') ||
+         ip.startsWith('84.') ||
+         ip.startsWith('85.') ||
+         ip.startsWith('86.') ||
+         ip.startsWith('87.') ||
+         ip.startsWith('88.') ||
+         ip.startsWith('89.') ||
+         ip.startsWith('90.') ||
+         ip.startsWith('91.') ||
+         ip.startsWith('92.') ||
+         ip.startsWith('93.') ||
+         ip.startsWith('94.') ||
+         ip.startsWith('95.') ||
+         ip.startsWith('96.') ||
+         ip.startsWith('97.') ||
+         ip.startsWith('98.') ||
+         ip.startsWith('99.');
+}
+
+// Helper function to get IP type
+function getIPType(ip) {
+  if (!ip) return 'Unknown';
+  
+  if (isLocalIP(ip)) return 'Local/Private';
+  if (isProxyIP(ip)) return 'Cloud/Proxy';
+  if (ip.includes(':')) return 'IPv6';
+  return 'IPv4 Public';
+}
+
+// Helper function to get IP location (simplified)
+function getIPLocation(ip) {
+  if (!ip || isLocalIP(ip)) return 'Local Network';
+  if (isProxyIP(ip)) return 'Cloud Service';
+  
+  // This could be enhanced with a real IP geolocation service
+  return 'External Network';
+}
+
 // Test stats endpoint without authentication
 router.get('/test-stats', async (req, res) => {
   try {
     // Total logs
-    const totalResult = await db.query('SELECT COUNT(*) as total FROM audit_trail');
+    const totalResult = await pool.query('SELECT COUNT(*) as total FROM audit_trail');
     const totalLogs = totalResult.rows[0].total;
 
     // Today's logs
-    const todayResult = await db.query(`
+    const todayResult = await pool.query(`
       SELECT COUNT(*) as today 
       FROM audit_trail 
       WHERE DATE(timestamp) = CURRENT_DATE
@@ -78,7 +281,7 @@ router.get('/test-stats', async (req, res) => {
     const todayLogs = todayResult.rows[0].today;
 
     // Action statistics
-    const actionStatsResult = await db.query(`
+    const actionStatsResult = await pool.query(`
       SELECT action, COUNT(*) as count
       FROM audit_trail
       GROUP BY action
@@ -94,7 +297,7 @@ router.get('/test-stats', async (req, res) => {
     const paymentCount = actionStats.find(s => s.action === 'PAYMENT')?.count || 0;
 
     // Active users (last 7 days)
-    const activeUsersResult = await db.query(`
+    const activeUsersResult = await pool.query(`
       SELECT COUNT(DISTINCT user_id) as active_users
       FROM audit_trail
       WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
@@ -238,7 +441,7 @@ router.get('/logs', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
 
-    const result = await db.query(query, params);
+    const result = await pool.query(query, params);
     const logs = result.rows;
 
     // Get total count for pagination
@@ -322,7 +525,7 @@ router.get('/logs', verifyToken, async (req, res) => {
       }
     }
 
-    const countResult = await db.query(countQuery, countParams);
+    const countResult = await pool.query(countQuery, countParams);
     const total = countResult.rows[0].total;
 
     res.json({
@@ -366,7 +569,7 @@ router.get('/stats', verifyToken, async (req, res) => {
 
     // Total logs
     const totalQuery = `SELECT COUNT(*) as total FROM audit_trail ${whereClause}`;
-    const totalResult = await db.query(totalQuery, params);
+    const totalResult = await pool.query(totalQuery, params);
     const totalLogs = totalResult.rows[0].total;
 
     // Today's logs
@@ -375,7 +578,7 @@ router.get('/stats', verifyToken, async (req, res) => {
       FROM audit_trail 
       WHERE DATE(timestamp) = CURRENT_DATE
     `;
-    const todayResult = await db.query(todayQuery);
+    const todayResult = await pool.query(todayQuery);
     const todayLogs = todayResult.rows[0].today;
 
     // Action statistics
@@ -386,7 +589,7 @@ router.get('/stats', verifyToken, async (req, res) => {
       GROUP BY action
       ORDER BY count DESC
     `;
-    const actionStatsResult = await db.query(actionStatsQuery, params);
+    const actionStatsResult = await pool.query(actionStatsQuery, params);
     const actionStats = actionStatsResult.rows;
 
     // Calculate action counts
@@ -402,7 +605,7 @@ router.get('/stats', verifyToken, async (req, res) => {
       FROM audit_trail
       WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
     `;
-    const activeUsersResult = await db.query(activeUsersQuery);
+    const activeUsersResult = await pool.query(activeUsersQuery);
     const activeUsers = activeUsersResult.rows[0].active_users;
 
     res.json({
@@ -440,7 +643,7 @@ router.get('/suspicious-activity', verifyToken, async (req, res) => {
       LIMIT 20
     `;
     
-    const suspiciousResult = await db.query(suspiciousQuery);
+    const suspiciousResult = await pool.query(suspiciousQuery);
     const suspiciousActivities = suspiciousResult.rows;
     
     res.json({
@@ -471,7 +674,7 @@ router.get('/most-active-entities', verifyToken, async (req, res) => {
       LIMIT 10
     `;
     
-    const entitiesResult = await db.query(entitiesQuery);
+    const entitiesResult = await pool.query(entitiesQuery);
     const entities = entitiesResult.rows;
     
     res.json({
@@ -542,7 +745,7 @@ router.get('/export-excel', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC LIMIT ?`;
     params.push(parseInt(limit));
 
-    const result = await db.query(query, params);
+    const result = await pool.query(query, params);
     const logs = result.rows;
 
     // Create Excel workbook
@@ -661,7 +864,7 @@ router.get('/export-pdf', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC LIMIT ?`;
     params.push(parseInt(limit));
 
-    const result = await db.query(query, params);
+    const result = await pool.query(query, params);
     const logs = result.rows;
 
     // Create PDF document
@@ -718,7 +921,7 @@ router.post('/cleanup', verifyToken, async (req, res) => {
       WHERE timestamp < DATE_SUB(NOW(), INTERVAL ? DAY)
     `;
     
-    const result = await db.query(deleteQuery, [daysToKeep]);
+    const result = await pool.query(deleteQuery, [daysToKeep]);
     
     res.json({
       success: true,
@@ -744,7 +947,7 @@ router.post('/', verifyToken, async (req, res) => {
       VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)
     `;
 
-    await db.query(query, [
+    await pool.query(query, [
       action,
       module,
       description,

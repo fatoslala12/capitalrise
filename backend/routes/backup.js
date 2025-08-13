@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const backupController = require('../controllers/backupController');
 const { verifyToken, requireRole } = require('../middleware/auth');
+const backupController = require('../controllers/backupController');
+const { pool } = require('../db'); // Updated to use new structure
 
 // Test endpoint without authentication
 router.get('/test', async (req, res) => {
@@ -29,8 +30,7 @@ router.get('/test-status', async (req, res) => {
     const backupService = new BackupService();
     
     // Test database connection
-    const db = require('../db');
-    const result = await db.query('SELECT version() as version, current_database() as database');
+    const result = await pool.query('SELECT version() as version, current_database() as database');
     
     res.json({
       success: true,
@@ -92,6 +92,41 @@ router.get('/test-list', async (req, res) => {
   } catch (error) {
     console.error('Error listing test backups:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Get table counts without authentication
+router.get('/table-counts', async (req, res) => {
+  try {
+    // Lista e tabelave që duam të kontrollojmë (vetëm ato që shfaqen në frontend)
+    const tables = [
+      'employees', 'contracts', 'work_hours', 'payments', 
+      'tasks', 'expenses_invoices', 'invoices', 'notifications'
+    ];
+    
+    const tableCounts = {};
+    
+    // Merr numrin e regjistrimeve për çdo tabelë
+    for (const table of tables) {
+      try {
+        const result = await pool.query(`SELECT COUNT(*) as count FROM ${table}`);
+        tableCounts[table] = parseInt(result.rows[0].count);
+      } catch (tableError) {
+        console.warn(`Warning: Could not count table ${table}:`, tableError.message);
+        tableCounts[table] = 0; // Nëse tabela nuk ekziston, vendos 0
+      }
+    }
+    
+    res.json({
+      success: true,
+      data: tableCounts
+    });
+  } catch (error) {
+    console.error('Error getting table counts:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
   }
 });
 

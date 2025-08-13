@@ -1,6 +1,6 @@
 const AuditService = require('./auditService');
 const NotificationService = require('./notificationService');
-const pool = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 
 class RealTimeAlertService {
   constructor() {

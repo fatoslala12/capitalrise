@@ -19,38 +19,88 @@ export default function BackupManagement() {
   const [showPartialBackupModal, setShowPartialBackupModal] = useState(false);
   const [selectedTables, setSelectedTables] = useState([]);
   const [backupDescription, setBackupDescription] = useState("");
+  const [connectionStatus, setConnectionStatus] = useState("checking");
+  const [currentBackend, setCurrentBackend] = useState("");
 
   // Tabelat e disponueshme për backup të pjesshëm
-  const availableTables = [
-    { name: 'users', label: 'Përdoruesit', icon: '👥' },
-    { name: 'employees', label: 'Punonjësit', icon: '👷' },
-    { name: 'contracts', label: 'Kontratat', icon: '📄' },
-    { name: 'work_hours', label: 'Orët e Punës', icon: '🕒' },
-    { name: 'payments', label: 'Pagesat', icon: '💰' },
-    { name: 'tasks', label: 'Detyrat', icon: '📋' },
-    { name: 'expenses_invoices', label: 'Shpenzimet', icon: '💸' },
-    { name: 'invoices', label: 'Faturat', icon: '🧾' },
-    { name: 'notifications', label: 'Njoftimet', icon: '🔔' },
-    { name: 'employee_workplaces', label: 'Vendet e Punës', icon: '🏢' },
-    { name: 'attachments', label: 'Bashkëngjitjet', icon: '📎' },
-    { name: 'todos', label: 'Detyrat e Vogla', icon: '✅' }
-  ];
+  const [availableTables, setAvailableTables] = useState([
+    { name: 'employees', label: 'Punonjësit', icon: '👷', count: 0 },
+    { name: 'contracts', label: 'Kontratat', icon: '📄', count: 0 },
+    { name: 'work_hours', label: 'Orët e Punës', icon: '🕒', count: 0 },
+    { name: 'payments', label: 'Pagesat', icon: '💰', count: 0 },
+    { name: 'tasks', label: 'Detyrat', icon: '📋', count: 0 },
+    { name: 'expenses_invoices', label: 'Shpenzimet', icon: '💸', count: 0 },
+    { name: 'invoices', label: 'Faturat', icon: '🧾', count: 0 },
+    { name: 'notifications', label: 'Njoftimet', icon: '🔔', count: 0 }
+  ]);
 
   // Merr të dhënat në fillim
   useEffect(() => {
-    fetchData();
+    checkConnectionAndFetchData();
   }, []);
+
+  // Kontrollo lidhjen dhe merr të dhënat
+  const checkConnectionAndFetchData = async () => {
+    try {
+      setLoading(true);
+      setConnectionStatus("checking");
+      
+      // Kontrollo statusin e lidhjes
+      const healthCheck = await api.get('/api/health');
+      setConnectionStatus("connected");
+      setCurrentBackend(api.defaults.baseURL);
+      
+      // Nëse lidhja është OK, merr të dhënat
+      await fetchData();
+      
+    } catch (error) {
+      console.error('Connection error:', error);
+      setConnectionStatus("disconnected");
+      
+      // Provo të lidhesh me localhost nëse production nuk funksionon
+      if (api.defaults.baseURL !== "http://localhost:5000") {
+        try {
+          console.log('🔄 Trying localhost fallback...');
+          api.defaults.baseURL = "http://localhost:5000";
+          
+          const localHealthCheck = await api.get('/api/health');
+          setConnectionStatus("connected");
+          setCurrentBackend("http://localhost:5000");
+          
+          // Merr të dhënat nga localhost
+          await fetchData();
+          
+        } catch (localError) {
+          console.error('Localhost also failed:', localError);
+          setConnectionStatus("disconnected");
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    }
+  };
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      const [backupsRes, statusRes] = await Promise.all([
+      const [backupsRes, statusRes, tableCountsRes] = await Promise.all([
         api.get('/api/backup/test-list'),
-        api.get('/api/backup/test-status')
+        api.get('/api/backup/test-status'),
+        api.get('/api/backup/table-counts')
       ]);
 
       setBackups(backupsRes.data.data || []);
       setDatabaseStatus(statusRes.data.data);
+      
+      // Update table counts with real data
+      if (tableCountsRes.data.success) {
+        const updatedTables = availableTables.map(table => ({
+          ...table,
+          count: tableCountsRes.data.data[table.name] || 0
+        }));
+        setAvailableTables(updatedTables);
+      }
+      
       setTableInfo([]); // For now, we'll skip table info
     } catch (error) {
       console.error('Error fetching backup data:', error);
@@ -99,8 +149,7 @@ export default function BackupManagement() {
         toast.success('Backup i pjesshëm u krijua me sukses!');
         setSelectedTables([]);
         setBackupDescription("");
-        setShowPartialBackupModal(false);
-        fetchData();
+        fetchData(); // Rifresko listën
       }
     } catch (error) {
       console.error('Error creating partial backup:', error);
@@ -213,8 +262,48 @@ export default function BackupManagement() {
     });
   };
 
+  // Rifresko lidhjen
+  const refreshConnection = () => {
+    checkConnectionAndFetchData();
+  };
+
+  // Nëse nuk ka lidhje, shfaq mesazh përkatës
+  if (connectionStatus === "disconnected") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center p-8">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+            <h2 className="text-xl font-bold mb-2">🔌 Lidhja me Backend u humb</h2>
+            <p className="text-sm">
+              Nuk mund të lidhem me serverin e backend. Ju lutem kontrolloni:
+            </p>
+            <ul className="text-sm mt-2 text-left list-disc list-inside">
+              <li>Nëse backend është duke punuar</li>
+              <li>Nëse URL-ja e API është e saktë</li>
+              <li>Nëse ka probleme me rrjetin</li>
+            </ul>
+          </div>
+          
+          <div className="space-y-3">
+            <Button 
+              onClick={refreshConnection}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              🔄 Provoni përsëri
+            </Button>
+            
+            <div className="text-sm text-gray-600">
+              <p><strong>Backend aktual:</strong> {api.defaults.baseURL}</p>
+              <p><strong>Status:</strong> {connectionStatus}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar menaxhimin e backup-ve..." />;
+    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat e backup..." />;
   }
 
   if (user?.role !== 'admin' && user?.role !== 'manager') {
@@ -250,26 +339,92 @@ export default function BackupManagement() {
 
       {/* Statusi i Databazës */}
       {databaseStatus && (
-        <Card>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               📊 Statusi i Databazës
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="md">
-              {Object.entries(databaseStatus.stats || {}).map(([key, value]) => (
-                <div key={key} className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-xl border border-green-200">
-                  <div className="text-2xl font-bold text-green-700">{value}</div>
-                  <div className="text-sm text-green-600 capitalize">
-                    {key.replace(/_/g, ' ')}
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  {databaseStatus.database?.name || 'N/A'}
                 </div>
-              ))}
-            </Grid>
+                <div className="text-sm text-blue-800">Emri i Databazës</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {databaseStatus.database?.status || 'N/A'}
+                </div>
+                <div className="text-sm text-green-800">Statusi</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  {databaseStatus.backup?.exists ? '✅' : '❌'}
+                </div>
+                <div className="text-sm text-purple-800">Direktoria e Backup-ve</div>
+              </div>
+            </div>
+            
+            {/* Database Version Info */}
+            {databaseStatus.database?.version && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-semibold text-gray-700 mb-2">ℹ️ Informacione të Detajuara:</h4>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p><strong>Versioni:</strong> {databaseStatus.database.version}</p>
+                  <p><strong>Direktoria e Backup-ve:</strong> {databaseStatus.backup?.directory || 'N/A'}</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
+
+      {/* Tabelat e Databazës */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            🗄️ Tabelat e Databazës
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {availableTables.map((table) => (
+              <div key={table.name} className="group relative">
+                <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 rounded-xl border border-blue-200 hover:border-blue-400 transition-all duration-300 hover:shadow-lg cursor-pointer">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl">{table.icon}</span>
+                    <div className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-1 rounded-full">
+                      {table.name}
+                    </div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-700 mb-1">
+                      {table.count !== undefined ? table.count : '...'}
+                    </div>
+                    <div className="text-sm text-gray-600 font-medium">
+                      {table.label}
+                    </div>
+                  </div>
+                  
+                  {/* Hover effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Loading state for table counts */}
+          {availableTables.some(table => table.count === 0) && (
+            <div className="text-center py-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p className="text-gray-500">Duke ngarkuar numrin e regjistrimeve...</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Aksionet e Backup */}
       <Card>

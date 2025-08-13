@@ -201,6 +201,112 @@ function calculateChanges(newObj, oldObj) {
   return Object.keys(changes).length > 0 ? changes : null;
 }
 
+// Funksion për të marrë IP-në e saktë të klientit
+const getClientIP = (req) => {
+  // Check for various proxy headers in order of reliability
+  const ipSources = [
+    req.headers['cf-connecting-ip'],        // Cloudflare
+    req.headers['x-forwarded-for'],        // Standard proxy header
+    req.headers['x-real-ip'],              // Nginx proxy
+    req.headers['x-client-ip'],            // Custom proxy header
+    req.headers['x-forwarded'],            // Alternative forward header
+    req.headers['forwarded-for'],          // RFC 7239
+    req.headers['forwarded'],              // RFC 7239
+    req.ip,                                // Express.js trust proxy
+    req.connection?.remoteAddress,         // Direct connection
+    req.socket?.remoteAddress,             // Socket connection
+    req.connection?.socket?.remoteAddress  // Fallback
+  ];
+
+  // Find the first valid IP address
+  for (const ip of ipSources) {
+    if (ip && isValidIP(ip)) {
+      // Handle comma-separated IPs (take the first one)
+      const cleanIP = ip.split(',')[0].trim();
+      return cleanIP;
+    }
+  }
+
+  // Fallback to localhost if no valid IP found
+  return '127.0.0.1';
+};
+
+// Funksion për të validuar IP-në
+const isValidIP = (ip) => {
+  if (!ip || typeof ip !== 'string') return false;
+  
+  // Remove any port numbers
+  const cleanIP = ip.split(':')[0];
+  
+  // IPv4 regex
+  const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  
+  // IPv6 regex (simplified)
+  const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+  
+  return ipv4Regex.test(cleanIP) || ipv6Regex.test(cleanIP);
+};
+
+// Funksion për të marrë informacion të plotë të klientit
+const getClientInfo = (req) => {
+  const ipAddress = getClientIP(req);
+  const userAgent = req.headers['user-agent'] || 'Unknown';
+  
+  // Additional client information
+  const clientInfo = {
+    ip: ipAddress,
+    userAgent: userAgent,
+    referer: req.headers['referer'] || null,
+    origin: req.headers['origin'] || null,
+    host: req.headers['host'] || null,
+    // Check if it's a local connection
+    isLocal: isLocalIP(ipAddress),
+    // Check if it's a known proxy/cloud service
+    isProxy: isProxyIP(ipAddress),
+    // User's preferred language
+    language: req.headers['accept-language'] || null,
+    // Connection type (if available)
+    connectionType: req.headers['x-connection-type'] || null
+  };
+
+  return clientInfo;
+};
+
+// Funksion për të kontrolluar nëse IP është lokale
+const isLocalIP = (ip) => {
+  if (!ip) return false;
+  
+  const localRanges = [
+    '127.0.0.1',           // localhost
+    '10.0.0.0/8',          // private network
+    '172.16.0.0/12',       // private network
+    '192.168.0.0/16',      // private network
+    '::1',                  // IPv6 localhost
+    'fe80::/10',            // IPv6 link-local
+    'fc00::/7'              // IPv6 unique local
+  ];
+  
+  // Simple check for common local IPs
+  return ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.');
+};
+
+// Funksion për të kontrolluar nëse IP është proxy/cloud service
+const isProxyIP = (ip) => {
+  if (!ip) return false;
+  
+  // Common cloud service IP ranges (simplified)
+  const cloudRanges = [
+    '35.184.0.0/13',       // Google Cloud
+    '52.0.0.0/8',          // AWS
+    '13.0.0.0/8',          // AWS
+    '8.8.8.8',             // Google DNS
+    '1.1.1.1'              // Cloudflare DNS
+  ];
+  
+  // Simple check for common cloud IPs
+  return ip === '8.8.8.8' || ip === '1.1.1.1' || ip.startsWith('52.') || ip.startsWith('35.');
+};
+
 // Middleware për të ruajtur body origjinal
 const preserveOriginalBody = (req, res, next) => {
   if (req.body && Object.keys(req.body).length > 0) {
@@ -215,14 +321,17 @@ const authAuditMiddleware = (req, res, next) => {
   const originalJson = res.json;
   
   let responseData = null;
+  let responseStatus = 200;
 
   res.send = function(data) {
     responseData = data;
+    responseStatus = res.statusCode;
     return originalSend.call(this, data);
   };
 
   res.json = function(data) {
     responseData = data;
+    responseStatus = res.statusCode;
     return originalJson.call(this, data);
   };
 
@@ -231,30 +340,53 @@ const authAuditMiddleware = (req, res, next) => {
   // Log auth events
   res.on('finish', async () => {
     try {
-      const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
-      const userAgent = req.headers['user-agent'];
+      const clientInfo = getClientInfo(req);
+      const ipAddress = clientInfo.ip;
+      const userAgent = clientInfo.userAgent;
 
       if (req.path.includes('/login')) {
         let success = false;
         let userData = null;
+        let attemptedEmail = req.body?.email || 'Email i panjohur';
 
         try {
           if (responseData) {
             const parsed = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
-            success = parsed.token && parsed.user;
+            success = parsed.token && parsed.user && responseStatus < 400;
             userData = parsed.user;
           }
         } catch (e) {
           success = false;
         }
 
+        // If status code indicates failure, it's a failed login
+        if (responseStatus >= 400) {
+          success = false;
+        }
+
+        // Enhanced metadata with client information
+        const enhancedMetadata = {
+          success,
+          clientInfo: {
+            ip: ipAddress,
+            userAgent: userAgent,
+            isLocal: clientInfo.isLocal,
+            isProxy: clientInfo.isProxy,
+            referer: clientInfo.referer,
+            origin: clientInfo.origin,
+            language: clientInfo.language,
+            timestamp: new Date().toISOString()
+          }
+        };
+
         await auditService.logLogin(
-          userData?.id,
-          userData?.email,
-          userData?.role,
+          userData?.id || null,
+          attemptedEmail,
+          userData?.role || null,
           ipAddress,
           userAgent,
-          success
+          success,
+          enhancedMetadata
         );
       } else if (req.path.includes('/logout')) {
         const user = req.user;
