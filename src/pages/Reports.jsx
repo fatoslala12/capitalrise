@@ -124,6 +124,10 @@ export default function Reports() {
         api.get('/api/business-intelligence/dashboard-stats')
       ]);
 
+      console.log('Contract data received:', contractRes.data);
+      console.log('Contract data type:', typeof contractRes.data);
+      console.log('Contract data length:', contractRes.data?.length);
+
       setFinancialData(financialRes.data || {});
       setEmployeePerformance(employeeRes.data || []);
       setSitePerformance(siteRes.data || []);
@@ -740,12 +744,27 @@ export default function Reports() {
                       </tr>
                     </thead>
                     <tbody>
-                      {contractPerformance && contractPerformance.length > 0 ? (
-                        contractPerformance.map((contract, index) => (
-                          <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="p-3 font-medium">{contract.contractNumber}</td>
-                          <td className="p-3">{contract.siteName}</td>
-                          <td className="p-3 font-medium">£{(contract.contractValue || 0).toFixed(2)}</td>
+                      {(() => {
+                        console.log('Rendering contracts table with data:', contractPerformance);
+                        console.log('Contract performance type:', typeof contractPerformance);
+                        console.log('Contract performance length:', contractPerformance?.length);
+                        return contractPerformance && contractPerformance.length > 0 ? (
+                          contractPerformance.map((contract, index) => {
+                            console.log('Rendering contract:', contract, 'at index:', index);
+                            return (
+                              <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                                                      <td className="p-3 font-medium">{(() => {
+                              console.log('contract.contractNumber:', contract.contractNumber);
+                              return contract.contractNumber;
+                            })()}</td>
+                            <td className="p-3">{(() => {
+                              console.log('contract.siteName:', contract.siteName);
+                              return contract.siteName;
+                            })()}</td>
+                            <td className="p-3 font-medium">£{(() => {
+                              console.log('contract.contractValue:', contract.contractValue, 'type:', typeof contract.contractValue);
+                              return (contract.contractValue || 0).toFixed(2);
+                            })()}</td>
                           <td className="p-3">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               contract.status === 'Mbyllur' ? 'bg-green-100 text-green-800' :
