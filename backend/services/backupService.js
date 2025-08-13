@@ -1,4 +1,4 @@
-const pool = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 const fs = require('fs').promises;
 const path = require('path');
 const { exec } = require('child_process');

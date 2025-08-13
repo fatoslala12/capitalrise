@@ -114,7 +114,7 @@ exports.restoreBackup = async (req, res) => {
     
     // Dërgo notification për të gjithë adminët
     try {
-      const adminUsers = await require('../db').query("SELECT id FROM users WHERE role = 'admin'");
+      const adminUsers = await require('../db').pool.query("SELECT id FROM users WHERE role = 'admin'");
       for (const admin of adminUsers.rows) {
         await NotificationService.createNotification(
           admin.id,

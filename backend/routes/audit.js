@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const { pool } = require('../db'); // Updated to use new structure
 const { verifyToken } = require('../middleware/auth');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
@@ -8,7 +8,7 @@ const PDFDocument = require('pdfkit');
 // Test endpoint without authentication
 router.get('/test', async (req, res) => {
   try {
-    const result = await db.query('SELECT COUNT(*) as count FROM audit_trail');
+    const result = await pool.query('SELECT COUNT(*) as count FROM audit_trail');
     res.json({ 
       message: 'Audit API is working!', 
       totalLogs: result.rows[0].count 
@@ -94,7 +94,7 @@ router.get('/test-logs', async (req, res) => {
     
     queryParams.push(parseInt(limit));
     
-    const result = await db.query(query, queryParams);
+    const result = await pool.query(query, queryParams);
     const logs = result.rows;
 
     // Enhance the logs with better metadata
@@ -269,11 +269,11 @@ function getIPLocation(ip) {
 router.get('/test-stats', async (req, res) => {
   try {
     // Total logs
-    const totalResult = await db.query('SELECT COUNT(*) as total FROM audit_trail');
+    const totalResult = await pool.query('SELECT COUNT(*) as total FROM audit_trail');
     const totalLogs = totalResult.rows[0].total;
 
     // Today's logs
-    const todayResult = await db.query(`
+    const todayResult = await pool.query(`
       SELECT COUNT(*) as today 
       FROM audit_trail 
       WHERE DATE(timestamp) = CURRENT_DATE
@@ -281,7 +281,7 @@ router.get('/test-stats', async (req, res) => {
     const todayLogs = todayResult.rows[0].today;
 
     // Action statistics
-    const actionStatsResult = await db.query(`
+    const actionStatsResult = await pool.query(`
       SELECT action, COUNT(*) as count
       FROM audit_trail
       GROUP BY action
@@ -297,7 +297,7 @@ router.get('/test-stats', async (req, res) => {
     const paymentCount = actionStats.find(s => s.action === 'PAYMENT')?.count || 0;
 
     // Active users (last 7 days)
-    const activeUsersResult = await db.query(`
+    const activeUsersResult = await pool.query(`
       SELECT COUNT(DISTINCT user_id) as active_users
       FROM audit_trail
       WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
@@ -441,7 +441,7 @@ router.get('/logs', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
 
-    const result = await db.query(query, params);
+    const result = await pool.query(query, params);
     const logs = result.rows;
 
     // Get total count for pagination
@@ -525,7 +525,7 @@ router.get('/logs', verifyToken, async (req, res) => {
       }
     }
 
-    const countResult = await db.query(countQuery, countParams);
+    const countResult = await pool.query(countQuery, countParams);
     const total = countResult.rows[0].total;
 
     res.json({
@@ -569,7 +569,7 @@ router.get('/stats', verifyToken, async (req, res) => {
 
     // Total logs
     const totalQuery = `SELECT COUNT(*) as total FROM audit_trail ${whereClause}`;
-    const totalResult = await db.query(totalQuery, params);
+    const totalResult = await pool.query(totalQuery, params);
     const totalLogs = totalResult.rows[0].total;
 
     // Today's logs
@@ -578,7 +578,7 @@ router.get('/stats', verifyToken, async (req, res) => {
       FROM audit_trail 
       WHERE DATE(timestamp) = CURRENT_DATE
     `;
-    const todayResult = await db.query(todayQuery);
+    const todayResult = await pool.query(todayQuery);
     const todayLogs = todayResult.rows[0].today;
 
     // Action statistics
@@ -589,7 +589,7 @@ router.get('/stats', verifyToken, async (req, res) => {
       GROUP BY action
       ORDER BY count DESC
     `;
-    const actionStatsResult = await db.query(actionStatsQuery, params);
+    const actionStatsResult = await pool.query(actionStatsQuery, params);
     const actionStats = actionStatsResult.rows;
 
     // Calculate action counts
@@ -605,7 +605,7 @@ router.get('/stats', verifyToken, async (req, res) => {
       FROM audit_trail
       WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
     `;
-    const activeUsersResult = await db.query(activeUsersQuery);
+    const activeUsersResult = await pool.query(activeUsersQuery);
     const activeUsers = activeUsersResult.rows[0].active_users;
 
     res.json({
@@ -643,7 +643,7 @@ router.get('/suspicious-activity', verifyToken, async (req, res) => {
       LIMIT 20
     `;
     
-    const suspiciousResult = await db.query(suspiciousQuery);
+    const suspiciousResult = await pool.query(suspiciousQuery);
     const suspiciousActivities = suspiciousResult.rows;
     
     res.json({
@@ -674,7 +674,7 @@ router.get('/most-active-entities', verifyToken, async (req, res) => {
       LIMIT 10
     `;
     
-    const entitiesResult = await db.query(entitiesQuery);
+    const entitiesResult = await pool.query(entitiesQuery);
     const entities = entitiesResult.rows;
     
     res.json({
@@ -745,7 +745,7 @@ router.get('/export-excel', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC LIMIT ?`;
     params.push(parseInt(limit));
 
-    const result = await db.query(query, params);
+    const result = await pool.query(query, params);
     const logs = result.rows;
 
     // Create Excel workbook
@@ -864,7 +864,7 @@ router.get('/export-pdf', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC LIMIT ?`;
     params.push(parseInt(limit));
 
-    const result = await db.query(query, params);
+    const result = await pool.query(query, params);
     const logs = result.rows;
 
     // Create PDF document
@@ -921,7 +921,7 @@ router.post('/cleanup', verifyToken, async (req, res) => {
       WHERE timestamp < DATE_SUB(NOW(), INTERVAL ? DAY)
     `;
     
-    const result = await db.query(deleteQuery, [daysToKeep]);
+    const result = await pool.query(deleteQuery, [daysToKeep]);
     
     res.json({
       success: true,
@@ -947,7 +947,7 @@ router.post('/', verifyToken, async (req, res) => {
       VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)
     `;
 
-    await db.query(query, [
+    await pool.query(query, [
       action,
       module,
       description,

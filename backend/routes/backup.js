@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const backupController = require('../controllers/backupController');
 const { verifyToken, requireRole } = require('../middleware/auth');
+const backupController = require('../controllers/backupController');
+const { pool } = require('../db'); // Updated to use new structure
 
 // Test endpoint without authentication
 router.get('/test', async (req, res) => {
