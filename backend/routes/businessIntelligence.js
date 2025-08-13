@@ -198,7 +198,14 @@ router.get('/financial-report', verifyToken, async (req, res) => {
     const totalRevenue = parseFloat(revenue.total_revenue) || 0;
     const totalExpenses = parseFloat(expenses.total_expenses) + parseFloat(workHours.total_labor_cost);
     const totalProfit = totalRevenue - totalExpenses;
-    const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+    let profitMargin = 0;
+    
+    if (totalRevenue > 0 && isFinite(totalProfit) && !isNaN(totalProfit)) {
+      profitMargin = (totalProfit / totalRevenue) * 100;
+      if (!isFinite(profitMargin) || isNaN(profitMargin)) {
+        profitMargin = 0;
+      }
+    }
 
     res.json({
       period: period,
@@ -232,7 +239,7 @@ router.get('/financial-report', verifyToken, async (req, res) => {
       profit: {
         total: totalProfit,
         margin: profitMargin,
-        percentage: (isFinite(profitMargin) && !isNaN(profitMargin) ? profitMargin : 0).toFixed(2)
+        percentage: profitMargin.toFixed(2)
       }
     });
   } catch (error) {
