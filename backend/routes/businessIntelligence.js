@@ -140,4 +140,198 @@ router.get('/weekly-profit', verifyToken, async (req, res) => {
   }
 });
 
+// Financial report endpoint
+router.get('/financial-report', verifyToken, async (req, res) => {
+  try {
+    const { period = 'month', startDate, endDate } = req.query;
+    
+    let dateFilter = '';
+    if (startDate && endDate) {
+      dateFilter = `WHERE wh.date >= '${startDate}' AND wh.date <= '${endDate}'`;
+    } else if (period === 'month') {
+      dateFilter = `WHERE wh.date >= CURRENT_DATE - INTERVAL '1 month'`;
+    } else if (period === 'week') {
+      dateFilter = `WHERE wh.date >= CURRENT_DATE - INTERVAL '1 week'`;
+    }
+
+    const financialQuery = `
+      SELECT 
+        COALESCE(SUM(wh.hours * wh.rate), 0) as total_revenue,
+        COALESCE(SUM(wh.hours * wh.rate * 0.3), 0) as estimated_profit,
+        COUNT(DISTINCT wh.employee_id) as active_employees,
+        COALESCE(AVG(wh.hours), 0) as avg_hours_per_employee
+      FROM work_hours wh
+      ${dateFilter}
+    `;
+
+    const financialResult = await pool.query(financialQuery);
+    const financialData = financialResult.rows[0];
+
+    res.json({
+      totalRevenue: parseFloat(financialData.total_revenue) || 0,
+      estimatedProfit: parseFloat(financialData.estimated_profit) || 0,
+      activeEmployees: parseInt(financialData.active_employees) || 0,
+      avgHoursPerEmployee: parseFloat(financialData.avg_hours_per_employee) || 0,
+      period: period,
+      startDate: startDate || null,
+      endDate: endDate || null
+    });
+  } catch (error) {
+    console.error('Error fetching financial report:', error);
+    res.status(500).json({ error: 'Gabim në marrjen e raportit financiar' });
+  }
+});
+
+// Site performance endpoint
+router.get('/site-performance', verifyToken, async (req, res) => {
+  try {
+    const { period = 'month' } = req.query;
+    
+    let dateFilter = '';
+    if (period === 'month') {
+      dateFilter = `WHERE wh.date >= CURRENT_DATE - INTERVAL '1 month'`;
+    } else if (period === 'week') {
+      dateFilter = `WHERE wh.date >= CURRENT_DATE - INTERVAL '1 week'`;
+    }
+
+    const siteQuery = `
+      SELECT 
+        COALESCE(SUM(wh.hours), 0) as total_hours,
+        COALESCE(SUM(wh.hours * wh.rate), 0) as total_revenue,
+        COUNT(DISTINCT wh.employee_id) as active_workers,
+        COALESCE(AVG(wh.hours), 0) as avg_hours_per_day
+      FROM work_hours wh
+      ${dateFilter}
+    `;
+
+    const siteResult = await pool.query(siteQuery);
+    const siteData = siteResult.rows[0];
+
+    res.json({
+      totalHours: parseFloat(siteData.total_hours) || 0,
+      totalRevenue: parseFloat(siteData.total_revenue) || 0,
+      activeWorkers: parseInt(siteData.active_workers) || 0,
+      avgHoursPerDay: parseFloat(siteData.avg_hours_per_day) || 0,
+      period: period
+    });
+  } catch (error) {
+    console.error('Error fetching site performance:', error);
+    res.status(500).json({ error: 'Gabim në marrjen e performancës së vendit' });
+  }
+});
+
+// Contract performance endpoint
+router.get('/contract-performance', verifyToken, async (req, res) => {
+  try {
+    const { status = '' } = req.query;
+    
+    let statusFilter = '';
+    if (status) {
+      statusFilter = `WHERE c.status = '${status}'`;
+    }
+
+    const contractQuery = `
+      SELECT 
+        c.contract_number,
+        c.contract_value,
+        c.status,
+        c.start_date,
+        c.end_date,
+        COALESCE(SUM(wh.hours * wh.rate), 0) as total_work_hours_cost,
+        COALESCE(c.contract_value - SUM(wh.hours * wh.rate), c.contract_value) as remaining_budget
+      FROM contracts c
+      LEFT JOIN work_hours wh ON c.contract_number = wh.contract_id
+      ${statusFilter}
+      GROUP BY c.contract_number, c.contract_value, c.status, c.start_date, c.end_date
+      ORDER BY c.start_date DESC
+      LIMIT 10
+    `;
+
+    const contractResult = await pool.query(contractQuery);
+    const contracts = contractResult.rows.map(row => ({
+      contractNumber: row.contract_number,
+      contractValue: parseFloat(row.contract_value) || 0,
+      status: row.status,
+      startDate: row.start_date,
+      endDate: row.end_date,
+      totalWorkHoursCost: parseFloat(row.total_work_hours_cost) || 0,
+      remainingBudget: parseFloat(row.remaining_budget) || 0
+    }));
+
+    res.json(contracts);
+  } catch (error) {
+    console.error('Error fetching contract performance:', error);
+    res.status(500).json({ error: 'Gabim në marrjen e performancës së kontratave' });
+  }
+});
+
+// Employee performance endpoint
+router.get('/employee-performance', verifyToken, async (req, res) => {
+  try {
+    const employeeQuery = `
+      SELECT 
+        e.id,
+        e.first_name,
+        e.last_name,
+        e.status,
+        COALESCE(SUM(wh.hours), 0) as total_hours,
+        COALESCE(SUM(wh.hours * wh.rate), 0) as total_earnings,
+        COALESCE(AVG(wh.hours), 0) as avg_hours_per_day
+      FROM employees e
+      LEFT JOIN work_hours wh ON e.id = wh.employee_id
+      WHERE e.status = 'active'
+      GROUP BY e.id, e.first_name, e.last_name, e.status
+      ORDER BY total_hours DESC
+      LIMIT 10
+    `;
+
+    const employeeResult = await pool.query(employeeQuery);
+    const employees = employeeResult.rows.map(row => ({
+      id: row.id,
+      firstName: row.first_name,
+      lastName: row.last_name,
+      status: row.status,
+      totalHours: parseFloat(row.total_hours) || 0,
+      totalEarnings: parseFloat(row.total_earnings) || 0,
+      avgHoursPerDay: parseFloat(row.avg_hours_per_day) || 0
+    }));
+
+    res.json(employees);
+  } catch (error) {
+    console.error('Error fetching employee performance:', error);
+    res.status(500).json({ error: 'Gabim në marrjen e performancës së punonjësve' });
+  }
+});
+
+// Time series data endpoint
+router.get('/time-series', verifyToken, async (req, res) => {
+  try {
+    const timeSeriesQuery = `
+      SELECT 
+        DATE_TRUNC('day', wh.date) as date,
+        COALESCE(SUM(wh.hours), 0) as total_hours,
+        COALESCE(SUM(wh.hours * wh.rate), 0) as total_revenue,
+        COUNT(DISTINCT wh.employee_id) as active_employees
+      FROM work_hours wh
+      WHERE wh.date >= CURRENT_DATE - INTERVAL '30 days'
+      GROUP BY DATE_TRUNC('day', wh.date)
+      ORDER BY date DESC
+      LIMIT 30
+    `;
+
+    const timeSeriesResult = await pool.query(timeSeriesQuery);
+    const timeSeriesData = timeSeriesResult.rows.map(row => ({
+      date: row.date,
+      totalHours: parseFloat(row.total_hours) || 0,
+      totalRevenue: parseFloat(row.total_revenue) || 0,
+      activeEmployees: parseInt(row.active_employees) || 0
+    }));
+
+    res.json(timeSeriesData);
+  } catch (error) {
+    console.error('Error fetching time series data:', error);
+    res.status(500).json({ error: 'Gabim në marrjen e të dhënave të serisë kohore' });
+  }
+});
+
 module.exports = router; 
