@@ -35,7 +35,7 @@ router.get('/dashboard-stats', verifyToken, async (req, res) => {
     const contractsQuery = `
       SELECT COUNT(*) as active_contracts 
       FROM contracts c
-      WHERE c.status IN ('Ne progres', 'Draft')
+      WHERE c.status = 'Ne progres'
     `;
     
     const contractsResult = await pool.query(contractsQuery);
@@ -333,8 +333,9 @@ router.get('/site-performance', verifyToken, async (req, res) => {
         COUNT(DISTINCT wh.employee_id) as active_employees,
         COUNT(DISTINCT wh.date) as working_days,
         COALESCE(AVG(wh.hours), 0) as avg_hours_per_day,
-        0 as total_expenses
+        COALESCE(SUM(ei.gross), 0) as total_expenses
       FROM work_hours wh
+      LEFT JOIN expenses_invoices ei ON wh.contract_id::text = ei.contract_id::text
       ${dateFilter}
       GROUP BY wh.site
       ORDER BY total_hours DESC
@@ -377,11 +378,13 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
     const contractQuery = `
       SELECT 
         c.contract_number,
+        c.company,
         c.site_name,
         c.contract_value,
-        c.status,
         c.start_date,
         c.finish_date,
+        c.address,
+        c.contract_type,
         COALESCE(SUM(wh.hours * wh.rate), 0) as total_labor_cost,
         COALESCE(SUM(ei.gross), 0) as total_expenses,
         COALESCE(SUM(wh.hours), 0) as total_hours,
@@ -390,7 +393,7 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
       LEFT JOIN work_hours wh ON c.contract_number::text = wh.contract_id::text
       LEFT JOIN expenses_invoices ei ON c.contract_number::text = ei.contract_id::text
       ${statusFilter}
-      GROUP BY c.contract_number, c.site_name, c.contract_value, c.status, c.start_date, c.finish_date
+      GROUP BY c.contract_number, c.company, c.site_name, c.contract_value, c.start_date, c.finish_date, c.address, c.contract_type
       ORDER BY c.contract_value DESC
     `;
 
@@ -403,11 +406,13 @@ router.get('/contract-performance', verifyToken, async (req, res) => {
       
       return {
         contractNumber: row.contract_number,
+        company: row.company,
         siteName: row.site_name,
         contractValue: parseFloat(row.contract_value) || 0,
-        status: row.status,
-        startDate: row.start_date,
-        endDate: row.finish_date,
+        startDate: row.start_date ? new Date(row.start_date).toLocaleDateString('sq-AL') : null,
+        finishDate: row.finish_date ? new Date(row.finish_date).toLocaleDateString('sq-AL') : null,
+        address: row.address,
+        contractType: row.contract_type,
         totalLaborCost: parseFloat(row.total_labor_cost) || 0,
         totalExpenses: parseFloat(row.total_expenses) || 0,
         totalCost: totalCost,
@@ -468,7 +473,7 @@ router.get('/time-series', verifyToken, async (req, res) => {
     const result = await pool.query(timeSeriesQuery);
     
     const timeSeriesData = result.rows.map(row => ({
-      period: row.period,
+      period: row.period instanceof Date ? row.period.toLocaleDateString('sq-AL') : row.period,
       value: parseFloat(row.value) || 0
     }));
 
