@@ -83,18 +83,19 @@ export default function Login() {
     
     try {
       // Attempt login
-      await login(formData.email.trim().toLowerCase(), formData.password);
+      const user = await login(formData.email.trim().toLowerCase(), formData.password);
       
       // Success notification
       toast.success("Mirëseerdhët! Po ju drejtojmë në dashboard...");
       
       // Navigate to appropriate dashboard based on role
       setTimeout(() => {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (user.role === 'admin') {
           navigate('/admin/dashboard');
         } else if (user.role === 'manager') {
           navigate('/manager/dashboard');
+        } else if (user.role === 'user') {
+          navigate('/user/dashboard');
         } else {
           navigate('/dashboard');
         }
@@ -139,23 +140,23 @@ export default function Login() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center relative overflow-hidden"
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative overflow-hidden p-4"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-indigo-900/20"></div>
       
-      <div className="relative z-10 bg-white/95 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md text-center border border-white/20">
+      <div className="relative z-10 bg-white/95 backdrop-blur-xl p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm sm:max-w-md text-center border border-white/20">
         {/* Logo and Header */}
-        <div className="mb-8">
-          <img src={logo} alt="Logo" className="h-20 mx-auto mb-6 drop-shadow-lg" />
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+        <div className="mb-6 sm:mb-8">
+          <img src={logo} alt="Logo" className="h-16 sm:h-20 mx-auto mb-4 sm:mb-6 drop-shadow-lg" />
+          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2 sm:mb-3">
             Mirëseerdhët
           </h2>
-          <p className="text-gray-600 text-sm">Vendosni kredencialet për të hyrë në sistem</p>
+          <p className="text-gray-600 text-xs sm:text-sm">Vendosni kredencialet për të hyrë në sistem</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
           {/* Email Field */}
           <div className="text-left">
             <label className="block mb-2 text-sm font-semibold text-gray-700">
@@ -169,7 +170,7 @@ export default function Login() {
                 value={formData.email}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
-                className={`w-full p-4 pl-12 border-2 rounded-xl focus:ring-4 focus:outline-none transition-all duration-300 ${
+                className={`w-full p-3 sm:p-4 pl-10 sm:pl-12 border-2 rounded-xl focus:ring-4 focus:outline-none transition-all duration-300 text-sm sm:text-base ${
                   errors.email 
                     ? 'border-red-300 focus:ring-red-200 focus:border-red-500 bg-red-50' 
                     : 'border-gray-200 focus:ring-blue-200 focus:border-blue-500 bg-white hover:border-blue-300'
@@ -177,8 +178,8 @@ export default function Login() {
                 disabled={loading}
                 autoComplete="email"
               />
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <span className="text-gray-400">📧</span>
+              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                <span className="text-gray-400 text-sm sm:text-base">📧</span>
               </div>
             </div>
             {errors.email && (
@@ -201,7 +202,7 @@ export default function Login() {
                 value={formData.password}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
-                className={`w-full p-4 pl-12 border-2 rounded-xl focus:ring-4 focus:outline-none transition-all duration-300 ${
+                className={`w-full p-3 sm:p-4 pl-10 sm:pl-12 border-2 rounded-xl focus:ring-4 focus:outline-none transition-all duration-300 text-sm sm:text-base ${
                   errors.password 
                     ? 'border-red-300 focus:ring-red-200 focus:border-red-500 bg-red-50' 
                     : 'border-gray-200 focus:ring-blue-200 focus:border-blue-500 bg-white hover:border-blue-300'
@@ -209,8 +210,8 @@ export default function Login() {
                 disabled={loading}
                 autoComplete="current-password"
               />
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <span className="text-gray-400">🔐</span>
+              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                <span className="text-gray-400 text-sm sm:text-base">🔐</span>
               </div>
             </div>
             {errors.password && (
@@ -224,7 +225,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full font-semibold py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 ${
+            className={`w-full font-semibold py-3 sm:py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 text-sm sm:text-base ${
               loading
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                 : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] shadow-lg'
@@ -232,22 +233,22 @@ export default function Login() {
           >
             {loading ? (
               <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent"></div>
                 <span>Duke hyrë...</span>
               </>
             ) : (
               <>
-                <span className="text-lg">🚀</span>
+                <span className="text-base sm:text-lg">🚀</span>
                 <span>Hyr në Sistem</span>
               </>
             )}
           </button>
 
           {/* Forgot Password Link */}
-          <div className="mt-6 text-center">
+          <div className="mt-4 sm:mt-6 text-center">
             <a 
               href="/forgot-password" 
-              className="text-blue-600 hover:text-blue-800 font-medium transition-all duration-300 hover:scale-105 inline-flex items-center gap-2"
+              className="text-blue-600 hover:text-blue-800 font-medium transition-all duration-300 hover:scale-105 inline-flex items-center gap-2 text-sm sm:text-base"
             >
               <span>🔑</span>
               <span>Kam harruar fjalëkalimin?</span>

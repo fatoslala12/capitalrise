@@ -27,20 +27,19 @@ export function AuthProvider({ children }) {
 
   // Login me backend - optimized me useCallback
   const login = useCallback(async (email, password) => {
-    try {
-      const res = await api.post("/api/auth/login", {
-        email: email.trim().toLowerCase(),
-        password,
-      });
-      // Ruaj token dhe user në localStorage
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("authUser", JSON.stringify(res.data.user));
-      setUser(res.data.user);
-      navigate(`/${res.data.user.role}/dashboard`);
-    } catch (err) {
-      alert("Email ose fjalëkalim i pasaktë!");
-    }
-  }, [navigate]);
+    const res = await api.post("/api/auth/login", {
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    // Ruaj token dhe user në localStorage
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("authUser", JSON.stringify(res.data.user));
+    localStorage.setItem("user", JSON.stringify(res.data.user)); // Shtoj dhe këtë për compatibility
+    setUser(res.data.user);
+    
+    // Return success - nuk e bëj navigate këtu, e lë për komponentin
+    return res.data.user;
+  }, []);
 
   const logout = useCallback(() => {
     setUser(null);
