@@ -494,7 +494,7 @@ export default function PaymentDetails() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* MODAL HEADER */}
-              <div className="bg-gradient-to-r from-emerald-600 to-blue-600 px-6 py-4">
+              <div className="bg-gradient-to-r from-emerald-400 to-blue-400 px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="bg-white/20 rounded-lg p-2">
@@ -517,7 +517,7 @@ export default function PaymentDetails() {
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
                 <form className="space-y-6" onSubmit={handleAddExpenseInvoice}>
                   {/* BASIC INFO SECTION */}
-                  <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="bg-slate-50/50 rounded-xl p-4 border border-slate-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
                       📝 Informacionet Bazë
                     </label>
@@ -548,7 +548,7 @@ export default function PaymentDetails() {
                   </div>
 
                   {/* AMOUNTS SECTION */}
-                  <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
                       💰 Shumat Financiare
                     </label>
@@ -593,7 +593,7 @@ export default function PaymentDetails() {
                   </div>
 
                   {/* FILE & STATUS SECTION */}
-                  <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
                       📎 Dokumenti & Statusi
                     </label>
@@ -625,7 +625,7 @@ export default function PaymentDetails() {
                   <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <button 
                       type="submit" 
-                      className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
+                      className="flex-1 bg-gradient-to-r from-emerald-400 to-blue-500 hover:from-emerald-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                     >
                       <span className="text-xl">💾</span>
                       <span className="hidden sm:inline">Shto Shpenzim</span>
@@ -634,7 +634,7 @@ export default function PaymentDetails() {
                     <button 
                       type="button"
                       onClick={closeAddModal}
-                      className="flex-1 bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
+                      className="flex-1 bg-slate-400 hover:bg-slate-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                     >
                       <span className="text-xl">✕</span>
                       <span className="hidden sm:inline">Anulo</span>
@@ -647,9 +647,12 @@ export default function PaymentDetails() {
           </div>
         )}
 
-        {/* ORËT E PUNËS SECTION - MOBILE RESPONSIVE */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
-          <div className="p-4 sm:p-6 lg:p-8">
+        {/* GRID LAYOUT - PARALEL NË WEB, VERTIKAL NË MOBILE */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          
+          {/* ORËT E PUNËS SECTION - MOBILE RESPONSIVE */}
+          <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+            <div className="p-4 sm:p-6 lg:p-8">
             <h4 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
               👷‍♂️ Orët e Punës & Pagesat
             </h4>
@@ -733,13 +736,12 @@ export default function PaymentDetails() {
                 <p className="text-slate-400 text-sm">për këtë kontratë akoma</p>
               </div>
             )}
+            </div>
           </div>
 
-        </div>
-
-        {/* SHPENZIMET/FATURAT SECTION - MOBILE RESPONSIVE */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
-          <div className="p-4 sm:p-6 lg:p-8">
+          {/* SHPENZIMET/FATURAT SECTION - MOBILE RESPONSIVE */}
+          <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+            <div className="p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <h4 className="text-xl sm:text-2xl font-bold text-blue-700 flex items-center gap-2">
                 🧾 Shpenzime & Fatura 
@@ -870,6 +872,8 @@ export default function PaymentDetails() {
             </div>
           </div>
         </div>
+        
+        </div> {/* Mbyll grid-in paralel */}
 
         {/* TOTALI I PËRGJITHSHËM - MOBILE RESPONSIVE */}
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 p-4 sm:p-6 lg:p-8">
