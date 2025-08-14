@@ -46,6 +46,7 @@ export default function EmployeesList() {
     hourlyRate: "",
     status: "Aktiv",
     qualification: "CSS",
+    labelType: "UTR",
     photo: employeePlaceholder,
     username: "",
     password: "12345678",
@@ -226,6 +227,7 @@ export default function EmployeesList() {
         startDate: newEmployee.startDate,
         status: newEmployee.status,
         qualification: newEmployee.qualification,
+        labelType: newEmployee.labelType,
         nextOfKin: newEmployee.nextOfKin,
         nextOfKinPhone: newEmployee.nextOfKinPhone,
         dob: newEmployee.dob,
@@ -249,12 +251,16 @@ export default function EmployeesList() {
           status: res.data.data.status,
           workplace: newEmployee.workplace,
           phone: res.data.data.phone,
-          residence: res.data.data.address,
+          residence: res.data.data.residence || res.data.data.address,
           hourlyRate: res.data.data.hourlyRate,
           startDate: res.data.data.startDate,
           qualification: res.data.data.qualification,
           nextOfKin: res.data.data.nextOfKin,
-          nextOfKinPhone: res.data.data.nextOfKinPhone
+          nextOfKinPhone: res.data.data.nextOfKinPhone,
+          dob: res.data.data.dob,
+          pob: res.data.data.pob,
+          nid: res.data.data.nid,
+          labelType: res.data.data.labelType
         };
         
         setEmployees(prev => [...prev, newEmp]);
@@ -270,13 +276,14 @@ export default function EmployeesList() {
    Roli: ${res.data.data.role}
    Statusi: ${res.data.data.status}
    Telefoni: ${res.data.data.phone || 'N/A'}
-   Adresa: ${res.data.data.address || 'N/A'}
-   Pozicioni: ${res.data.data.position || 'N/A'}
+   Adresa: ${res.data.data.residence || res.data.data.address || 'N/A'}
+   Kualifikimi: ${res.data.data.qualification || 'N/A'}
    Paga për orë: £${res.data.data.hourlyRate || 'N/A'}
    Data e fillimit: ${res.data.data.startDate || 'N/A'}
-   Kualifikimi: ${res.data.data.qualification || 'N/A'}
    Kontakti i ngushtë: ${res.data.data.nextOfKin || 'N/A'}
    Telefoni i kontaktit: ${res.data.data.nextOfKinPhone || 'N/A'}
+   NID: ${res.data.data.nid || 'N/A'}
+   Label Type: ${res.data.data.labelType || 'N/A'}
 
 🔐 Kredencialet e hyrjes:
    Email: ${res.data.data.email}
@@ -324,6 +331,7 @@ export default function EmployeesList() {
       hourlyRate: "",
       status: "Aktiv",
       qualification: "CSS",
+      labelType: "UTR",
       photo: employeePlaceholder,
       username: "",
       password: "12345678",
@@ -974,7 +982,7 @@ export default function EmployeesList() {
               })}
             </tbody>
           </table>
-            </div>
+        </div>
 
             {/* MOBILE CARDS */}
             <div className="lg:hidden space-y-4">
@@ -1039,14 +1047,14 @@ export default function EmployeesList() {
         
         {/* EXPORT BUTTON */}
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg border border-slate-200/50 p-4 sm:p-6 text-center">
-          <button
-            onClick={exportToCSV}
+        <button
+          onClick={exportToCSV}
             className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 mx-auto hover:shadow-xl hover:scale-105"
-          >
+        >
             <span className="text-xl">📤</span> 
             <span className="hidden sm:inline">Eksporto punonjësit (CSV)</span>
             <span className="sm:hidden">Eksporto CSV</span>
-          </button>
+        </button>
         </div>
       </div>
     </div>

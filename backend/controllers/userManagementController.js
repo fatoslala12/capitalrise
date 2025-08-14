@@ -19,6 +19,7 @@ exports.createUser = asyncHandler(async (req, res) => {
     startDate,
     status = 'Aktiv',
     qualification = 'CSS',
+    labelType = 'UTR',
     nextOfKin,
     nextOfKinPhone
   } = req.body;
@@ -47,13 +48,13 @@ exports.createUser = asyncHandler(async (req, res) => {
     // Përdor ID-në e user-it aktual për created_by dhe updated_by
     const currentUserId = req.user.id || 1;
     
-    // Përcakto label_type bazuar në qualification
-    const labelType = qualification === 'NI' ? 'NI' : 'UTR';
+    // Përdor labelType nga request ose default UTR
+    const finalLabelType = labelType || 'UTR';
     
     console.log('🔍 Employee data being inserted:', {
       firstName, lastName, address, startDate, phone,
       nextOfKin, nextOfKinPhone, qualification, status,
-      hourlyRate, labelType,
+      hourlyRate, finalLabelType,
       dob: req.body.dob, pob: req.body.pob, nid: req.body.nid,
       createdBy: currentUserId
     });
@@ -69,7 +70,7 @@ exports.createUser = asyncHandler(async (req, res) => {
       [
         firstName, lastName, address, startDate, phone,
         nextOfKin, nextOfKinPhone, qualification, status,
-        hourlyRate, currentUserId, labelType,
+        hourlyRate, currentUserId, finalLabelType,
         req.body.dob || null, req.body.pob || null, req.body.nid || null,
         null, currentUserId
       ]
@@ -151,24 +152,30 @@ exports.createUser = asyncHandler(async (req, res) => {
     success: true,
     message: 'Përdoruesi u krijua me sukses',
     data: {
-      id: newUser.id,
-      firstName: newUser.first_name,
-      lastName: newUser.last_name,
+      id: newEmployee.id, // Employee ID për frontend
+      userId: newUser.id, // User ID për reference
+      firstName: newEmployee.first_name,
+      lastName: newEmployee.last_name,
       email: newUser.email,
       role: newUser.role,
-      status: newUser.status,
+      status: newEmployee.status,
       password: password, // Password i papërpunuar për message box
       emailSent: emailSent,
-      // Të dhënat e plota për message box
+      // Të dhënat e plota nga employees table
       employeeId: newEmployee.id,
-      phone: newUser.phone,
-      address: newUser.address,
-      position: newUser.position,
-      hourlyRate: newUser.hourly_rate,
-      startDate: newUser.start_date,
-      qualification: newUser.qualification,
-      nextOfKin: newUser.next_of_kin,
-      nextOfKinPhone: newUser.next_of_kin_phone
+      phone: phone, // Nga request body
+      address: address, // Nga request body  
+      position: position, // Nga request body
+      hourlyRate: newEmployee.hourly_rate,
+      startDate: newEmployee.start_date,
+      qualification: newEmployee.qualification,
+      nextOfKin: newEmployee.next_of_kin,
+      nextOfKinPhone: newEmployee.next_of_kin_phone,
+      dob: newEmployee.dob,
+      pob: newEmployee.pob,
+      nid: newEmployee.nid,
+      residence: newEmployee.residence,
+      labelType: newEmployee.label_type
     }
   });
 });
