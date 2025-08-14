@@ -71,8 +71,8 @@ export default function MainLayout() {
   const SidebarContent = () => (
     <>
       <div className="p-2 md:p-3 lg:p-4 text-base md:text-lg lg:text-xl font-extrabold border-b border-blue-800 mb-2 rounded-b-2xl bg-white/10 backdrop-blur-md shadow-lg flex items-center gap-2">
-        <span className="bg-blue-100 rounded-xl p-1 shadow text-blue-700 text-lg md:text-xl lg:text-2xl">🏗️</span>
-        <span className="drop-shadow text-xs md:text-sm lg:text-base">Alban Construction</span>
+        <img src="/capital rise logo.png" alt="Capital Rise Logo" className="h-8 w-8 bg-blue-100 rounded-xl p-1 shadow" />
+        <span className="drop-shadow text-xs md:text-sm lg:text-base">Capital Rise</span>
       </div>
       <nav className="flex-1 px-2 py-4 space-y-2">
         {menu.map((item) => {
@@ -95,7 +95,7 @@ export default function MainLayout() {
       {/* Empty space for bottom alignment */}
       <div className="mt-auto p-2 md:p-3 lg:p-4 border-t border-blue-800/30">
         <div className="text-center text-xs md:text-sm text-blue-200">
-          © 2024 Alban Construction
+          © 2024 Capital Rise
         </div>
       </div>
     </>
@@ -141,8 +141,8 @@ export default function MainLayout() {
           
           {/* Mobile center logo */}
           <div className="lg:hidden flex items-center gap-1 sm:gap-2">
-            <span className="text-blue-700 text-lg sm:text-xl">🏗️</span>
-            <span className="font-bold text-gray-900 text-sm sm:text-base">Alban Construction</span>
+            <img src="/capital rise logo.png" alt="Capital Rise Logo" className="h-6 w-6" />
+            <span className="font-bold text-gray-900 text-sm sm:text-base">Capital Rise</span>
           </div>
           
           {/* Center welcome message */}
