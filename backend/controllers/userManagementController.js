@@ -90,11 +90,11 @@ exports.createUser = asyncHandler(async (req, res) => {
     console.log('🔍 Creating user with employee_id:', newEmployee.id);
     const result = await pool.query(
       `INSERT INTO users (
-        serial, employee_id, email, password, role, created_at, updated_by
-      ) VALUES ($1, $2, $3, $4, $5, NOW(), $6)
+        employee_id, email, password, role, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, NOW(), NOW())
       RETURNING *`,
       [
-        newEmployee.id, newEmployee.id, email.toLowerCase(), plainPassword, role, currentUserId
+        newEmployee.id, email.toLowerCase(), plainPassword, role
       ]
     );
 
@@ -141,16 +141,20 @@ exports.createUser = asyncHandler(async (req, res) => {
   // Dërgo email përshëndetje
   let emailSent = false;
   try {
-    await sendWelcomeEmail({
-      firstName: newUser.first_name,
-      lastName: newUser.last_name,
-      email: newUser.email,
-      password: password, // Password i papërpunuar për email
-      role: newUser.role
-    });
+    if (newUser) {
+      await sendWelcomeEmail({
+        firstName: newEmployee.first_name,
+        lastName: newEmployee.last_name,
+        email: newUser.email,
+        password: password, // Password i papërpunuar për email
+        role: newUser.role
+      });
 
-    console.log(`✅ Email u dërgua me sukses për user: ${newUser.email}`);
-    emailSent = true;
+      console.log(`✅ Email u dërgua me sukses për user: ${newUser.email}`);
+      emailSent = true;
+    } else {
+      console.log('⚠️ Nuk u dërgua email sepse newUser është null');
+    }
   } catch (emailError) {
     console.error('❌ Gabim në dërgimin e email:', emailError);
     emailSent = false;
