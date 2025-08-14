@@ -572,72 +572,113 @@ export default function ContractDetails() {
           </div>
         </div>
       ) : (
-        <div className="max-w-6xl mx-auto p-6 space-y-10 bg-gradient-to-br from-blue-100 via-white to-purple-100 min-h-screen">
-          {/* HEADER MODERN GLASSMORPHISM */}
-          <div className="flex items-center justify-between bg-white/60 backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-10 border-b-4 border-blue-400 animate-fade-in">
-            <div className="flex items-center gap-6">
-              <div className="flex-shrink-0 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full p-4 shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-14 h-14">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-2 drop-shadow-lg">Detajet e Kontratës</h2>
-                <div className="text-2xl font-bold text-purple-600 drop-shadow">{contract?.site_name ? contract.site_name : "-"}</div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+            {/* HEADER SECTION - MOBILE RESPONSIVE */}
+            <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+              <div className="p-4 sm:p-6 lg:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="flex-shrink-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-3 shadow-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6 sm:w-8 sm:h-8">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h4.125m-5.25 0V9.375c0-.621.504-1.125 1.125-1.125h2.25" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1">
+                        Detajet e Kontratës
+                      </h1>
+                      <div className="text-base sm:text-lg font-semibold text-slate-600">
+                        {contract?.site_name || "N/A"}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* EMAIL BUTTON - MOBILE RESPONSIVE */}
+                  <button
+                    onClick={handleSendContractEmail}
+                    disabled={loadingStates.sendContractEmail || !contract.company_email}
+                    className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-xl hover:scale-105"
+                    title={!contract.company_email ? "Kompania nuk ka email të konfiguruar" : "Dërgo detajet e kontratës në email"}
+                  >
+                    {loadingStates.sendContractEmail ? (
+                      <>
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span className="hidden sm:inline">Duke dërguar...</span>
+                        <span className="sm:hidden">...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-lg sm:text-xl">📧</span>
+                        <span className="hidden sm:inline">Dërgo në Email</span>
+                        <span className="sm:hidden">Email</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
-            
-            {/* Butoni për dërgimin e contract details në email */}
-            <button
-              onClick={handleSendContractEmail}
-              disabled={loadingStates.sendContractEmail || !contract.company_email}
-              className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              title={!contract.company_email ? "Kompania nuk ka email të konfiguruar" : "Dërgo detajet e kontratës në email"}
-            >
-              {loadingStates.sendContractEmail ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Duke dërguar...
-                </>
-              ) : (
-                <>
-                  <span className="text-xl">📧</span>
-                  Dërgo në Email
-                </>
-              )}
-            </button>
-          </div>
 
-          {/* Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white/70 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
-            <div className="space-y-3 text-lg">
-              <p><span className="font-bold text-blue-800">🏢 Emri i Kompanisë:</span> {contract.company}</p>
-              <p><span className="font-bold text-blue-800">#️⃣ Nr Kompanisë:</span> {contract.company_no}</p>
-              <p><span className="font-bold text-blue-800">📍 Vendodhja:</span> {contract.site_name}</p>
-              <p><span className="font-bold text-blue-800">📬 Adresa:</span> {contract.address}</p>
-              <p><span className="font-bold text-blue-800">📋 Lloji i Kontratës:</span> 
-                <span className={`ml-2 px-3 py-1 rounded-full text-sm font-semibold ${
-                  (contract.contract_type || 'day_work') === 'price_work' 
-                    ? 'bg-orange-100 text-orange-700' 
-                    : 'bg-blue-100 text-blue-700'
-                }`}>
-                  {(contract.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
-                </span>
-              </p>
+            {/* CONTRACT INFO SECTION - MOBILE RESPONSIVE */}
+            <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+              <div className="p-4 sm:p-6 lg:p-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏢 Kompania</span>
+                      <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.company}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📍 Vendodhja</span>
+                      <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.site_name}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📬 Adresa</span>
+                      <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.address || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📋 Tipi</span>
+                      <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold ${
+                        (contract.contract_type || 'day_work') === 'price_work' 
+                          ? 'bg-orange-100 text-orange-700 border border-orange-200' 
+                          : 'bg-blue-100 text-blue-700 border border-blue-200'
+                      }`}>
+                        {(contract.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 Fillimi</span>
+                      <span className="text-base sm:text-lg font-semibold text-slate-800">{formatDate(contract.start_date)}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 Mbarimi</span>
+                      <span className="text-base sm:text-lg font-semibold text-slate-800">{formatDate(contract.finish_date)}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📊 Statusi</span>
+                      <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold border ${
+                        contract.status === "Mbyllur" || contract.status === "Mbyllur me vonese" ? "bg-red-100 text-red-700 border-red-200" : 
+                        contract.status === "Ne progres" ? "bg-blue-100 text-blue-700 border-blue-200" : 
+                        contract.status === "Draft" ? "bg-gray-100 text-gray-700 border-gray-200" : 
+                        contract.status === "Anulluar" ? "bg-red-100 text-red-700 border-red-200" : 
+                        contract.status === "Pezulluar" ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-green-100 text-green-700 border-green-200"
+                      }`}>
+                        {contract.status}
+                      </span>
+                    </div>
+                    {contract.closed_date && (
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🔒 Mbyllur</span>
+                        <span className="text-base sm:text-lg font-semibold text-slate-800">{formatDate(contract.closed_date)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="space-y-3 text-lg">
-              <p><span className="font-bold text-blue-800">🗓 Data e Fillimit:</span> {formatDate(contract.start_date)}</p>
-              <p><span className="font-bold text-blue-800">🗓 Data e Mbarimit:</span> {formatDate(contract.finish_date)}</p>
-              <p><span className="font-bold text-blue-800">📊 Statusi:</span> <span className={
-                contract.status === "Mbyllur" || contract.status === "Mbyllur me vonese" ? "text-red-600" : 
-                contract.status === "Ne progres" ? "text-blue-600" : 
-                contract.status === "Draft" ? "text-gray-600" : 
-                contract.status === "Anulluar" ? "text-red-600" : 
-                contract.status === "Pezulluar" ? "text-yellow-600" : "text-green-600"
-              }>{contract.status}</span></p>
-              {contract.closed_date && <p><span className="font-bold text-blue-800">🔒 Mbyllur më:</span> {formatDate(contract.closed_date)}</p>}
-            </div>
-          </div>
 
           {/* Chart */}
           <div className="bg-white/70 p-10 shadow-2xl rounded-3xl border-2 border-purple-200 animate-fade-in">
@@ -680,47 +721,8 @@ export default function ContractDetails() {
             </ul>
           </div>
 
-          {/* Komente */}
-          <div className="bg-white/70 p-10 rounded-3xl shadow-2xl border-2 border-purple-200 animate-fade-in">
-            <h3 className="text-2xl font-bold mb-4 text-purple-800 flex items-center gap-2">💬 Komente</h3>
-            <div className="flex gap-3 mb-6">
-              <textarea 
-                value={newComment} 
-                onChange={(e) => setNewComment(e.target.value)} 
-                disabled={loadingStates.addComment}
-                className="w-full border-2 border-purple-200 rounded-xl p-3 text-base bg-purple-50 focus:ring-4 focus:ring-purple-300 transition-all shadow-sm disabled:opacity-50" 
-                placeholder="Shkruaj një koment..." 
-              />
-              <button 
-                onClick={handleAddComment} 
-                disabled={loadingStates.addComment || !newComment.trim()}
-                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-3 rounded-xl shadow-lg font-bold text-lg hover:from-blue-600 hover:to-purple-600 transition-all disabled:opacity-50 flex items-center gap-2"
-              >
-                {loadingStates.addComment ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Duke shtuar...
-                  </>
-                ) : (
-                  '➕ Shto'
-                )}
-              </button>
-            </div>
-            <ul className="mt-4 space-y-4 text-base">
-              {(contract.comments || []).map((c, i) => (
-                <li key={i} className="flex items-start gap-3 bg-purple-50 rounded-xl px-4 py-3 shadow border-l-4 border-blue-400 animate-fade-in">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-200 to-purple-200 flex items-center justify-center text-xl font-bold text-white shadow-md">{(c.text[0] || '').toUpperCase()}</div>
-                  <div className="flex-1">
-                    <p className="text-gray-800 font-medium">{c.text}</p>
-                    <span className="text-xs text-gray-500">{new Date(c.date).toLocaleString()}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Orët e Punës për këtë kontratë */}
-          <div className="bg-white/70 p-10 rounded-3xl shadow-2xl border-2 border-green-200 animate-fade-in">
+          {/* Butoni për shtim fature */}
+          <div className="flex justify-end mb-6">
             <h3 className="text-2xl font-bold mb-4 text-green-800 flex items-center gap-2">⏰ Orët e Punës</h3>
             
             {/* Search and Filter for Work Hours */}

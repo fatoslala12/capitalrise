@@ -555,7 +555,7 @@ exports.getWorkHoursByContract = async (req, res) => {
     if (contractRes.rows.length === 0) return res.json([]);
     const contract_id = contractRes.rows[0].id;
     const result = await pool.query(`
-      SELECT wh.*, e.first_name, e.last_name,
+      SELECT wh.*, e.first_name, e.last_name, e.hourly_rate, e.label_type,
         CONCAT(e.first_name, ' ', e.last_name) as employee_name
       FROM work_hours wh
       LEFT JOIN employees e ON wh.employee_id = e.id
