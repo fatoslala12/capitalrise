@@ -59,7 +59,7 @@ export default function MainLayout() {
   const SidebarContent = () => (
     <>
       <div className="p-2 md:p-3 lg:p-4 text-base md:text-lg lg:text-xl font-extrabold border-b border-blue-800 mb-2 rounded-b-2xl bg-white/10 backdrop-blur-md shadow-lg flex items-center gap-2">
-        <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-6 w-6 md:h-8 md:w-8" />
+        <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-8 w-8 md:h-10 md:w-10" />
         <span className="drop-shadow text-xs md:text-sm lg:text-base">Capital Rise</span>
       </div>
       <nav className="flex-1 px-2 py-4 space-y-2">
@@ -129,7 +129,7 @@ export default function MainLayout() {
           
           {/* Mobile center logo */}
           <div className="lg:hidden flex items-center gap-1 sm:gap-2">
-            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-5 w-5 sm:h-6 sm:w-6" />
+            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-6 w-6 sm:h-7 sm:w-7" />
             <span className="font-bold text-gray-900 text-xs sm:text-sm">Capital Rise</span>
           </div>
           
