@@ -723,123 +723,6 @@ export default function ContractDetails() {
 
           {/* Butoni për shtim fature */}
           <div className="flex justify-end mb-6">
-            <h3 className="text-2xl font-bold mb-4 text-green-800 flex items-center gap-2">⏰ Orët e Punës</h3>
-            
-            {/* Search and Filter for Work Hours */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="md:col-span-2">
-                <input
-                  type="text"
-                  placeholder="🔍 Kërko punonjës ose datë..."
-                  value={workHoursSearch}
-                  onChange={(e) => setWorkHoursSearch(e.target.value)}
-                  className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
-                />
-              </div>
-              <div>
-                <select
-                  value={workHoursFilter}
-                  onChange={(e) => setWorkHoursFilter(e.target.value)}
-                  className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
-                >
-                  <option value="all">Të gjitha llojet</option>
-                  <option value="NI">NI</option>
-                  <option value="UTR">UTR</option>
-                </select>
-              </div>
-            </div>
-            
-            {workHours.length > 0 ? (
-              <div className="overflow-x-auto">
-                {filteredWorkHours.length > 0 ? (
-                  <table className="w-full text-sm bg-white shadow rounded-xl">
-                    <thead className="bg-gradient-to-r from-green-100 to-blue-100 text-green-900">
-                      <tr>
-                        <th className="py-3 px-2 text-center font-semibold">Data</th>
-                        <th className="py-3 px-2 text-center font-semibold">Punonjësi</th>
-                        <th className="py-3 px-2 text-center font-semibold">Orë</th>
-                        <th className="py-3 px-2 text-center font-semibold">Tarifa/orë</th>
-                        <th className="py-3 px-2 text-center font-semibold">Bruto (£)</th>
-                        <th className="py-3 px-2 text-center font-semibold">Neto (£)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredWorkHours.map((wh, idx) => {
-                        const hours = parseFloat(wh.hours || 0);
-                        
-                        // Gjej punonjësin për të marrë labelType dhe hourly_rate
-                        const employee = employees.find(emp => emp.id === wh.employee_id);
-                        const labelType = employee?.labelType || employee?.label_type || 'NI';
-                        
-                        // Përdor tarifën e punonjësit nga databaza, ose nga work_hours nëse ekziston, ose default £15
-                        const rate = parseFloat(wh.rate || wh.hourly_rate || employee?.hourly_rate || 15);
-                        const gross = hours * rate;
-                        
-                        // Llogarit neto: 0.7 për NI, 0.8 për UTR
-                        const netRate = labelType === 'NI' ? 0.7 : 0.8;
-                        const net = gross * netRate;
-                        
-                        return (
-                          <tr key={idx} className="hover:bg-green-50 transition-all">
-                            <td className="py-2 px-2 text-center">{new Date(wh.date).toLocaleDateString('sq-AL')}</td>
-                            <td className="py-2 px-2 text-center font-medium">
-                              {wh.employee_name || `Employee #${wh.employee_id}`}
-                              <span className="text-xs ml-2 px-2 py-1 rounded bg-blue-100 text-blue-700 font-bold">
-                                {labelType}
-                              </span>
-                            </td>
-                            <td className="py-2 px-2 text-center font-bold text-blue-600">{hours}</td>
-                            <td className="py-2 px-2 text-center font-bold text-purple-600">£{rate.toFixed(2)}</td>
-                            <td className="py-2 px-2 text-center font-bold text-orange-600">£{gross.toFixed(2)}</td>
-                            <td className="py-2 px-2 text-center font-bold text-green-600">£{net.toFixed(2)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                    <tfoot className="bg-green-100">
-                      <tr>
-                        <td colSpan="2" className="py-3 px-2 text-center font-bold text-green-800">TOTALET:</td>
-                        <td className="py-3 px-2 text-center font-bold text-blue-700">
-                          {filteredWorkHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} orë
-                        </td>
-                        <td className="py-3 px-2 text-center">-</td>
-                        <td className="py-3 px-2 text-center font-bold text-orange-700 text-lg">
-                          £{filteredWorkHours.reduce((sum, wh) => {
-                            const hours = parseFloat(wh.hours || 0);
-                            const employee = employees.find(emp => emp.id === wh.employee_id);
-                            const rate = parseFloat(wh.rate || wh.hourly_rate || employee?.hourly_rate || 15);
-                            return sum + (hours * rate);
-                          }, 0).toFixed(2)}
-                        </td>
-                        <td className="py-3 px-2 text-center font-bold text-green-700 text-lg">
-                          £{filteredWorkHours.reduce((sum, wh) => {
-                            const hours = parseFloat(wh.hours || 0);
-                            const employee = employees.find(emp => emp.id === wh.employee_id);
-                            const rate = parseFloat(wh.rate || wh.hourly_rate || employee?.hourly_rate || 15);
-                            const gross = hours * rate;
-                            const labelType = employee?.labelType || employee?.label_type || 'NI';
-                            const netRate = labelType === 'NI' ? 0.7 : 0.8;
-                            return sum + (gross * netRate);
-                          }, 0).toFixed(2)}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 italic">
-                      Nuk u gjetën orë pune që përputhen me kërkimin tuaj
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-gray-500 italic text-center py-8">Nuk ka orë pune të regjistruara për këtë kontratë akoma</p>
-            )}
-          </div>
-
-          {/* Butoni për shtim fature */}
-          <div className="flex justify-end mb-6">
             <button
               onClick={openAddModal}
               className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
@@ -847,6 +730,7 @@ export default function ContractDetails() {
               <span className="text-xl">🧾</span> Shto Faturë
             </button>
           </div>
+
 
           {/* Lista Faturave + Print */}
           <div className="bg-white/80 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
@@ -1047,6 +931,186 @@ export default function ContractDetails() {
               </div>
             </div>
           )}
+            {/* ORËT E PUNËS - LËVIZUR NË FUND SIPAS KËRKESËS */}
+            <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+              <div className="p-4 sm:p-6 lg:p-8">
+                <h3 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
+                  ⏰ Orët e Punës
+                </h3>
+                
+                {/* Search and Filter for Work Hours */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="md:col-span-2">
+                    <input
+                      type="text"
+                      placeholder="🔍 Kërko punonjës ose datë..."
+                      value={workHoursSearch}
+                      onChange={(e) => setWorkHoursSearch(e.target.value)}
+                      className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                    />
+                  </div>
+                  <div>
+                    <select
+                      value={workHoursFilter}
+                      onChange={(e) => setWorkHoursFilter(e.target.value)}
+                      className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                    >
+                      <option value="all">Të gjitha llojet</option>
+                      <option value="NI">NI</option>
+                      <option value="UTR">UTR</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {workHours.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    {filteredWorkHours.length > 0 ? (
+                      <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
+                        <thead className="bg-gradient-to-r from-emerald-100 to-blue-100">
+                          <tr>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Data</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Punonjësi</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Orë</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Tarifa/orë</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Bruto (£)</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Neto (£)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredWorkHours.map((wh, idx) => {
+                            const hours = parseFloat(wh.hours || 0);
+                            
+                            // Gjej punonjësin për të marrë labelType dhe hourly_rate
+                            const employee = employees.find(emp => emp.id === wh.employee_id);
+                            const labelType = employee?.labelType || employee?.label_type || wh.label_type || 'NI';
+                            
+                            // Përdor tarifën e punonjësit nga databaza
+                            const rate = parseFloat(wh.hourly_rate || employee?.hourly_rate || 15);
+                            const gross = hours * rate;
+                            
+                            // Llogarit neto: 0.7 për NI, 0.8 për UTR
+                            const netRate = labelType === 'NI' ? 0.7 : 0.8;
+                            const net = gross * netRate;
+                            
+                            return (
+                              <tr key={idx} className="hover:bg-emerald-50 transition-all border-b border-slate-100">
+                                <td className="py-3 px-2 text-center">{new Date(wh.date).toLocaleDateString('sq-AL')}</td>
+                                <td className="py-3 px-2 text-center font-medium">
+                                  {wh.employee_name || `Employee #${wh.employee_id}`}
+                                  <span className={`text-xs ml-2 px-2 py-1 rounded-full font-bold ${
+                                    labelType === 'NI' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
+                                  }`}>
+                                    {labelType}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-2 text-center font-bold text-blue-600">{hours}</td>
+                                <td className="py-3 px-2 text-center font-bold text-purple-600">£{rate.toFixed(2)}</td>
+                                <td className="py-3 px-2 text-center font-bold text-orange-600">£{gross.toFixed(2)}</td>
+                                <td className="py-3 px-2 text-center font-bold text-emerald-600">£{net.toFixed(2)}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                        <tfoot className="bg-emerald-100">
+                          <tr>
+                            <td colSpan="2" className="py-4 px-2 text-center font-bold text-emerald-800">TOTALET:</td>
+                            <td className="py-4 px-2 text-center font-bold text-blue-700">
+                              {filteredWorkHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} orë
+                            </td>
+                            <td className="py-4 px-2 text-center">-</td>
+                            <td className="py-4 px-2 text-center font-bold text-orange-700 text-lg">
+                              £{filteredWorkHours.reduce((sum, wh) => {
+                                const hours = parseFloat(wh.hours || 0);
+                                const employee = employees.find(emp => emp.id === wh.employee_id);
+                                const rate = parseFloat(wh.hourly_rate || employee?.hourly_rate || 15);
+                                return sum + (hours * rate);
+                              }, 0).toFixed(2)}
+                            </td>
+                            <td className="py-4 px-2 text-center font-bold text-emerald-700 text-lg">
+                              £{filteredWorkHours.reduce((sum, wh) => {
+                                const hours = parseFloat(wh.hours || 0);
+                                const employee = employees.find(emp => emp.id === wh.employee_id);
+                                const rate = parseFloat(wh.hourly_rate || employee?.hourly_rate || 15);
+                                const gross = hours * rate;
+                                const labelType = employee?.labelType || employee?.label_type || wh.label_type || 'NI';
+                                const netRate = labelType === 'NI' ? 0.7 : 0.8;
+                                return sum + (gross * netRate);
+                              }, 0).toFixed(2)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-slate-500 italic">
+                          Nuk u gjetën orë pune që përputhen me kërkimin tuaj
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-slate-500 italic">Nuk ka orë pune të regjistruara për këtë kontratë akoma</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* KOMENTE - SEKSIONI I FUNDIT SIPAS KËRKESËS */}
+            <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+              <div className="p-4 sm:p-6 lg:p-8">
+                <h3 className="text-xl sm:text-2xl font-bold text-purple-700 mb-6 flex items-center gap-2">
+                  💬 Komente
+                </h3>
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                  <textarea 
+                    value={newComment} 
+                    onChange={(e) => setNewComment(e.target.value)} 
+                    disabled={loadingStates.addComment}
+                    className="flex-1 border-2 border-purple-200 rounded-xl p-3 text-base bg-purple-50/50 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm disabled:opacity-50 min-h-[100px] resize-none" 
+                    placeholder="Shkruaj një koment..." 
+                  />
+                  <button 
+                    onClick={handleAddComment} 
+                    disabled={loadingStates.addComment || !newComment.trim()}
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl shadow-lg font-bold transition-all disabled:opacity-50 flex items-center gap-2 justify-center self-start sm:self-stretch hover:shadow-xl hover:scale-105"
+                  >
+                    {loadingStates.addComment ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span className="hidden sm:inline">Duke shtuar...</span>
+                        <span className="sm:hidden">...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-lg">➕</span>
+                        <span className="hidden sm:inline">Shto</span>
+                        <span className="sm:hidden">+</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  {(contract.comments || []).map((c, i) => (
+                    <div key={i} className="flex items-start gap-3 bg-purple-50/50 rounded-xl px-4 py-3 shadow-sm border border-purple-100">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-sm font-bold text-white shadow-md">
+                        {(c.text[0] || '').toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-slate-800 font-medium break-words">{c.text}</p>
+                        <span className="text-xs text-slate-500 mt-1 block">{new Date(c.date).toLocaleString('sq-AL')}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {(!contract.comments || contract.comments.length === 0) && (
+                    <div className="text-center py-8">
+                      <p className="text-slate-500 italic">Nuk ka komente të shtuar akoma</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
