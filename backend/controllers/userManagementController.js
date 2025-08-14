@@ -46,7 +46,8 @@ exports.createUser = asyncHandler(async (req, res) => {
   let newEmployee = null;
   try {
     // Përdor ID-në e user-it aktual për created_by dhe updated_by
-    const currentUserId = req.user.id || 1;
+    const currentUserId = req.user?.id || req.user?.employee_id || 1;
+    console.log('🔍 Current user info:', { userId: req.user?.id, employeeId: req.user?.employee_id, fullUser: req.user });
     
     // Përdor labelType nga request ose default UTR
     const finalLabelType = labelType || 'UTR';
@@ -99,9 +100,17 @@ exports.createUser = asyncHandler(async (req, res) => {
 
     newUser = result.rows[0];
     console.log(`✅ User u krijua me sukses me ID: ${newUser.id}`);
+    console.log(`✅ User full data:`, newUser);
   } catch (userError) {
     console.error('❌ Gabim në krijimin e user:', userError);
-    throw userError;
+    console.error('❌ User error full details:', {
+      message: userError.message,
+      detail: userError.detail,
+      code: userError.code,
+      constraint: userError.constraint
+    });
+    // Mos bëj throw, vazhdo me procesin
+    console.log('⚠️ Vazhdoj pa user entry, vetëm me employee...');
   }
 
   // Krijo employee_workplaces nëse ka workplace
@@ -153,11 +162,11 @@ exports.createUser = asyncHandler(async (req, res) => {
     message: 'Përdoruesi u krijua me sukses',
     data: {
       id: newEmployee.id, // Employee ID për frontend
-      userId: newUser.id, // User ID për reference
+      userId: newUser?.id || null, // User ID për reference
       firstName: newEmployee.first_name,
       lastName: newEmployee.last_name,
-      email: newUser.email,
-      role: newUser.role,
+      email: newUser?.email || email,
+      role: newUser?.role || role,
       status: newEmployee.status,
       password: password, // Password i papërpunuar për message box
       emailSent: emailSent,
@@ -175,7 +184,10 @@ exports.createUser = asyncHandler(async (req, res) => {
       pob: newEmployee.pob,
       nid: newEmployee.nid,
       residence: newEmployee.residence,
-      labelType: newEmployee.label_type
+      labelType: newEmployee.label_type,
+      // Debug info
+      userCreated: newUser ? true : false,
+      workplacesCount: req.body.workplace?.length || 0
     }
   });
 });
