@@ -202,9 +202,11 @@ export default function WorkHoursTable({
   const isAdmin = showPaymentControl;
 
   return (
-    <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-blue-100 p-6 mb-8 overflow-x-auto animate-fade-in">
-      <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-6 text-center flex items-center gap-2 justify-center">
-        <span className="text-3xl">🕒</span> Java: {weekLabel}
+    <div className="bg-white/70 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-blue-100 p-3 sm:p-6 mb-6 sm:mb-8 overflow-hidden animate-fade-in">
+      <h3 className="text-lg sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-4 sm:mb-6 text-center flex items-center gap-2 justify-center">
+        <span className="text-xl sm:text-3xl">🕒</span> 
+        <span className="hidden sm:inline">Java: </span>
+        <span className="text-base sm:text-2xl">{weekLabel}</span>
       </h3>
       
       {/* Show message when no employees */}
@@ -226,10 +228,10 @@ export default function WorkHoursTable({
       {Array.isArray(employees) && employees.length > 0 && (
         <>
           {isAdmin ? (
-        // Admin view - kompakt me expand/collapse
-        <div className="space-y-4">
-          {/* Headers për kolonat */}
-          <div className="grid grid-cols-9 gap-2 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900">
+        // Admin view - kompakt me expand/collapse  
+        <div className="space-y-3 sm:space-y-4">
+          {/* Headers për kolonat - vetëm për desktop */}
+          <div className="hidden lg:grid grid-cols-9 gap-2 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900 text-sm">
             <div className="col-span-2 text-center">👤 Punonjësi</div>
             <div className="text-center">💰 Rate</div>
             <div className="text-center">⏰ Orë</div>
@@ -240,10 +242,15 @@ export default function WorkHoursTable({
             <div className="text-center">✅ Statusi</div>
           </div>
           
+          {/* Mobile header */}
+          <div className="lg:hidden text-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl p-3 font-bold text-blue-900">
+            <span className="text-sm">👥 Lista e Punonjësve - {weekLabel}</span>
+          </div>
+          
           {employeeCalculations.map((calc) => (
             <div key={calc.emp.id} className="bg-white rounded-xl shadow-lg border border-blue-200 overflow-hidden">
-              {/* Rreshti kryesor - kompakt */}
-              <div className="grid grid-cols-9 gap-2 p-4 items-center bg-gradient-to-r from-blue-50 to-purple-50">
+              {/* Desktop view - grid layout */}
+              <div className="hidden lg:grid grid-cols-9 gap-2 p-4 items-center bg-gradient-to-r from-blue-50 to-purple-50">
                 {/* Punonjësi */}
                 <div className="flex items-center gap-3 col-span-2">
                   <button
@@ -322,6 +329,69 @@ export default function WorkHoursTable({
                 </div>
               </div>
               
+              {/* Mobile view - card layout */}
+              <div className="lg:hidden bg-gradient-to-r from-blue-50 to-purple-50 p-4">
+                {/* Employee header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    {calc.emp.photo ? (
+                      <img src={calc.emp.photo} alt="Foto" className="w-10 h-10 rounded-full object-cover border-2 border-blue-200 shadow" />
+                    ) : (
+                      <span className="rounded-full bg-blue-200 text-blue-700 px-3 py-2 text-sm font-bold shadow">
+                        {calc.firstName[0]}{calc.lastName[0]}
+                      </span>
+                    )}
+                    <div>
+                      <h4 className="font-bold text-sm text-gray-900">{calc.firstName} {calc.lastName}</h4>
+                      <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-2 py-1 rounded-full shadow uppercase tracking-wide">
+                        {calc.emp.role || calc.emp.role_type || ''}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => toggleRowExpansion(calc.emp.id)}
+                    className="text-blue-600 hover:text-blue-800 transition-colors p-2"
+                  >
+                    {expandedRows.has(calc.emp.id) ? '▼' : '▶'}
+                  </button>
+                </div>
+                
+                {/* Stats grid */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-white rounded-lg p-3 text-center">
+                    <div className="text-xs text-gray-600 mb-1">Rate</div>
+                    <div className="font-bold text-blue-900">£{calc.rate && !isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 text-center">
+                    <div className="text-xs text-gray-600 mb-1">Orë</div>
+                    <div className="font-bold text-gray-900">{calc.total && !isNaN(calc.total) ? Number(calc.total).toFixed(2) : '0.00'}</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 text-center">
+                    <div className="text-xs text-gray-600 mb-1">Bruto</div>
+                    <div className="font-bold text-green-700">£{calc.bruto && !isNaN(calc.bruto) ? Number(calc.bruto).toFixed(2) : '0.00'}</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 text-center">
+                    <div className="text-xs text-gray-600 mb-1">Neto</div>
+                    <div className="font-bold text-blue-700">£{calc.neto && !isNaN(calc.neto) ? Number(calc.neto).toFixed(2) : '0.00'}</div>
+                  </div>
+                </div>
+                
+                {/* Action buttons */}
+                <div className="flex items-center justify-between">
+                  {isAdmin && (
+                    <button
+                      onClick={() => handlePaymentToggle(calc.emp.id)}
+                      className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                    >
+                      {calc.paid ? '❌ Fshi pagesen' : '✅ Paguaj'}
+                    </button>
+                  )}
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${calc.statusBg} ${calc.statusClass}`}>
+                    {calc.statusText}
+                  </span>
+                </div>
+              </div>
+              
               {/* Detajet e zgjeruara */}
               {expandedRows.has(calc.emp.id) && (
                 <div className="border-t border-blue-200 bg-gray-50 p-4">
@@ -383,23 +453,26 @@ export default function WorkHoursTable({
           </div>
         </div>
       ) : (
-        // Manager/User view - tabela e plotë
-        <table className="min-w-full text-base text-blue-900 rounded-2xl overflow-hidden shadow-xl">
-          <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-base font-bold">
-            <tr>
-              <th className="py-4 px-3 text-left">Punonjësi</th>
-              {days.map((day) => (
-                <th key={day} className="py-4 px-3 text-center">{day}</th>
-              ))}
-              <th className="py-4 px-3 text-center">Rate</th>
-              <th className="py-4 px-3 text-center">Totali</th>
-              <th className="py-4 px-3 text-center">Bruto</th>
-              <th className="py-4 px-3 text-center">TVSH</th>
-              <th className="py-4 px-3 text-center">Neto</th>
-              {showPaymentControl && <th className="py-4 px-3 text-center">💸</th>}
-              {showPaymentControl && <th className="py-4 px-3 text-center">Statusi i Pagesës</th>}
-            </tr>
-          </thead>
+        // Manager/User view
+        <div>
+          {/* Desktop table */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="min-w-full text-base text-blue-900 rounded-2xl overflow-hidden shadow-xl">
+              <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-base font-bold">
+                <tr>
+                  <th className="py-4 px-3 text-left">Punonjësi</th>
+                  {days.map((day) => (
+                    <th key={day} className="py-4 px-3 text-center">{day}</th>
+                  ))}
+                  <th className="py-4 px-3 text-center">Rate</th>
+                  <th className="py-4 px-3 text-center">Totali</th>
+                  <th className="py-4 px-3 text-center">Bruto</th>
+                  <th className="py-4 px-3 text-center">TVSH</th>
+                  <th className="py-4 px-3 text-center">Neto</th>
+                  {showPaymentControl && <th className="py-4 px-3 text-center">💸</th>}
+                  {showPaymentControl && <th className="py-4 px-3 text-center">Statusi i Pagesës</th>}
+                </tr>
+              </thead>
           <tbody>
             {employeeCalculations.map((calc) => (
               <tr key={calc.emp.id} className={`text-center hover:bg-purple-50 transition-all duration-200 rounded-xl shadow-sm`}> 
@@ -484,7 +557,152 @@ export default function WorkHoursTable({
               {showPaymentControl && <td className="py-2 px-2"></td>}
             </tr>
           </tfoot>
-        </table>
+            </table>
+          </div>
+          
+          {/* Mobile cards */}
+          <div className="lg:hidden space-y-4">
+            {employeeCalculations.map((calc) => (
+              <div key={calc.emp.id} className="bg-white rounded-2xl shadow-lg border border-blue-200 overflow-hidden">
+                {/* Employee header */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    {calc.emp.photo ? (
+                      <img src={calc.emp.photo} alt="Foto" className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow" />
+                    ) : (
+                      <span className="rounded-full bg-blue-200 text-blue-700 px-3 py-2 text-lg font-bold shadow">
+                        {calc.firstName[0]}{calc.lastName[0]}
+                      </span>
+                    )}
+                    <div className="flex-1">
+                      <h4 className="font-bold text-lg text-gray-900">{calc.firstName} {calc.lastName}</h4>
+                      <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-3 py-1 rounded-full shadow uppercase tracking-wide">
+                        {calc.emp.role || calc.emp.role_type || ''}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => toggleRowExpansion(calc.emp.id)}
+                      className="text-blue-600 hover:text-blue-800 transition-colors p-2"
+                    >
+                      {expandedRows.has(calc.emp.id) ? '▼' : '▶'}
+                    </button>
+                  </div>
+                  
+                  {/* Quick stats */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white rounded-lg p-3 text-center">
+                      <div className="text-xs text-gray-600 mb-1">Total Orë</div>
+                      <div className="font-bold text-gray-900">{calc.total && !isNaN(calc.total) ? Number(calc.total).toFixed(2) : '0.00'}</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 text-center">
+                      <div className="text-xs text-gray-600 mb-1">Neto</div>
+                      <div className="font-bold text-blue-700">£{calc.neto && !isNaN(calc.neto) ? Number(calc.neto).toFixed(2) : '0.00'}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Expanded details */}
+                {expandedRows.has(calc.emp.id) && (
+                  <div className="p-4 bg-gray-50">
+                    {/* Days grid */}
+                    <h5 className="font-semibold text-blue-800 mb-3 text-sm">Detajet e ditëve:</h5>
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      {days.map((day) => (
+                        <div key={day} className="bg-white rounded-lg p-3">
+                          <div className="font-medium text-xs text-gray-700 mb-2">{day}</div>
+                          <input
+                            type="number"
+                            min="0"
+                            max="24"
+                            step="0.25"
+                            value={calc.hours[day]?.hours || ""}
+                            onChange={e => onChange(calc.emp.id, day, "hours", e.target.value)}
+                            className={`w-full p-2 border-2 border-blue-200 rounded-lg text-center focus:ring-2 focus:ring-blue-400 text-sm mb-2 ${
+                              (typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly) ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : 'bg-blue-50'
+                            }`}
+                            disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly}
+                            placeholder="0"
+                          />
+                          <select
+                            className={`w-full border-2 border-blue-200 rounded-lg text-xs ${
+                              (typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly) ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : 'bg-blue-50'
+                            }`}
+                            value={calc.hours[day]?.site || ""}
+                            onChange={e => onChange(calc.emp.id, day, "site", e.target.value)}
+                            disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly}
+                          >
+                            <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? "Zgjidh vendin" : "Pushim"}</option>
+                            {calc.empSites.map(site => (
+                              <option key={site} value={site}>{site}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Detailed stats */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="bg-white rounded-lg p-3 text-center">
+                        <div className="text-xs text-gray-600 mb-1">Rate</div>
+                        <div className="font-bold text-blue-900">£{calc.rate && !isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 text-center">
+                        <div className="text-xs text-gray-600 mb-1">Bruto</div>
+                        <div className="font-bold text-green-700">£{calc.bruto && !isNaN(calc.bruto) ? Number(calc.bruto).toFixed(2) : '0.00'}</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 text-center">
+                        <div className="text-xs text-gray-600 mb-1">TVSH</div>
+                        <div className="font-bold text-yellow-700">£{calc.tvsh && !isNaN(calc.tvsh) ? Number(calc.tvsh).toFixed(2) : '0.00'}</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 text-center">
+                        <div className="text-xs text-gray-600 mb-1">Neto</div>
+                        <div className="font-bold text-blue-700">£{calc.neto && !isNaN(calc.neto) ? Number(calc.neto).toFixed(2) : '0.00'}</div>
+                      </div>
+                    </div>
+                    
+                    {/* Payment controls */}
+                    {showPaymentControl && (
+                      <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                        <button
+                          onClick={() => handlePaymentToggle(calc.emp.id)}
+                          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-sm font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
+                        >
+                          {calc.paid ? '❌ Fshi pagesen' : '✅ Paguaj'}
+                        </button>
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${calc.statusBg} ${calc.statusClass}`}>
+                          {calc.statusText}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            {/* Mobile totals */}
+            <div className="bg-gradient-to-r from-gray-100 to-blue-100 rounded-2xl p-4">
+              <h4 className="font-bold text-gray-800 mb-3 text-center">📊 Totali i Javës</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white rounded-lg p-3 text-center">
+                  <div className="text-xs text-gray-600 mb-1">Total Orë</div>
+                  <div className="font-bold text-gray-900">{weekTotals.totalHours && !isNaN(weekTotals.totalHours) ? Number(weekTotals.totalHours).toFixed(2) : '0.00'}</div>
+                </div>
+                <div className="bg-white rounded-lg p-3 text-center">
+                  <div className="text-xs text-gray-600 mb-1">Total Bruto</div>
+                  <div className="font-bold text-green-700">£{weekTotals.totalBruto && !isNaN(weekTotals.totalBruto) ? Number(weekTotals.totalBruto).toFixed(2) : '0.00'}</div>
+                </div>
+                <div className="bg-white rounded-lg p-3 text-center">
+                  <div className="text-xs text-gray-600 mb-1">Total TVSH</div>
+                  <div className="font-bold text-yellow-700">£{weekTotals.totalTVSH && !isNaN(weekTotals.totalTVSH) ? Number(weekTotals.totalTVSH).toFixed(2) : '0.00'}</div>
+                </div>
+                <div className="bg-white rounded-lg p-3 text-center">
+                  <div className="text-xs text-gray-600 mb-1">Total Neto</div>
+                  <div className="font-bold text-blue-700">£{weekTotals.totalNeto && !isNaN(weekTotals.totalNeto) ? Number(weekTotals.totalNeto).toFixed(2) : '0.00'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
         </>
       )}

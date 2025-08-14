@@ -420,134 +420,194 @@ export default function WorkHours() {
   }
 
   return (
-    <div className="w-full px-4 md:px-8 py-6 md:py-10 max-w-none">
-      {/* Toast Notification */}
-      {toast.show && (
-        <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 ${
-          toast.type === 'success' ? 'bg-green-500' : 
-          toast.type === 'error' ? 'bg-red-500' : 
-          'bg-blue-500'
-        }`}>
-          {toast.message}
-        </div>
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="w-full max-w-none mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
+        {/* Toast Notification */}
+        {toast.show && (
+          <div className={`fixed top-16 sm:top-20 right-2 sm:right-4 z-50 px-4 sm:px-6 py-3 sm:py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 text-sm sm:text-base ${
+            toast.type === 'success' ? 'bg-green-500' : 
+            toast.type === 'error' ? 'bg-red-500' : 
+            'bg-blue-500'
+          }`}>
+            {toast.message}
+          </div>
+        )}
 
-      <h1 className="text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
-        {isManager ? "🕒 Menaxhimi i Orëve të Punës" : 
-         isAdmin ? "🕒 Paneli i Administrimit të Orëve" : 
-         "🕒 Orët e Mia të Punës"}
-      </h1>
-
-      {/* Përmbledhje për Menaxherin */}
-      {isManager && employees.length > 0 && (
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-blue-800">📊 Përmbledhje e Orëve të Punës</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-4">
-              <div className="text-2xl font-bold">
-                {employees.length}
-              </div>
-              <div className="text-sm opacity-90">Punonjës</div>
+        {/* Header Section */}
+        <div className="text-center space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-center gap-2 sm:gap-3">
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl sm:rounded-2xl shadow-lg">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
-            
-            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-4">
-              <div className="text-2xl font-bold">
-                {(() => {
-                  try {
-                    const total = Object.values(hourData || {}).reduce((total, empData) => {
-                      return total + Object.values(empData || {}).reduce((weekTotal, weekData) => {
-                        return weekTotal + Object.values(weekData || {}).reduce((dayTotal, dayData) => {
-                          return dayTotal + (parseFloat(dayData?.hours) || 0);
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+              {isManager ? "Menaxhimi i Orëve të Punës" : 
+               isAdmin ? "Paneli i Administrimit të Orëve" : 
+               "Orët e Mia të Punës"}
+            </h1>
+          </div>
+          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4">
+            {isManager ? "Menaxhoni orët e punës të ekipit tuaj dhe kontrolloni progresin javor" : 
+             isAdmin ? "Administroni të gjitha orët e punës dhe statuset e pagesave" : 
+             "Shikoni orët tuaja të punës dhe progresin javor"}
+          </p>
+        </div>
+
+        {/* Përmbledhje për Menaxherin */}
+        {isManager && employees.length > 0 && (
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100 p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+                Përmbledhje e Orëve të Punës
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div className="text-xl sm:text-2xl font-bold">
+                  {employees.length}
+                </div>
+                <div className="text-xs sm:text-sm opacity-90 font-medium">Punonjës</div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div className="text-xl sm:text-2xl font-bold">
+                  {(() => {
+                    try {
+                      const total = Object.values(hourData || {}).reduce((total, empData) => {
+                        return total + Object.values(empData || {}).reduce((weekTotal, weekData) => {
+                          return weekTotal + Object.values(weekData || {}).reduce((dayTotal, dayData) => {
+                            return dayTotal + (parseFloat(dayData?.hours) || 0);
+                          }, 0);
                         }, 0);
                       }, 0);
-                    }, 0);
-                    return (total || 0).toFixed(1);
-                  } catch (error) {
-                    console.error('Error calculating total hours:', error);
-                    return '0.0';
-                  }
-                })()}
+                      return (total || 0).toFixed(1);
+                    } catch (error) {
+                      console.error('Error calculating total hours:', error);
+                      return '0.0';
+                    }
+                  })()}
+                </div>
+                <div className="text-xs sm:text-sm opacity-90 font-medium">Total Orë</div>
               </div>
-              <div className="text-sm opacity-90">Total Orë</div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-4">
-              <div className="text-2xl font-bold">
-                £{(() => {
-                  try {
-                    const total = Object.values(hourData || {}).reduce((total, empData) => {
-                      return total + Object.values(empData || {}).reduce((weekTotal, weekData) => {
-                        return weekTotal + Object.values(weekData || {}).reduce((dayTotal, dayData) => {
-                          const emp = employees.find(e => e.id === parseInt(Object.keys(hourData || {}).find(key => hourData[key] === empData)));
-                          return dayTotal + ((parseFloat(dayData?.hours) || 0) * (parseFloat(emp?.hourly_rate) || 0));
+              
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div className="text-xl sm:text-2xl font-bold">
+                  £{(() => {
+                    try {
+                      const total = Object.values(hourData || {}).reduce((total, empData) => {
+                        return total + Object.values(empData || {}).reduce((weekTotal, weekData) => {
+                          return weekTotal + Object.values(weekData || {}).reduce((dayTotal, dayData) => {
+                            const emp = employees.find(e => e.id === parseInt(Object.keys(hourData || {}).find(key => hourData[key] === empData)));
+                            return dayTotal + ((parseFloat(dayData?.hours) || 0) * (parseFloat(emp?.hourly_rate) || 0));
+                          }, 0);
                         }, 0);
                       }, 0);
-                    }, 0);
-                    return (total || 0).toFixed(2);
-                  } catch (error) {
-                    console.error('Error calculating total pay:', error);
-                    return '0.00';
-                  }
-                })()}
+                      return (total || 0).toFixed(2);
+                    } catch (error) {
+                      console.error('Error calculating total pay:', error);
+                      return '0.00';
+                    }
+                  })()}
+                </div>
+                <div className="text-xs sm:text-sm opacity-90 font-medium">Total Paga</div>
               </div>
-              <div className="text-sm opacity-90">Total Paga</div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg p-4">
-              <div className="text-2xl font-bold">
-                {Object.keys(hourData).length}
+              
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div className="text-xl sm:text-2xl font-bold">
+                  {Object.keys(hourData).length}
+                </div>
+                <div className="text-xs sm:text-sm opacity-90 font-medium">Javë Aktive</div>
               </div>
-              <div className="text-sm opacity-90">Javë Aktive</div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Kontrolli i pagesës - HEQUR për admin */}
-      {isManager && (
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-blue-800">
-            💰 Ruaj Orët e Punës
-          </h2>
-          <div className="flex flex-wrap gap-4 items-center">
-            <button
-              onClick={handleSubmit}
-              disabled={saved}
-              className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-2 rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50"
-            >
-              {saved ? "✅ U ruajt!" : "💾 Ruaj Orët e Punës"}
-            </button>
+        {/* Kontrolli i pagesës - HEQUR për admin */}
+        {isManager && (
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-100 p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
+              <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 0V4a2 2 0 00-2-2H8a2 2 0 00-2 2v3m2 0h4m-4 0v1m4-1v1m-4 3h4" />
+                </svg>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-blue-700">
+                Ruaj Orët e Punës
+              </h2>
+            </div>
+            <div className="flex justify-center sm:justify-start">
+              <button
+                onClick={handleSubmit}
+                disabled={saved}
+                className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base hover:from-green-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
+              >
+                {saved ? (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    U ruajt!
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 0V4a2 2 0 00-2-2H8a2 2 0 00-2 2v3m2 0h4m-4 0v1m4-1v1m-4 3h4" />
+                    </svg>
+                    Ruaj Orët e Punës
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Read-only view për user */}
-      {isUser && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
-          <h2 className="text-lg font-semibold text-blue-800 mb-2">ℹ️ Informacion</h2>
-          <p className="text-blue-700">
-            Kjo faqe shfaq vetëm orët tuaja të punës. Për ndryshime, kontaktoni menaxherin tuaj.
-          </p>
-        </div>
-      )}
+        {/* Read-only view për user */}
+        {isUser && (
+          <div className="bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-2xl p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-blue-500 rounded-xl">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-blue-800">Informacion</h2>
+            </div>
+            <p className="text-sm sm:text-base text-blue-700">
+              Kjo faqe shfaq vetëm orët tuaja të punës. Për ndryshime, kontaktoni menaxherin tuaj.
+            </p>
+          </div>
+        )}
 
-      {/* Mesazh për manager kur nuk ka punonjës */}
-      {isManager && employees.length === 0 && !loading && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Informacion për Menaxherin</h2>
-          <p className="text-yellow-700 mb-4">
-            Nuk u gjetën punonjës për site-t tuaja. Kjo mund të ndodhë për arsyet e mëposhtme:
-          </p>
-          <ul className="text-yellow-700 list-disc list-inside space-y-2">
-            <li>Nuk jeni caktuar në asnjë site</li>
-            <li>Punonjësit nuk janë caktuar në site-t tuaja</li>
-            <li>Ka problem me të dhënat e databazës</li>
-          </ul>
-          <p className="text-yellow-700 mt-4">
-            Kontaktoni administratorin për të rregulluar këtë problem.
-          </p>
-        </div>
-      )}
+        {/* Mesazh për manager kur nuk ka punonjës */}
+        {isManager && employees.length === 0 && !loading && (
+          <div className="bg-yellow-50/80 backdrop-blur-sm border border-yellow-200 rounded-2xl p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-yellow-500 rounded-xl">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.882 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-yellow-800">Informacion për Menaxherin</h2>
+            </div>
+            <p className="text-sm sm:text-base text-yellow-700 mb-4">
+              Nuk u gjetën punonjës për site-t tuaja. Kjo mund të ndodhë për arsyet e mëposhtme:
+            </p>
+            <ul className="text-sm sm:text-base text-yellow-700 list-disc list-inside space-y-2">
+              <li>Nuk jeni caktuar në asnjë site</li>
+              <li>Punonjësit nuk janë caktuar në site-t tuaja</li>
+              <li>Ka problem me të dhënat e databazës</li>
+            </ul>
+            <p className="text-sm sm:text-base text-yellow-700 mt-4">
+              Kontaktoni administratorin për të rregulluar këtë problem.
+            </p>
+          </div>
+        )}
 
       {/* Tabela e orëve të punës */}
       <div className="space-y-6">
@@ -585,8 +645,17 @@ export default function WorkHours() {
 
         {/* Javët e kaluara - për admin dhe manager */}
         {(isAdmin || isManager) && Object.keys(hourData).length > 0 && Array.isArray(employees) && employees.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-800">📅 Javët e Kaluara</h3>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-gray-500 to-gray-600 rounded-xl">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-700 to-gray-900">
+                Javët e Kaluara
+              </h3>
+            </div>
             {(() => {
               // Gjej të gjitha javët unike nga të gjithë punonjësit
               const allWeeks = Object.values(hourData).flatMap(empData => Object.keys(empData));
@@ -607,20 +676,34 @@ export default function WorkHours() {
               pastWeeks.sort((a, b) => new Date(b.split(' - ')[0]) - new Date(a.split(' - ')[0]));
               return pastWeeks.map((weekLabel) => {
                 return (
-                  <div key={weekLabel} className="bg-white rounded-lg shadow-md">
+                  <div key={weekLabel} className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                     <button
                       onClick={() => toggleWeek(weekLabel)}
-                      className="w-full p-4 text-left bg-gray-50 hover:bg-gray-100 rounded-t-lg transition-colors"
+                      className="w-full p-4 sm:p-6 text-left bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 transition-all duration-300"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-gray-800">{weekLabel}</span>
-                        <span className="text-gray-500">
-                          {expandedWeeks.includes(weekLabel) ? "▼" : "▶"}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <span className="font-bold text-sm sm:text-base text-gray-800">{weekLabel}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs sm:text-sm text-gray-500">
+                            {expandedWeeks.includes(weekLabel) ? "Mbyll" : "Hap"}
+                          </span>
+                          <div className={`transform transition-transform duration-300 ${expandedWeeks.includes(weekLabel) ? 'rotate-180' : ''}`}>
+                            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
                       </div>
                     </button>
                     {expandedWeeks.includes(weekLabel) && (
-                      <div className="p-4">
+                      <div className="p-2 sm:p-4 bg-gray-50/50">
                         <WorkHoursTable
                           employees={employees}
                           weekLabel={weekLabel}
@@ -639,6 +722,7 @@ export default function WorkHours() {
             })()}
           </div>
         )}
+        </div>
       </div>
     </div>
   );
