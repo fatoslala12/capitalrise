@@ -39,7 +39,7 @@ export default function Contracts() {
     start_date: "",
     finish_date: "",
     address: "",
-    company_email: "",
+    company_email: "", // Company email field
     contract_type: "day_work", // Added contract_type field
     status: "Ne progres",
     closed_manually: false,
@@ -246,6 +246,7 @@ export default function Contracts() {
       finish_date: newContract.finish_date,
       status: newContract.status,
       address: newContract.address,
+      company_email: newContract.company_email, // Add company_email to payload
       contract_type: newContract.contract_type, // Add contract_type to payload
       closed_manually: newContract.closed_manually,
       closed_date: newContract.closed_date,
@@ -265,6 +266,7 @@ export default function Contracts() {
         start_date: "",
         finish_date: "",
         address: "",
+        company_email: "", // Reset company_email
         contract_type: "day_work", // Reset contract_type to default
         status: "Ne progres",
         closed_manually: false,

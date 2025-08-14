@@ -41,6 +41,8 @@ exports.createContract = async (req, res) => {
     finish_date,
     status,
     address,
+    contract_type,
+    company_email,
     closed_manually,
     closed_date,
     documents
@@ -95,8 +97,8 @@ exports.createContract = async (req, res) => {
   try {
     const result = await pool.query(`
       INSERT INTO contracts 
-      (contract_number, company, contract_value, site_name, start_date, finish_date, status, address, closed_manually, closed_date, documents)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      (contract_number, company, contract_value, site_name, start_date, finish_date, status, address, contract_type, company_email, closed_manually, closed_date, documents)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *`,
       [
         contract_number,
@@ -107,6 +109,8 @@ exports.createContract = async (req, res) => {
         finish_date,
         status,
         address ? address.trim() : null,
+        contract_type || 'day_work', // Default to day_work if not provided
+        company_email ? company_email.trim() : null,
         closed_manually ?? false,
         closed_date || null,
         documents ? JSON.stringify(documents) : null
@@ -135,7 +139,7 @@ exports.updateContract = async (req, res) => {
   const { id } = req.params;
   const fields = [
     'company', 'contract_value', 'site_name', 'start_date', 'finish_date',
-    'status', 'address', 'closed_manually', 'closed_date', 'documents'
+    'status', 'address', 'contract_type', 'company_email', 'closed_manually', 'closed_date', 'documents'
   ];
   
   const updates = [];
@@ -147,7 +151,7 @@ exports.updateContract = async (req, res) => {
       updates.push(`${field} = $${index}`);
       if (field === 'documents') {
         values.push(JSON.stringify(req.body[field]));
-      } else if (field === 'company' || field === 'site_name' || field === 'address') {
+      } else if (field === 'company' || field === 'site_name' || field === 'address' || field === 'company_email') {
         values.push(req.body[field] ? req.body[field].trim() : null);
       } else {
         values.push(req.body[field]);
