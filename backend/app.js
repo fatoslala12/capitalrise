@@ -91,6 +91,9 @@ app.use('/api/business-intelligence', businessIntelligenceRoutes);
 const auditTrailRoutes = require('./routes/auditTrail');
 app.use('/api/audit-trail', auditTrailRoutes);
 
+const taskDeadlineRoutes = require('./routes/taskDeadlines');
+app.use('/api/task-deadlines', taskDeadlineRoutes);
+
 // Compression middleware për të reduktuar madhësinë e përgjigjeve (pas routes)
 const compression = require('compression');
 app.use(compression({
