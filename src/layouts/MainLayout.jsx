@@ -40,27 +40,16 @@ export default function MainLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [userFullName, setUserFullName] = useState('');
-
-  // Merr emrin e plotë të përdoruesit nga employees
-  useEffect(() => {
-    const fetchUserFullName = async () => {
-      try {
-        if (user?.employee_id) {
-          const response = await api.get(`/api/employees/${user.employee_id}`);
-          if (response.data) {
-            setUserFullName(`${response.data.name || ''} ${response.data.surname || ''}`.trim());
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user full name:', error);
-        // Nëse nuk gjej në employees, përdor email-in
-        setUserFullName(user?.email || '');
-      }
-    };
-
-    fetchUserFullName();
-  }, [user]);
+  // Merr emrin e përdoruesit direkt nga user object me fallback
+  const getUserDisplayName = () => {
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    } else if (user?.firstName) {
+      return user.firstName;
+    } else {
+      return user?.email || '';
+    }
+  };
 
   let menu = [];
   if (user?.role === "admin") menu = adminMenu;
@@ -147,7 +136,7 @@ export default function MainLayout() {
           {/* Center welcome message */}
           <div className="hidden sm:flex flex-1 justify-center">
             <span className="text-gray-600 font-medium text-sm sm:text-base">
-              Mirë se vini, {userFullName || user?.email}
+              Mirë se vini, {getUserDisplayName()}
             </span>
           </div>
           
