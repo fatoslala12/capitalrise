@@ -147,7 +147,7 @@ export default function MainLayout() {
           {/* Center welcome message */}
           <div className="hidden sm:flex flex-1 justify-center">
             <span className="text-gray-600 font-medium text-sm sm:text-base">
-              Mirë se vini, {userfirst_name || user?.email}
+              Mirë se vini, {userFullName || user?.email}
             </span>
           </div>
           
