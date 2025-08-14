@@ -25,7 +25,6 @@ const managerMenu = [
   { path: "/manager/my-tasks", label: "📝 Detyrat e Mia" },
   { path: "/manager/employees-list", label: "👷 Menaxho Punonjësit" },
   { path: "/manager/work-hours", label: "🕒 Orët e Punës" },
-  { path: "/manager/payments", label: "💰 Pagesat" },
   { path: "/manager/reports", label: "📊 Raportet" },
   { path: "/manager/my-profile", label: "👤 Profili Im" },
 ];
@@ -71,7 +70,7 @@ export default function MainLayout() {
   const SidebarContent = () => (
     <>
       <div className="p-2 md:p-3 lg:p-4 text-base md:text-lg lg:text-xl font-extrabold border-b border-blue-800 mb-2 rounded-b-2xl bg-white/10 backdrop-blur-md shadow-lg flex items-center gap-2">
-        <img src="/capital rise logo.png" alt="Capital Rise Logo" className="h-8 w-8 bg-blue-100 rounded-xl p-1 shadow" />
+        <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-8 w-8 bg-blue-100 rounded-xl p-1 shadow" />
         <span className="drop-shadow text-xs md:text-sm lg:text-base">Capital Rise</span>
       </div>
       <nav className="flex-1 px-2 py-4 space-y-2">
@@ -141,14 +140,14 @@ export default function MainLayout() {
           
           {/* Mobile center logo */}
           <div className="lg:hidden flex items-center gap-1 sm:gap-2">
-            <img src="/capital rise logo.png" alt="Capital Rise Logo" className="h-6 w-6" />
+            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-6 w-6" />
             <span className="font-bold text-gray-900 text-sm sm:text-base">Capital Rise</span>
           </div>
           
           {/* Center welcome message */}
           <div className="hidden sm:flex flex-1 justify-center">
             <span className="text-gray-600 font-medium text-sm sm:text-base">
-              Mirë se vini, {userFullName || user?.email}
+              Mirë se vini, {userfirst_name || user?.email}
             </span>
           </div>
           
