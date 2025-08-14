@@ -1050,101 +1050,155 @@ export default function ContractDetails() {
         </div>
       )}
 
-      {/* Modal për shtimin e faturës */}
+      {/* MODAL PËR SHTIMIN E FATURËS - ELEGANT DESIGN */}
       {showAddModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 pt-8"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={closeAddModal}
         >
           <div 
-            className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[85vh] overflow-y-auto"
+            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
-                  <span className="text-3xl">🧾</span> Shto Faturë të Re
-                </h3>
+            {/* MODAL HEADER */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 rounded-lg p-2">
+                    <span className="text-2xl">🧾</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white">
+                    Shto Faturë të Re
+                  </h3>
+                </div>
                 <button
                   onClick={closeAddModal}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  className="text-white/80 hover:text-white text-2xl font-bold transition-colors p-1"
                 >
                   ✕
                 </button>
               </div>
-              
+            </div>
+            
+            {/* MODAL CONTENT */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
               <div className="space-y-6">
-                <input
-                  placeholder="Përshkrimi i faturës"
-                  className="p-4 border-2 border-blue-200 rounded-xl w-full text-lg focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
-                  value={newInvoice.description}
-                  onChange={e => setNewInvoice({ ...newInvoice, description: e.target.value })}
-                />
-                
-                {newInvoice.items.map((item, index) => (
-                  <div key={index} className="grid grid-cols-4 gap-4">
-                    <input 
-                      placeholder="Përshkrimi" 
-                      className="p-3 border-2 border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-300 transition-all" 
-                      value={item.description} 
-                      onChange={(e) => handleItemChange(index, "description", e.target.value)} 
-                    />
-                    <input 
-                      type="number" 
-                      placeholder="Shifts" 
-                      className="p-3 border-2 border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-300 transition-all" 
-                      value={item.shifts} 
-                      onChange={(e) => handleItemChange(index, "shifts", e.target.value)} 
-                    />
-                    <input 
-                      type="number" 
-                      placeholder="Rate" 
-                      className="p-3 border-2 border-purple-200 rounded-xl text-base focus:ring-2 focus:ring-purple-300 transition-all" 
-                      value={item.rate} 
-                      onChange={(e) => handleItemChange(index, "rate", e.target.value)} 
-                    />
-                    <input 
-                      disabled 
-                      className="p-3 border-2 border-gray-200 rounded-xl bg-gray-100 text-base" 
-                      value={`£${item.amount.toFixed(2)}`} 
-                    />
-                  </div>
-                ))}
-                
-                <button 
-                  onClick={handleAddItem} 
-                  className="text-base text-blue-700 font-semibold hover:underline transition-all"
-                >
-                  ➕ Rresht i Ri
-                </button>
-                
-                <div className="flex items-center gap-6">
-                  <input 
-                    type="number" 
-                    placeholder="Të tjera" 
-                    className="border-2 border-blue-200 py-3 px-4 text-center align-middle rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all" 
-                    value={newInvoice.other} 
-                    onChange={(e) => setNewInvoice({ ...newInvoice, other: e.target.value })} 
+                {/* DESCRIPTION SECTION */}
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-2 block">
+                    📝 Përshkrimi i Faturës
+                  </label>
+                  <input
+                    placeholder="Shkruaj përshkrimin e faturës..."
+                    className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    value={newInvoice.description}
+                    onChange={e => setNewInvoice({ ...newInvoice, description: e.target.value })}
                   />
-                  <span className="font-bold text-xl">
-                    Total: <span className="text-purple-700">£{grandTotal.toFixed(2)}</span>
-                  </span>
                 </div>
                 
-                <div className="flex gap-4 mt-6">
+                {/* INVOICE ITEMS SECTION */}
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
+                    📋 Artikujt e Faturës
+                  </label>
+                  <div className="space-y-4">
+                    {newInvoice.items.map((item, index) => (
+                      <div key={index} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                        <div>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Përshkrimi</label>
+                          <input 
+                            placeholder="Përshkrimi i punës" 
+                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                            value={item.description} 
+                            onChange={(e) => handleItemChange(index, "description", e.target.value)} 
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Shifts</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                            value={item.shifts} 
+                            onChange={(e) => handleItemChange(index, "shifts", e.target.value)} 
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Rate (£)</label>
+                          <input 
+                            type="number" 
+                            placeholder="0.00" 
+                            step="0.01"
+                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                            value={item.rate} 
+                            onChange={(e) => handleItemChange(index, "rate", e.target.value)} 
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Totali (£)</label>
+                          <input 
+                            disabled 
+                            className="w-full p-2.5 border border-slate-200 rounded-lg bg-slate-100 text-sm font-semibold text-slate-700" 
+                            value={`£${item.amount.toFixed(2)}`} 
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <button 
+                      onClick={handleAddItem} 
+                      className="w-full bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg p-3 text-blue-600 font-semibold transition-all flex items-center justify-center gap-2"
+                    >
+                      <span className="text-xl">➕</span> Shto Rresht të Ri
+                    </button>
+                  </div>
+                </div>
+                
+                {/* ADDITIONAL COSTS & TOTAL SECTION */}
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                    <div>
+                      <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-2 block">
+                        💰 Kosto Shtesë (£)
+                      </label>
+                      <input 
+                        type="number" 
+                        placeholder="0.00" 
+                        step="0.01"
+                        className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        value={newInvoice.other} 
+                        onChange={(e) => setNewInvoice({ ...newInvoice, other: e.target.value })} 
+                      />
+                    </div>
+                    <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg p-4 border-2 border-blue-200">
+                      <div className="text-center">
+                        <div className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Totali i Faturës</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                          £{grandTotal.toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* ACTION BUTTONS */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <button 
                     onClick={handleSaveInvoice} 
-                    className="flex-1 bg-gradient-to-r from-green-400 to-blue-500 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center disabled:opacity-50 disabled:cursor-not-allowed" 
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:scale-105" 
                     disabled={loadingStates.saveInvoice}
                   >
                     {loadingStates.saveInvoice ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Duke ruajtur...
+                        <span className="hidden sm:inline">Duke ruajtur...</span>
+                        <span className="sm:hidden">...</span>
                       </>
                     ) : (
                       <>
-                        <span className="text-2xl">💾</span> Ruaj Faturën
+                        <span className="text-xl">💾</span>
+                        <span className="hidden sm:inline">Ruaj Faturën</span>
+                        <span className="sm:hidden">Ruaj</span>
                       </>
                     )}
                   </button>
@@ -1152,9 +1206,11 @@ export default function ContractDetails() {
                   <button 
                     type="button"
                     onClick={closeAddModal}
-                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                    className="flex-1 bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
-                    <span className="text-2xl">✕</span> Anulo
+                    <span className="text-xl">✕</span>
+                    <span className="hidden sm:inline">Anulo</span>
+                    <span className="sm:hidden">Mbyll</span>
                   </button>
                 </div>
               </div>
