@@ -246,6 +246,7 @@ export default function Contracts() {
       finish_date: newContract.finish_date,
       status: newContract.status,
       address: newContract.address,
+      contract_type: newContract.contract_type, // Add contract_type to payload
       closed_manually: newContract.closed_manually,
       closed_date: newContract.closed_date,
       documents: newContract.documents
@@ -264,6 +265,7 @@ export default function Contracts() {
         start_date: "",
         finish_date: "",
         address: "",
+        contract_type: "day_work", // Reset contract_type to default
         status: "Ne progres",
         closed_manually: false,
         closed_date: null,
@@ -1198,160 +1200,209 @@ export default function Contracts() {
       {/* Modal për shtimin e kontratës */}
       {showAddModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 pt-8"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-2 sm:p-4 pt-4 sm:pt-8"
           onClick={closeAddModal}
         >
           <div 
-            className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[85vh] overflow-y-auto"
+            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
-                  <span className="text-3xl">➕</span> Shto Kontratë të Re
+            <div className="p-4 sm:p-6">
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
+                  <span className="text-xl sm:text-3xl">➕</span> 
+                  <span className="hidden sm:inline">Shto Kontratë të Re</span>
+                  <span className="sm:hidden">Kontratë e Re</span>
                 </h3>
                 <button
                   onClick={closeAddModal}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl font-bold p-1"
                 >
                   ✕
                 </button>
               </div>
               
-              <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4 w-full" onSubmit={handleSubmit}>
-                <label className="col-span-1 md:col-span-2 lg:col-span-4 text-lg font-semibold text-purple-700">Nr. Kontratës: {newContract.contract_number}</label>
-                
-                <div className="col-span-1">
-                  <input 
-                    name="company" 
-                    placeholder="Emri i Kompanisë" 
-                    value={newContract.company} 
-                    onChange={handleChange} 
-                    className={`p-3 border rounded-lg text-base focus:ring-2 transition-all shadow-sm w-full ${
-                      formErrors.company ? 'border-red-500 focus:ring-red-200' : 'border-blue-200 focus:ring-blue-200'
-                    }`}
-                  />
-                  {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                {/* Contract Number and Type Section */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border border-blue-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Numri i Kontratës</label>
+                      <div className="flex items-center p-3 bg-blue-100 rounded-lg border-2 border-blue-300">
+                        <span className="text-2xl mr-2">📋</span>
+                        <span className="text-xl font-bold text-blue-800">#{newContract.contract_number}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Lloji i Kontratës</label>
+                      <select 
+                        name="contract_type" 
+                        value={newContract.contract_type} 
+                        onChange={handleChange} 
+                        className="w-full p-3 border-2 border-purple-200 rounded-lg text-base focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all shadow-sm bg-white"
+                      >
+                        <option value="day_work">👷 Day Work</option>
+                        <option value="price_work">🏗️ Price Work</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="col-span-1">
-                  <input 
-                    name="contract_value" 
-                    placeholder="Vlera e Kontratës (£)" 
-                    value={newContract.contract_value} 
-                    onChange={handleChange} 
-                    className={`p-3 border rounded-lg text-base focus:ring-2 transition-all shadow-sm w-full ${
-                      formErrors.contract_value ? 'border-red-500 focus:ring-red-200' : 'border-blue-200 focus:ring-blue-200'
-                    }`}
-                  />
-                  {formErrors.contract_value && <p className="text-red-500 text-sm mt-1">{formErrors.contract_value}</p>}
+
+                {/* Company Information Section */}
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <span className="text-xl">🏢</span> Të dhënat e Kompanisë
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Emri i Kompanisë *</label>
+                      <input 
+                        name="company" 
+                        placeholder="Emri i Kompanisë" 
+                        value={newContract.company} 
+                        onChange={handleChange} 
+                        className={`w-full p-3 border-2 rounded-lg text-base focus:ring-2 transition-all shadow-sm ${
+                          formErrors.company ? 'border-red-400 focus:ring-red-200 focus:border-red-500' : 'border-gray-300 focus:ring-blue-200 focus:border-blue-400'
+                        }`}
+                      />
+                      {formErrors.company && <p className="text-red-500 text-sm mt-1 flex items-center gap-1"><span>⚠️</span>{formErrors.company}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email i Kompanisë</label>
+                      <input 
+                        name="company_email" 
+                        placeholder="Email i Kompanisë" 
+                        value={newContract.company_email} 
+                        onChange={handleChange} 
+                        type="email"
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all shadow-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="col-span-1">
-                  <input 
-                    name="site_name" 
-                    placeholder="Vendodhja" 
-                    value={newContract.site_name} 
-                    onChange={handleChange} 
-                    className={`p-3 border rounded-lg text-base focus:ring-2 transition-all shadow-sm w-full ${
-                      formErrors.site_name ? 'border-red-500 focus:ring-red-200' : 'border-blue-200 focus:ring-blue-200'
-                    }`}
-                  />
-                  {formErrors.site_name && <p className="text-red-500 text-sm mt-1">{formErrors.site_name}</p>}
+
+                {/* Project Information Section */}
+                <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <span className="text-xl">🏗️</span> Të dhënat e Projektit
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Vendodhja *</label>
+                      <input 
+                        name="site_name" 
+                        placeholder="Vendodhja e projektit" 
+                        value={newContract.site_name} 
+                        onChange={handleChange} 
+                        className={`w-full p-3 border-2 rounded-lg text-base focus:ring-2 transition-all shadow-sm ${
+                          formErrors.site_name ? 'border-red-400 focus:ring-red-200 focus:border-red-500' : 'border-gray-300 focus:ring-green-200 focus:border-green-400'
+                        }`}
+                      />
+                      {formErrors.site_name && <p className="text-red-500 text-sm mt-1 flex items-center gap-1"><span>⚠️</span>{formErrors.site_name}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Adresa e Detajuar</label>
+                      <input 
+                        name="address" 
+                        placeholder="Adresa e plotë e projektit" 
+                        value={newContract.address} 
+                        onChange={handleChange} 
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-green-200 focus:border-green-400 transition-all shadow-sm"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Vlera e Kontratës (£) *</label>
+                      <input 
+                        name="contract_value" 
+                        placeholder="Vlera e Kontratës (£)" 
+                        value={newContract.contract_value} 
+                        onChange={handleChange} 
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className={`w-full p-3 border-2 rounded-lg text-base focus:ring-2 transition-all shadow-sm ${
+                          formErrors.contract_value ? 'border-red-400 focus:ring-red-200 focus:border-red-500' : 'border-gray-300 focus:ring-green-200 focus:border-green-400'
+                        }`}
+                      />
+                      {formErrors.contract_value && <p className="text-red-500 text-sm mt-1 flex items-center gap-1"><span>⚠️</span>{formErrors.contract_value}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Statusi i Kontratës</label>
+                      <select 
+                        name="status" 
+                        value={newContract.status} 
+                        onChange={handleChange} 
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-green-200 focus:border-green-400 transition-all shadow-sm bg-white"
+                      >
+                        <option value="Draft">📝 Draft</option>
+                        <option value="Anulluar">❌ Anulluar</option>
+                        <option value="Ne progres">🟡 Ne progres</option>
+                        <option value="Pezulluar">⏸️ Pezulluar</option>
+                        <option value="Mbyllur">✅ Mbyllur</option>
+                        <option value="Mbyllur me vonese">⏰ Mbyllur me vonese</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="col-span-1">
-                  <input 
-                    name="address" 
-                    placeholder="Adresa" 
-                    value={newContract.address} 
-                    onChange={handleChange} 
-                    className="p-3 border border-blue-200 rounded-lg text-base focus:ring-2 focus:ring-blue-200 transition-all shadow-sm w-full"
-                  />
+
+                {/* Timeline Section */}
+                <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <span className="text-xl">📅</span> Kohëzgjatja e Projektit
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Data e Fillimit *</label>
+                      <input 
+                        type="date" 
+                        name="start_date" 
+                        value={newContract.start_date} 
+                        onChange={handleChange} 
+                        className={`w-full p-3 border-2 rounded-lg text-base focus:ring-2 transition-all shadow-sm ${
+                          formErrors.start_date ? 'border-red-400 focus:ring-red-200 focus:border-red-500' : 'border-gray-300 focus:ring-orange-200 focus:border-orange-400'
+                        }`}
+                      />
+                      {formErrors.start_date && <p className="text-red-500 text-sm mt-1 flex items-center gap-1"><span>⚠️</span>{formErrors.start_date}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Data e Mbarimit *</label>
+                      <input 
+                        type="date" 
+                        name="finish_date" 
+                        value={newContract.finish_date} 
+                        onChange={handleChange} 
+                        className={`w-full p-3 border-2 rounded-lg text-base focus:ring-2 transition-all shadow-sm ${
+                          formErrors.finish_date ? 'border-red-400 focus:ring-red-200 focus:border-red-500' : 'border-gray-300 focus:ring-orange-200 focus:border-orange-400'
+                        }`}
+                      />
+                      {formErrors.finish_date && <p className="text-red-500 text-sm mt-1 flex items-center gap-1"><span>⚠️</span>{formErrors.finish_date}</p>}
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="col-span-1">
-                  <input 
-                    name="company_email" 
-                    placeholder="Email i Kompanisë" 
-                    value={newContract.company_email} 
-                    onChange={handleChange} 
-                    type="email"
-                    className="p-3 border border-blue-200 rounded-lg text-base focus:ring-2 focus:ring-blue-200 transition-all shadow-sm w-full"
-                  />
-                </div>
-                
-                <div className="col-span-1">
-                  <label className="block text-base font-medium mb-1 text-blue-800">Data e Fillimit</label>
-                  <input 
-                    type="date" 
-                    name="start_date" 
-                    value={newContract.start_date} 
-                    onChange={handleChange} 
-                    className={`p-3 border rounded-lg w-full text-base focus:ring-2 transition-all shadow-sm ${
-                      formErrors.start_date ? 'border-red-500 focus:ring-red-200' : 'border-purple-200 focus:ring-purple-200'
-                    }`}
-                  />
-                  {formErrors.start_date && <p className="text-red-500 text-sm mt-1">{formErrors.start_date}</p>}
-                </div>
-                
-                <div className="col-span-1">
-                  <label className="block text-base font-medium mb-1 text-blue-800">Data e Mbarimit</label>
-                  <input 
-                    type="date" 
-                    name="finish_date" 
-                    value={newContract.finish_date} 
-                    onChange={handleChange} 
-                    className={`p-3 border rounded-lg w-full text-base focus:ring-2 transition-all shadow-sm ${
-                      formErrors.finish_date ? 'border-red-500 focus:ring-red-200' : 'border-purple-200 focus:ring-purple-200'
-                    }`}
-                  />
-                  {formErrors.finish_date && <p className="text-red-500 text-sm mt-1">{formErrors.finish_date}</p>}
-                </div>
-                
-                <div className="col-span-1">
-                  <label className="block text-base font-medium mb-1 text-blue-800">Lloji i Kontratës</label>
-                  <select 
-                    name="contract_type" 
-                    value={newContract.contract_type} 
-                    onChange={handleChange} 
-                    className="p-3 border border-purple-200 rounded-lg text-base focus:ring-2 focus:ring-purple-200 transition-all shadow-sm w-full"
-                  >
-                    <option value="day_work">👷 Day Work</option>
-                    <option value="price_work">🏗️ Price Work</option>
-                  </select>
-                </div>
-                
-                <div className="col-span-1">
-                  <select 
-                    name="status" 
-                    value={newContract.status} 
-                    onChange={handleChange} 
-                    className="p-3 border border-purple-200 rounded-lg text-base focus:ring-2 focus:ring-purple-200 transition-all shadow-sm w-full"
-                  >
-                    <option value="Draft">Draft</option>
-                    <option value="Anulluar">Anulluar</option>
-                    <option value="Ne progres">Ne progres</option>
-                    <option value="Pezulluar">Pezulluar</option>
-                    <option value="Mbyllur">Mbyllur</option>
-                    <option value="Mbyllur me vonese">Mbyllur me vonese</option>
-                  </select>
-                </div>
-                
-                <div className="col-span-1 md:col-span-2 lg:col-span-4 flex gap-4 mt-4">
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-6">
                   <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg"
                   >
                     {isSubmitting ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Duke shtuar...
+                        <span className="hidden sm:inline">Duke shtuar...</span>
+                        <span className="sm:hidden">Shton...</span>
                       </>
                     ) : (
                       <>
-                        <span className="text-2xl">💾</span> Shto Kontratë
+                        <span className="text-xl">💾</span> 
+                        <span className="hidden sm:inline">Shto Kontratë</span>
+                        <span className="sm:hidden">Shto</span>
                       </>
                     )}
                   </button>
@@ -1359,9 +1410,11 @@ export default function Contracts() {
                   <button 
                     type="button"
                     onClick={closeAddModal}
-                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                    className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 justify-center"
                   >
-                    <span className="text-2xl">✕</span> Anulo
+                    <span className="text-xl">✕</span> 
+                    <span className="hidden sm:inline">Anulo</span>
+                    <span className="sm:hidden">Mbyll</span>
                   </button>
                 </div>
               </form>
