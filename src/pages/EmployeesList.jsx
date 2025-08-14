@@ -479,133 +479,361 @@ export default function EmployeesList() {
   }
 
   return (
-    <div className="p-2 md:p-4">
-      {/* Header me butonin për të hapur modalit */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
-          <span className="text-2xl md:text-3xl lg:text-4xl">👥</span> Lista e Punonjësve
-        </h2>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        
+        {/* HEADER SECTION - MOBILE RESPONSIVE */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="flex-shrink-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-3 shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6 sm:w-8 sm:h-8">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1">
+                    Lista e Punonjësve
+                  </h1>
+                  <div className="text-base sm:text-lg font-semibold text-slate-600">
+                    {filteredEmployees.length} punonjës gjithsej
+                  </div>
+                </div>
+              </div>
         <button
           onClick={openAddModal}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-700 hover:to-blue-700 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 text-sm md:text-base"
+                className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all flex items-center gap-2 justify-center text-sm sm:text-base hover:shadow-xl hover:scale-105"
         >
-          <span className="text-lg md:text-xl">➕</span> Shto Punonjës
+                <span className="text-lg sm:text-xl">➕</span>
+                <span className="hidden sm:inline">Shto Punonjës të Ri</span>
+                <span className="sm:hidden">Shto Punonjës</span>
         </button>
+            </div>
+          </div>
       </div>
 
-      {/* Modal për shtimin e punonjësit */}
+        {/* MODAL PËR SHTIMIN E PUNONJËSIT - ELEGANT DESIGN */}
       {showAddModal && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 md:p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={closeAddModal}
         >
           <div 
-            className="bg-white rounded-xl md:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 md:p-6">
-              <div className="flex justify-between items-center mb-4 md:mb-6">
-                <h3 className="text-lg md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
-                  <span className="text-2xl md:text-3xl">➕</span> Shto Punonjës të Ri
+              {/* MODAL HEADER */}
+              <div className="bg-gradient-to-r from-blue-400 to-purple-500 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/20 rounded-lg p-2">
+                      <span className="text-2xl">👤</span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold text-white">
+                      Shto Punonjës të Ri
                 </h3>
+                  </div>
                 <button
                   onClick={closeAddModal}
-                  className="text-gray-500 hover:text-gray-700 text-xl md:text-2xl font-bold"
+                    className="text-white/80 hover:text-white text-2xl font-bold transition-colors p-1"
                 >
                   ✕
                 </button>
+                </div>
               </div>
               
-              <form
-                className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
-                onSubmit={handleSubmit}
-              >
-                <label className="col-span-2 text-blue-700 italic mb-2 text-sm md:text-base">Lutem plotësoni të gjithë fushat e nevojshme</label>
-                <input type="text" name="firstName" placeholder="Emri *" required value={newEmployee.firstName} onChange={handleChange} className="p-3 md:p-4 border-2 border-blue-200 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-                <input type="text" name="lastName" placeholder="Mbiemri *" required value={newEmployee.lastName} onChange={handleChange} className="p-3 md:p-4 border-2 border-blue-200 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+              {/* MODAL CONTENT */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+              
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  
+                  {/* BASIC INFO SECTION */}
+                  <div className="bg-slate-50/50 rounded-xl p-4 border border-slate-200">
+                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
+                      👤 Informacionet Personale
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-blue-800 font-semibold mb-1">Data e Fillimit *</label>
-                  <input type="date" name="startDate" required value={newEmployee.startDate} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl w-full text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Emri *</label>
+                        <input 
+                          type="text" 
+                          name="firstName" 
+                          placeholder="Emri" 
+                          required 
+                          value={newEmployee.firstName} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        />
                 </div>
                 <div>
-                  <label className="block text-blue-800 font-semibold mb-1">Datëlindja</label>
-                  <input type="date" name="dob" value={newEmployee.dob} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl w-full text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Mbiemri *</label>
+                        <input 
+                          type="text" 
+                          name="lastName" 
+                          placeholder="Mbiemri" 
+                          required 
+                          value={newEmployee.lastName} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        />
                 </div>
-                <input type="text" name="pob" placeholder="Shtetësia" value={newEmployee.pob} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-                <input type="text" name="residence" placeholder="Vendbanimi" value={newEmployee.residence} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-                <input type="email" name="email" placeholder="Email *" required value={newEmployee.email} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-                <input type="text" name="nid" placeholder="NID *" required value={newEmployee.nid} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-                <label className="col-span-2 text-blue-800 font-semibold mt-2">Zgjidh Vendet e Punës *</label>
-                <div className="col-span-2 flex flex-wrap gap-3 mb-2">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Email *</label>
+                        <input 
+                          type="email" 
+                          name="email" 
+                          placeholder="Email" 
+                          required 
+                          value={newEmployee.email} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">NID *</label>
+                        <input 
+                          type="text" 
+                          name="nid" 
+                          placeholder="National ID" 
+                          required 
+                          value={newEmployee.nid} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Data e Fillimit *</label>
+                        <input 
+                          type="date" 
+                          name="startDate" 
+                          required 
+                          value={newEmployee.startDate} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Datëlindja</label>
+                        <input 
+                          type="date" 
+                          name="dob" 
+                          value={newEmployee.dob} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        />
+                      </div>
+                <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Shtetësia</label>
+                        <input 
+                          type="text" 
+                          name="pob" 
+                          placeholder="Vendi i lindjes" 
+                          value={newEmployee.pob} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        />
+                </div>
+                <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Vendbanimi</label>
+                        <input 
+                          type="text" 
+                          name="residence" 
+                          placeholder="Adresa e banimit" 
+                          value={newEmployee.residence} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        />
+                      </div>
+                    </div>
+                </div>
+                  
+                  {/* WORKPLACE SECTION */}
+                  <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-200">
+                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
+                      🏢 Vendet e Punës *
+                    </label>
+                    <div className="flex flex-wrap gap-3">
                   {siteOptions.map((siteName) => {
                     const canSelect = !isManager || managerSites.includes(siteName);
                     if (!canSelect) return null;
                     return (
-                      <label key={siteName} className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-xl border border-blue-200 shadow-sm cursor-pointer">
+                          <label key={siteName} className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-blue-200 shadow-sm cursor-pointer hover:bg-blue-50 transition-all">
                         <input
                           type="checkbox"
                           name="workplace"
                           value={siteName}
                           onChange={handleChange}
                           checked={newEmployee.workplace.includes(siteName)}
-                          className="accent-blue-600 w-5 h-5"
-                        /> {siteName}
+                              className="accent-blue-500 w-4 h-4"
+                            /> 
+                            <span className="text-sm font-medium text-slate-700">{siteName}</span>
                       </label>
                     );
                   })}
                 </div>
-                <input type="text" name="phone" placeholder="Telefoni *" required value={newEmployee.phone} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-                <input type="text" name="nextOfKin" placeholder="Next of Kin" value={newEmployee.nextOfKin || ""} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-                <input type="text" name="nextOfKinPhone" placeholder="Next of Kin Phone" value={newEmployee.nextOfKinPhone || ""} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
+                  </div>
+
+                  {/* CONTACT SECTION */}
+                  <div className="bg-purple-50/50 rounded-xl p-4 border border-purple-200">
+                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
+                      📞 Informacionet e Kontaktit
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-semibold mb-1 text-blue-800">Label Type</label>
-                  <select
-                    name="labelType"
-                    value={newEmployee.labelType}
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Telefoni *</label>
+                        <input 
+                          type="text" 
+                          name="phone" 
+                          placeholder="Numri i telefonit" 
+                          required 
+                          value={newEmployee.phone} 
                     onChange={handleChange}
-                    className="border-2 border-blue-200 p-4 w-full rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
-                  >
-                    <option value="NI">NI</option>
-                    <option value="UTR">UTR</option>
-                  </select>
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
+                        />
                 </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Next of Kin</label>
+                        <input 
+                          type="text" 
+                          name="nextOfKin" 
+                          placeholder="Kontakti i ngushtë" 
+                          value={newEmployee.nextOfKin || ""} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
+                        />
+                      </div>
+                <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Next of Kin Phone</label>
+                        <input 
+                          type="text" 
+                          name="nextOfKinPhone" 
+                          placeholder="Telefoni i kontaktit" 
+                          value={newEmployee.nextOfKinPhone || ""} 
+                    onChange={handleChange}
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
+                        />
+                      </div>
+                    </div>
+                </div>
+                  
+                  {/* WORK DETAILS SECTION */}
+                  <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-200">
+                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
+                      💼 Detajet e Punës
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Roli</label>
                 <select
                   name="role"
                   value={newEmployee.role}
                   onChange={handleChange}
-                  className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm"
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
                 >
                   <option value="user">Punonjës</option>
                   <option value="manager">Menaxher</option>
                 </select>
-                <input type="number" name="hourlyRate" placeholder="Paga / Orë (£)" value={newEmployee.hourlyRate} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" />
-                <select name="qualification" value={newEmployee.qualification} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm">
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Paga / Orë (£)</label>
+                        <input 
+                          type="number" 
+                          name="hourlyRate" 
+                          placeholder="0.00" 
+                          value={newEmployee.hourlyRate} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Kualifikimi</label>
+                        <select 
+                          name="qualification" 
+                          value={newEmployee.qualification} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                        >
                   <option value="CSS">CSS</option>
                   <option value="NVQ">NVQ</option>
                   <option value="Blue Card">Blue Card</option>
                 </select>
-                <select name="status" required value={newEmployee.status} onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm">
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Label Type</label>
+                        <select
+                          name="labelType"
+                          value={newEmployee.labelType}
+                          onChange={handleChange}
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                        >
+                          <option value="NI">NI</option>
+                          <option value="UTR">UTR</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Statusi *</label>
+                        <select 
+                          name="status" 
+                          required 
+                          value={newEmployee.status} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                        >
                   <option value="Aktiv">Aktiv</option>
                   <option value="Joaktiv">Joaktiv</option>
                 </select>
-                <label className="col-span-2 text-blue-800 font-semibold mt-2">Ngarko Foto</label>
-                <input type="file" name="photo" accept="image/*" onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl col-span-2 bg-blue-50 shadow-sm" />
-                <label className="col-span-2 text-blue-800 font-semibold mt-2">Ngarko Dokument PDF</label>
-                <input type="file" name="documents" accept="application/pdf" onChange={handleChange} className="p-4 border-2 border-blue-200 rounded-xl col-span-2 bg-blue-50 shadow-sm" />
-                
-                <div className="col-span-2 flex gap-4 mt-4">
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* FILES SECTION */}
+                  <div className="bg-orange-50/50 rounded-xl p-4 border border-orange-200">
+                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
+                      📁 Dokumentet
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Ngarko Foto</label>
+                        <input 
+                          type="file" 
+                          name="photo" 
+                          accept="image/*" 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200 transition-all duration-200" 
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Ngarko Dokument PDF</label>
+                        <input 
+                          type="file" 
+                          name="documents" 
+                          accept="application/pdf" 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200 transition-all duration-200" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* ACTION BUTTONS */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <button 
                     type="submit" 
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                      className="flex-1 bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
-                    <span className="text-2xl">➕</span> Shto Punonjës
+                      <span className="text-xl">➕</span>
+                      <span className="hidden sm:inline">Shto Punonjës</span>
+                      <span className="sm:hidden">Shto</span>
                   </button>
                   <button 
                     type="button"
                     onClick={closeAddModal}
-                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                      className="flex-1 bg-slate-400 hover:bg-slate-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
-                    <span className="text-2xl">✕</span> Anulo
+                      <span className="text-xl">✕</span>
+                      <span className="hidden sm:inline">Anulo</span>
+                      <span className="sm:hidden">Mbyll</span>
                   </button>
                 </div>
               </form>
@@ -614,53 +842,84 @@ export default function EmployeesList() {
         </div>
       )}
 
-      <div className="mt-6">
-        <div className="flex gap-4 mb-4 flex-wrap">
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="p-3 border-2 border-blue-200 rounded-xl shadow-sm">
+        {/* FILTERS SECTION - MOBILE RESPONSIVE */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+              🔍 Filtro dhe Rregullo
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+              <select 
+                value={filterStatus} 
+                onChange={(e) => setFilterStatus(e.target.value)} 
+                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+              >
             <option value="All">Gjithë statuset</option>
             <option value="Aktiv">Aktiv</option>
             <option value="Joaktiv">Joaktiv</option>
           </select>
-          <select value={filterWorkplace} onChange={(e) => setFilterWorkplace(e.target.value)} className="p-3 border-2 border-blue-200 rounded-xl shadow-sm">
+              <select 
+                value={filterWorkplace} 
+                onChange={(e) => setFilterWorkplace(e.target.value)} 
+                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+              >
             <option value="All">Të gjitha vendet</option>
             {siteOptions.map(site => <option key={site} value={site}>{site}</option>)}
           </select>
-          <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="p-3 border-2 border-blue-200 rounded-xl shadow-sm">
+              <select 
+                value={filterRole} 
+                onChange={(e) => setFilterRole(e.target.value)} 
+                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+              >
             <option value="All">Gjithë rolet</option>
             <option value="user">Punonjës</option>
             <option value="manager">Menaxher</option>
           </select>
-          <select value={filterTax} onChange={(e) => setFilterTax(e.target.value)} className="p-3 border-2 border-blue-200 rounded-xl shadow-sm">
+              <select 
+                value={filterTax} 
+                onChange={(e) => setFilterTax(e.target.value)} 
+                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+              >
             <option value="All">Gjithë taksimet</option>
             <option value="NI">NI</option>
             <option value="UTR">UTR</option>
           </select>
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="p-3 border-2 border-blue-200 rounded-xl shadow-sm">
+              <select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value)} 
+                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+              >
             <option value="default">Pa sortim</option>
             <option value="salaryHigh">Paga ↓</option>
             <option value="salaryLow">Paga ↑</option>
             <option value="nameAZ">Emri A-Z</option>
           </select>
+            </div>
+          </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-blue-100 p-6 mb-8 overflow-x-auto animate-fade-in">
-          <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-6 text-center flex items-center gap-2 justify-center">
-            <span className="text-3xl">📋</span> Tabela e Punonjësve
+        {/* TABLE SECTION - MOBILE RESPONSIVE */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+              📋 Tabela e Punonjësve
           </h3>
-          <table className="min-w-full text-base text-blue-900 rounded-2xl overflow-hidden shadow-xl">
-            <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-base font-bold">
-              <tr>
-                <th className="py-4 px-3 text-center">Foto</th>
-                <th className="py-4 px-3 text-center">ID</th>
-                <th className="py-4 px-3 text-center">Emër</th>
-                <th className="py-4 px-3 text-center">Mbiemër</th>
-                <th className="py-4 px-3 text-center">Roli</th>
-                <th className="py-4 px-3 text-center">Vendet e punës</th>
-                <th className="py-4 px-3 text-center">Tel</th>
-                <th className="py-4 px-3 text-center">Paga</th>
-                <th className="py-4 px-3 text-center">Statusi</th>
-                <th className="py-4 px-3 text-center">Taksimi</th>
-                <th className="py-4 px-3 text-center">Veprime</th>
+            
+            {/* DESKTOP TABLE */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
+                <thead className="bg-gradient-to-r from-blue-100 to-purple-100">
+                  <tr>
+                    <th className="py-3 px-2 text-left font-semibold text-slate-800">Foto</th>
+                    <th className="py-3 px-2 text-left font-semibold text-slate-800">ID</th>
+                    <th className="py-3 px-2 text-left font-semibold text-slate-800">Emër & Mbiemër</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Roli</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Vendet e punës</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Tel</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Paga</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Statusi</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Taksimi</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Veprime</th>
               </tr>
             </thead>
             <tbody>
@@ -671,56 +930,124 @@ export default function EmployeesList() {
                 const statusColor = status === "Aktiv" ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200";
                 const role = emp.role || "";
                 return (
-                  <tr key={emp.id} className="text-center hover:bg-purple-50 transition-all duration-200 rounded-xl shadow-sm">
-                    <td className="py-3 px-3 flex items-center justify-center">
+                      <tr key={emp.id} className="hover:bg-slate-50 transition-all duration-200 border-b border-slate-100">
+                        <td className="py-3 px-2">
                       {emp.photo ? (
-                        <img src={emp.photo} alt="Foto" className="w-14 h-14 rounded-full object-cover border-2 border-blue-200 shadow" />
+                            <img src={emp.photo} alt="Foto" className="w-10 h-10 rounded-full object-cover border-2 border-slate-200 shadow" />
                       ) : (
-                        <span className="rounded-full bg-blue-200 text-blue-700 px-5 py-4 text-2xl font-bold shadow">{firstName[0]}{lastName[0]}</span>
+                            <span className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-700 text-sm font-bold">{firstName[0]}{lastName[0]}</span>
                       )}
                     </td>
-                    <td className="py-3 px-3 font-bold text-blue-900">{emp.id || ""}</td>
-                    <td className="py-3 px-3 font-semibold">{firstName}</td>
-                    <td className="py-3 px-3 font-semibold">{lastName}</td>
-                    <td className="py-3 px-3">
-                      <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-3 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
+                        <td className="py-3 px-2 font-bold text-slate-700">{emp.id || ""}</td>
+                        <td className="py-3 px-2 font-semibold text-slate-800">{firstName} {lastName}</td>
+                        <td className="py-3 px-2 text-center">
+                          <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-2 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
                     </td>
-                    <td className="py-3 px-3 text-sm">
+                        <td className="py-3 px-2 text-center text-xs text-slate-600">
                       {Array.isArray(emp.workplace) ? emp.workplace.join(", ") : (emp.workplace || "")}
                     </td>
-                    <td className="py-3 px-3">{emp.phone || ""}</td>
-                    <td className="py-3 px-3 font-bold text-green-700">{emp.hourlyRate !== undefined && emp.hourlyRate !== null && emp.hourlyRate !== "" ? `£${emp.hourlyRate}` : (emp.hourly_rate !== undefined && emp.hourly_rate !== null && emp.hourly_rate !== "" ? `£${emp.hourly_rate}` : "")}</td>
-                    <td className="py-3 px-3">
-                      <span className={`px-4 py-1 rounded-full border text-base font-bold shadow-md ${statusColor}`}>{status}</span>
+                        <td className="py-3 px-2 text-center text-slate-700">{emp.phone || ""}</td>
+                        <td className="py-3 px-2 text-center font-bold text-emerald-600">{emp.hourlyRate !== undefined && emp.hourlyRate !== null && emp.hourlyRate !== "" ? `£${emp.hourlyRate}` : (emp.hourly_rate !== undefined && emp.hourly_rate !== null && emp.hourly_rate !== "" ? `£${emp.hourly_rate}` : "")}</td>
+                        <td className="py-3 px-2 text-center">
+                          <span className={`px-3 py-1 rounded-full border text-xs font-bold shadow-md ${statusColor}`}>{status}</span>
                     </td>
-                    <td className="py-3 px-3 font-semibold text-blue-700">{emp.labelType || emp.label_type || ""}</td>
-                    <td className="py-3 px-3 flex items-center gap-2 justify-center">
-                      <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl" title="Shiko Detaje">
+                        <td className="py-3 px-2 text-center font-semibold text-blue-600">{emp.labelType || emp.label_type || ""}</td>
+                        <td className="py-3 px-2">
+                          <div className="flex items-center gap-1 justify-center">
+                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-1.5 text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-sm" title="Shiko Detaje">
                         <FaEye />
                       </button>
                       <button
                         onClick={() => handleExtract(emp)}
-                        className="p-2 text-green-600 hover:text-green-800 hover:scale-110 transition-all text-xl"
+                              className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:scale-110 transition-all text-sm"
                         title="Eksporto të dhënat"
                       >
                         📥
                       </button>
-                      <button onClick={() => handleDelete(emp.id)} className="p-2 text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl" title="Fshi">
+                            <button onClick={() => handleDelete(emp.id)} className="p-1.5 text-red-600 hover:text-red-800 hover:scale-110 transition-all text-sm" title="Fshi">
                         🗑
                       </button>
+                          </div>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+            </div>
+
+            {/* MOBILE CARDS */}
+            <div className="lg:hidden space-y-4">
+              {filteredEmployees.map((emp) => {
+                const firstName = emp.firstName || emp.first_name || "";
+                const lastName = emp.lastName || emp.last_name || "";
+                const status = emp.status || "";
+                const statusColor = status === "Aktiv" ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200";
+                const role = emp.role || "";
+                return (
+                  <div key={emp.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        {emp.photo ? (
+                          <img src={emp.photo} alt="Foto" className="w-12 h-12 rounded-full object-cover border-2 border-slate-200 shadow" />
+                        ) : (
+                          <span className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-700 text-sm font-bold">{firstName[0]}{lastName[0]}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-bold text-slate-800 truncate">{firstName} {lastName}</h4>
+                          <span className={`px-2 py-1 rounded-full border text-xs font-bold ${statusColor}`}>{status}</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm text-slate-600 mb-3">
+                          <div><span className="font-medium">ID:</span> {emp.id}</div>
+                          <div><span className="font-medium">Tel:</span> {emp.phone || "N/A"}</div>
+                          <div><span className="font-medium">Roli:</span> <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-2 py-0.5 rounded-full">{role}</span></div>
+                          <div><span className="font-medium">Paga:</span> {emp.hourlyRate !== undefined && emp.hourlyRate !== null && emp.hourlyRate !== "" ? `£${emp.hourlyRate}` : (emp.hourly_rate !== undefined && emp.hourly_rate !== null && emp.hourly_rate !== "" ? `£${emp.hourly_rate}` : "N/A")}</div>
+                        </div>
+                        <div className="text-xs text-slate-500 mb-3">
+                          <span className="font-medium">Vendet e punës:</span> {Array.isArray(emp.workplace) ? emp.workplace.join(", ") : (emp.workplace || "N/A")}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-slate-500">
+                            <span className="font-medium">Taksimi:</span> {emp.labelType || emp.label_type || "N/A"}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 text-blue-600 hover:text-blue-800 hover:scale-110 transition-all" title="Shiko Detaje">
+                              <FaEye />
+                            </button>
+                            <button
+                              onClick={() => handleExtract(emp)}
+                              className="p-2 text-emerald-600 hover:text-emerald-800 hover:scale-110 transition-all"
+                              title="Eksporto të dhënat"
+                            >
+                              📥
+                            </button>
+                            <button onClick={() => handleDelete(emp.id)} className="p-2 text-red-600 hover:text-red-800 hover:scale-110 transition-all" title="Fshi">
+                              🗑
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
-        <button
-          onClick={exportToCSV}
-          className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition text-lg flex items-center gap-2 mx-auto"
-        >
-          <span className="text-2xl">📤</span> Eksporto punonjësit (CSV)
-        </button>
+        
+        {/* EXPORT BUTTON */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg border border-slate-200/50 p-4 sm:p-6 text-center">
+          <button
+            onClick={exportToCSV}
+            className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 mx-auto hover:shadow-xl hover:scale-105"
+          >
+            <span className="text-xl">📤</span> 
+            <span className="hidden sm:inline">Eksporto punonjësit (CSV)</span>
+            <span className="sm:hidden">Eksporto CSV</span>
+          </button>
+        </div>
       </div>
     </div>
   );
