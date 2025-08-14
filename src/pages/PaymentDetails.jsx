@@ -415,138 +415,230 @@ export default function PaymentDetails() {
   }
 
   return (
-    <div className="max-w-full xl:max-w-[90vw] mx-auto px-2 py-8 min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100">
-      {/* HEADER & KONTRATA */}
-      <div className="bg-gradient-to-br from-purple-100 via-white to-blue-100 rounded-3xl shadow-2xl border border-blue-100 p-8 md:p-12 mb-10 animate-fade-in">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-3">
-            <span className="text-5xl">💼</span> Detajet e Kontratës
-          </h2>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        {/* HEADER SECTION - MOBILE RESPONSIVE */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="flex-shrink-0 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-xl p-3 shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6 sm:w-8 sm:h-8">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H4.5m2.25 0v3m0 0v.375c0 .621-.504 1.125-1.125 1.125H4.5m2.25 0a9 9 0 013.75-6.75m0 0h3.75m0 0v3.75m0 0a9 9 0 013.75-6.75" />
+                  </svg>
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-blue-700 tracking-tight mb-1">
+                    Detajet e Pagesës
+                  </h1>
+                  <div className="text-base sm:text-lg font-semibold text-slate-600">
+                    Kontrata #{contract_number}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* CONTRACT INFO SECTION - MOBILE RESPONSIVE */}
         {contract && (
-          <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow p-6 mb-6 text-blue-900 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h3 className="text-2xl font-bold mb-1 flex items-center gap-2">
-                📌 {contract.site_name}
-                <span className="text-lg font-normal text-blue-600">(Kontrata #{contract_number})</span>
-              </h3>
-              <div className="text-lg">Kompania: <span className="font-semibold text-blue-700">{contract.company}</span></div>
-              <div className="text-base text-gray-600">Data fillimit: <span className="font-semibold">{formatContractDate(contract.start_date)}</span></div>
-              <div className="text-base text-gray-600">Vlera e kontratës: <span className="font-semibold text-green-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</span></div>
+          <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+            <div className="p-4 sm:p-6 lg:p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📌 Projekti</span>
+                    <span className="text-lg sm:text-xl font-bold text-slate-800">{contract.site_name}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏢 Kompania</span>
+                    <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.company}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 Fillimi</span>
+                    <span className="text-base sm:text-lg font-semibold text-slate-800">{formatContractDate(contract.start_date)}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">💰 Vlera</span>
+                    <span className="text-base sm:text-lg font-bold text-emerald-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-start lg:items-end justify-start lg:justify-center">
+                  <span className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-2">📊 Statusi</span>
+                  <span className={`inline-flex px-4 py-2 rounded-full text-sm font-bold border ${
+                    contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                    contract.status === 'Draft' ? 'bg-gray-100 text-gray-700 border-gray-200' :
+                    contract.status === 'Anulluar' ? 'bg-red-100 text-red-700 border-red-200' :
+                    contract.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                    contract.status === 'Mbyllur' ? 'bg-green-100 text-green-700 border-green-200' :
+                    contract.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                    'bg-gray-200 text-gray-700 border-gray-300'
+                  }`}>
+                    {contract.status}
+                  </span>
+                </div>
+              </div>
             </div>
-            <span className={`text-lg font-bold px-5 py-2 rounded-full shadow border
-              ${contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                contract.status === 'Draft' ? 'bg-gray-100 text-gray-700 border-gray-200' :
-                contract.status === 'Anulluar' ? 'bg-red-100 text-red-700 border-red-200' :
-                contract.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                contract.status === 'Mbyllur' ? 'bg-green-100 text-green-700 border-green-200' :
-                contract.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                'bg-gray-200 text-gray-700 border-gray-300'}
-            `}>
-              {contract.status}
-            </span>
           </div>
         )}
 
-        {/* Modal për shtimin e shpenzimit */}
+        {/* MODAL PËR SHTIMIN E SHPENZIMEVE - ELEGANT DESIGN */}
         {showAddModal && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 pt-8"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={closeAddModal}
           >
             <div 
-              className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto"
+              className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
-                    <span className="text-3xl">➕</span> Shto Shpenzim/Faturë të Ri
-                  </h3>
+              {/* MODAL HEADER */}
+              <div className="bg-gradient-to-r from-emerald-600 to-blue-600 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/20 rounded-lg p-2">
+                      <span className="text-2xl">💰</span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold text-white">
+                      Shto Shpenzim/Faturë të Ri
+                    </h3>
+                  </div>
                   <button
                     onClick={closeAddModal}
-                    className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                    className="text-white/80 hover:text-white text-2xl font-bold transition-colors p-1"
                   >
                     ✕
                   </button>
                 </div>
-                
-                <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleAddExpenseInvoice}>
-                  <input 
-                    name="expense_type" 
-                    placeholder="Lloji i shpenzimit/faturës" 
-                    value={newExpenseInvoice.expense_type} 
-                    onChange={handleChange} 
-                    className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" 
-                    required
-                  />
-                  <input 
-                    type="date" 
-                    name="date" 
-                    value={newExpenseInvoice.date} 
-                    onChange={handleChange} 
-                    className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" 
-                    required
-                  />
-                  <input 
-                    name="gross" 
-                    placeholder="Shuma Bruto (£)" 
-                    value={newExpenseInvoice.gross} 
-                    onChange={handleChange} 
-                    className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm" 
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    required
-                  />
-                  <input 
-                    name="net" 
-                    placeholder="Shuma Neto (£)" 
-                    value={newExpenseInvoice.net} 
-                    onChange={handleChange} 
-                    className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm bg-gray-50" 
-                    readOnly 
-                  />
-                  <input 
-                    name="tax" 
-                    placeholder="TVSH (£)" 
-                    value={newExpenseInvoice.tax} 
-                    onChange={handleChange} 
-                    className="p-3 border-2 border-blue-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 transition-all shadow-sm bg-gray-50" 
-                    readOnly 
-                  />
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
-                      name="paid" 
-                      checked={newExpenseInvoice.paid} 
-                      onChange={handleChange} 
-                      className="w-5 h-5 accent-green-500" 
-                    />
-                    <label className="text-base font-medium text-blue-800">Paguar</label>
+              </div>
+              
+              {/* MODAL CONTENT */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                <form className="space-y-6" onSubmit={handleAddExpenseInvoice}>
+                  {/* BASIC INFO SECTION */}
+                  <div className="bg-slate-50 rounded-xl p-4">
+                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
+                      📝 Informacionet Bazë
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Lloji i Shpenzimit</label>
+                        <input 
+                          name="expense_type" 
+                          placeholder="p.sh. Material, Transport, Shërbime" 
+                          value={newExpenseInvoice.expense_type} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Data</label>
+                        <input 
+                          type="date" 
+                          name="date" 
+                          value={newExpenseInvoice.date} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <input 
-                    type="file" 
-                    name="file" 
-                    accept="application/pdf,image/*" 
-                    onChange={handleChange} 
-                    className="p-3 border-2 border-blue-200 rounded-xl text-base file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition-all duration-200" 
-                  />
+
+                  {/* AMOUNTS SECTION */}
+                  <div className="bg-slate-50 rounded-xl p-4">
+                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
+                      💰 Shumat Financiare
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Shuma Bruto (£)</label>
+                        <input 
+                          name="gross" 
+                          placeholder="0.00" 
+                          value={newExpenseInvoice.gross} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Shuma Neto (£)</label>
+                        <input 
+                          name="net" 
+                          placeholder="Llogaritet automatikisht" 
+                          value={newExpenseInvoice.net} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg bg-slate-100 text-base font-semibold text-slate-700" 
+                          readOnly 
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">TVSH (£)</label>
+                        <input 
+                          name="tax" 
+                          placeholder="Llogaritet automatikisht" 
+                          value={newExpenseInvoice.tax} 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg bg-slate-100 text-base font-semibold text-slate-700" 
+                          readOnly 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FILE & STATUS SECTION */}
+                  <div className="bg-slate-50 rounded-xl p-4">
+                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
+                      📎 Dokumenti & Statusi
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Bashkëngjit Dokument</label>
+                        <input 
+                          type="file" 
+                          name="file" 
+                          accept="application/pdf,image/*" 
+                          onChange={handleChange} 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200 transition-all duration-200" 
+                        />
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-slate-200">
+                        <input 
+                          type="checkbox" 
+                          name="paid" 
+                          checked={newExpenseInvoice.paid} 
+                          onChange={handleChange} 
+                          className="w-5 h-5 accent-emerald-500" 
+                        />
+                        <label className="text-base font-medium text-slate-700">Paguar</label>
+                      </div>
+                    </div>
+                  </div>
                   
-                  <div className="col-span-2 flex gap-4 mt-4">
+                  {/* ACTION BUTTONS */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <button 
                       type="submit" 
-                      className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                      className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                     >
-                      <span className="text-2xl">💾</span> Shto Shpenzim
+                      <span className="text-xl">💾</span>
+                      <span className="hidden sm:inline">Shto Shpenzim</span>
+                      <span className="sm:hidden">Shto</span>
                     </button>
                     <button 
                       type="button"
                       onClick={closeAddModal}
-                      className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center gap-3 justify-center"
+                      className="flex-1 bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                     >
-                      <span className="text-2xl">✕</span> Anulo
+                      <span className="text-xl">✕</span>
+                      <span className="hidden sm:inline">Anulo</span>
+                      <span className="sm:hidden">Mbyll</span>
                     </button>
                   </div>
                 </form>
@@ -555,113 +647,142 @@ export default function PaymentDetails() {
           </div>
         )}
 
-        {/* GRID: Orët e punës & Shpenzimet - PARALEL */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
-          {/* Orët e punës */}
-          <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 overflow-x-auto">
-            <h4 className="text-xl font-bold text-blue-800 mb-2">👷‍♂️ Orët e Punës & Pagesat</h4>
+        {/* ORËT E PUNËS SECTION - MOBILE RESPONSIVE */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <h4 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
+              👷‍♂️ Orët e Punës & Pagesat
+            </h4>
             
-            {/* Filtra për orët e punës */}
-            <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 mb-4">
-              <h5 className="text-lg font-semibold text-blue-800 mb-3">🔍 Filtra për Orët e Punës</h5>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Filtra për orët e punës - MOBILE RESPONSIVE */}
+            <div className="bg-emerald-50/50 rounded-xl p-4 mb-6 border border-emerald-200">
+              <h5 className="text-base sm:text-lg font-semibold text-emerald-700 mb-4 flex items-center gap-2">
+                🔍 Filtra për Orët e Punës
+              </h5>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <input
                   type="text"
                   placeholder="Kërko punonjës ose javë..."
                   value={workHoursSearchTerm}
                   onChange={(e) => setWorkHoursSearchTerm(e.target.value)}
-                  className="p-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-300 transition-all text-sm"
+                  className="p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
                 />
                 <input
                   type="date"
                   placeholder="Data fillimit"
                   value={workHoursDateFilter.start}
                   onChange={(e) => setWorkHoursDateFilter(prev => ({ ...prev, start: e.target.value }))}
-                  className="p-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-300 transition-all text-sm"
+                  className="p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
                 />
                 <input
                   type="date"
                   placeholder="Data fundit"
                   value={workHoursDateFilter.end}
                   onChange={(e) => setWorkHoursDateFilter(prev => ({ ...prev, end: e.target.value }))}
-                  className="p-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-300 transition-all text-sm"
+                  className="p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
                 />
               </div>
             </div>
 
             {filteredWorkHoursRows.length > 0 ? (
-              <table className="w-full text-base text-blue-900">
-                <thead className="bg-gradient-to-r from-blue-100 to-purple-100">
-                  <tr>
-                    <th className="py-3 px-3 text-left">Punonjësi</th>
-                    <th className="py-3 px-3 text-center">Java</th>
-                    <th className="py-3 px-3 text-center">Orë</th>
-                    <th className="py-3 px-3 text-center">Bruto (£)</th>
-                    <th className="py-3 px-3 text-center">Neto (£)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredWorkHoursRows.map((r, idx) => (
-                    <tr key={idx} className="hover:bg-purple-50 transition-all">
-                      <td className="py-2 px-3 font-semibold">{r.name}</td>
-                      <td className="py-2 px-3 text-center">{r.week}</td>
-                      <td className="py-2 px-3 text-center">{r.hours}</td>
-                      <td className="py-2 px-3 text-center font-bold text-blue-700">£{r.bruto.toFixed(2)}</td>
-                      <td className="py-2 px-3 text-center font-bold text-green-700">£{r.neto.toFixed(2)}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
+                  <thead className="bg-gradient-to-r from-emerald-100 to-blue-100">
+                    <tr>
+                      <th className="py-3 px-2 text-left font-semibold text-emerald-800">Punonjësi</th>
+                      <th className="py-3 px-2 text-center font-semibold text-emerald-800 hidden sm:table-cell">Java</th>
+                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">Orë</th>
+                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">Bruto (£)</th>
+                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">Neto (£)</th>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-blue-50 font-bold">
-                    <td colSpan={3} className="py-2 px-3 text-right">Totali:</td>
-                    <td className="py-2 px-3 text-center text-blue-700">£{filteredWorkHoursRows.reduce((sum, r) => sum + r.bruto, 0).toFixed(2)}</td>
-                    <td className="py-2 px-3 text-center text-green-700">£{filteredWorkHoursRows.reduce((sum, r) => sum + r.neto, 0).toFixed(2)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredWorkHoursRows.map((r, idx) => (
+                      <tr key={idx} className="hover:bg-emerald-50 transition-all border-b border-slate-100">
+                        <td className="py-3 px-2 font-semibold text-slate-800">
+                          <div className="flex flex-col">
+                            <span>{r.name}</span>
+                            <span className="text-xs text-slate-500 sm:hidden">{r.week}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2 text-center text-slate-600 hidden sm:table-cell">{r.week}</td>
+                        <td className="py-3 px-2 text-center font-bold text-blue-600">{r.hours}</td>
+                        <td className="py-3 px-2 text-center font-bold text-orange-600">£{r.bruto.toFixed(2)}</td>
+                        <td className="py-3 px-2 text-center font-bold text-emerald-600">£{r.neto.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-emerald-100">
+                    <tr>
+                      <td colSpan={2} className="py-4 px-2 text-right font-bold text-emerald-800 sm:hidden">Totalet:</td>
+                      <td colSpan={3} className="py-4 px-2 text-right font-bold text-emerald-800 hidden sm:table-cell">Totalet:</td>
+                      <td className="py-4 px-2 text-center font-bold text-orange-700 text-base">
+                        £{filteredWorkHoursRows.reduce((sum, r) => sum + r.bruto, 0).toFixed(2)}
+                      </td>
+                      <td className="py-4 px-2 text-center font-bold text-emerald-700 text-base">
+                        £{filteredWorkHoursRows.reduce((sum, r) => sum + r.neto, 0).toFixed(2)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             ) : (
-              <div className="text-center py-8 text-gray-500 italic">
-                Nuk ka orë pune të regjistruara për këtë kontratë
+              <div className="text-center py-12">
+                <div className="text-slate-400 text-4xl mb-4">👷‍♂️</div>
+                <p className="text-slate-500 text-lg font-medium">Nuk ka orë pune të regjistruara</p>
+                <p className="text-slate-400 text-sm">për këtë kontratë akoma</p>
               </div>
             )}
           </div>
 
-          {/* Shpenzimet/Faturat */}
-          <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 overflow-x-auto">
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="text-xl font-bold text-blue-800">🧾 Shpenzime & Fatura ({filteredExpenses.length} gjithsej)</h4>
+        </div>
+
+        {/* SHPENZIMET/FATURAT SECTION - MOBILE RESPONSIVE */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <h4 className="text-xl sm:text-2xl font-bold text-blue-700 flex items-center gap-2">
+                🧾 Shpenzime & Fatura 
+                <span className="text-sm sm:text-base font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+                  {filteredExpenses.length}
+                </span>
+              </h4>
               <button
                 onClick={openAddModal}
-                className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow-lg transition-all flex items-center gap-2 text-sm"
+                className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all flex items-center gap-2 justify-center text-sm sm:text-base hover:shadow-xl hover:scale-105"
               >
-                <span className="text-lg">➕</span> Shto Shpenzim/Faturë
+                <span className="text-lg sm:text-xl">➕</span>
+                <span className="hidden sm:inline">Shto Shpenzim/Faturë</span>
+                <span className="sm:hidden">Shto Shpenzim</span>
               </button>
             </div>
             
-            {/* Filtra për shpenzimet */}
-            <div className="bg-purple-50 p-4 rounded-xl border border-purple-200 mb-4">
-              <h5 className="text-lg font-semibold text-purple-800 mb-3">🔍 Filtra për Shpenzimet</h5>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Filtra për shpenzimet - MOBILE RESPONSIVE */}
+            <div className="bg-blue-50/50 rounded-xl p-4 mb-6 border border-blue-200">
+              <h5 className="text-base sm:text-lg font-semibold text-blue-700 mb-4 flex items-center gap-2">
+                🔍 Filtra për Shpenzimet
+              </h5>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <input
                   type="text"
                   placeholder="Kërko në shpenzime..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="p-2 border-2 border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-300 transition-all text-sm"
+                  className="p-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                 />
                 <input
                   type="date"
                   placeholder="Data fillimit"
                   value={dateFilter.start}
                   onChange={(e) => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
-                  className="p-2 border-2 border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-300 transition-all text-sm"
+                  className="p-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                 />
                 <input
                   type="date"
                   placeholder="Data fundit"
                   value={dateFilter.end}
                   onChange={(e) => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
-                  className="p-2 border-2 border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-300 transition-all text-sm"
+                  className="p-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                 />
               </div>
             </div>
@@ -750,22 +871,34 @@ export default function PaymentDetails() {
           </div>
         </div>
 
-        {/* Totali i përgjithshëm - full row */}
-        <div className="bg-white/80 rounded-2xl shadow-xl border border-blue-100 p-6 mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="text-xl font-bold text-blue-900">Totali i Përgjithshëm:</div>
-          <div className="flex flex-col md:flex-row gap-4 md:gap-10">
-            <div className="text-lg font-bold text-blue-700">Bruto: £{totalOverallGross.toFixed(2)}</div>
-            <div className="text-lg font-bold text-green-700">Neto: £{totalOverallNet.toFixed(2)}</div>
+        {/* TOTALI I PËRGJITHSHËM - MOBILE RESPONSIVE */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="text-lg sm:text-xl font-bold text-slate-800">💼 Totali i Përgjithshëm</div>
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-500">Bruto:</span>
+                <span className="text-lg sm:text-xl font-bold text-orange-600">£{totalOverallGross.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-500">Neto:</span>
+                <span className="text-lg sm:text-xl font-bold text-emerald-600">£{totalOverallNet.toFixed(2)}</span>
+              </div>
+            </div>
           </div>
         </div>
 
 
 
-        {/* Para të mbetura - zbrit një rresht më poshtë */}
-        <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl shadow-xl border border-green-200 p-6 mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="text-xl font-bold text-green-900">💰 Para të Mbetura:</div>
-          <div className={`text-2xl font-bold ${remainingAmount >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-            £{remainingAmount.toFixed(2)}
+        {/* PARA TË MBETURA - MOBILE RESPONSIVE */}
+        <div className="bg-gradient-to-r from-emerald-100 to-blue-100 rounded-2xl sm:rounded-3xl shadow-xl border border-emerald-200 p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="text-lg sm:text-xl font-bold text-emerald-800 flex items-center gap-2">
+              💰 Para të Mbetura
+            </div>
+            <div className={`text-xl sm:text-2xl lg:text-3xl font-bold ${remainingAmount >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+              £{remainingAmount.toFixed(2)}
+            </div>
           </div>
         </div>
 
