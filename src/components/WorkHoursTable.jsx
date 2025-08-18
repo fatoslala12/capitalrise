@@ -126,19 +126,29 @@ export default function WorkHoursTable({
 
     employees.forEach(emp => {
       const empData = data[emp.id]?.[weekLabel] || {};
-      // Use employee's hourly_rate as fallback when rate from database is null
-      const empRate = Number(emp.hourlyRate || emp.hourly_rate || 0);
-      const empLabelType = emp.labelType || emp.label_type || "UTR";
       
       Object.values(empData).forEach(entry => {
         if (entry && entry.hours) {
           const hours = parseFloat(entry.hours);
           if (!isNaN(hours) && hours > 0) {
             totalHours += hours;
-            const entryBruto = hours * empRate;
-            totalBruto += entryBruto;
-            totalTVSH += empLabelType === "UTR" ? entryBruto * 0.2 : entryBruto * 0.3;
-            totalNeto += empLabelType === "UTR" ? entryBruto * 0.8 : entryBruto * 0.7;
+            
+            // Use amounts from backend if available, otherwise fallback to calculation
+            if (entry.gross_amount !== undefined && entry.net_amount !== undefined) {
+              const entryGross = Number(entry.gross_amount || 0);
+              const entryNet = Number(entry.net_amount || 0);
+              totalBruto += entryGross;
+              totalNeto += entryNet;
+              totalTVSH += entryGross - entryNet; // TVSH = Gross - Net
+            } else {
+              // Fallback to old calculation if backend amounts not available
+              const empRate = Number(emp.hourlyRate || emp.hourly_rate || 0);
+              const empLabelType = emp.labelType || emp.label_type || "UTR";
+              const entryBruto = hours * empRate;
+              totalBruto += entryBruto;
+              totalTVSH += empLabelType === "UTR" ? entryBruto * 0.2 : entryBruto * 0.3;
+              totalNeto += empLabelType === "UTR" ? entryBruto * 0.8 : entryBruto * 0.7;
+            }
           }
         }
       });

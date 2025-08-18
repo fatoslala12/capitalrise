@@ -6,7 +6,23 @@ exports.getAllWorkHours = async (req, res) => {
     
     let result = { rows: [] };
     try {
-      result = await pool.query('SELECT * FROM work_hours ORDER BY date DESC');
+      result = await pool.query(`
+        SELECT wh.*, 
+               e.hourly_rate,
+               COALESCE(e.label_type, e.labelType, 'UTR') as employee_label_type,
+               COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+               COALESCE(wh.net_amount, 
+                 CASE 
+                   WHEN COALESCE(e.label_type, e.labelType, 'UTR') = 'NI' 
+                   THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+                   ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+                 END
+               ) as net_amount,
+               COALESCE(wh.employee_type, COALESCE(e.label_type, e.labelType, 'UTR')) as employee_type
+        FROM work_hours wh
+        LEFT JOIN employees e ON wh.employee_id = e.id
+        ORDER BY wh.date DESC
+      `);
 
     } catch (err) {
       console.error('[ERROR] /api/work-hours/all main query:', err.message);
@@ -23,8 +39,21 @@ exports.getWorkHoursByEmployee = async (req, res) => {
   const { employeeId } = req.params;
   try {
     const result = await pool.query(`
-      SELECT wh.*, c.site_name
+      SELECT wh.*, 
+             c.site_name,
+             e.hourly_rate,
+             COALESCE(e.label_type, e.labelType, 'UTR') as employee_label_type,
+             COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+             COALESCE(wh.net_amount, 
+               CASE 
+                 WHEN COALESCE(e.label_type, e.labelType, 'UTR') = 'NI' 
+                 THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+                 ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+               END
+             ) as net_amount,
+             COALESCE(wh.employee_type, COALESCE(e.label_type, e.labelType, 'UTR')) as employee_type
       FROM work_hours wh
+      LEFT JOIN employees e ON wh.employee_id = e.id
       JOIN contracts c ON wh.contract_id = c.id
       WHERE wh.employee_id = $1
       ORDER BY wh.date DESC
@@ -117,13 +146,20 @@ exports.addWorkHours = async (req, res) => {
           }
         }
 
-        // Get employee's hourly_rate for calculations
+        // Get employee's hourly_rate and employee_type for calculations
         const empRateRes = await client.query(
-          `SELECT hourly_rate FROM employees WHERE id = $1`,
+          `SELECT hourly_rate, COALESCE(label_type, labelType, 'UTR') as employee_type FROM employees WHERE id = $1`,
           [employeeId]
         );
-        const rate = empRateRes.rows[0]?.hourly_rate || 0;
-        console.log(`[DEBUG] contract_id: ${contract_id}, hourly_rate: ${rate}`);
+        const rate = empRateRes.rows[0]?.hourly_rate || 15;
+        const employeeType = empRateRes.rows[0]?.employee_type || 'UTR';
+        console.log(`[DEBUG] contract_id: ${contract_id}, hourly_rate: ${rate}, employee_type: ${employeeType}`);
+        
+        // Calculate amounts
+        const hours = parseFloat(entry.hours || 0);
+        const grossAmount = hours * rate;
+        const netAmount = employeeType === 'NI' ? grossAmount * 0.70 : grossAmount * 0.80;
+        console.log(`[DEBUG] Amounts: ${hours}h × £${rate} = £${grossAmount} gross, £${netAmount} net (${employeeType})`);
         
         // Check if entry exists
         const check = await client.query(
@@ -134,19 +170,32 @@ exports.addWorkHours = async (req, res) => {
         if (check.rows.length > 0) {
           console.log(`[DEBUG] Updating work_hours for ${employeeId} ${dateStr}`);
           await client.query(
-            `UPDATE work_hours SET hours = $1, site = $2, contract_id = $3, updated_at = NOW() WHERE id = $4`,
-            [entry.hours, entry.site || null, contract_id, check.rows[0].id]
+            `UPDATE work_hours SET hours = $1, site = $2, contract_id = $3, rate = $4, 
+             gross_amount = $5, net_amount = $6, employee_type = $7, updated_at = NOW() 
+             WHERE id = $8`,
+            [entry.hours, entry.site || null, contract_id, rate, grossAmount, netAmount, employeeType, check.rows[0].id]
           );
         } else {
           console.log(`[DEBUG] Inserting work_hours for ${employeeId} ${dateStr}`);
           await client.query(
-            `INSERT INTO work_hours (employee_id, date, hours, site, contract_id, created_at, updated_at) 
-             VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
-            [employeeId, dateStr, entry.hours, entry.site || null, contract_id]
+            `INSERT INTO work_hours (employee_id, date, hours, site, contract_id, rate, 
+             gross_amount, net_amount, employee_type, created_at, updated_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())`,
+            [employeeId, dateStr, entry.hours, entry.site || null, contract_id, rate, grossAmount, netAmount, employeeType]
           );
         }
         
-        saved.push({ employeeId, date: dateStr, hours: entry.hours, site: entry.site || null, contract_id, hourly_rate: rate });
+        saved.push({ 
+          employeeId, 
+          date: dateStr, 
+          hours: entry.hours, 
+          site: entry.site || null, 
+          contract_id, 
+          hourly_rate: rate,
+          gross_amount: grossAmount,
+          net_amount: netAmount,
+          employee_type: employeeType
+        });
       }
       
       // Kontrollo nëse ka të paktën një ditë me orë > 0
@@ -300,12 +349,43 @@ exports.updateWorkHours = async (req, res) => {
   const { date, hours } = req.body;
   console.log('[DEBUG] updateWorkHours called by:', req.user);
   try {
-    const result = await pool.query(`
-      UPDATE work_hours
-      SET date = $1, hours = $2, updated_at = NOW()
-      WHERE id = $3 RETURNING *`,
-      [date, hours, id]
+    // First, get employee info for recalculating amounts
+    const workHourInfo = await pool.query(`
+      SELECT wh.*, e.hourly_rate, COALESCE(e.label_type, e.labelType, 'UTR') as employee_type
+      FROM work_hours wh
+      LEFT JOIN employees e ON wh.employee_id = e.id
+      WHERE wh.id = $1`,
+      [id]
     );
+    
+    let result;
+    if (workHourInfo.rows.length > 0) {
+      const workHour = workHourInfo.rows[0];
+      const rate = workHour.hourly_rate || 15;
+      const employeeType = workHour.employee_type || 'UTR';
+      
+      // Calculate new amounts
+      const newHours = parseFloat(hours || 0);
+      const grossAmount = newHours * rate;
+      const netAmount = employeeType === 'NI' ? grossAmount * 0.70 : grossAmount * 0.80;
+      
+      // Update with recalculated amounts
+      result = await pool.query(`
+        UPDATE work_hours
+        SET date = $1, hours = $2, gross_amount = $3, net_amount = $4, 
+            employee_type = $5, updated_at = NOW()
+        WHERE id = $6 RETURNING *`,
+        [date, hours, grossAmount, netAmount, employeeType, id]
+      );
+    } else {
+      // Fallback if employee not found
+      result = await pool.query(`
+        UPDATE work_hours
+        SET date = $1, hours = $2, updated_at = NOW()
+        WHERE id = $3 RETURNING *`,
+        [date, hours, id]
+      );
+    }
     // Shto njoftim për admin vetëm nëse përdoruesi është menaxher
     if (req.user && req.user.role === 'manager') {
       try {
@@ -477,7 +557,20 @@ exports.getStructuredWorkHours = async (req, res) => {
   try {
     try {
       result = await pool.query(`
-        SELECT wh.*, e.id as employee_id, e.hourly_rate, c.site_name
+        SELECT wh.*, 
+               e.id as employee_id, 
+               e.hourly_rate, 
+               COALESCE(e.label_type, e.labelType, 'UTR') as label_type,
+               c.site_name,
+               COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+               COALESCE(wh.net_amount, 
+                 CASE 
+                   WHEN COALESCE(e.label_type, e.labelType, 'UTR') = 'NI' 
+                   THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+                   ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+                 END
+               ) as net_amount,
+               COALESCE(wh.employee_type, COALESCE(e.label_type, e.labelType, 'UTR')) as employee_type
         FROM work_hours wh
         JOIN employees e ON wh.employee_id = e.id
         JOIN contracts c ON wh.contract_id = c.id
@@ -506,7 +599,10 @@ exports.getStructuredWorkHours = async (req, res) => {
         site: row.site_name,
         rate: row.hourly_rate,
         contract_id: row.contract_id,
-        updated_at: row.updated_at // ruajmë për krahasim
+        updated_at: row.updated_at, // ruajmë për krahasim
+        gross_amount: row.gross_amount,
+        net_amount: row.net_amount,
+        employee_type: row.employee_type
       };
       data[empId][weekLabel][day] = dayData;
       weekUpdates[empId][weekLabel].push(new Date(row.updated_at));
@@ -555,8 +651,21 @@ exports.getWorkHoursByContract = async (req, res) => {
     if (contractRes.rows.length === 0) return res.json([]);
     const contract_id = contractRes.rows[0].id;
     const result = await pool.query(`
-      SELECT wh.*, e.first_name, e.last_name, e.hourly_rate, e.label_type,
-        CONCAT(e.first_name, ' ', e.last_name) as employee_name
+      SELECT wh.*, 
+             e.first_name, 
+             e.last_name, 
+             e.hourly_rate, 
+             COALESCE(e.label_type, e.labelType, 'UTR') as label_type,
+             CONCAT(e.first_name, ' ', e.last_name) as employee_name,
+             COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+             COALESCE(wh.net_amount, 
+               CASE 
+                 WHEN COALESCE(e.label_type, e.labelType, 'UTR') = 'NI' 
+                 THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+                 ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+               END
+             ) as net_amount,
+             COALESCE(wh.employee_type, COALESCE(e.label_type, e.labelType, 'UTR')) as employee_type
       FROM work_hours wh
       LEFT JOIN employees e ON wh.employee_id = e.id
       WHERE wh.contract_id = $1
@@ -584,8 +693,19 @@ exports.getStructuredWorkHoursForEmployee = async (req, res) => {
         wh.date,
         wh.hours,
         wh.site,
+        wh.rate as work_hour_rate,
         e.hourly_rate,
-        c.site_name as contract_site
+        COALESCE(e.label_type, e.labelType, 'UTR') as label_type,
+        c.site_name as contract_site,
+        COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+        COALESCE(wh.net_amount, 
+          CASE 
+            WHEN COALESCE(e.label_type, e.labelType, 'UTR') = 'NI' 
+            THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+            ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+          END
+        ) as net_amount,
+        COALESCE(wh.employee_type, COALESCE(e.label_type, e.labelType, 'UTR')) as employee_type
       FROM work_hours wh
       LEFT JOIN employees e ON wh.employee_id = e.id
       LEFT JOIN contracts c ON wh.contract_id = c.id
@@ -608,7 +728,10 @@ exports.getStructuredWorkHoursForEmployee = async (req, res) => {
       structuredData[weekLabel][dayName] = {
         hours: Number(row.hours || 0),
         site: row.site || row.contract_site || '',
-        rate: Number(row.hourly_rate || 0)
+        rate: Number(row.work_hour_rate || row.hourly_rate || 0),
+        gross_amount: Number(row.gross_amount || 0),
+        net_amount: Number(row.net_amount || 0),
+        employee_type: row.employee_type || 'UTR'
       };
     });
     
