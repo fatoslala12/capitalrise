@@ -6,23 +6,56 @@ exports.getAllWorkHours = async (req, res) => {
     
     let result = { rows: [] };
     try {
-      result = await pool.query(`
-        SELECT wh.*, 
-               e.hourly_rate,
-               COALESCE(e.label_type, e.labelType, 'UTR') as employee_label_type,
-               COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
-               COALESCE(wh.net_amount, 
+      // First check if new columns exist
+      let hasAmountColumns = false;
+      try {
+        const columnCheck = await pool.query(`
+          SELECT column_name FROM information_schema.columns 
+          WHERE table_name = 'work_hours' AND column_name IN ('gross_amount', 'net_amount', 'employee_type')
+        `);
+        hasAmountColumns = columnCheck.rows.length >= 3;
+      } catch (e) {
+        console.log('[DEBUG] Column check failed, assuming old schema');
+        hasAmountColumns = false;
+      }
+
+      if (hasAmountColumns) {
+        // New schema with amount columns
+        result = await pool.query(`
+          SELECT wh.*, 
+                 e.hourly_rate,
+                 COALESCE(e.label_type, 'UTR') as employee_label_type,
+                 COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+                 COALESCE(wh.net_amount, 
+                   CASE 
+                     WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
+                     THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+                     ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+                   END
+                 ) as net_amount,
+                 COALESCE(wh.employee_type, COALESCE(e.label_type, 'UTR')) as employee_type
+          FROM work_hours wh
+          LEFT JOIN employees e ON wh.employee_id = e.id
+          ORDER BY wh.date DESC
+        `);
+      } else {
+        // Old schema without amount columns - calculate on the fly
+        result = await pool.query(`
+          SELECT wh.*, 
+                 e.hourly_rate,
+                 COALESCE(e.label_type, 'UTR') as employee_label_type,
+                 (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
                  CASE 
-                   WHEN COALESCE(e.label_type, e.labelType, 'UTR') = 'NI' 
+                   WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
                    THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
                    ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
-                 END
-               ) as net_amount,
-               COALESCE(wh.employee_type, COALESCE(e.label_type, e.labelType, 'UTR')) as employee_type
-        FROM work_hours wh
-        LEFT JOIN employees e ON wh.employee_id = e.id
-        ORDER BY wh.date DESC
-      `);
+                 END as net_amount,
+                 COALESCE(e.label_type, 'UTR') as employee_type
+          FROM work_hours wh
+          LEFT JOIN employees e ON wh.employee_id = e.id
+          ORDER BY wh.date DESC
+        `);
+      }
 
     } catch (err) {
       console.error('[ERROR] /api/work-hours/all main query:', err.message);
@@ -555,27 +588,63 @@ exports.getStructuredWorkHours = async (req, res) => {
   }
   let result;
   try {
+    // Check if new columns exist
+    let hasAmountColumns = false;
     try {
-      result = await pool.query(`
-        SELECT wh.*, 
-               e.id as employee_id, 
-               e.hourly_rate, 
-               COALESCE(e.label_type, e.labelType, 'UTR') as label_type,
-               c.site_name,
-               COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
-               COALESCE(wh.net_amount, 
+      const columnCheck = await pool.query(`
+        SELECT column_name FROM information_schema.columns 
+        WHERE table_name = 'work_hours' AND column_name IN ('gross_amount', 'net_amount', 'employee_type')
+      `);
+      hasAmountColumns = columnCheck.rows.length >= 3;
+    } catch (e) {
+      console.log('[DEBUG] Column check failed, assuming old schema');
+      hasAmountColumns = false;
+    }
+
+    try {
+      if (hasAmountColumns) {
+        // New schema with amount columns
+        result = await pool.query(`
+          SELECT wh.*, 
+                 e.id as employee_id, 
+                 e.hourly_rate, 
+                 COALESCE(e.label_type, 'UTR') as label_type,
+                 c.site_name,
+                 COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+                 COALESCE(wh.net_amount, 
+                   CASE 
+                     WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
+                     THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+                     ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+                   END
+                 ) as net_amount,
+                 COALESCE(wh.employee_type, COALESCE(e.label_type, 'UTR')) as employee_type
+          FROM work_hours wh
+          JOIN employees e ON wh.employee_id = e.id
+          JOIN contracts c ON wh.contract_id = c.id
+          ORDER BY wh.date DESC
+        `);
+      } else {
+        // Old schema without amount columns - calculate on the fly
+        result = await pool.query(`
+          SELECT wh.*, 
+                 e.id as employee_id, 
+                 e.hourly_rate, 
+                 COALESCE(e.label_type, 'UTR') as label_type,
+                 c.site_name,
+                 (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
                  CASE 
-                   WHEN COALESCE(e.label_type, e.labelType, 'UTR') = 'NI' 
+                   WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
                    THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
                    ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
-                 END
-               ) as net_amount,
-               COALESCE(wh.employee_type, COALESCE(e.label_type, e.labelType, 'UTR')) as employee_type
-        FROM work_hours wh
-        JOIN employees e ON wh.employee_id = e.id
-        JOIN contracts c ON wh.contract_id = c.id
-        ORDER BY wh.date DESC
-      `);
+                 END as net_amount,
+                 COALESCE(e.label_type, 'UTR') as employee_type
+          FROM work_hours wh
+          JOIN employees e ON wh.employee_id = e.id
+          JOIN contracts c ON wh.contract_id = c.id
+          ORDER BY wh.date DESC
+        `);
+      }
     } catch (queryErr) {
       console.error('[ERROR] SQL query in /api/work-hours/structured:', queryErr.stack || queryErr);
       return res.status(500).json({ error: queryErr.message });
