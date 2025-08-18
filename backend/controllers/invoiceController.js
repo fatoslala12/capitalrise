@@ -162,10 +162,18 @@ exports.sendInvoiceEmail = async (req, res) => {
     // Dërgo email-in
     const result = await sendInvoiceEmail(invoice, contract, contract.company_email);
     
+    // Përditëso faturën për të shënuar që është dërguar me email
+    await pool.query(
+      'UPDATE invoices SET emailed = TRUE, emailed_at = CURRENT_TIMESTAMP WHERE id = $1',
+      [invoiceId]
+    );
+    
     res.json({ 
       success: true, 
       message: 'Fatura u dërgua me sukses në email!',
-      messageId: result.messageId 
+      messageId: result.messageId,
+      emailed: true,
+      emailed_at: new Date().toISOString()
     });
     
   } catch (error) {

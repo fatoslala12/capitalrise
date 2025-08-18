@@ -404,6 +404,19 @@ export default function ContractDetails() {
 
   // Dërgo faturë në email
   const handleSendEmail = async (invoiceId) => {
+    const invoice = invoices.find(inv => inv.id === invoiceId);
+    
+    // Kontrollo nëse fatura është dërguar më parë
+    if (invoice?.emailed) {
+      const confirmResend = window.confirm(
+        `⚠️ Kjo faturë është dërguar më parë me email (${invoice.emailed_at ? new Date(invoice.emailed_at).toLocaleString('sq-AL') : 'pa datë'}).\n\nJeni i sigurt që doni ta dërgoni përsëri?`
+      );
+      
+      if (!confirmResend) {
+        return; // Anulo dërgimin
+      }
+    }
+    
     setLoadingStates(prev => ({ ...prev, sendEmail: { ...prev.sendEmail, [invoiceId]: true } }));
     
     try {
@@ -415,6 +428,13 @@ export default function ContractDetails() {
       
       if (response.data.success) {
         alert("✅ Fatura u dërgua me sukses në email!");
+        
+        // Rifresko faturat për të treguar statusin e përditësuar
+        const invoicesRes = await axios.get(
+          `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setInvoices(invoicesRes.data || []);
       }
     } catch (error) {
       const errorMessage = error.response?.data?.error || "Gabim gjatë dërgimit të email-it!";
@@ -526,7 +546,9 @@ export default function ContractDetails() {
     
     const matchesFilter = invoicesFilter === "all" || 
       (invoicesFilter === "paid" && inv.paid) ||
-      (invoicesFilter === "unpaid" && !inv.paid);
+      (invoicesFilter === "unpaid" && !inv.paid) ||
+      (invoicesFilter === "emailed" && inv.emailed) ||
+      (invoicesFilter === "not_emailed" && !inv.emailed);
     
     return matchesSearch && matchesFilter;
   });
@@ -756,6 +778,8 @@ export default function ContractDetails() {
                   <option value="all">Të gjitha faturat</option>
                   <option value="paid">Paguar</option>
                   <option value="unpaid">Pa paguar</option>
+                  <option value="emailed">Të dërguara me email</option>
+                  <option value="not_emailed">Pa u dërguar me email</option>
                 </select>
               </div>
             </div>
@@ -815,13 +839,27 @@ export default function ContractDetails() {
                               <button 
                                 onClick={() => handleSendEmail(inv.id)} 
                                 disabled={loadingStates.sendEmail[inv.id]}
-                                className="text-green-600 hover:text-green-800 hover:scale-110 transition-all text-xl disabled:opacity-50"
-                                title="Dërgo në Email"
+                                className={`hover:scale-110 transition-all text-xl disabled:opacity-50 ${
+                                  inv.emailed 
+                                    ? 'text-blue-600 hover:text-blue-800' 
+                                    : 'text-green-600 hover:text-green-800'
+                                }`}
+                                title={inv.emailed 
+                                  ? `E dërguar më: ${inv.emailed_at ? new Date(inv.emailed_at).toLocaleString('sq-AL') : 'pa datë'} - Kliko për të dërguar përsëri`
+                                  : "Dërgo në Email"
+                                }
                               >
                                 {loadingStates.sendEmail[inv.id] ? (
-                                  <div className="w-4 h-4 border border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                  <div className={`w-4 h-4 border border-t-transparent rounded-full animate-spin ${
+                                    inv.emailed ? 'border-blue-600' : 'border-green-600'
+                                  }`}></div>
                                 ) : (
-                                  '📧'
+                                  <div className="relative">
+                                    {inv.emailed ? '✅' : '📧'}
+                                    {inv.emailed && (
+                                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                    )}
+                                  </div>
                                 )}
                               </button>
                               <button 
