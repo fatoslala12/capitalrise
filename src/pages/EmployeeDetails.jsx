@@ -156,14 +156,17 @@ export default function EmployeeDetails() {
       .catch(() => setTasks([]));
   }, [id, token]);
 
-  // Merr available sites nga contracts
+  // Merr available sites nga contracts (vetëm aktivë - "Ne progres")
   useEffect(() => {
     axios.get("https://building-system.onrender.com/api/contracts", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
-        const sites = [...new Set(res.data.map(c => c.site_name).filter(Boolean))];
+        // Filtro vetëm kontratat me status "Ne progres"
+        const activeContracts = res.data.filter(c => c.status === 'Ne progres');
+        const sites = [...new Set(activeContracts.map(c => c.site_name).filter(Boolean))];
         setAvailableSites(sites);
+        console.log(`[DEBUG] Available sites for workplace: ${sites.length} active sites from ${res.data.length} total contracts`);
       })
       .catch(() => setAvailableSites([]));
   }, [token]);
@@ -363,8 +366,8 @@ export default function EmployeeDetails() {
   } = employee;
 
   const statusColor = status === "Aktiv"
-    ? "bg-green-100 text-green-700 border-green-200"
-    : "bg-red-100 text-red-700 border-red-200";
+    ? "bg-green-50 text-green-600 border-green-100"
+    : "bg-red-50 text-red-600 border-red-100";
 
   function formatDate(dateStr) {
     if (!dateStr) return "N/A";
@@ -505,10 +508,10 @@ export default function EmployeeDetails() {
   // Funksion për të marrë ngjyrën e prioritetit
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'high': return 'text-red-600 bg-red-100 border-red-200';
-      case 'medium': return 'text-yellow-600 bg-yellow-100 border-yellow-200';
-      case 'low': return 'text-green-600 bg-green-100 border-green-200';
-      default: return 'text-gray-600 bg-gray-100 border-gray-200';
+      case 'high': return 'text-red-500 bg-red-50 border-red-100';
+      case 'medium': return 'text-yellow-500 bg-yellow-50 border-yellow-100';
+      case 'low': return 'text-green-500 bg-green-50 border-green-100';
+      default: return 'text-gray-500 bg-gray-50 border-gray-100';
     }
   };
 
@@ -703,7 +706,7 @@ export default function EmployeeDetails() {
       <div className="w-full px-4 md:px-8 py-6 md:py-10 min-h-screen">
         {/* Quick Stats Cards - Mobile Optimized */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-10">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-blue-100 text-xs md:text-sm">Total Orë</p>
@@ -719,7 +722,7 @@ export default function EmployeeDetails() {
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-green-400 to-green-500 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-green-100 text-xs md:text-sm">Paga Bruto</p>
@@ -735,7 +738,7 @@ export default function EmployeeDetails() {
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-purple-400 to-purple-500 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-purple-100 text-xs md:text-sm">Site-t</p>
@@ -745,7 +748,7 @@ export default function EmployeeDetails() {
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-orange-100 text-xs md:text-sm">Detyrat</p>
@@ -809,7 +812,7 @@ export default function EmployeeDetails() {
             </div>
             
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-2xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-3 md:mb-4">
+              <h2 className="text-2xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-3 md:mb-4">
                 {editing ? (
                   <div className="flex flex-col md:flex-row gap-2 md:gap-4">
                     <input
@@ -833,9 +836,9 @@ export default function EmployeeDetails() {
               </h2>
               <div className="flex flex-wrap gap-2 md:gap-4 mb-4 md:mb-8 justify-center md:justify-start">
                 <span className={`px-2 md:px-4 py-1 rounded-full border text-xs md:text-base font-bold shadow-md ${statusColor}`}>{status}</span>
-                <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-2 md:px-3 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
-                <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 md:px-3 py-1 rounded-full border border-blue-200">{label_type}</span>
-                <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 md:px-3 py-1 rounded-full border border-purple-200">{qualification}</span>
+                <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-300 to-purple-300 px-2 md:px-3 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
+                <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 md:px-3 py-1 rounded-full border border-blue-100">{label_type}</span>
+                <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 md:px-3 py-1 rounded-full border border-purple-100">{qualification}</span>
               </div>
               {editing ? (
                 /* Modern Edit Form */
@@ -970,8 +973,6 @@ export default function EmployeeDetails() {
                           >
                             <option value="Aktiv">✅ Aktiv</option>
                             <option value="Pasiv">❌ Pasiv</option>
-                            <option value="Në pritje">⏳ Në pritje</option>
-                            <option value="Pushim">🏖️ Në pushim</option>
                           </select>
                         </div>
                         <div>

@@ -141,9 +141,10 @@ export default function WorkHours() {
         console.log("All employees:", emps);
         
         if (isAdmin) {
-          // ADMIN: shfaq të gjithë punonjësit
-          console.log('[DEBUG] Admin user - setting all employees:', emps.length);
-          setEmployees(emps);
+          // ADMIN: shfaq të gjithë punonjësit aktivë
+          const activeEmps = emps.filter(emp => emp.status !== 'Pasiv');
+          console.log('[DEBUG] Admin user - setting active employees:', activeEmps.length, 'of', emps.length);
+          setEmployees(activeEmps);
           return;
         }
         
@@ -201,8 +202,14 @@ export default function WorkHours() {
             return;
           }
           
-          // Filtro punonjësit që punojnë në site-t e menaxherit
+          // Filtro punonjësit që punojnë në site-t e menaxherit (vetëm aktivë)
           const filteredEmps = emps.filter(emp => {
+            // Filtro punonjësit e pasiv (përveç menaxherit)
+            if (String(emp.id) !== String(user.employee_id) && emp.status === 'Pasiv') {
+              console.log(`Excluding inactive employee: ${emp.first_name} ${emp.last_name} (Status: ${emp.status})`);
+              return false;
+            }
+            
             if (String(emp.id) === String(user.employee_id)) {
               console.log(`Including manager self: ${emp.first_name} ${emp.last_name}`);
               return true; // Gjithmonë përfshij veten
@@ -211,7 +218,7 @@ export default function WorkHours() {
             // Kontrollo nëse punonjësi ka site-t e përbashkëta me menaxherin
             if (emp.workplace && Array.isArray(emp.workplace)) {
               const hasCommonSite = emp.workplace.some(site => managerSites.includes(site));
-              console.log(`Employee ${emp.first_name} ${emp.last_name} sites:`, emp.workplace, "Manager sites:", managerSites, "Has common site:", hasCommonSite);
+              console.log(`Employee ${emp.first_name} ${emp.last_name} sites:`, emp.workplace, "Manager sites:", managerSites, "Has common site:", hasCommonSite, "Status:", emp.status);
               return hasCommonSite;
             }
             

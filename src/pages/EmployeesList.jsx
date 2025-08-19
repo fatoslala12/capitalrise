@@ -86,8 +86,11 @@ export default function EmployeesList() {
     .then(([contractsRes, employeesRes, workHoursRes, tasksRes]) => {
       const contractsData = snakeToCamel(contractsRes.data);
       setContracts(contractsData);
-      const uniqueSites = [...new Set(contractsData.map(c => c.siteName).filter(Boolean))];
+      // Filtro vetëm kontratat me status "Ne progres" për workplace selection
+      const activeContracts = contractsData.filter(c => c.status === 'Ne progres');
+      const uniqueSites = [...new Set(activeContracts.map(c => c.siteName).filter(Boolean))];
       setSiteOptions(uniqueSites);
+      console.log(`[DEBUG] Available sites for new employees: ${uniqueSites.length} active sites from ${contractsData.length} total contracts`);
       
       setEmployees(snakeToCamel(employeesRes.data));
       setWorkHours(snakeToCamel(workHoursRes.data));
