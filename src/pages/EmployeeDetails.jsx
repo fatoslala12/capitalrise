@@ -191,7 +191,6 @@ export default function EmployeeDetails() {
     residence: obj.residence,
     nid: obj.nid,
     start_date: obj.start_date || obj.startDate,
-    email: obj.email,
     phone: obj.phone,
     next_of_kin: obj.next_of_kin || obj.nextOfKin,
     next_of_kin_phone: obj.next_of_kin_phone || obj.nextOfKinPhone,
@@ -208,6 +207,7 @@ export default function EmployeeDetails() {
     try {
       const updatedEmployee = {
         ...toSnakeCase(employee),
+        email: employee.email, // Include email for users table update
         workplace: selectedWorkplaces,
         updated_by: user?.id || 1
       };

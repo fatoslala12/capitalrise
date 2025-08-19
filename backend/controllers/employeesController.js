@@ -158,9 +158,9 @@ exports.updateEmployee = async (req, res) => {
     await client.query('BEGIN');
     
     const { id } = req.params;
-    const { workplace, ...otherFields } = req.body;
+    const { workplace, email, ...otherFields } = req.body;
     
-    // Update employee fields (excluding workplace)
+    // Update employee fields (excluding workplace and email)
     if (Object.keys(otherFields).length > 0) {
       const fields = Object.keys(otherFields);
       const values = Object.values(otherFields);
@@ -178,6 +178,17 @@ exports.updateEmployee = async (req, res) => {
       if (result.rows.length === 0) {
         await client.query('ROLLBACK');
         return res.status(404).json({ error: 'Employee not found' });
+      }
+    }
+    
+    // Update email in users table if provided
+    if (email) {
+      const userUpdateResult = await client.query(
+        'UPDATE users SET email = $1, updated_at = NOW() WHERE employee_id = $2 RETURNING *',
+        [email, id]
+      );
+      if (userUpdateResult.rows.length === 0) {
+        console.log(`[WARNING] No user found for employee ${id} when updating email`);
       }
     }
     
@@ -229,8 +240,9 @@ exports.updateEmployee = async (req, res) => {
     
     await client.query('COMMIT');
     
-    // Return updated employee with workplace
+    // Return updated employee with workplace and user data
     const employeeRes = await client.query('SELECT * FROM employees WHERE id = $1', [id]);
+    const userRes = await client.query('SELECT email, role FROM users WHERE employee_id = $1', [id]);
     const workplaceRes = await client.query(`
       SELECT c.site_name FROM employee_workplaces ew 
       JOIN contracts c ON ew.contract_id = c.id 
@@ -239,6 +251,8 @@ exports.updateEmployee = async (req, res) => {
     
     const updatedEmployee = {
       ...employeeRes.rows[0],
+      email: userRes.rows[0]?.email,
+      role: userRes.rows[0]?.role,
       workplace: workplaceRes.rows.map(w => w.site_name)
     };
     
