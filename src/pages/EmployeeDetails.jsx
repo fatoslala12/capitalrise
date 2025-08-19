@@ -37,6 +37,8 @@ export default function EmployeeDetails() {
   const [taskPriorityFilter, setTaskPriorityFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+  const [availableSites, setAvailableSites] = useState([]);
+  const [selectedWorkplaces, setSelectedWorkplaces] = useState([]);
 
   // Funksion për toast notifications
   const showToast = (message, type = 'info') => {
@@ -154,6 +156,25 @@ export default function EmployeeDetails() {
       .catch(() => setTasks([]));
   }, [id, token]);
 
+  // Merr available sites nga contracts
+  useEffect(() => {
+    axios.get("https://building-system.onrender.com/api/contracts", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        const sites = [...new Set(res.data.map(c => c.site_name).filter(Boolean))];
+        setAvailableSites(sites);
+      })
+      .catch(() => setAvailableSites([]));
+  }, [token]);
+
+  // Initialize selectedWorkplaces when employee data loads
+  useEffect(() => {
+    if (employee?.workplace) {
+      setSelectedWorkplaces(Array.isArray(employee.workplace) ? employee.workplace : []);
+    }
+  }, [employee]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEmployee((prev) => ({ ...prev, [name]: value }));
@@ -181,14 +202,33 @@ export default function EmployeeDetails() {
 
   const handleSave = async () => {
     try {
-      await axios.put(`https://building-system.onrender.com/api/employees/${id}`, toSnakeCase(employee), {
+      const updatedEmployee = {
+        ...toSnakeCase(employee),
+        workplace: selectedWorkplaces
+      };
+      
+      await axios.put(`https://building-system.onrender.com/api/employees/${id}`, updatedEmployee, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      // Update local state
+      setEmployee(prev => ({ ...prev, workplace: selectedWorkplaces }));
       setEditing(false);
       showToast("Të dhënat u ruajtën me sukses!", "success");
     } catch {
       showToast("Gabim gjatë ruajtjes!", "error");
     }
+  };
+
+  // Handle workplace toggle
+  const toggleWorkplace = (site) => {
+    setSelectedWorkplaces(prev => {
+      if (prev.includes(site)) {
+        return prev.filter(s => s !== site);
+      } else {
+        return [...prev, site];
+      }
+    });
   };
 
   const handleDocumentUpload = (e) => {
@@ -797,87 +837,206 @@ export default function EmployeeDetails() {
                 <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 md:px-3 py-1 rounded-full border border-blue-200">{label_type}</span>
                 <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 md:px-3 py-1 rounded-full border border-purple-200">{qualification}</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-base mb-8">
-                {editing ? (
-                  <>
-                    <input
-                      name="email"
-                      value={employee.email || ""}
-                      onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl w-full"
-                      placeholder="Email"
-                    />
-                    <input
-                      name="phone"
-                      value={employee.phone || ""}
-                      onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl w-full"
-                      placeholder="Tel"
-                    />
-                    <input
-                      name="nid"
-                      value={employee.nid || ""}
-                      onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl w-full"
-                      placeholder="NID"
-                    />
-                    <input
-                      name="dob"
-                      type="date"
-                      value={employee.dob ? employee.dob.slice(0, 10) : ""}
-                      onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl w-full"
-                      placeholder="Data lindjes"
-                    />
-                    <input
-                      name="residence"
-                      value={employee.residence || ""}
-                      onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl w-full"
-                      placeholder="Vendbanimi"
-                    />
-                    <input
-                      name="hourly_rate"
-                      type="number"
-                      value={employee.hourly_rate || ""}
-                      onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl w-full"
-                      placeholder="Paga/Orë"
-                    />
-                    <input
-                      name="workplace"
-                      value={Array.isArray(employee.workplace) ? employee.workplace.join(', ') : (employee.workplace || '')}
-                      onChange={e => setEmployee(prev => ({
-                        ...prev,
-                        workplace: e.target.value.split(',').map(s => s.trim())
-                      }))}
-                      className="p-3 border-2 border-blue-200 rounded-xl w-full"
-                      placeholder="Vendet e punës (ndarë me ,)"
-                    />
-                    <input
-                      name="next_of_kin"
-                      value={employee.next_of_kin || ""}
-                      onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl w-full"
-                      placeholder="Next of Kin"
-                    />
-                    <input
-                      name="next_of_kin_phone"
-                      value={employee.next_of_kin_phone || ""}
-                      onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl w-full"
-                      placeholder="Next of Kin Tel"
-                    />
-                    <input
-                      name="qualification"
-                      value={employee.qualification || ""}
-                      onChange={handleChange}
-                      className="p-3 border-2 border-blue-200 rounded-xl w-full"
-                      placeholder="Kualifikimi"
-                    />
-                  </>
-                ) : (
-                  <>
+              {editing ? (
+                /* Modern Edit Form */
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-blue-200 shadow-xl mb-8">
+                  <h3 className="text-xl font-bold text-blue-800 mb-6 flex items-center gap-2">
+                    ✏️ Edito të dhënat e punonjësit
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Left Column - Personal Info */}
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-700 border-b border-gray-200 pb-2">📋 Informacione Personale</h4>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">📧 Email</label>
+                          <input
+                            name="email"
+                            value={employee.email || ""}
+                            onChange={handleChange}
+                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            placeholder="Email adresa"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">📞 Telefoni</label>
+                          <input
+                            name="phone"
+                            value={employee.phone || ""}
+                            onChange={handleChange}
+                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            placeholder="Numri i telefonit"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">🆔 NID</label>
+                          <input
+                            name="nid"
+                            value={employee.nid || ""}
+                            onChange={handleChange}
+                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            placeholder="Numri i identitetit"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">🎂 Data e lindjes</label>
+                          <input
+                            name="dob"
+                            type="date"
+                            value={employee.dob ? employee.dob.slice(0, 10) : ""}
+                            onChange={handleChange}
+                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">🏠 Vendbanimi</label>
+                        <input
+                          name="residence"
+                          value={employee.residence || ""}
+                          onChange={handleChange}
+                          className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                          placeholder="Adresa e banimit"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">👨‍👩‍👧 Next of Kin</label>
+                          <input
+                            name="next_of_kin"
+                            value={employee.next_of_kin || ""}
+                            onChange={handleChange}
+                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            placeholder="Personi më i afërt"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">📞 Next of Kin Tel</label>
+                          <input
+                            name="next_of_kin_phone"
+                            value={employee.next_of_kin_phone || ""}
+                            onChange={handleChange}
+                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            placeholder="Telefoni i personit më të afërt"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column - Work Info */}
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-700 border-b border-gray-200 pb-2">💼 Informacione Pune</h4>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">💷 Paga/Orë (£)</label>
+                          <input
+                            name="hourly_rate"
+                            type="number"
+                            step="0.01"
+                            value={employee.hourly_rate || ""}
+                            onChange={handleChange}
+                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">🎓 Kualifikimi</label>
+                          <input
+                            name="qualification"
+                            value={employee.qualification || ""}
+                            onChange={handleChange}
+                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            placeholder="Kualifikimi profesional"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">📊 Statusi</label>
+                          <select
+                            name="status"
+                            value={employee.status || "Aktiv"}
+                            onChange={handleChange}
+                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white"
+                          >
+                            <option value="Aktiv">✅ Aktiv</option>
+                            <option value="Pasiv">❌ Pasiv</option>
+                            <option value="Në pritje">⏳ Në pritje</option>
+                            <option value="Pushim">🏖️ Në pushim</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">🏷️ Tipi</label>
+                          <select
+                            name="label_type"
+                            value={employee.label_type || "UTR"}
+                            onChange={handleChange}
+                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white"
+                          >
+                            <option value="UTR">🏢 UTR (80% net)</option>
+                            <option value="NI">👷 NI (70% net)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Site Management */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">🏗️ Vendet e Punës</label>
+                        <div className="bg-white rounded-xl border-2 border-blue-200 p-4 max-h-40 overflow-y-auto">
+                          <div className="space-y-2">
+                            {availableSites.map(site => (
+                              <label key={site} className="flex items-center gap-3 p-2 hover:bg-blue-50 rounded-lg cursor-pointer transition-all">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedWorkplaces.includes(site)}
+                                  onChange={() => toggleWorkplace(site)}
+                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <span className="text-sm font-medium text-gray-700">{site}</span>
+                                <div
+                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                  style={{ backgroundColor: currentSiteColors[site] || '#6B7280' }}
+                                ></div>
+                              </label>
+                            ))}
+                          </div>
+                          {selectedWorkplaces.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <p className="text-xs text-gray-500 mb-2">Të zgjedhur ({selectedWorkplaces.length}):</p>
+                              <div className="flex flex-wrap gap-1">
+                                {selectedWorkplaces.map(site => (
+                                  <span
+                                    key={site}
+                                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full border border-blue-200"
+                                  >
+                                    {site}
+                                    <button
+                                      onClick={() => toggleWorkplace(site)}
+                                      className="text-blue-600 hover:text-blue-800 font-bold"
+                                    >
+                                      ×
+                                    </button>
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-base mb-8">
                     <p><span className="font-bold">📧 Email:</span> {employee?.email || user?.email || <span className="italic text-gray-400">N/A</span>}</p>
                     <p><span className="font-bold">📞 Tel:</span> {phone || <span className="italic text-gray-400">N/A</span>}</p>
                     <p><span className="font-bold">🆔 NID:</span> {nid || <span className="italic text-gray-400">N/A</span>}</p>
@@ -892,9 +1051,8 @@ export default function EmployeeDetails() {
                     <p><span className="font-bold">👨‍👩‍👧 Next of Kin:</span> {next_of_kin || <span className="italic text-gray-400">N/A</span>}</p>
                     <p><span className="font-bold">👨‍👩‍👧 Next of Kin Tel:</span> {next_of_kin_phone || <span className="italic text-gray-400">N/A</span>}</p>
                     <p><span className="font-bold">🎓 Kualifikimi:</span> {qualification || <span className="italic text-gray-400">N/A</span>}</p>
-                  </>
-                )}
-              </div>
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row gap-3 md:gap-6 mt-6 md:mt-10">
                 <button
                   onClick={() => navigate('/admin/employees-list')}
