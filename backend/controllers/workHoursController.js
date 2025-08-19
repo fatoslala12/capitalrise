@@ -493,22 +493,64 @@ exports.setPaidStatus = async (req, res) => {
   const { week, employeeId, paid } = req.body;
   console.log('[DEBUG] setPaidStatus called by:', req.user);
   try {
+    // Calculate gross and net amounts from work hours for this week
+    let grossAmount = 0;
+    let netAmount = 0;
+    
+    if (paid) {
+      // Get week start and end dates
+      const [weekStart, weekEnd] = week.split(' - ');
+      
+      // Get all work hours for this employee and week with amounts
+      const workHoursRes = await pool.query(`
+        SELECT 
+          wh.hours, 
+          wh.rate as work_rate,
+          e.hourly_rate, 
+          COALESCE(e.label_type, 'UTR') as employee_type,
+          COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+          COALESCE(wh.net_amount, 
+            CASE 
+              WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
+              THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+              ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+            END
+          ) as net_amount
+        FROM work_hours wh
+        LEFT JOIN employees e ON wh.employee_id = e.id
+        WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3
+      `, [employeeId, weekStart, weekEnd]);
+      
+      // Sum up all amounts for the week
+      grossAmount = workHoursRes.rows.reduce((sum, row) => {
+        return sum + parseFloat(row.gross_amount || 0);
+      }, 0);
+      
+      netAmount = workHoursRes.rows.reduce((sum, row) => {
+        return sum + parseFloat(row.net_amount || 0);
+      }, 0);
+      
+      console.log(`[DEBUG] Calculated amounts for employee ${employeeId}, week ${week}: £${grossAmount} gross, £${netAmount} net`);
+    }
+
     // Check if payment exists
     const check = await pool.query(
       `SELECT id FROM payments WHERE employee_id = $1 AND week_label = $2`,
       [employeeId, week]
     );
+    
     if (check.rows.length > 0) {
-      // Update
+      // Update with amounts
       await pool.query(
-        `UPDATE payments SET is_paid = $1 WHERE employee_id = $2 AND week_label = $3`,
-        [paid, employeeId, week]
+        `UPDATE payments SET is_paid = $1, gross_amount = $2, net_amount = $3, updated_at = NOW() WHERE employee_id = $4 AND week_label = $5`,
+        [paid, grossAmount, netAmount, employeeId, week]
       );
     } else {
-      // Insert (minimal, you can expand as needed)
+      // Insert with amounts
       await pool.query(
-        `INSERT INTO payments (employee_id, week_label, is_paid) VALUES ($1, $2, $3)`,
-        [employeeId, week, paid]
+        `INSERT INTO payments (employee_id, week_label, is_paid, gross_amount, net_amount, created_at, updated_at) 
+         VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
+        [employeeId, week, paid, grossAmount, netAmount]
       );
     }
     // Dërgo notifications kur pagesa bëhet
@@ -1693,30 +1735,75 @@ exports.updatePaymentStatus = async (req, res) => {
       
       // Gjej të gjitha orët e punës për këtë punonjës dhe javë
       const [weekStart, weekEnd] = week.split(' - ');
-      const workHoursRes = await client.query(
-        `SELECT wh.hours, e.hourly_rate, e.label_type
-         FROM work_hours wh
-         JOIN employees e ON wh.employee_id = e.id
-         WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3`,
-        [employeeId, weekStart, weekEnd]
-      );
       
+      // Check if work_hours has amount columns
+      let hasAmountColumns = false;
+      try {
+        const columnCheck = await client.query(`
+          SELECT column_name FROM information_schema.columns 
+          WHERE table_name = 'work_hours' AND column_name IN ('gross_amount', 'net_amount')
+        `);
+        hasAmountColumns = columnCheck.rows.length >= 2;
+      } catch (e) {
+        hasAmountColumns = false;
+      }
+
+      let workHoursRes;
+      if (hasAmountColumns) {
+        // New schema with amount columns
+        workHoursRes = await client.query(`
+          SELECT 
+            wh.hours, 
+            wh.rate as work_rate,
+            e.hourly_rate, 
+            COALESCE(e.label_type, 'UTR') as label_type,
+            COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+            COALESCE(wh.net_amount, 
+              CASE 
+                WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
+                THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+                ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+              END
+            ) as net_amount
+          FROM work_hours wh
+          LEFT JOIN employees e ON wh.employee_id = e.id
+          WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3
+        `, [employeeId, weekStart, weekEnd]);
+      } else {
+        // Old schema - calculate on the fly
+        workHoursRes = await client.query(`
+          SELECT 
+            wh.hours, 
+            e.hourly_rate, 
+            COALESCE(e.label_type, 'UTR') as label_type,
+            (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+            CASE 
+              WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
+              THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+              ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+            END as net_amount
+          FROM work_hours wh
+          LEFT JOIN employees e ON wh.employee_id = e.id
+          WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3
+        `, [employeeId, weekStart, weekEnd]);
+      }
+      
+      // Calculate total amounts from work hours
+      let gross_amount = 0;
+      let net_amount = 0;
       let totalHours = 0;
-      let hourlyRate = 0;
-      let labelType = 'UTR';
       
       if (workHoursRes.rows.length > 0) {
-        hourlyRate = Number(workHoursRes.rows[0].hourly_rate || 0);
-        labelType = workHoursRes.rows[0].label_type || 'UTR';
         workHoursRes.rows.forEach(row => {
-          if (row.hours && row.hours > 0) totalHours += Number(row.hours);
+          if (row.hours && row.hours > 0) {
+            totalHours += Number(row.hours);
+            gross_amount += Number(row.gross_amount || 0);
+            net_amount += Number(row.net_amount || 0);
+          }
         });
       }
       
-      const gross_amount = totalHours * hourlyRate;
-      const net_amount = gross_amount * (labelType === 'UTR' ? 0.8 : 0.7);
-      
-      console.log(`[DEBUG] updatePaymentStatus - Employee ${employeeId}, Week ${week}: ${totalHours}h × £${hourlyRate} = £${gross_amount} gross, £${net_amount} net`);
+      console.log(`[DEBUG] updatePaymentStatus - Employee ${employeeId}, Week ${week}: ${totalHours}h = £${gross_amount} gross, £${net_amount} net`);
       
       if (checkPay.rows.length > 0) {
         // Përditëso pagesën ekzistuese
