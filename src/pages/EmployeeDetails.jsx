@@ -191,6 +191,7 @@ export default function EmployeeDetails() {
     residence: obj.residence,
     nid: obj.nid,
     start_date: obj.start_date || obj.startDate,
+    email: obj.email,
     phone: obj.phone,
     next_of_kin: obj.next_of_kin || obj.nextOfKin,
     next_of_kin_phone: obj.next_of_kin_phone || obj.nextOfKinPhone,
@@ -207,19 +208,26 @@ export default function EmployeeDetails() {
     try {
       const updatedEmployee = {
         ...toSnakeCase(employee),
-        workplace: selectedWorkplaces
+        workplace: selectedWorkplaces,
+        updated_by: user?.id || 1
       };
       
-      await axios.put(`https://building-system.onrender.com/api/employees/${id}`, updatedEmployee, {
+      console.log('[DEBUG] Saving employee data:', updatedEmployee);
+      
+      const response = await axios.put(`https://building-system.onrender.com/api/employees/${id}`, updatedEmployee, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('[DEBUG] Save response:', response.data);
       
       // Update local state
       setEmployee(prev => ({ ...prev, workplace: selectedWorkplaces }));
       setEditing(false);
       showToast("Të dhënat u ruajtën me sukses!", "success");
-    } catch {
-      showToast("Gabim gjatë ruajtjes!", "error");
+    } catch (error) {
+      console.error('[ERROR] Failed to save employee:', error);
+      console.error('[ERROR] Error response:', error.response?.data);
+      showToast(`Gabim gjatë ruajtjes: ${error.response?.data?.message || error.message}`, "error");
     }
   };
 
@@ -706,7 +714,7 @@ export default function EmployeeDetails() {
       <div className="w-full px-4 md:px-8 py-6 md:py-10 min-h-screen">
         {/* Quick Stats Cards - Mobile Optimized */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-10">
-          <div className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-blue-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-blue-100 text-xs md:text-sm">Total Orë</p>
@@ -722,7 +730,7 @@ export default function EmployeeDetails() {
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-green-400 to-green-500 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-green-100 to-green-200 text-green-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-green-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-green-100 text-xs md:text-sm">Paga Bruto</p>
@@ -738,7 +746,7 @@ export default function EmployeeDetails() {
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-purple-400 to-purple-500 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-purple-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-purple-100 text-xs md:text-sm">Site-t</p>
@@ -748,7 +756,7 @@ export default function EmployeeDetails() {
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
+          <div className="bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-orange-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-orange-100 text-xs md:text-sm">Detyrat</p>
@@ -819,14 +827,14 @@ export default function EmployeeDetails() {
                       name="first_name"
                       value={employee.first_name}
                       onChange={handleChange}
-                      className="p-2 md:p-3 border-2 border-blue-200 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-full md:w-1/2"
+                      className="p-2 md:p-3 border-2 border-blue-200 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-full md:w-1/2 text-gray-800"
                       placeholder="Emri"
                     />
                     <input
                       name="last_name"
                       value={employee.last_name}
                       onChange={handleChange}
-                      className="p-2 md:p-3 border-2 border-blue-200 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-full md:w-1/2"
+                      className="p-2 md:p-3 border-2 border-blue-200 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-full md:w-1/2 text-gray-800"
                       placeholder="Mbiemri"
                     />
                   </div>
@@ -1065,13 +1073,13 @@ export default function EmployeeDetails() {
                   <>
                     <button
                       onClick={handleSave}
-                      className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm md:text-lg"
+                      className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-sm md:text-lg border border-green-200"
                     >
                       💾 Ruaj
                     </button>
                     <button
                       onClick={() => setEditing(false)}
-                      className="bg-gradient-to-r from-red-400 to-pink-500 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-pink-600 hover:to-red-600 transition text-sm md:text-lg"
+                      className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-red-200 hover:to-pink-200 transition text-sm md:text-lg border border-red-200"
                     >
                       Anulo
                     </button>
@@ -1087,14 +1095,14 @@ export default function EmployeeDetails() {
                 <button
                   onClick={handleResetPassword}
                   disabled={!user}
-                  className="bg-gradient-to-r from-red-400 to-pink-500 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold text-sm md:text-lg shadow hover:from-pink-600 hover:to-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold text-sm md:text-lg shadow hover:from-red-200 hover:to-pink-200 transition disabled:opacity-50 disabled:cursor-not-allowed border border-red-200"
                   title={!user ? "Punonjësi nuk ka llogari të krijuar" : "Reset fjalëkalimin e punonjësit"}
                 >
                   🔒 Reset Password
                 </button>
                 <button
                   onClick={() => nextEmployee && navigate(`/admin/employee/${nextEmployee.id}`)}
-                  className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm md:text-lg disabled:opacity-50"
+                  className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-sm md:text-lg disabled:opacity-50 border border-green-200"
                   disabled={!nextEmployee}
                 >
                   Next ➡️
@@ -1103,7 +1111,7 @@ export default function EmployeeDetails() {
                   onClick={() => {
                     exportFullPageToPDF();
                   }}
-                  className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-orange-600 hover:to-yellow-600 transition text-sm md:text-lg"
+                  className="bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-yellow-200 hover:to-orange-200 transition text-sm md:text-lg border border-yellow-200"
                 >
                   📊 Export Raport i Plotë
                 </button>
@@ -1124,13 +1132,13 @@ export default function EmployeeDetails() {
             />
             <button
               onClick={exportProfileToPDF}
-              className="bg-gradient-to-r from-purple-400 to-blue-400 text-white px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition text-sm md:text-base"
+              className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-purple-200 hover:to-blue-200 transition text-sm md:text-base border border-purple-200"
             >
               ⬇️ Export PDF
             </button>
             <button
               onClick={downloadAllDocsZip}
-              className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm md:text-base"
+              className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-sm md:text-base border border-green-200"
             >
               ⬇️ Shkarko të gjitha
             </button>
@@ -1168,7 +1176,7 @@ export default function EmployeeDetails() {
                   ) : null}
                   <button
                     onClick={() => handleDeleteAttachment(doc.id)}
-                    className="ml-auto px-3 py-1 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-lg shadow hover:from-pink-600 hover:to-red-600 transition-all text-xs md:text-sm"
+                    className="ml-auto px-3 py-1 bg-gradient-to-r from-red-100 to-pink-100 text-red-800 rounded-lg shadow hover:from-red-200 hover:to-pink-200 transition-all text-xs md:text-sm border border-red-200"
                   >
                     🗑 Fshi
                   </button>
@@ -1438,13 +1446,13 @@ export default function EmployeeDetails() {
                     <div className="flex flex-col gap-2 min-w-[100px] md:min-w-[120px]">
                       <button 
                         onClick={() => navigate(`/tasks/${task.id}`)}
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition-all duration-300 text-xs md:text-sm"
+                        className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-200 hover:to-purple-200 transition-all duration-300 text-xs md:text-sm border border-blue-200"
                       >
                         👁️ Shiko
                       </button>
                       <button 
                         onClick={() => navigate('/tasks')}
-                        className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-green-600 hover:to-blue-600 transition-all duration-300 text-xs md:text-sm"
+                        className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition-all duration-300 text-xs md:text-sm border border-green-200"
                       >
                         📋 Të gjitha
                       </button>
@@ -1460,7 +1468,7 @@ export default function EmployeeDetails() {
                 <p className="text-gray-500 text-sm md:text-lg">Ky punonjës nuk ka detyra të caktuara për momentin.</p>
                 <button 
                   onClick={() => navigate('/tasks')}
-                  className="mt-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition-all duration-300 text-sm md:text-base"
+                  className="mt-4 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow hover:from-blue-200 hover:to-purple-200 transition-all duration-300 text-sm md:text-base border border-blue-200"
                 >
                   📋 Shiko të gjitha detyrat
                 </button>

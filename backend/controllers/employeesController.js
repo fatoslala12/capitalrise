@@ -153,26 +153,61 @@ exports.createEmployee = async (req, res) => {
 };
 
 exports.updateEmployee = async (req, res) => {
+  const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+    
     const { id } = req.params;
-    const fields = Object.keys(req.body);
-    const values = Object.values(req.body);
-    let setQuery = fields.map((field, idx) => `${field} = $${idx + 1}`).join(', ');
-    let updatedByIdx = fields.indexOf('updated_by');
-    if (updatedByIdx === -1 && req.body.updated_by) {
-      setQuery += `, updated_by = '${req.body.updated_by}'`;
-    }
-    values.push(id);
+    const { workplace, ...otherFields } = req.body;
+    
+    // Update employee fields (excluding workplace)
+    if (Object.keys(otherFields).length > 0) {
+      const fields = Object.keys(otherFields);
+      const values = Object.values(otherFields);
+      let setQuery = fields.map((field, idx) => `${field} = $${idx + 1}`).join(', ');
+      let updatedByIdx = fields.indexOf('updated_by');
+      if (updatedByIdx === -1 && otherFields.updated_by) {
+        setQuery += `, updated_by = '${otherFields.updated_by}'`;
+      }
+      values.push(id);
 
-    const result = await pool.query(
-      `UPDATE employees SET ${setQuery}, updated_at = CURRENT_TIMESTAMP WHERE id = $${values.length} RETURNING *`,
-      values
-    );
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+      const result = await client.query(
+        `UPDATE employees SET ${setQuery}, updated_at = CURRENT_TIMESTAMP WHERE id = $${values.length} RETURNING *`,
+        values
+      );
+      if (result.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'Employee not found' });
+      }
+    }
+    
+    // Update workplace if provided
+    if (workplace && Array.isArray(workplace)) {
+      // Delete existing workplace assignments
+      await client.query('DELETE FROM employee_workplaces WHERE employee_id = $1', [id]);
+      
+      // Add new workplace assignments
+      for (const siteName of workplace) {
+        // Find contract by site name
+        const contractRes = await client.query(
+          'SELECT id FROM contracts WHERE site_name = $1 LIMIT 1',
+          [siteName]
+        );
+        
+        if (contractRes.rows.length > 0) {
+          const contractId = contractRes.rows[0].id;
+          await client.query(
+            'INSERT INTO employee_workplaces (employee_id, contract_id) VALUES ($1, $2)',
+            [id, contractId]
+          );
+        }
+      }
+    }
+    
     // Shto njoftim për admin nëse ndryshohet fotoja
-    if (fields.includes('photo')) {
+    if (req.body.photo) {
       try {
-        const adminUsers = await pool.query("SELECT id FROM users WHERE role = 'admin'");
+        const adminUsers = await client.query("SELECT id FROM users WHERE role = 'admin'");
         const title = '🖼️ Foto e punonjësit u ndryshua';
         const message = `Punonjësi me ID ${id} ndryshoi foton e profilit.`;
         for (const admin of adminUsers.rows) {
@@ -191,9 +226,29 @@ exports.updateEmployee = async (req, res) => {
         console.error('[ERROR] Failed to send admin notification for photo change:', notificationError);
       }
     }
-    res.json(result.rows[0]);
+    
+    await client.query('COMMIT');
+    
+    // Return updated employee with workplace
+    const employeeRes = await client.query('SELECT * FROM employees WHERE id = $1', [id]);
+    const workplaceRes = await client.query(`
+      SELECT c.site_name FROM employee_workplaces ew 
+      JOIN contracts c ON ew.contract_id = c.id 
+      WHERE ew.employee_id = $1
+    `, [id]);
+    
+    const updatedEmployee = {
+      ...employeeRes.rows[0],
+      workplace: workplaceRes.rows.map(w => w.site_name)
+    };
+    
+    res.json(updatedEmployee);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    await client.query('ROLLBACK');
+    console.error('[ERROR] Failed to update employee:', err);
+    res.status(500).json({ error: err.message, detail: err.detail });
+  } finally {
+    client.release();
   }
 };
 
