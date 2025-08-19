@@ -75,16 +75,16 @@ exports.getWorkHoursByEmployee = async (req, res) => {
       SELECT wh.*, 
              c.site_name,
              e.hourly_rate,
-             COALESCE(e.label_type, e.labelType, 'UTR') as employee_label_type,
+             COALESCE(e.label_type, 'UTR') as employee_label_type,
              COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
              COALESCE(wh.net_amount, 
                CASE 
-                 WHEN COALESCE(e.label_type, e.labelType, 'UTR') = 'NI' 
+                 WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
                  THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
                  ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
                END
              ) as net_amount,
-             COALESCE(wh.employee_type, COALESCE(e.label_type, e.labelType, 'UTR')) as employee_type
+                            COALESCE(wh.employee_type, COALESCE(e.label_type, 'UTR')) as employee_type
       FROM work_hours wh
       LEFT JOIN employees e ON wh.employee_id = e.id
       JOIN contracts c ON wh.contract_id = c.id
@@ -181,7 +181,7 @@ exports.addWorkHours = async (req, res) => {
 
         // Get employee's hourly_rate and employee_type for calculations
         const empRateRes = await client.query(
-          `SELECT hourly_rate, COALESCE(label_type, labelType, 'UTR') as employee_type FROM employees WHERE id = $1`,
+          `SELECT hourly_rate, COALESCE(label_type, 'UTR') as employee_type FROM employees WHERE id = $1`,
           [employeeId]
         );
         const rate = empRateRes.rows[0]?.hourly_rate || 15;
@@ -384,7 +384,7 @@ exports.updateWorkHours = async (req, res) => {
   try {
     // First, get employee info for recalculating amounts
     const workHourInfo = await pool.query(`
-      SELECT wh.*, e.hourly_rate, COALESCE(e.label_type, e.labelType, 'UTR') as employee_type
+      SELECT wh.*, e.hourly_rate, COALESCE(e.label_type, 'UTR') as employee_type
       FROM work_hours wh
       LEFT JOIN employees e ON wh.employee_id = e.id
       WHERE wh.id = $1`,
@@ -413,11 +413,11 @@ exports.updateWorkHours = async (req, res) => {
     } else {
       // Fallback if employee not found
       result = await pool.query(`
-        UPDATE work_hours
-        SET date = $1, hours = $2, updated_at = NOW()
-        WHERE id = $3 RETURNING *`,
-        [date, hours, id]
-      );
+      UPDATE work_hours
+      SET date = $1, hours = $2, updated_at = NOW()
+      WHERE id = $3 RETURNING *`,
+      [date, hours, id]
+    );
     }
     // Shto njoftim për admin vetëm nëse përdoruesi është menaxher
     if (req.user && req.user.role === 'manager') {
@@ -646,7 +646,7 @@ exports.getStructuredWorkHours = async (req, res) => {
     try {
       if (hasAmountColumns) {
         // New schema with amount columns
-        result = await pool.query(`
+      result = await pool.query(`
           SELECT wh.*, 
                  e.id as employee_id, 
                  e.hourly_rate, 
@@ -661,11 +661,11 @@ exports.getStructuredWorkHours = async (req, res) => {
                    END
                  ) as net_amount,
                  COALESCE(wh.employee_type, COALESCE(e.label_type, 'UTR')) as employee_type
-          FROM work_hours wh
-          JOIN employees e ON wh.employee_id = e.id
-          JOIN contracts c ON wh.contract_id = c.id
-          ORDER BY wh.date DESC
-        `);
+        FROM work_hours wh
+        JOIN employees e ON wh.employee_id = e.id
+        JOIN contracts c ON wh.contract_id = c.id
+        ORDER BY wh.date DESC
+      `);
       } else {
         // Old schema without amount columns - calculate on the fly
         result = await pool.query(`
@@ -766,17 +766,17 @@ exports.getWorkHoursByContract = async (req, res) => {
              e.first_name, 
              e.last_name, 
              e.hourly_rate, 
-             COALESCE(e.label_type, e.labelType, 'UTR') as label_type,
+             COALESCE(e.label_type, 'UTR') as label_type,
              CONCAT(e.first_name, ' ', e.last_name) as employee_name,
              COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
              COALESCE(wh.net_amount, 
                CASE 
-                 WHEN COALESCE(e.label_type, e.labelType, 'UTR') = 'NI' 
+                 WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
                  THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
                  ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
                END
              ) as net_amount,
-             COALESCE(wh.employee_type, COALESCE(e.label_type, e.labelType, 'UTR')) as employee_type
+                            COALESCE(wh.employee_type, COALESCE(e.label_type, 'UTR')) as employee_type
       FROM work_hours wh
       LEFT JOIN employees e ON wh.employee_id = e.id
       WHERE wh.contract_id = $1
@@ -806,17 +806,17 @@ exports.getStructuredWorkHoursForEmployee = async (req, res) => {
         wh.site,
         wh.rate as work_hour_rate,
         e.hourly_rate,
-        COALESCE(e.label_type, e.labelType, 'UTR') as label_type,
+        COALESCE(e.label_type, 'UTR') as label_type,
         c.site_name as contract_site,
         COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
         COALESCE(wh.net_amount, 
           CASE 
-            WHEN COALESCE(e.label_type, e.labelType, 'UTR') = 'NI' 
+            WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
             THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
             ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
           END
         ) as net_amount,
-        COALESCE(wh.employee_type, COALESCE(e.label_type, e.labelType, 'UTR')) as employee_type
+                       COALESCE(wh.employee_type, COALESCE(e.label_type, 'UTR')) as employee_type
       FROM work_hours wh
       LEFT JOIN employees e ON wh.employee_id = e.id
       LEFT JOIN contracts c ON wh.contract_id = c.id
@@ -1765,7 +1765,7 @@ exports.updatePaymentStatus = async (req, res) => {
                 ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
               END
             ) as net_amount
-          FROM work_hours wh
+         FROM work_hours wh
           LEFT JOIN employees e ON wh.employee_id = e.id
           WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3
         `, [employeeId, weekStart, weekEnd]);
