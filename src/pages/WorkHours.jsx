@@ -68,6 +68,7 @@ export default function WorkHours() {
   const [paidStatus, setPaidStatus] = useState({});
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+  const [viewMode, setViewMode] = useState('all'); // 'all' | 'bySite'
   const currentWeekStart = getStartOfWeek();
   const currentWeekLabel = formatDateRange(currentWeekStart);
   
@@ -298,6 +299,21 @@ export default function WorkHours() {
       })
       .catch(() => setPaidStatus({}));
   }, [token]);
+
+  // Grouping e punonjësve sipas site-ve
+  const employeesBySite = useMemo(() => {
+    const map = {};
+    const add = (site, emp) => {
+      if (!map[site]) map[site] = [];
+      // shmang dublikatat
+      if (!map[site].some(e => e.id === emp.id)) map[site].push(emp);
+    };
+    (employees || []).forEach(e => {
+      const sites = Array.isArray(e.workplace) && e.workplace.length ? e.workplace : ['(Pa site)'];
+      sites.forEach(s => add(s || '(Pa site)', e)); // siguri
+    });
+    return map;
+  }, [employees]);
 
   const handleChange = (empId, day, field, value) => {
     if (isAdmin) {
@@ -611,6 +627,32 @@ export default function WorkHours() {
 
       {/* Tabela e orëve të punës */}
       <div className="space-y-6">
+        {/* Toggle buttons për view mode (vetëm për admin) */}
+        {isAdmin && (
+          <div className="flex justify-center gap-2 mb-4">
+            <button 
+              onClick={() => setViewMode('all')} 
+              className={`px-4 py-2 rounded-lg border font-semibold transition-all ${
+                viewMode === 'all' 
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
+                  : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'
+              }`}
+            >
+              👥 Të gjithë
+            </button>
+            <button 
+              onClick={() => setViewMode('bySite')} 
+              className={`px-4 py-2 rounded-lg border font-semibold transition-all ${
+                viewMode === 'bySite' 
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
+                  : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'
+              }`}
+            >
+              🏗️ Sipas Site
+            </button>
+          </div>
+        )}
+
         {/* Java aktuale */}
         {loading ? (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
@@ -619,16 +661,45 @@ export default function WorkHours() {
             <p className="text-blue-700">Ju lutem prisni ndërsa po ngarkojmë orët e punës.</p>
           </div>
         ) : Array.isArray(employees) && employees.length > 0 ? (
-          <WorkHoursTable
-            employees={employees}
-            weekLabel={currentWeekLabel}
-            data={hourData}
-            onChange={handleChange}
-            readOnly={(empId) => isUser || (isManager && paidStatus[`${currentWeekLabel}_${empId}`])}
-            showPaymentControl={isAdmin}
-            paidStatus={paidStatus}
-            setPaidStatus={setPaidStatus}
-          />
+          viewMode === 'all' ? (
+            <WorkHoursTable
+              employees={employees}
+              weekLabel={currentWeekLabel}
+              data={hourData}
+              onChange={handleChange}
+              readOnly={(empId) => isUser || (isManager && paidStatus[`${currentWeekLabel}_${empId}`])}
+              showPaymentControl={isAdmin}
+              paidStatus={paidStatus}
+              setPaidStatus={setPaidStatus}
+            />
+          ) : (
+            Object.entries(employeesBySite).sort(([a],[b])=>a.localeCompare(b)).map(([site, list]) => (
+              <div key={site} className="mt-6 bg-white/80 rounded-2xl shadow-xl border border-blue-200">
+                <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-2xl">
+                  <h3 className="font-bold text-blue-800 text-lg flex items-center gap-2">
+                    🏗️ Site: <span className="text-purple-700">{site}</span>
+                  </h3>
+                  <div className="text-sm text-blue-600 font-medium">
+                    {list.length} punonjës
+                  </div>
+                </div>
+                <div className="p-4">
+                  <WorkHoursTable
+                    employees={list}
+                    weekLabel={currentWeekLabel}
+                    data={hourData}
+                    onChange={handleChange}
+                    readOnly={(empId) => isUser || (isManager && paidStatus[`${currentWeekLabel}_${empId}`])}
+                    showPaymentControl={isAdmin}
+                    paidStatus={paidStatus}
+                    setPaidStatus={setPaidStatus}
+                    siteScope={site === '(Pa site)' ? '' : site}
+                    siteOptions={[site]}
+                  />
+                </div>
+              </div>
+            ))
+          )
         ) : (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
             <h4 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Nuk ka punonjës për të shfaqur</h4>

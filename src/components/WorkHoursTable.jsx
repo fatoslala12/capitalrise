@@ -12,7 +12,8 @@ export default function WorkHoursTable({
   showPaymentControl = false,
   siteOptions = [],
   paidStatus = {},
-  setPaidStatus = () => {}
+  setPaidStatus = () => {},
+  siteScope = ''  // NEW: filter calculations by site
 }) {
   const [expandedRows, setExpandedRows] = useState(new Set());
 
@@ -34,12 +35,21 @@ export default function WorkHoursTable({
       // Fix rate calculation - use employee's hourly_rate as fallback when rate is null from database
       const employeeRate = Number(emp.hourlyRate || emp.hourly_rate || 0);
       const labelType = emp.labelType || emp.label_type || 'UTR';
-      const hours = data[emp.id]?.[weekLabel] || {};
+      const rawHours = data[emp.id]?.[weekLabel] || {};
+      
+      // Filter hours by site scope if specified
+      const hours = siteScope
+        ? Object.fromEntries(Object.entries(rawHours).map(([day, v]) => {
+            // nëse dita s'është në site-in e zgjedhur, zero orët që të mos numërohen
+            return [day, (v && v.site === siteScope) ? v : { ...(v||{}), hours: 0 }];
+          }))
+        : rawHours;
       
       console.log(`[DEBUG] Employee ${emp.id} (${firstName} ${lastName}):`, {
         employeeRate,
         labelType,
         hours,
+        siteScope,
         empData: data[emp.id]
       });
       
@@ -104,7 +114,7 @@ export default function WorkHoursTable({
       
       return result;
     });
-  }, [employees, weekLabel, data, paidStatus, siteOptions]);
+  }, [employees, weekLabel, data, paidStatus, siteOptions, siteScope]);
 
   // Optimized totals calculation with error handling
   const weekTotals = useMemo(() => {
@@ -128,27 +138,28 @@ export default function WorkHoursTable({
       const empData = data[emp.id]?.[weekLabel] || {};
       
       Object.values(empData).forEach(entry => {
-        if (entry && entry.hours) {
-          const hours = parseFloat(entry.hours);
-          if (!isNaN(hours) && hours > 0) {
-            totalHours += hours;
-            
-            // Use amounts from backend if available, otherwise fallback to calculation
-            if (entry.gross_amount !== undefined && entry.net_amount !== undefined) {
-              const entryGross = Number(entry.gross_amount || 0);
-              const entryNet = Number(entry.net_amount || 0);
-              totalBruto += entryGross;
-              totalNeto += entryNet;
-              totalTVSH += entryGross - entryNet; // TVSH = Gross - Net
-            } else {
-              // Fallback to old calculation if backend amounts not available
-              const empRate = Number(emp.hourlyRate || emp.hourly_rate || 0);
-              const empLabelType = emp.labelType || emp.label_type || "UTR";
-              const entryBruto = hours * empRate;
-              totalBruto += entryBruto;
-              totalTVSH += empLabelType === "UTR" ? entryBruto * 0.2 : entryBruto * 0.3;
-              totalNeto += empLabelType === "UTR" ? entryBruto * 0.8 : entryBruto * 0.7;
-            }
+        if (!entry || !entry.hours) return;
+        if (siteScope && entry.site !== siteScope) return; // NEW: filtro sipas site
+        
+        const hours = parseFloat(entry.hours);
+        if (!isNaN(hours) && hours > 0) {
+          totalHours += hours;
+          
+          // Use amounts from backend if available, otherwise fallback to calculation
+          if (entry.gross_amount !== undefined && entry.net_amount !== undefined) {
+            const entryGross = Number(entry.gross_amount || 0);
+            const entryNet = Number(entry.net_amount || 0);
+            totalBruto += entryGross;
+            totalNeto += entryNet;
+            totalTVSH += entryGross - entryNet; // TVSH = Gross - Net
+          } else {
+            // Fallback to old calculation if backend amounts not available
+            const empRate = Number(emp.hourlyRate || emp.hourly_rate || 0);
+            const empLabelType = emp.labelType || emp.label_type || "UTR";
+            const entryBruto = hours * empRate;
+            totalBruto += entryBruto;
+            totalTVSH += empLabelType === "UTR" ? entryBruto * 0.2 : entryBruto * 0.3;
+            totalNeto += empLabelType === "UTR" ? entryBruto * 0.8 : entryBruto * 0.7;
           }
         }
       });
@@ -160,7 +171,7 @@ export default function WorkHoursTable({
       totalTVSH: totalTVSH || 0, 
       totalNeto: totalNeto || 0 
     };
-  }, [employees, weekLabel, data]);
+  }, [employees, weekLabel, data, siteScope]);
 
   const handlePaymentToggle = useCallback(async (empId) => {
     const key = `${weekLabel}_${empId}`;
