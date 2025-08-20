@@ -52,10 +52,12 @@ exports.getEmployeeById = async (req, res) => {
   console.log(`[DEBUG] Getting employee by ID: ${id}`);
   
   try {
-    const result = await pool.query(
-      'SELECT * FROM employees WHERE id = $1',
-      [id]
-    );
+    const result = await pool.query(`
+      SELECT e.*, u.email, u.role
+      FROM employees e
+      LEFT JOIN users u ON u.employee_id = e.id
+      WHERE e.id = $1
+    `, [id]);
     
     console.log(`[DEBUG] Employee query result: ${result.rows.length} rows`);
     
@@ -64,8 +66,17 @@ exports.getEmployeeById = async (req, res) => {
       return res.status(404).json({ error: 'Employee nuk u gjet' });
     }
     
-    console.log(`[DEBUG] Employee found:`, result.rows[0]);
-    res.json(result.rows[0]);
+    const employee = result.rows[0];
+    // Shto workplaces
+    const wpRes = await pool.query(`
+      SELECT c.site_name
+      FROM employee_workplaces ew
+      JOIN contracts c ON c.id = ew.contract_id
+      WHERE ew.employee_id = $1
+    `, [id]);
+    employee.workplace = wpRes.rows.map(r => r.site_name);
+    console.log(`[DEBUG] Employee found:`, employee);
+    res.json(employee);
   } catch (err) {
     console.error('Error getting employee by ID:', err);
     res.status(500).json({ error: err.message });

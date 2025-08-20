@@ -188,18 +188,16 @@ exports.getManagerDashboardStats = async (req, res) => {
     const weeklyHoursRes = await pool.query(`
       SELECT COALESCE(SUM(wh.hours), 0) as total_hours
       FROM work_hours wh
-      JOIN employee_workplaces ew ON wh.employee_id = ew.employee_id
-      WHERE ew.contract_id = ANY($1) 
-      AND wh.week_start >= $2 AND wh.week_start <= $3
+      WHERE wh.contract_id = ANY($1)
+        AND wh.date >= $2 AND wh.date <= $3
     `, [managerSiteIds, startOfWeek, endOfWeek]);
     
     // Merr pagën e javës
     const weeklyPayRes = await pool.query(`
       SELECT COALESCE(SUM(wh.gross_amount), 0) as total_pay
       FROM work_hours wh
-      JOIN employee_workplaces ew ON wh.employee_id = ew.employee_id
-      WHERE ew.contract_id = ANY($1) 
-      AND wh.week_start >= $2 AND wh.week_start <= $3
+      WHERE wh.contract_id = ANY($1)
+        AND wh.date >= $2 AND wh.date <= $3
     `, [managerSiteIds, startOfWeek, endOfWeek]);
     
     // Merr total detyra

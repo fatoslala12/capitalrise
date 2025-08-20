@@ -76,6 +76,14 @@ export default function MyTasks() {
     }
   };
 
+  // Formati i emrit të punonjësit (për manager-in)
+  const getEmployeeName = (task) => {
+    if (task.first_name || task.last_name) {
+      return `${task.first_name || ''} ${task.last_name || ''}`.trim();
+    }
+    return task.assigned_to ? `Employee #${task.assigned_to}` : '';
+  };
+
   // Funksion për të marrë ngjyrën e statusit
   const getStatusColor = (status) => {
     switch (status) {
@@ -266,7 +274,14 @@ export default function MyTasks() {
 
                 {/* Detajet kryesore */}
                 <div className="flex-1">
-                  <h4 className="text-xl font-bold text-blue-800 mb-2">{task.title}</h4>
+                  <h4 className="text-xl font-bold text-blue-800 mb-2">
+                    {task.title}
+                    {user?.role === 'manager' && (
+                      <span className="ml-2 text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 align-middle">
+                        {getEmployeeName(task)}
+                      </span>
+                    )}
+                  </h4>
                   <p className="text-gray-700 mb-3">{task.description}</p>
                   
                   <div className="flex flex-wrap gap-4 text-sm">
