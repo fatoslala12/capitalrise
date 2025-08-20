@@ -71,7 +71,33 @@ exports.getTasksForManager = async (req, res) => {
 exports.addTask = async (req, res) => {
   const { assigned_to, title, description, status, site_name, due_date, assigned_by, priority, category } = req.body;
   console.log('[DEBUG] addTask payload:', req.body);
+  
   try {
+    // Nëse është manager, kontrollo nëse ka të drejta për këtë site dhe punonjës
+    if (req.user?.role === 'manager') {
+      // Kontrollo nëse site-i i përket manager-it
+      const managerSiteCheck = await pool.query(`
+        SELECT 1 FROM contracts c
+        JOIN employee_workplaces ew ON ew.contract_id = c.id
+        WHERE ew.employee_id = $1 AND c.site_name = $2 AND c.status = 'Ne progres'
+      `, [req.user.employee_id, site_name]);
+      
+      if (managerSiteCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'Nuk keni të drejta për këtë site' });
+      }
+      
+      // Kontrollo nëse punonjësi punon në këtë site
+      const employeeSiteCheck = await pool.query(`
+        SELECT 1 FROM employee_workplaces ew
+        JOIN contracts c ON ew.contract_id = c.id
+        WHERE ew.employee_id = $3 AND c.site_name = $2
+      `, [req.user.employee_id, site_name, assigned_to]);
+      
+      if (employeeSiteCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'Punonjësi nuk punon në këtë site' });
+      }
+    }
+    
     const result = await pool.query(`
       INSERT INTO tasks (assigned_to, title, description, status, site_name, due_date, assigned_by, priority, category)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,

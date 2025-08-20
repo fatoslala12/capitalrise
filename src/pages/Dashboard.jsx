@@ -228,10 +228,18 @@ export default function Dashboard() {
 
   // Merr detyrat nga backend
   useEffect(() => {
-    api.get("/api/tasks")
-      .then(res => setTasks(res.data))
-      .catch(() => setTasks([]));
-  }, [employees]);
+    if (user?.role === "manager") {
+      // Për manager-in, përdor endpoint-in e managerit
+      api.get(`/api/tasks/manager/${user.employee_id}`)
+        .then(res => setTasks(res.data))
+        .catch(() => setTasks([]));
+    } else {
+      // Për admin dhe user, përdor endpoint-in e përgjithshëm
+      api.get("/api/tasks")
+        .then(res => setTasks(res.data))
+        .catch(() => setTasks([]));
+    }
+  }, [employees, user]);
 
   // Merr statistika për menaxherin
   useEffect(() => {
@@ -750,12 +758,12 @@ export default function Dashboard() {
               Detyrat e tua (në vazhdim)
             </h3>
 
-            {tasks.filter((t) => t.assignedTo === user.email && t.status === "ongoing").length === 0 ? (
+            {tasks.filter((t) => t.status === "ongoing" || t.status === "pending").length === 0 ? (
               <p className="text-gray-500 italic">Nuk ke detyra aktive për momentin.</p>
             ) : (
               <ul className="space-y-3">
                 {tasks
-                  .filter((t) => t.assignedTo === user.email && t.status === "ongoing")
+                  .filter((t) => t.status === "ongoing" || t.status === "pending")
                   .slice(0, 3)
                   .map((t) => (
                     <li
@@ -763,19 +771,24 @@ export default function Dashboard() {
                       className="flex flex-col bg-yellow-50 border-l-4 border-yellow-400 px-4 py-3 rounded-lg shadow hover:shadow-md transition"
                     >
                       <div className="flex items-center gap-2 text-yellow-800 font-medium text-sm">
-                        🕒 {t.description || t.title}
+                        🕒 {t.title || t.description}
+                        {user?.role === 'manager' && (
+                          <span className="ml-2 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                            {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : `Employee #${t.assigned_to}`}
+                          </span>
+                        )}
                       </div>
-                      {t.dueDate && (
+                      {t.due_date && (
                         <div className="text-xs text-gray-500 mt-1">
-                          {new Date(t.dueDate) < new Date()
+                          {new Date(t.due_date) < new Date()
                             ? "❗ Ka kaluar afati!"
-                            : `⏳ Afat deri më: ${new Date(t.dueDate).toLocaleDateString()}`}
+                            : `⏳ Afat deri më: ${new Date(t.due_date).toLocaleDateString()}`}
                         </div>
                       )}
-                      {t.siteName && (
-                        <div className="text-xs text-gray-500">📍 Site: {t.siteName}</div>
+                      {t.site_name && (
+                        <div className="text-xs text-gray-500">📍 Site: {t.site_name}</div>
                       )}
-                      <div className="text-xs text-green-700 font-semibold mt-1">Statusi: Në vazhdim</div>
+                      <div className="text-xs text-green-700 font-semibold mt-1">Statusi: {t.status === 'ongoing' ? 'Në vazhdim' : 'Në pritje'}</div>
                     </li>
                   ))}
               </ul>

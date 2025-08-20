@@ -11,6 +11,18 @@ export default function MyTasks() {
   const [siteFilter, setSiteFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+  const [availableEmployees, setAvailableEmployees] = useState([]);
+  const [availableSites, setAvailableSites] = useState([]);
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    assigned_to: '',
+    site_name: '',
+    due_date: '',
+    priority: 'medium',
+    category: 'general'
+  });
   const token = localStorage.getItem("token");
 
   // Funksion për toast notifications
@@ -45,6 +57,26 @@ export default function MyTasks() {
         setTasks([]);
         setLoading(false);
       });
+  }, [user, token]);
+
+  // Merr punonjësit dhe site-t e managerit për të shtuar detyra të reja
+  useEffect(() => {
+    if (user?.role === "manager" && user?.employee_id) {
+      // Merr punonjësit e site-ve të managerit
+      axios.get(`https://building-system.onrender.com/api/employees/manager/${user.employee_id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => {
+        const managerData = res.data;
+        setAvailableEmployees(managerData.employees || []);
+        setAvailableSites(managerData.managerSites || []);
+      })
+      .catch(err => {
+        console.error('Error fetching manager data:', err);
+        setAvailableEmployees([]);
+        setAvailableSites([]);
+      });
+    }
   }, [user, token]);
 
   // Përditëso statusin e detyrës në backend
@@ -82,6 +114,38 @@ export default function MyTasks() {
       return `${task.first_name || ''} ${task.last_name || ''}`.trim();
     }
     return task.assigned_to ? `Employee #${task.assigned_to}` : '';
+  };
+
+  // Funksion për të shtuar detyrë të re
+  const handleAddTask = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        'https://building-system.onrender.com/api/tasks',
+        {
+          ...newTask,
+          assigned_by: user.employee_id,
+          status: 'pending'
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setTasks(prev => [response.data, ...prev]);
+      setNewTask({
+        title: '',
+        description: '',
+        assigned_to: '',
+        site_name: '',
+        due_date: '',
+        priority: 'medium',
+        category: 'general'
+      });
+      setShowAddTaskModal(false);
+      showToast('Detyra u shtua me sukses!', 'success');
+    } catch (error) {
+      console.error('Error adding task:', error);
+      showToast('Gabim gjatë shtimit të detyrës!', 'error');
+    }
   };
 
   // Funksion për të marrë ngjyrën e statusit
@@ -158,9 +222,19 @@ export default function MyTasks() {
         </div>
       )}
 
-      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
-        📌 Detyrat e Mia
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+          📌 Detyrat e Mia
+        </h2>
+        {user?.role === "manager" && (
+          <button
+            onClick={() => setShowAddTaskModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            ➕ Shto Detyrë të Re
+          </button>
+        )}
+      </div>
 
       {/* 📊 Statistika */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
@@ -346,6 +420,137 @@ export default function MyTasks() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal për të shtuar detyrë të re (vetëm për manager) */}
+      {showAddTaskModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800">➕ Shto Detyrë të Re</h3>
+              <button
+                onClick={() => setShowAddTaskModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddTask} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Titulli i Detyrës *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newTask.title}
+                    onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Shkruaj titullin e detyrës"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Përshkrimi
+                  </label>
+                  <input
+                    type="text"
+                    value={newTask.description}
+                    onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Përshkrimi i detyrës"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cakto Për *
+                  </label>
+                  <select
+                    required
+                    value={newTask.assigned_to}
+                    onChange={(e) => setNewTask({...newTask, assigned_to: e.target.value})}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Zgjidh punonjësin</option>
+                    {availableEmployees.map(emp => (
+                      <option key={emp.id} value={emp.id}>
+                        {emp.first_name} {emp.last_name} ({emp.username})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Site-i *
+                  </label>
+                  <select
+                    required
+                    value={newTask.site_name}
+                    onChange={(e) => setNewTask({...newTask, site_name: e.target.value})}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Zgjidh site-in</option>
+                    {availableSites.map(site => (
+                      <option key={site} value={site}>{site}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Afati
+                  </label>
+                  <input
+                    type="date"
+                    value={newTask.due_date}
+                    onChange={(e) => setNewTask({...newTask, due_date: e.target.value})}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Prioriteti
+                  </label>
+                  <select
+                    value={newTask.priority}
+                    onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="low">🟢 E ulët</option>
+                    <option value="medium">🟡 Mesatare</option>
+                    <option value="high">🔴 E lartë</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddTaskModal(false)}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Anulo
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Shto Detyrën
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

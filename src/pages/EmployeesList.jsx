@@ -99,6 +99,9 @@ export default function EmployeesList() {
         const managerData = employeesRes.data;
         availableSites = managerData.managerSites || [];
         setEmployees(snakeToCamel(managerData.employees || []));
+        console.log(`[DEBUG] Manager data:`, managerData);
+        console.log(`[DEBUG] Manager employees:`, managerData.employees);
+        console.log(`[DEBUG] Manager sites:`, managerData.managerSites);
       } else {
         // Filtro vetëm kontratat me status "Ne progres" për workplace selection
         const activeContracts = contractsData.filter(c => c.status === 'Ne progres');
