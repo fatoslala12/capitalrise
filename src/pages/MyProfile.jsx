@@ -93,10 +93,21 @@ export default function MyProfile() {
   useEffect(() => {
     if (!user?.employee_id) return;
     
-    axios.get(`https://building-system.onrender.com/api/tasks?assignedTo=${user.employee_id}&status=completed`, {
+    // Përdor endpoint të ndryshëm për manager vs user
+    const endpoint = user?.role === "manager" 
+      ? `https://building-system.onrender.com/api/tasks/manager/${user.employee_id}`
+      : `https://building-system.onrender.com/api/tasks?assignedTo=${user.employee_id}&status=completed`;
+    
+    axios.get(endpoint, {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(res => setTasks(res.data || []))
+      .then(res => {
+        // Për manager, filtriro vetëm detyrat e përfunduara
+        const tasksData = user?.role === "manager" 
+          ? (res.data || []).filter(task => task.status === 'completed')
+          : (res.data || []);
+        setTasks(tasksData);
+      })
       .catch(() => setTasks([]));
   }, [user, token]);
 
@@ -440,6 +451,9 @@ export default function MyProfile() {
                   </span>
                 </p>
                 <p><span className="font-bold">🏢 Vendet e punës:</span> {workplace?.join(", ") || <span className="italic text-gray-400">N/A</span>}</p>
+                {user?.role === "manager" && (
+                  <p><span className="font-bold">👥 Site-t që menaxhoni:</span> {workplace?.join(", ") || <span className="italic text-gray-400">N/A</span>}</p>
+                )}
                 <p><span className="font-bold">👨‍👩‍👧 Next of Kin:</span> {next_of_kin || <span className="italic text-gray-400">N/A</span>}</p>
                 <p><span className="font-bold">👨‍👩‍👧 Next of Kin Tel:</span> {next_of_kin_phone || <span className="italic text-gray-400">N/A</span>}</p>
                 <p><span className="font-bold">🎓 Kualifikimi:</span> {qualification || <span className="italic text-gray-400">N/A</span>}</p>

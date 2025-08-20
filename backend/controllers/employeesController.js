@@ -482,3 +482,71 @@ exports.getEmployeesBySite = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Funksion i ri për manager-in - merr vetëm punonjësit e site-ve të tij
+exports.getEmployeesForManager = async (req, res) => {
+  const { managerId } = req.params;
+  console.log('getEmployeesForManager called with managerId:', managerId);
+  
+  try {
+    // Merr site-t që i ka assign manager-i
+    const managerSitesRes = await pool.query(`
+      SELECT DISTINCT c.id, c.site_name
+      FROM contracts c
+      JOIN employee_workplaces ew ON ew.contract_id = c.id
+      WHERE ew.employee_id = $1 AND c.status = 'Ne progres'
+      ORDER BY c.site_name
+    `, [managerId]);
+    
+    if (managerSitesRes.rows.length === 0) {
+      return res.json([]);
+    }
+    
+    const managerSiteIds = managerSitesRes.rows.map(site => site.id);
+    const managerSiteNames = managerSitesRes.rows.map(site => site.site_name);
+    
+    console.log('Manager sites:', managerSiteNames);
+    
+    // Merr të gjithë punonjësit që punojnë në këto site
+    const employeesRes = await pool.query(`
+      SELECT DISTINCT e.*, u.role, u.email
+      FROM employees e
+      LEFT JOIN users u ON u.employee_id = e.id
+      JOIN employee_workplaces ew ON ew.employee_id = e.id
+      WHERE ew.contract_id = ANY($1)
+      ORDER BY e.first_name, e.last_name
+    `, [managerSiteIds]);
+    
+    const employees = employeesRes.rows;
+    
+    // Merr workplace-et për çdo punonjës
+    const workplacesRes = await pool.query(`
+      SELECT ew.employee_id, c.site_name
+      FROM employee_workplaces ew
+      JOIN contracts c ON ew.contract_id = c.id
+      WHERE ew.contract_id = ANY($1)
+    `, [managerSiteIds]);
+    
+    const workplaceMap = {};
+    workplacesRes.rows.forEach(w => {
+      if (!workplaceMap[w.employee_id]) workplaceMap[w.employee_id] = [];
+      workplaceMap[w.employee_id].push(w.site_name);
+    });
+    
+    // Bashko workplace-et dhe filtriro vetëm site-t e manager-it
+    const employeesWithWorkplace = employees.map(emp => ({
+      ...emp,
+      workplace: workplaceMap[emp.id] || []
+    }));
+    
+    console.log(`Found ${employeesWithWorkplace.length} employees for manager ${managerId}`);
+    res.json({
+      employees: employeesWithWorkplace,
+      managerSites: managerSiteNames
+    });
+    
+  } catch (err) {
+    console.error('Error in getEmployeesForManager:', err);
+    res.status(500).json({ error: err.message });
+  }
+};

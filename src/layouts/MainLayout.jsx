@@ -25,7 +25,6 @@ const managerMenu = [
   { path: "/manager/my-tasks", label: "📝 Detyrat e Mia" },
   { path: "/manager/employees-list", label: "👷 Menaxho Punonjësit" },
   { path: "/manager/work-hours", label: "🕒 Orët e Punës" },
-  { path: "/manager/reports", label: "📊 Raportet" },
   { path: "/manager/my-profile", label: "👤 Profili Im" },
 ];
 

@@ -27,8 +27,14 @@ export default function MyTasks() {
     }
     
     setLoading(true);
+    
+    // Përdor endpoint të ndryshëm për manager vs user
+    const endpoint = user?.role === "manager" 
+      ? `https://building-system.onrender.com/api/tasks/manager/${user.employee_id}`
+      : `https://building-system.onrender.com/api/tasks?assignedTo=${user.employee_id}`;
+    
     axios
-      .get(`https://building-system.onrender.com/api/tasks?assignedTo=${user.employee_id}`, {
+      .get(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {

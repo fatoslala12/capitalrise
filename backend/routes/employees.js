@@ -13,5 +13,6 @@ router.get('/:id/attachments', verifyToken, employeesController.getEmployeeAttac
 router.post('/:id/attachments', verifyToken, requireRole('admin'), employeesController.addEmployeeAttachment);
 router.delete('/:id/attachments/:attachmentId', verifyToken, requireRole('admin'), employeesController.deleteEmployeeAttachment);
 router.get('/by-site/:site_name', verifyToken, employeesController.getEmployeesBySite);
+router.get('/manager/:managerId', verifyToken, employeesController.getEmployeesForManager);
 
 module.exports = router;

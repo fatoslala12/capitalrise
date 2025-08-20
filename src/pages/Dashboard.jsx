@@ -238,68 +238,24 @@ export default function Dashboard() {
     if (user?.role === "manager" && user?.employee_id) {
       setLoading(true);
       
-      // Merr të dhënat e menaxherit
-      axios.get(`https://building-system.onrender.com/api/employees/${user.employee_id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      // Përdor endpoint-in e ri për dashboard-in e manager-it
+      api.get(`/api/tasks/dashboard/manager/${user.employee_id}`)
         .then(res => {
-          const managerData = res.data;
-          const managerSites = managerData.workplace || [];
-          
-          // Merr punonjësit që punojnë në site-t e menaxherit
-          axios.get("https://building-system.onrender.com/api/employees", {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-            .then(empRes => {
-              const allEmployees = empRes.data || [];
-              const managerEmployees = allEmployees.filter(emp => 
-                emp.workplace && Array.isArray(emp.workplace) && 
-                emp.workplace.some(site => managerSites.includes(site))
-              );
-              
-              // Merr detyrat e menaxherit
-              axios.get(`https://building-system.onrender.com/api/tasks?assignedTo=${user.employee_id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-              })
-                .then(taskRes => {
-                  const managerTasks = taskRes.data || [];
-                  const pendingTasks = managerTasks.filter(t => t.status === 'pending' || t.status === 'in_progress');
-                  const completedTasks = managerTasks.filter(t => t.status === 'completed');
-                  
-                  // Llogarit orët e punës për javën aktuale
-                  let totalHoursThisWeek = 0;
-                  let totalPayThisWeek = 0;
-                  
-                  managerEmployees.forEach(emp => {
-                    const empHours = hourData[emp.id] || {};
-                    const weekHours = empHours[currentWeekLabel] || {};
-                    Object.values(weekHours).forEach(day => {
-                      if (day && day.hours) {
-                        totalHoursThisWeek += Number(day.hours);
-                        totalPayThisWeek += Number(day.hours) * Number(emp.hourly_rate || 0);
-                      }
-                    });
-                  });
-                  
-                  setManagerStats({
-                    totalEmployees: managerEmployees.length,
-                    activeEmployees: managerEmployees.filter(emp => emp.status === 'Aktiv').length,
-                    totalHoursThisWeek: totalHoursThisWeek,
-                    totalPayThisWeek: totalPayThisWeek,
-                    pendingTasks: pendingTasks.length,
-                    completedTasks: completedTasks.length,
-                    mySites: managerSites
+          const stats = res.data;
+                            setManagerStats({
+                    totalEmployees: stats.totalEmployees || 0,
+                    activeEmployees: stats.totalEmployees || 0, // Përkohësisht
+                    totalHoursThisWeek: stats.weeklyHours || 0,
+                    totalPayThisWeek: stats.weeklyPay || 0,
+                    pendingTasks: stats.totalTasks || 0,
+                    completedTasks: 0, // Përkohësisht
+                    mySites: stats.managerSites || []
                   });
                   setLoading(false);
                 })
                 .catch(() => {
-                  setManagerStats(prev => ({ ...prev, mySites: managerSites }));
                   setLoading(false);
                 });
-            })
-            .catch(() => setLoading(false));
-        })
-        .catch(() => setLoading(false));
     } else {
       setLoading(false);
     }

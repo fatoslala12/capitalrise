@@ -82,7 +82,6 @@ export default function AppRouter() {
               <Route path="employee/:id" element={<EmployeeDetails />} />
               <Route path="my-tasks" element={<MyTasks />} />
               <Route path="my-profile" element={<MyProfile />} />
-              <Route path="reports" element={<Reports />} />
               <Route path="notifications" element={<NotificationsPage />} />
             </Route>
 

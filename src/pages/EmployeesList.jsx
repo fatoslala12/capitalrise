@@ -69,11 +69,17 @@ export default function EmployeesList() {
   // Merr kontratat nga backend
   useEffect(() => {
     setLoading(true);
+    
+    // Përdor endpoint të ndryshëm për manager vs admin
+    const employeesEndpoint = isManager 
+      ? `https://building-system.onrender.com/api/employees/manager/${user.employee_id}`
+      : "https://building-system.onrender.com/api/employees";
+    
     Promise.all([
       axios.get("https://building-system.onrender.com/api/contracts", {
         headers: { Authorization: `Bearer ${token}` }
       }),
-      axios.get("https://building-system.onrender.com/api/employees", {
+      axios.get(employeesEndpoint, {
         headers: { Authorization: `Bearer ${token}` }
       }),
       axios.get("https://building-system.onrender.com/api/work-hours", {
@@ -86,13 +92,23 @@ export default function EmployeesList() {
     .then(([contractsRes, employeesRes, workHoursRes, tasksRes]) => {
       const contractsData = snakeToCamel(contractsRes.data);
       setContracts(contractsData);
-      // Filtro vetëm kontratat me status "Ne progres" për workplace selection
-      const activeContracts = contractsData.filter(c => c.status === 'Ne progres');
-      const uniqueSites = [...new Set(activeContracts.map(c => c.siteName).filter(Boolean))];
-      setSiteOptions(uniqueSites);
-      console.log(`[DEBUG] Available sites for new employees: ${uniqueSites.length} active sites from ${contractsData.length} total contracts`);
       
-      setEmployees(snakeToCamel(employeesRes.data));
+      // Për manager, përdor vetëm site-t e tij
+      let availableSites;
+      if (isManager) {
+        const managerData = employeesRes.data;
+        availableSites = managerData.managerSites || [];
+        setEmployees(snakeToCamel(managerData.employees || []));
+      } else {
+        // Filtro vetëm kontratat me status "Ne progres" për workplace selection
+        const activeContracts = contractsData.filter(c => c.status === 'Ne progres');
+        availableSites = [...new Set(activeContracts.map(c => c.siteName).filter(Boolean))];
+        setEmployees(snakeToCamel(employeesRes.data));
+      }
+      
+      setSiteOptions(availableSites);
+      console.log(`[DEBUG] Available sites for ${isManager ? 'manager' : 'admin'}: ${availableSites.length} sites`);
+      
       setWorkHours(snakeToCamel(workHoursRes.data));
       setTasks(snakeToCamel(tasksRes.data));
     })
