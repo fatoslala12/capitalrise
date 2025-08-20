@@ -711,14 +711,14 @@ export default function EmployeeDetails() {
         </div>
       )}
       
-      <div className="w-full px-4 md:px-8 py-6 md:py-10 min-h-screen">
+      <div className="w-full px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-10 min-h-screen">
         {/* Quick Stats Cards - Mobile Optimized */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-10">
-          <div className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-blue-200">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-6 mb-4 sm:mb-6 lg:mb-10">
+          <div className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-blue-200">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-xs md:text-sm">Total Orë</p>
-                <p className="text-lg md:text-3xl font-bold">
+              <div className="min-w-0 flex-1">
+                <p className="text-blue-700 text-xs sm:text-sm lg:text-base font-medium truncate">Total Orë</p>
+                <p className="text-base sm:text-lg lg:text-3xl font-bold truncate">
                   {Object.values(workHistory).reduce((total, days) => {
                     return total + Object.values(days).reduce((dayTotal, val) => {
                       return dayTotal + Number(val.hours || 0);
@@ -726,15 +726,15 @@ export default function EmployeeDetails() {
                   }, 0)}
                 </p>
               </div>
-              <div className="text-2xl md:text-4xl">⏰</div>
+              <div className="text-lg sm:text-2xl lg:text-4xl ml-2 flex-shrink-0">⏰</div>
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-green-100 to-green-200 text-green-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-green-200">
+          <div className="bg-gradient-to-r from-green-100 to-green-200 text-green-800 rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-green-200">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-100 text-xs md:text-sm">Paga Bruto</p>
-                <p className="text-lg md:text-3xl font-bold">
+              <div className="min-w-0 flex-1">
+                <p className="text-green-700 text-xs sm:text-sm lg:text-base font-medium truncate">Paga Bruto</p>
+                <p className="text-base sm:text-lg lg:text-3xl font-bold truncate">
                   £{Object.values(workHistory).reduce((total, days) => {
                     return total + Object.values(days).reduce((dayTotal, val) => {
                       return dayTotal + (Number(val.hours || 0) * Number(val.rate || hourly_rate || 0));
@@ -742,35 +742,35 @@ export default function EmployeeDetails() {
                   }, 0).toFixed(2)}
                 </p>
               </div>
-              <div className="text-2xl md:text-4xl">💰</div>
+              <div className="text-lg sm:text-2xl lg:text-4xl ml-2 flex-shrink-0">💰</div>
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-purple-200">
+          <div className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-purple-200">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-100 text-xs md:text-sm">Site-t</p>
-                <p className="text-lg md:text-3xl font-bold">{employeeSites.length}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-purple-700 text-xs sm:text-sm lg:text-base font-medium truncate">Site-t</p>
+                <p className="text-base sm:text-lg lg:text-3xl font-bold truncate">{employeeSites.length}</p>
               </div>
-              <div className="text-2xl md:text-4xl">🏗️</div>
+              <div className="text-lg sm:text-2xl lg:text-4xl ml-2 flex-shrink-0">🏗️</div>
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-orange-200">
+          <div className="bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-orange-200">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-xs md:text-sm">Detyrat</p>
-                <p className="text-lg md:text-3xl font-bold">
+              <div className="min-w-0 flex-1">
+                <p className="text-orange-700 text-xs sm:text-sm lg:text-base font-medium truncate">Detyrat</p>
+                <p className="text-base sm:text-lg lg:text-3xl font-bold truncate">
                   {tasks.filter(task => task.assignedTo === parseInt(id) || task.assigned_to === parseInt(id)).length}
                 </p>
               </div>
-              <div className="text-2xl md:text-4xl">📋</div>
+              <div className="text-lg sm:text-2xl lg:text-4xl ml-2 flex-shrink-0">📋</div>
             </div>
           </div>
         </div>
         {/* Seksioni i detajeve të punonjësit me imazh klikueshëm */}
-        <div className="bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+        <div className="bg-white/80 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl border border-blue-100 p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-10">
+          <div className="flex flex-col md:flex-row items-center gap-3 sm:gap-4 lg:gap-8">
             {/* Avatar me iniciale ose foto - clickable për ndryshim */}
             <div 
               onClick={() => {
@@ -807,11 +807,11 @@ export default function EmployeeDetails() {
                 <img
                   src={photo}
                   alt="Foto"
-                  className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-blue-200 shadow-xl"
+                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full object-cover border-2 sm:border-4 border-blue-200 shadow-md lg:shadow-xl"
                 />
               ) : (
                 <div
-                  className="w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center text-2xl md:text-4xl font-extrabold shadow-xl border-4 border-blue-200"
+                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full flex items-center justify-center text-lg sm:text-xl md:text-2xl lg:text-4xl font-extrabold shadow-md lg:shadow-xl border-2 sm:border-4 border-blue-200"
                   style={{ background: getColorFromName(first_name + last_name), color: '#2d3748' }}
                 >
                   {getInitials(first_name, last_name)}
@@ -820,7 +820,7 @@ export default function EmployeeDetails() {
             </div>
             
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-2xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-3 md:mb-4">
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2 sm:mb-3 md:mb-4">
                 {editing ? (
                   <div className="flex flex-col md:flex-row gap-2 md:gap-4">
                     <input
@@ -842,20 +842,20 @@ export default function EmployeeDetails() {
                   `${employee.first_name} ${employee.last_name}`
                 )}
               </h2>
-              <div className="flex flex-wrap gap-2 md:gap-4 mb-4 md:mb-8 justify-center md:justify-start">
-                <span className={`px-2 md:px-4 py-1 rounded-full border text-xs md:text-base font-bold shadow-md ${statusColor}`}>{status}</span>
-                <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-300 to-purple-300 px-2 md:px-3 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
-                <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 md:px-3 py-1 rounded-full border border-blue-100">{label_type}</span>
-                <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 md:px-3 py-1 rounded-full border border-purple-100">{qualification}</span>
+              <div className="flex flex-wrap gap-1 sm:gap-2 md:gap-3 lg:gap-4 mb-3 sm:mb-4 md:mb-6 lg:mb-8 justify-center md:justify-start">
+                <span className={`px-2 sm:px-3 md:px-4 py-1 rounded-full border text-xs sm:text-sm md:text-base font-bold shadow-md ${statusColor}`}>{status}</span>
+                <span className="text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-blue-300 to-purple-300 px-2 sm:px-3 md:px-4 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
+                <span className="text-xs sm:text-sm font-semibold text-blue-600 bg-blue-50 px-2 sm:px-3 md:px-4 py-1 rounded-full border border-blue-100">{label_type}</span>
+                <span className="text-xs sm:text-sm font-semibold text-purple-600 bg-purple-50 px-2 sm:px-3 md:px-4 py-1 rounded-full border border-purple-100">{qualification}</span>
               </div>
               {editing ? (
                 /* Modern Edit Form */
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-blue-200 shadow-xl mb-8">
-                  <h3 className="text-xl font-bold text-blue-800 mb-6 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg sm:rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 border-2 border-blue-200 shadow-lg lg:shadow-xl mb-6 sm:mb-8">
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-800 mb-4 sm:mb-6 flex items-center gap-2">
                     ✏️ Edito të dhënat e punonjësit
                   </h3>
                   
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     {/* Left Column - Personal Info */}
                     <div className="space-y-4">
                       <h4 className="font-semibold text-gray-700 border-b border-gray-200 pb-2">📋 Informacione Personale</h4>
@@ -867,7 +867,7 @@ export default function EmployeeDetails() {
                             name="email"
                             value={employee.email || ""}
                             onChange={handleChange}
-                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            className="w-full p-2 sm:p-3 border-2 border-blue-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all text-sm sm:text-base"
                             placeholder="Email adresa"
                           />
                         </div>
@@ -1062,10 +1062,10 @@ export default function EmployeeDetails() {
                     <p><span className="font-bold">🎓 Kualifikimi:</span> {qualification || <span className="italic text-gray-400">N/A</span>}</p>
                 </div>
               )}
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-6 mt-6 md:mt-10">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-6 mt-4 sm:mt-6 lg:mt-10">
                 <button
                   onClick={() => navigate('/admin/employees-list')}
-                  className="bg-gradient-to-r from-gray-400 to-blue-400 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-blue-600 hover:to-gray-600 transition text-sm md:text-lg"
+                  className="bg-gradient-to-r from-gray-400 to-blue-400 text-white px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold shadow hover:from-blue-600 hover:to-gray-600 transition text-sm sm:text-base lg:text-lg"
                 >
                   ⬅️ Kthehu
                 </button>
@@ -1073,13 +1073,13 @@ export default function EmployeeDetails() {
                   <>
                     <button
                       onClick={handleSave}
-                      className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-sm md:text-lg border border-green-200"
+                      className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-sm sm:text-base lg:text-lg border border-green-200"
                     >
                       💾 Ruaj
                     </button>
                     <button
                       onClick={() => setEditing(false)}
-                      className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-red-200 hover:to-pink-200 transition text-sm md:text-lg border border-red-200"
+                      className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold shadow hover:from-red-200 hover:to-pink-200 transition text-sm sm:text-base lg:text-lg border border-red-200"
                     >
                       Anulo
                     </button>
@@ -1087,7 +1087,7 @@ export default function EmployeeDetails() {
                 ) : (
                   <button
                     onClick={() => setEditing(true)}
-                    className="bg-gradient-to-r from-purple-400 to-blue-400 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold text-sm md:text-lg shadow hover:from-blue-600 hover:to-purple-600 transition"
+                    className="bg-gradient-to-r from-purple-400 to-blue-400 text-white px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold text-sm sm:text-base lg:text-lg shadow hover:from-blue-600 hover:to-purple-600 transition"
                   >
                     ✏️ Edito
                   </button>
@@ -1095,14 +1095,14 @@ export default function EmployeeDetails() {
                 <button
                   onClick={handleResetPassword}
                   disabled={!user}
-                  className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold text-sm md:text-lg shadow hover:from-red-200 hover:to-pink-200 transition disabled:opacity-50 disabled:cursor-not-allowed border border-red-200"
+                  className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold text-sm sm:text-base lg:text-lg shadow hover:from-red-200 hover:to-pink-200 transition disabled:opacity-50 disabled:cursor-not-allowed border border-red-200"
                   title={!user ? "Punonjësi nuk ka llogari të krijuar" : "Reset fjalëkalimin e punonjësit"}
                 >
                   🔒 Reset Password
                 </button>
                 <button
                   onClick={() => nextEmployee && navigate(`/admin/employee/${nextEmployee.id}`)}
-                  className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-sm md:text-lg disabled:opacity-50 border border-green-200"
+                  className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-sm sm:text-base lg:text-lg disabled:opacity-50 border border-green-200"
                   disabled={!nextEmployee}
                 >
                   Next ➡️
@@ -1111,7 +1111,7 @@ export default function EmployeeDetails() {
                   onClick={() => {
                     exportFullPageToPDF();
                   }}
-                  className="bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 px-4 md:px-8 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold shadow hover:from-yellow-200 hover:to-orange-200 transition text-sm md:text-lg border border-yellow-200"
+                  className="bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold shadow hover:from-yellow-200 hover:to-orange-200 transition text-sm sm:text-base lg:text-lg border border-yellow-200"
                 >
                   📊 Export Raport i Plotë
                 </button>
@@ -1120,25 +1120,25 @@ export default function EmployeeDetails() {
           </div>
         </div>
 
-        <div className="bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
-          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">📄 Dokumentet</h3>
-          <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 mb-4 items-center">
+        <div className="bg-white/80 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl border border-blue-100 p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-10">
+          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-blue-800 mb-3 sm:mb-4 flex items-center gap-2">📄 Dokumentet</h3>
+          <div className="flex flex-col md:flex-row flex-wrap gap-2 sm:gap-3 lg:gap-4 mb-3 sm:mb-4 items-center">
             <input
               type="text"
               value={searchDoc}
               onChange={e => setSearchDoc(e.target.value)}
               placeholder="Kërko dokument..."
-              className="p-2 rounded-xl border-2 border-blue-200 w-full md:w-auto"
+              className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl border-2 border-blue-200 w-full md:w-auto text-sm sm:text-base"
             />
             <button
               onClick={exportProfileToPDF}
-              className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-purple-200 hover:to-blue-200 transition text-sm md:text-base border border-purple-200"
+              className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold shadow hover:from-purple-200 hover:to-blue-200 transition text-xs sm:text-sm lg:text-base border border-purple-200"
             >
               ⬇️ Export PDF
             </button>
             <button
               onClick={downloadAllDocsZip}
-              className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-sm md:text-base border border-green-200"
+              className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-xs sm:text-sm lg:text-base border border-green-200"
             >
               ⬇️ Shkarko të gjitha
             </button>
