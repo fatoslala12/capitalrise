@@ -99,51 +99,31 @@ export default function EmployeesList() {
         const managerData = employeesRes.data;
         console.log(`[DEBUG] Raw manager data:`, managerData);
         
-        // Ensure we get the correct structure from the API
+        // Merr site-t dhe punonjësit nga API response
         let returnedEmployees = [];
         let returnedSites = [];
         
         if (managerData && typeof managerData === 'object') {
-          // Check if it's the new format with employees and managerSites
+          // API kthen { employees: [...], managerSites: [...] }
           if (managerData.employees && Array.isArray(managerData.employees)) {
             returnedEmployees = managerData.employees;
             returnedSites = Array.isArray(managerData.managerSites) ? managerData.managerSites : [];
-          } else if (Array.isArray(managerData)) {
-            // Fallback: if it's just an array of employees
-            returnedEmployees = managerData;
-            // Try to get sites from user.workplace or contracts
-            returnedSites = user?.workplace || [];
+            console.log(`[DEBUG] Got employees: ${returnedEmployees.length}, sites: ${returnedSites.length} from API`);
           }
         }
         
-        // If still no sites, try to get from contracts where manager is assigned
+        // Nëse API nuk ka site, përdor user.workplace
         if (returnedSites.length === 0) {
-          const managerContractIds = contractsData
-            .filter(c => c.status === 'Ne progres')
-            .map(c => c.id);
-          
-          if (managerContractIds.length > 0) {
-            // Get sites from contracts where manager might be working
-            const managerSitesFromContracts = contractsData
-              .filter(c => managerContractIds.includes(c.id))
-              .map(c => c.siteName)
-              .filter(Boolean);
-            returnedSites = [...new Set(managerSitesFromContracts)];
-          }
-        }
-        
-        // Final fallback: use user.workplace if available
-        if (returnedSites.length === 0 && user?.workplace) {
-          returnedSites = Array.isArray(user.workplace) ? user.workplace : [user.workplace];
+          returnedSites = user?.workplace || [];
+          console.log(`[DEBUG] Using user.workplace as fallback:`, returnedSites);
         }
         
         availableSites = returnedSites;
         const managerEmployees = returnedEmployees.length > 0 ? returnedEmployees : [];
         
         setEmployees(snakeToCamel(managerEmployees));
-        console.log(`[DEBUG] Manager employees:`, managerEmployees);
-        console.log(`[DEBUG] Manager sites:`, availableSites);
-        console.log(`[DEBUG] Employees count:`, managerEmployees.length);
+        console.log(`[DEBUG] Final - Manager employees:`, managerEmployees.length);
+        console.log(`[DEBUG] Final - Manager sites:`, availableSites);
       } else {
         // Admin: show all active sites from contracts for workplace selection
         const activeContracts = contractsData.filter(c => c.status === 'Ne progres');
@@ -175,6 +155,8 @@ export default function EmployeesList() {
     console.log(`[DEBUG] siteOptions changed:`, siteOptions);
     console.log(`[DEBUG] Current user:`, user);
     console.log(`[DEBUG] Is manager:`, isManager);
+    console.log(`[DEBUG] User workplace:`, user?.workplace);
+    console.log(`[DEBUG] User employee_id:`, user?.employee_id);
   }, [siteOptions, user, isManager]);
 
   // Handle Escape key to close modal
