@@ -64,7 +64,7 @@ export default function EmployeesList() {
   const token = localStorage.getItem("token");
   if (!user) return <div className="p-4 text-center">Duke u ngarkuar...</div>;
   const isManager = user?.role === "manager";
-  const managerSites = user?.workplace || [];
+  const managerSites = Array.isArray(user?.workplace) ? user.workplace : [];
 
   // Merr kontratat nga backend
   useEffect(() => {
@@ -97,8 +97,14 @@ export default function EmployeesList() {
       let availableSites;
       if (isManager) {
         const managerData = employeesRes.data;
-        availableSites = managerData.managerSites || [];
-        const managerEmployees = managerData.employees || [];
+        // Fallback: nëse endpoint-i kthen array bosh, përdor vetëm veten dhe site-t nga contracts
+        const returnedEmployees = Array.isArray(managerData) ? managerData : (managerData.employees || []);
+        const returnedSites = Array.isArray(managerData?.managerSites) ? managerData.managerSites : [];
+        const selfFromAll = contractsData.length > 0 ? [] : [];
+        // Nëse s'ka site nga endpoint, përdor site-t e user-it ose ato të kontratave aktive
+        const activeSites = [...new Set(contractsData.filter(c => c.status === 'Ne progres').map(c => c.siteName).filter(Boolean))];
+        availableSites = returnedSites.length > 0 ? returnedSites : (user?.workplace || activeSites);
+        const managerEmployees = returnedEmployees.length > 0 ? returnedEmployees : [];
         setEmployees(snakeToCamel(managerEmployees));
         console.log(`[DEBUG] Manager data:`, managerData);
         console.log(`[DEBUG] Manager employees:`, managerEmployees);

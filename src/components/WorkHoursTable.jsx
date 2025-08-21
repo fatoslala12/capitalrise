@@ -7,7 +7,7 @@ export default function WorkHoursTable({
   employees,
   weekLabel,
   data,
-  onChange,
+  onChange = () => {},
   readOnly,
   showPaymentControl = false,
   siteOptions = [],

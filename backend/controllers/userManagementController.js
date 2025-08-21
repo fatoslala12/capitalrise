@@ -24,6 +24,27 @@ exports.createUser = asyncHandler(async (req, res) => {
     nextOfKinPhone
   } = req.body;
 
+  // If caller is manager, enforce site-based permission: can only create users for their assigned sites
+  if (req.user?.role === 'manager') {
+    const requestedSites = Array.isArray(req.body.workplace) ? req.body.workplace : [];
+    if (requestedSites.length === 0) {
+      throw createError('FORBIDDEN', null, 'Manageri duhet të caktojë të paktën një site të vlefshëm');
+    }
+    // Gjej site-t e menaxherit nga employee_workplaces
+    const mgrSitesRes = await pool.query(
+      `SELECT c.site_name
+       FROM employee_workplaces ew
+       JOIN contracts c ON c.id = ew.contract_id
+       WHERE ew.employee_id = $1`,
+      [req.user.employee_id]
+    );
+    const managerSites = mgrSitesRes.rows.map(r => r.site_name);
+    const invalid = requestedSites.filter(s => !managerSites.includes(s));
+    if (invalid.length > 0) {
+      throw createError('FORBIDDEN', null, 'Nuk keni leje për të krijuar punonjës për këto site');
+    }
+  }
+
   // Validizo të dhënat
   if (!firstName || !lastName || !email || !password) {
     throw createError('VALIDATION_REQUIRED_FIELD', null, 'Emri, mbiemri, email dhe fjalëkalimi janë të detyrueshëm');

@@ -3,8 +3,8 @@ const router = express.Router();
 const userManagementController = require('../controllers/userManagementController');
 const { verifyToken, requireRole } = require('../middleware/auth');
 
-// Krijo user i ri (vetëm admin)
-router.post('/create', verifyToken, requireRole('admin'), userManagementController.createUser);
+// Krijo user i ri (admin dhe manager me kufizime në controller)
+router.post('/create', verifyToken, requireRole(['admin', 'manager']), userManagementController.createUser);
 
 // Përditëso user (admin dhe manager)
 router.put('/:id', verifyToken, requireRole(['admin', 'manager']), userManagementController.updateUser);
