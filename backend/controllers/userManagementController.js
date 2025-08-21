@@ -30,18 +30,15 @@ exports.createUser = asyncHandler(async (req, res) => {
     if (requestedSites.length === 0) {
       throw createError('FORBIDDEN', null, 'Manageri duhet të caktojë të paktën një site të vlefshëm');
     }
-    // Gjej site-t e menaxherit nga employee_workplaces
-    const mgrSitesRes = await pool.query(
-      `SELECT c.site_name
-       FROM employee_workplaces ew
-       JOIN contracts c ON c.id = ew.contract_id
-       WHERE ew.employee_id = $1`,
-      [req.user.employee_id]
-    );
-    const managerSites = mgrSitesRes.rows.map(r => r.site_name);
+    
+    // Gjej site-t e menaxherit nga user.workplace (më e thjeshtë dhe e sigurt)
+    const managerSites = req.user.workplace || [];
+    console.log(`[DEBUG] Manager sites from user.workplace:`, managerSites);
+    console.log(`[DEBUG] Requested sites:`, requestedSites);
+    
     const invalid = requestedSites.filter(s => !managerSites.includes(s));
     if (invalid.length > 0) {
-      throw createError('FORBIDDEN', null, 'Nuk keni leje për të krijuar punonjës për këto site');
+      throw createError('FORBIDDEN', null, `Nuk keni leje për të krijuar punonjës për këto site: ${invalid.join(', ')}`);
     }
   } else if (req.user?.role === 'admin') {
     // Admin can create employees for any site, but workplace is still required
@@ -144,9 +141,15 @@ exports.createUser = asyncHandler(async (req, res) => {
   if (req.body.workplace && Array.isArray(req.body.workplace) && req.body.workplace.length > 0) {
     try {
       console.log('🔍 Workplaces to add:', req.body.workplace);
+      
+      // Për çdo workplace, krijo një entry në employee_workplaces
       for (const workplace of req.body.workplace) {
         // Gjej contract_id nga emri i site-it
-        const contractRes = await pool.query('SELECT id FROM contracts WHERE site_name = $1 LIMIT 1', [workplace]);
+        const contractRes = await pool.query(
+          'SELECT id FROM contracts WHERE site_name = $1 AND status = $2 LIMIT 1', 
+          [workplace, 'Ne progres']
+        );
+        
         if (contractRes.rows.length > 0) {
           const contractId = contractRes.rows[0].id;
           await pool.query(
@@ -155,14 +158,34 @@ exports.createUser = asyncHandler(async (req, res) => {
           );
           console.log(`✅ Workplace u shtua: ${workplace} për punonjësin ${newEmployee.id}`);
         } else {
-          console.log(`⚠️ Nuk u gjet contract për workplace: ${workplace}`);
+          console.log(`⚠️ Nuk u gjet contract aktiv për workplace: ${workplace}`);
+          // Krijo një entry në employee_workplaces me contract_id = null për site-t që nuk kanë contract
+          await pool.query(
+            `INSERT INTO employee_workplaces (employee_id, contract_id, site_name) VALUES ($1, $2, $3)`,
+            [newEmployee.id, null, workplace]
+          );
+          console.log(`✅ Workplace u shtua me site_name: ${workplace} për punonjësin ${newEmployee.id}`);
         }
       }
     } catch (workplaceError) {
       console.error('❌ Gabim në krijimin e workplace:', workplaceError);
+      // Mos bëj throw, vazhdo me procesin
     }
   } else {
     console.log('ℹ️ Nuk ka workplace për të shtuar');
+  }
+
+  // Krijo një entry në attachments table për punonjësin e ri
+  try {
+    await pool.query(
+      `INSERT INTO attachments (employee_id, attachment_type, file_name, file_path, created_at, created_by)
+       VALUES ($1, $2, $3, $4, NOW(), $5)`,
+      [newEmployee.id, 'profile', 'default_profile.png', '/uploads/default_profile.png', currentUserId]
+    );
+    console.log(`✅ Attachment u krijua për punonjësin ${newEmployee.id}`);
+  } catch (attachmentError) {
+    console.error('❌ Gabim në krijimin e attachment:', attachmentError);
+    // Mos bëj throw, vazhdo me procesin
   }
 
   // Dërgo email përshëndetje
@@ -218,7 +241,14 @@ exports.createUser = asyncHandler(async (req, res) => {
       labelType: newEmployee.label_type,
       // Debug info
       userCreated: newUser ? true : false,
-      workplacesCount: req.body.workplace?.length || 0
+      workplacesCount: req.body.workplace?.length || 0,
+      // Shto info për database entries
+      databaseEntries: {
+        employees: true,
+        users: newUser ? true : false,
+        employeeWorkplaces: req.body.workplace?.length > 0,
+        attachments: true
+      }
     }
   });
 });
