@@ -680,51 +680,51 @@ export default function Dashboard() {
       {/* Manager */}
       {user.role === "manager" && (
         <div className="space-y-6">
-          {/* Quick Stats për Menaxherin */}
+          {/* Quick Stats për Menaxherin - Light Blue Gradients */}
           <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 shadow-lg">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm">Punonjësit</p>
-                  <p className="text-2xl font-bold">{managerStats.totalEmployees}</p>
+                  <p className="text-blue-600 text-sm font-medium">Punonjësit</p>
+                  <p className="text-2xl font-bold text-blue-800">{managerStats.totalEmployees}</p>
                 </div>
-                <div className="text-3xl">👷</div>
+                <div className="text-3xl text-blue-500">👷</div>
               </div>
             </div>
             
-            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-4 shadow-lg">
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-100 border border-cyan-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm">Orët e Javës</p>
-                  <p className="text-2xl font-bold">{managerStats.totalHoursThisWeek}</p>
+                  <p className="text-cyan-600 text-sm font-medium">Orët e Javës</p>
+                  <p className="text-2xl font-bold text-cyan-800">{managerStats.totalHoursThisWeek}</p>
                 </div>
-                <div className="text-3xl">⏰</div>
+                <div className="text-3xl text-cyan-500">⏰</div>
               </div>
             </div>
             
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl p-4 shadow-lg">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 border border-indigo-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm">Paga e Javës</p>
-                  <p className="text-2xl font-bold">£{managerStats.totalPayThisWeek.toFixed(2)}</p>
+                  <p className="text-indigo-600 text-sm font-medium">Paga e Javës</p>
+                  <p className="text-2xl font-bold text-indigo-800">£{managerStats.totalPayThisWeek.toFixed(2)}</p>
                 </div>
-                <div className="text-3xl">💰</div>
+                <div className="text-3xl text-indigo-500">💰</div>
               </div>
             </div>
             
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl p-4 shadow-lg">
+            <div className="bg-gradient-to-br from-blue-50 to-sky-100 border border-sky-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-100 text-sm">Detyrat</p>
-                  <p className="text-2xl font-bold">{managerStats.pendingTasks}</p>
+                  <p className="text-sky-600 text-sm font-medium">Detyrat</p>
+                  <p className="text-2xl font-bold text-sky-800">{managerStats.pendingTasks}</p>
                 </div>
-                <div className="text-3xl">📋</div>
+                <div className="text-3xl text-sky-500">📋</div>
               </div>
             </div>
           </section>
 
-          {/* Site-t e Menaxherit */}
-          <section className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          {/* Site-t e Menaxherit - Light Blue Theme */}
+          <section className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm border border-blue-100 p-6 mb-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <span className="text-blue-600 text-lg">🏗️</span>
               Site-t që Menaxhoni
@@ -732,12 +732,12 @@ export default function Dashboard() {
             {managerStats.mySites.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {managerStats.mySites.map((site, index) => (
-                  <div key={index} className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
+                  <div key={index} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200 hover:border-blue-300 transition-all duration-300">
                     <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <span className="font-semibold text-blue-800">{site}</span>
+                      <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                      <span className="font-semibold text-blue-700">{site}</span>
                     </div>
-                    <div className="mt-2 text-sm text-gray-600">
+                    <div className="mt-2 text-sm text-blue-600">
                       Punonjës aktivë: {employees.filter(emp => 
                         emp.workplace && Array.isArray(emp.workplace) && 
                         emp.workplace.includes(site) && emp.status === 'Aktiv'
@@ -747,19 +747,19 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 italic">Nuk keni site të caktuar për momentin.</p>
+              <p className="text-blue-600 italic">Nuk keni site të caktuar për momentin.</p>
             )}
           </section>
 
-          {/* Detyrat e Menaxherit */}
+          {/* Detyrat e Menaxherit - Light Blue Theme */}
           <section className="space-y-4">
             <h3 className="text-xl font-semibold flex items-center gap-2">
-              <span className="text-red-600 text-lg">📌</span>
+              <span className="text-blue-600 text-lg">📌</span>
               Detyrat e tua (në vazhdim)
             </h3>
 
             {tasks.filter((t) => t.status === "ongoing" || t.status === "pending").length === 0 ? (
-              <p className="text-gray-500 italic">Nuk ke detyra aktive për momentin.</p>
+              <p className="text-blue-600 italic">Nuk ke detyra aktive për momentin.</p>
             ) : (
               <ul className="space-y-3">
                 {tasks
@@ -768,27 +768,27 @@ export default function Dashboard() {
                   .map((t) => (
                     <li
                       key={t.id}
-                      className="flex flex-col bg-yellow-50 border-l-4 border-yellow-400 px-4 py-3 rounded-lg shadow hover:shadow-md transition"
+                      className="flex flex-col bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
                     >
-                      <div className="flex items-center gap-2 text-yellow-800 font-medium text-sm">
+                      <div className="flex items-center gap-2 text-blue-800 font-medium text-sm">
                         🕒 {t.title || t.description}
                         {user?.role === 'manager' && (
-                          <span className="ml-2 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                          <span className="ml-2 text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded border border-blue-200">
                             {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : `Employee #${t.assigned_to}`}
                           </span>
                         )}
                       </div>
                       {t.due_date && (
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-blue-600 mt-1">
                           {new Date(t.due_date) < new Date()
                             ? "❗ Ka kaluar afati!"
                             : `⏳ Afat deri më: ${new Date(t.due_date).toLocaleDateString()}`}
                         </div>
                       )}
                       {t.site_name && (
-                        <div className="text-xs text-gray-500">📍 Site: {t.site_name}</div>
+                        <div className="text-xs text-blue-600">📍 Site: {t.site_name}</div>
                       )}
-                      <div className="text-xs text-green-700 font-semibold mt-1">Statusi: {t.status === 'ongoing' ? 'Në vazhdim' : 'Në pritje'}</div>
+                      <div className="text-xs text-blue-700 font-semibold mt-1">Statusi: {t.status === 'ongoing' ? 'Në vazhdim' : 'Në pritje'}</div>
                     </li>
                   ))}
               </ul>
@@ -796,89 +796,74 @@ export default function Dashboard() {
 
             <Link
               to={`/${user.role}/my-tasks`}
-              className="inline-block mt-3 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium px-4 py-2 rounded transition"
+              className="inline-block mt-3 bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 text-blue-700 text-sm font-medium px-4 py-2 rounded-lg transition-all duration-300 border border-blue-200"
             >
               ➕ Shiko të gjitha detyrat
             </Link>
           </section>
 
-          {/* Quick Actions për Menaxherin */}
-          <section className="bg-white rounded-xl shadow-lg p-6">
+          {/* Quick Actions për Menaxherin - Light Blue Gradients, No Reports/Payments */}
+          <section className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm border border-blue-100 p-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <span className="text-green-600 text-lg">⚡</span>
+              <span className="text-blue-600 text-lg">⚡</span>
               Aksione të Shpejta
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Link
                 to="/manager/employees-list"
-                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg shadow hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-center"
+                className="bg-gradient-to-br from-blue-100 to-blue-200 border border-blue-300 text-blue-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-blue-200 hover:to-blue-300 transition-all duration-300 text-center group"
               >
-                <div className="text-2xl mb-2">👷</div>
+                <div className="text-2xl mb-2 text-blue-600 group-hover:scale-110 transition-transform">👷</div>
                 <div className="font-semibold">Menaxho Punonjësit</div>
-                <div className="text-sm opacity-90">Shto, edito dhe menaxho punonjësit</div>
+                <div className="text-sm opacity-80">Shto, edito dhe menaxho punonjësit</div>
               </Link>
 
               <Link
                 to="/manager/work-hours"
-                className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg shadow hover:from-green-600 hover:to-green-700 transition-all duration-300 text-center"
+                className="bg-gradient-to-br from-cyan-100 to-cyan-200 border border-cyan-300 text-cyan-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-cyan-200 hover:to-cyan-300 transition-all duration-300 text-center group"
               >
-                <div className="text-2xl mb-2">🕒</div>
+                <div className="text-2xl mb-2 text-cyan-600 group-hover:scale-110 transition-transform">🕒</div>
                 <div className="font-semibold">Orët e Punës</div>
-                <div className="text-sm opacity-90">Regjistro dhe menaxho orët e punës</div>
-              </Link>
-
-              <Link
-                to="/manager/payments"
-                className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg shadow hover:from-purple-600 hover:to-purple-700 transition-all duration-300 text-center"
-              >
-                <div className="text-2xl mb-2">💰</div>
-                <div className="font-semibold">Pagesat</div>
-                <div className="text-sm opacity-90">Menaxho pagesat e punonjësve</div>
+                <div className="text-sm opacity-80">Regjistro dhe menaxho orët e punës</div>
               </Link>
 
               <Link
                 to="/manager/my-profile"
-                className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-lg shadow hover:from-orange-600 hover:to-orange-700 transition-all duration-300 text-center"
+                className="bg-gradient-to-br from-indigo-100 to-indigo-200 border border-indigo-300 text-indigo-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-indigo-200 hover:to-indigo-300 transition-all duration-300 text-center group"
               >
-                <div className="text-2xl mb-2">👤</div>
+                <div className="text-2xl mb-2 text-indigo-600 group-hover:scale-110 transition-transform">👤</div>
                 <div className="font-semibold">Profili Im</div>
-                <div className="text-sm opacity-90">Shiko dhe edito profilin tuaj</div>
+                <div className="text-sm opacity-80">Shiko dhe edito profilin tuaj</div>
               </Link>
 
               <Link
                 to="/manager/my-tasks"
-                className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-lg shadow hover:from-red-600 hover:to-red-700 transition-all duration-300 text-center"
+                className="bg-gradient-to-br from-sky-100 to-sky-200 border border-sky-300 text-sky-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-sky-200 hover:to-sky-300 transition-all duration-300 text-center group"
               >
-                <div className="text-2xl mb-2">📋</div>
+                <div className="text-2xl mb-2 text-sky-600 group-hover:scale-110 transition-transform">📋</div>
                 <div className="font-semibold">Detyrat e Mia</div>
-                <div className="text-sm opacity-90">Menaxho detyrat tuaja</div>
+                <div className="text-sm opacity-80">Menaxho detyrat tuaja</div>
               </Link>
-
-              <div className="bg-gradient-to-r from-gray-500 to-gray-600 text-white p-4 rounded-lg shadow text-center">
-                <div className="text-2xl mb-2">📊</div>
-                <div className="font-semibold">Raportet</div>
-                <div className="text-sm opacity-90">Shiko raportet e performancës</div>
-              </div>
             </div>
           </section>
 
-          {/* Informacion për Menaxherin */}
-          <section className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
+          {/* Informacion për Menaxherin - Light Blue Theme */}
+          <section className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
             <h3 className="text-lg font-semibold mb-3 text-blue-800">ℹ️ Informacion për Menaxherin</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-gray-700 mb-2">
+                <p className="text-blue-700 mb-2">
                   <strong>Roli juaj:</strong> Menaxher - Menaxhoni punonjësit dhe orët e punës për site-t që ju janë caktuar.
                 </p>
-                <p className="text-gray-700 mb-2">
+                <p className="text-blue-700 mb-2">
                   <strong>Site-t tuaja:</strong> {managerStats.mySites.join(", ") || "Nuk keni site të caktuar"}
                 </p>
               </div>
               <div>
-                <p className="text-gray-700 mb-2">
+                <p className="text-blue-700 mb-2">
                   <strong>Punonjës aktivë:</strong> {managerStats.activeEmployees} nga {managerStats.totalEmployees} total
                 </p>
-                <p className="text-gray-700 mb-2">
+                <p className="text-blue-700 mb-2">
                   <strong>Detyrat e përfunduara:</strong> {managerStats.completedTasks} nga {managerStats.completedTasks + managerStats.pendingTasks} total
                 </p>
               </div>
