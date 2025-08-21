@@ -425,131 +425,153 @@ export default function MyTasks() {
 
       {/* Modal për të shtuar detyrë të re (vetëm për manager) */}
       {showAddTaskModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-800">➕ Shto Detyrë të Re</h3>
-              <button
-                onClick={() => setShowAddTaskModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                ×
-              </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            {/* Header me gradient */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="text-3xl">➕</div>
+                  <div>
+                    <h3 className="text-2xl font-bold">Shto Detyrë të Re</h3>
+                    <p className="text-blue-100 text-sm">Cakto detyra për punonjësit e site-ve tuaj</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAddTaskModal(false)}
+                  className="text-white hover:text-blue-100 text-3xl font-light transition-colors"
+                >
+                  ×
+                </button>
+              </div>
             </div>
             
-            <form onSubmit={handleAddTask} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Titulli i Detyrës *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newTask.title}
-                    onChange={(e) => setNewTask({...newTask, title: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Shkruaj titullin e detyrës"
-                  />
+            {/* Form body */}
+            <div className="p-6">
+              <form onSubmit={handleAddTask} className="space-y-6">
+                {/* Titulli dhe Përshkrimi */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <span className="text-red-500">*</span>
+                      <span>Titulli i Detyrës</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newTask.title}
+                      onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg"
+                      placeholder="Shkruaj titullin e detyrës"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <span>📝</span>
+                      <span>Përshkrimi</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={newTask.description}
+                      onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg"
+                      placeholder="Përshkrimi i detyrës"
+                    />
+                  </div>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Përshkrimi
-                  </label>
-                  <input
-                    type="text"
-                    value={newTask.description}
-                    onChange={(e) => setNewTask({...newTask, description: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Përshkrimi i detyrës"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cakto Për *
-                  </label>
-                  <select
-                    required
-                    value={newTask.assigned_to}
-                    onChange={(e) => setNewTask({...newTask, assigned_to: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Zgjidh punonjësin</option>
-                    {availableEmployees.map(emp => (
-                      <option key={emp.id} value={emp.id}>
-                        {emp.first_name} {emp.last_name} ({emp.username})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Site-i *
-                  </label>
-                  <select
-                    required
-                    value={newTask.site_name}
-                    onChange={(e) => setNewTask({...newTask, site_name: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Zgjidh site-in</option>
-                    {availableSites.map(site => (
-                      <option key={site} value={site}>{site}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Afati
-                  </label>
-                  <input
-                    type="date"
-                    value={newTask.due_date}
-                    onChange={(e) => setNewTask({...newTask, due_date: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                {/* Cakto Për dhe Site-i */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <span className="text-red-500">*</span>
+                      <span>👤 Cakto Për</span>
+                    </label>
+                    <select
+                      required
+                      value={newTask.assigned_to}
+                      onChange={(e) => setNewTask({...newTask, assigned_to: e.target.value})}
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg bg-white"
+                    >
+                      <option value="">Zgjidh punonjësin</option>
+                      {availableEmployees.map(emp => (
+                        <option key={emp.id} value={emp.id}>
+                          {emp.first_name} {emp.last_name} ({emp.username})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <span className="text-red-500">*</span>
+                      <span>🏗️ Site-i</span>
+                    </label>
+                    <select
+                      required
+                      value={newTask.site_name}
+                      onChange={(e) => setNewTask({...newTask, site_name: e.target.value})}
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg bg-white"
+                    >
+                      <option value="">Zgjidh site-in</option>
+                      {availableSites.map(site => (
+                        <option key={site} value={site}>{site}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prioriteti
-                  </label>
-                  <select
-                    value={newTask.priority}
-                    onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="low">🟢 E ulët</option>
-                    <option value="medium">🟡 Mesatare</option>
-                    <option value="high">🔴 E lartë</option>
-                  </select>
+                {/* Afati dhe Prioriteti */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <span>📅</span>
+                      <span>Afati</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={newTask.due_date}
+                      onChange={(e) => setNewTask({...newTask, due_date: e.target.value})}
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <span>🎯</span>
+                      <span>Prioriteti</span>
+                    </label>
+                    <select
+                      value={newTask.priority}
+                      onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg bg-white"
+                    >
+                      <option value="low">🟢 E ulët</option>
+                      <option value="medium">🟡 Mesatare</option>
+                      <option value="high">🔴 E lartë</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowAddTaskModal(false)}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Anulo
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Shto Detyrën
-                </button>
-              </div>
-            </form>
+                
+                {/* Butona */}
+                <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddTaskModal(false)}
+                    className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium text-lg"
+                  >
+                    ❌ Anulo
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    ✅ Shto Detyrën
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

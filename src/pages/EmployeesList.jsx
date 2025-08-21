@@ -98,10 +98,12 @@ export default function EmployeesList() {
       if (isManager) {
         const managerData = employeesRes.data;
         availableSites = managerData.managerSites || [];
-        setEmployees(snakeToCamel(managerData.employees || []));
+        const managerEmployees = managerData.employees || [];
+        setEmployees(snakeToCamel(managerEmployees));
         console.log(`[DEBUG] Manager data:`, managerData);
-        console.log(`[DEBUG] Manager employees:`, managerData.employees);
-        console.log(`[DEBUG] Manager sites:`, managerData.managerSites);
+        console.log(`[DEBUG] Manager employees:`, managerEmployees);
+        console.log(`[DEBUG] Manager sites:`, availableSites);
+        console.log(`[DEBUG] Employees count:`, managerEmployees.length);
       } else {
         // Filtro vetëm kontratat me status "Ne progres" për workplace selection
         const activeContracts = contractsData.filter(c => c.status === 'Ne progres');
