@@ -134,16 +134,19 @@ exports.createUser = asyncHandler(async (req, res) => {
       employee_id: newEmployee.id,
       email: email.toLowerCase(),
       password: plainPassword,
-      role: role
+      role: role,
+      first_name: firstName,
+      last_name: lastName,
+      status: 'active'
     });
     
     const result = await pool.query(
       `INSERT INTO users (
-        employee_id, email, password, role, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, NOW(), NOW())
+        employee_id, email, password, role, first_name, last_name, status, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
       RETURNING *`,
       [
-        newEmployee.id, email.toLowerCase(), plainPassword, role
+        newEmployee.id, email.toLowerCase(), plainPassword, role, firstName, lastName, 'active'
       ]
     );
 
@@ -204,10 +207,11 @@ exports.createUser = asyncHandler(async (req, res) => {
 
   // Krijo një entry në attachments table për punonjësin e ri
   try {
+    const attachmentUserId = req.user?.id || req.user?.employee_id || 1;
     await pool.query(
       `INSERT INTO attachments (employee_id, attachment_type, file_name, file_path, created_at, created_by)
        VALUES ($1, $2, $3, $4, NOW(), $5)`,
-      [newEmployee.id, 'profile', 'default_profile.png', '/uploads/default_profile.png', currentUserId]
+      [newEmployee.id, 'profile', 'default_profile.png', '/uploads/default_profile.png', attachmentUserId]
     );
     console.log(`✅ Attachment u krijua për punonjësin ${newEmployee.id}`);
   } catch (attachmentError) {
