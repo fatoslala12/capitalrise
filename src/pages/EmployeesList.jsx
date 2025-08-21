@@ -97,16 +97,50 @@ export default function EmployeesList() {
       let availableSites;
       if (isManager) {
         const managerData = employeesRes.data;
-        // Fallback: nëse endpoint-i kthen array bosh, përdor vetëm veten dhe site-t nga contracts
-        const returnedEmployees = Array.isArray(managerData) ? managerData : (managerData.employees || []);
-        const returnedSites = Array.isArray(managerData?.managerSites) ? managerData.managerSites : [];
-        const selfFromAll = contractsData.length > 0 ? [] : [];
-        // Nëse s'ka site nga endpoint, përdor site-t e user-it ose ato të kontratave aktive
-        const activeSites = [...new Set(contractsData.filter(c => c.status === 'Ne progres').map(c => c.siteName).filter(Boolean))];
-        availableSites = returnedSites.length > 0 ? returnedSites : (user?.workplace || activeSites);
+        console.log(`[DEBUG] Raw manager data:`, managerData);
+        
+        // Ensure we get the correct structure from the API
+        let returnedEmployees = [];
+        let returnedSites = [];
+        
+        if (managerData && typeof managerData === 'object') {
+          // Check if it's the new format with employees and managerSites
+          if (managerData.employees && Array.isArray(managerData.employees)) {
+            returnedEmployees = managerData.employees;
+            returnedSites = Array.isArray(managerData.managerSites) ? managerData.managerSites : [];
+          } else if (Array.isArray(managerData)) {
+            // Fallback: if it's just an array of employees
+            returnedEmployees = managerData;
+            // Try to get sites from user.workplace or contracts
+            returnedSites = user?.workplace || [];
+          }
+        }
+        
+        // If still no sites, try to get from contracts where manager is assigned
+        if (returnedSites.length === 0) {
+          const managerContractIds = contractsData
+            .filter(c => c.status === 'Ne progres')
+            .map(c => c.id);
+          
+          if (managerContractIds.length > 0) {
+            // Get sites from contracts where manager might be working
+            const managerSitesFromContracts = contractsData
+              .filter(c => managerContractIds.includes(c.id))
+              .map(c => c.siteName)
+              .filter(Boolean);
+            returnedSites = [...new Set(managerSitesFromContracts)];
+          }
+        }
+        
+        // Final fallback: use user.workplace if available
+        if (returnedSites.length === 0 && user?.workplace) {
+          returnedSites = Array.isArray(user.workplace) ? user.workplace : [user.workplace];
+        }
+        
+        availableSites = returnedSites;
         const managerEmployees = returnedEmployees.length > 0 ? returnedEmployees : [];
+        
         setEmployees(snakeToCamel(managerEmployees));
-        console.log(`[DEBUG] Manager data:`, managerData);
         console.log(`[DEBUG] Manager employees:`, managerEmployees);
         console.log(`[DEBUG] Manager sites:`, availableSites);
         console.log(`[DEBUG] Employees count:`, managerEmployees.length);
@@ -400,32 +434,20 @@ export default function EmployeesList() {
     }
   };
 
-  // Filtrim i avancuar për menaxherin bazuar në contract_id të përbashkët
-  const getManagerContractIds = () => {
-    if (!isManager) return [];
-    // Gjej të gjitha contract_id ku menaxheri ka punuar
-    const myHours = workHours.filter(h => h.employeeId === user.employeeId);
-    const myContractIds = Array.from(new Set(myHours.map(h => h.contractId)));
-    return myContractIds;
-  };
+
 
   const filteredEmployees = employees
     .filter((emp) => {
       const statusMatch = filterStatus === "All" || emp.status === filterStatus;
       let contractMatch = true;
       if (isManager) {
-        const managerContractIds = getManagerContractIds();
-        if (managerContractIds.length === 0) {
-          // Nëse menaxheri nuk ka kontrata, shfaq vetëm veten
-          contractMatch = emp.id === user.employeeId;
+        // For manager, show employees based on workplace filter
+        if (filterWorkplace === "All") {
+          // Show all employees that manager has access to
+          contractMatch = true;
         } else {
-          // Gjej të gjitha contract_id të punonjësit
-          const empHours = workHours.filter(h => h.employeeId === emp.id);
-          const empContractIds = new Set(empHours.map(h => h.contractId));
-          // Kontrollo nëse ka të paktën një contract_id të përbashkët
-          contractMatch = Array.from(empContractIds).some(cid => managerContractIds.includes(cid));
-          // Shto gjithmonë veten
-          if (emp.id === user.employeeId) contractMatch = true;
+          // Check if employee has the selected workplace
+          contractMatch = Array.isArray(emp.workplace) && emp.workplace.includes(filterWorkplace);
         }
       } else {
         // Admin filtering: filter by workplace if selected, or show all if "All" is selected
@@ -458,16 +480,8 @@ export default function EmployeesList() {
       
       if (filterWorkplace !== "All") {
         if (isManager) {
-          // For manager, use the same logic as the main filter
-          const managerContractIds = getManagerContractIds();
-          if (managerContractIds.length > 0) {
-            const empHours = workHours.filter(h => h.employeeId === e.id);
-            const empContractIds = new Set(empHours.map(h => h.contractId));
-            matchesWorkplace = Array.from(empContractIds).some(cid => managerContractIds.includes(cid));
-            if (e.id === user.employeeId) matchesWorkplace = true;
-          } else {
-            matchesWorkplace = e.id === user.employeeId;
-          }
+          // For manager, check if employee has the selected workplace
+          matchesWorkplace = Array.isArray(e.workplace) && e.workplace.includes(filterWorkplace);
         } else {
           // For admin, check if employee has the selected workplace
           matchesWorkplace = Array.isArray(e.workplace) && e.workplace.includes(filterWorkplace);
