@@ -170,6 +170,13 @@ export default function EmployeesList() {
     });
   }, [token]);
 
+  // Debug logging for siteOptions changes
+  useEffect(() => {
+    console.log(`[DEBUG] siteOptions changed:`, siteOptions);
+    console.log(`[DEBUG] Current user:`, user);
+    console.log(`[DEBUG] Is manager:`, isManager);
+  }, [siteOptions, user, isManager]);
+
   // Handle Escape key to close modal
   useEffect(() => {
     const handleEscape = (e) => {
@@ -269,9 +276,16 @@ export default function EmployeesList() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate that at least one workplace is selected
+    if (!newEmployee.workplace || newEmployee.workplace.length === 0) {
+      alert("Ju lutem zgjidhni të paktën një vend pune!");
+      return;
+    }
+    
     if (isManager) {
       const invalidSites = newEmployee.workplace.filter(
-        (wp) => !managerSites.includes(wp)
+        (wp) => !siteOptions.includes(wp)
       );
       if (invalidSites.length > 0) {
         alert("Nuk mund të shtoni punonjës në site që nuk ju përkasin.");
@@ -732,24 +746,26 @@ export default function EmployeesList() {
                       🏢 Vendet e Punës *
                     </label>
                     <div className="flex flex-wrap gap-3">
-                  {siteOptions.map((siteName) => {
-                    const canSelect = !isManager || managerSites.includes(siteName);
-                    if (!canSelect) return null;
-                    return (
+                      {siteOptions.length > 0 ? (
+                        siteOptions.map((siteName) => (
                           <label key={siteName} className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-blue-200 shadow-sm cursor-pointer hover:bg-blue-50 transition-all">
-                        <input
-                          type="checkbox"
-                          name="workplace"
-                          value={siteName}
-                          onChange={handleChange}
-                          checked={newEmployee.workplace.includes(siteName)}
+                            <input
+                              type="checkbox"
+                              name="workplace"
+                              value={siteName}
+                              onChange={handleChange}
+                              checked={newEmployee.workplace.includes(siteName)}
                               className="accent-blue-500 w-4 h-4"
                             /> 
                             <span className="text-sm font-medium text-slate-700">{siteName}</span>
-                      </label>
-                    );
-                  })}
-                </div>
+                          </label>
+                        ))
+                      ) : (
+                        <div className="text-red-500 text-sm">
+                          ⚠️ Nuk ka site të disponueshme. Kontrolloni që menaxheri të ketë site të caktuar.
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* CONTACT SECTION */}
