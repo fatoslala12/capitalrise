@@ -31,6 +31,11 @@ exports.createUser = asyncHandler(async (req, res) => {
       throw createError('FORBIDDEN', null, 'Manageri duhet të caktojë të paktën një site të vlefshëm');
     }
     
+    // Debug: shfaq të gjitha të dhënat e req.user
+    console.log(`[DEBUG] Full req.user data:`, req.user);
+    console.log(`[DEBUG] req.user.workplace:`, req.user.workplace);
+    console.log(`[DEBUG] req.user.employee_id:`, req.user.employee_id);
+    
     // Gjej site-t e menaxherit nga user.workplace (më e thjeshtë dhe e sigurt)
     const managerSites = req.user.workplace || [];
     console.log(`[DEBUG] Manager sites from user.workplace:`, managerSites);
