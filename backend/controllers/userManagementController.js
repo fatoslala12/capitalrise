@@ -51,11 +51,24 @@ exports.createUser = asyncHandler(async (req, res) => {
     if (requestedSites.length === 0) {
       throw createError('VALIDATION_REQUIRED_FIELD', null, 'Vendet e punës janë të detyrueshme për admin');
     }
+    
+    // Debug për admin
+    console.log(`[DEBUG] Admin creating employee with sites:`, requestedSites);
+    console.log(`[DEBUG] Admin user data:`, req.user);
   }
 
   // Validizo të dhënat
   if (!firstName || !lastName || !email || !password) {
     throw createError('VALIDATION_REQUIRED_FIELD', null, 'Emri, mbiemri, email dhe fjalëkalimi janë të detyrueshëm');
+  }
+
+  // Test database connection
+  try {
+    const testResult = await pool.query('SELECT NOW() as current_time');
+    console.log(`✅ Database connection test successful: ${testResult.rows[0].current_time}`);
+  } catch (dbTestError) {
+    console.error('❌ Database connection test failed:', dbTestError);
+    throw createError('DB_CONNECTION_ERROR', null, 'Probleme me lidhjen e databazës');
   }
 
   // Kontrollo nëse email ekziston
@@ -117,6 +130,13 @@ exports.createUser = asyncHandler(async (req, res) => {
   let newUser = null;
   try {
     console.log('🔍 Creating user with employee_id:', newEmployee.id);
+    console.log('🔍 User data to insert:', {
+      employee_id: newEmployee.id,
+      email: email.toLowerCase(),
+      password: plainPassword,
+      role: role
+    });
+    
     const result = await pool.query(
       `INSERT INTO users (
         employee_id, email, password, role, created_at, updated_at
@@ -138,6 +158,8 @@ exports.createUser = asyncHandler(async (req, res) => {
       code: userError.code,
       constraint: userError.constraint
     });
+    console.error('❌ SQL State:', userError.sqlState);
+    console.error('❌ Error Code:', userError.code);
     // Mos bëj throw, vazhdo me procesin
     console.log('⚠️ Vazhdoj pa user entry, vetëm me employee...');
   }
