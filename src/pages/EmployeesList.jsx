@@ -111,10 +111,12 @@ export default function EmployeesList() {
         console.log(`[DEBUG] Manager sites:`, availableSites);
         console.log(`[DEBUG] Employees count:`, managerEmployees.length);
       } else {
-        // Filtro vetëm kontratat me status "Ne progres" për workplace selection
+        // Admin: show all active sites from contracts for workplace selection
         const activeContracts = contractsData.filter(c => c.status === 'Ne progres');
         availableSites = [...new Set(activeContracts.map(c => c.siteName).filter(Boolean))];
         setEmployees(snakeToCamel(employeesRes.data));
+        console.log(`[DEBUG] Admin - Available sites: ${availableSites.length} sites`);
+        console.log(`[DEBUG] Admin - Active contracts: ${activeContracts.length} contracts`);
       }
       
       setSiteOptions(availableSites);
@@ -426,7 +428,13 @@ export default function EmployeesList() {
           if (emp.id === user.employeeId) contractMatch = true;
         }
       } else {
-        contractMatch = filterWorkplace === "All" || (Array.isArray(emp.workplace) && emp.workplace.includes(filterWorkplace));
+        // Admin filtering: filter by workplace if selected, or show all if "All" is selected
+        if (filterWorkplace === "All") {
+          contractMatch = true; // Show all employees for admin
+        } else {
+          // Check if employee has the selected workplace
+          contractMatch = Array.isArray(emp.workplace) && emp.workplace.includes(filterWorkplace);
+        }
       }
       const roleMatch = filterRole === "All" || emp.role === filterRole;
       const taxMatch = filterTax === "All" || emp.labelType === filterTax;
@@ -446,8 +454,26 @@ export default function EmployeesList() {
   const exportToCSV = () => {
     const filtered = employees.filter((e) => {
       const matchesStatus = filterStatus === "All" || e.status === filterStatus;
-      const matchesWorkplace =
-        filterWorkplace === "All" || e.workplace.includes(filterWorkplace);
+      let matchesWorkplace = true;
+      
+      if (filterWorkplace !== "All") {
+        if (isManager) {
+          // For manager, use the same logic as the main filter
+          const managerContractIds = getManagerContractIds();
+          if (managerContractIds.length > 0) {
+            const empHours = workHours.filter(h => h.employeeId === e.id);
+            const empContractIds = new Set(empHours.map(h => h.contractId));
+            matchesWorkplace = Array.from(empContractIds).some(cid => managerContractIds.includes(cid));
+            if (e.id === user.employeeId) matchesWorkplace = true;
+          } else {
+            matchesWorkplace = e.id === user.employeeId;
+          }
+        } else {
+          // For admin, check if employee has the selected workplace
+          matchesWorkplace = Array.isArray(e.workplace) && e.workplace.includes(filterWorkplace);
+        }
+      }
+      
       return matchesStatus && matchesWorkplace;
     });
 

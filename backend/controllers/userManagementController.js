@@ -43,6 +43,12 @@ exports.createUser = asyncHandler(async (req, res) => {
     if (invalid.length > 0) {
       throw createError('FORBIDDEN', null, 'Nuk keni leje për të krijuar punonjës për këto site');
     }
+  } else if (req.user?.role === 'admin') {
+    // Admin can create employees for any site, but workplace is still required
+    const requestedSites = Array.isArray(req.body.workplace) ? req.body.workplace : [];
+    if (requestedSites.length === 0) {
+      throw createError('VALIDATION_REQUIRED_FIELD', null, 'Vendet e punës janë të detyrueshme për admin');
+    }
   }
 
   // Validizo të dhënat
