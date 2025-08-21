@@ -49,7 +49,7 @@ const verifyToken = async (req, res, next) => {
              FROM employee_workplaces ew
              LEFT JOIN contracts c ON ew.contract_id = c.id
              WHERE ew.employee_id = $1
-             AND (c.site_name IS NOT NULL OR ew.site_name IS NOT NULL)`,
+             AND c.site_name IS NOT NULL`,
             [userData.employee_id]
           );
           
