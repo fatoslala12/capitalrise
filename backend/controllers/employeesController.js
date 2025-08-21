@@ -510,7 +510,14 @@ exports.getEmployeesForManager = async (req, res) => {
     `, [managerId]);
     
     if (managerSitesRes.rows.length === 0) {
-      return res.json([]);
+      // Kthe të paktën menaxherin vetë dhe managerSites bosh
+      const selfRes = await pool.query(
+        `SELECT e.*, u.role, u.email FROM employees e LEFT JOIN users u ON u.employee_id = e.id WHERE e.id = $1`,
+        [managerId]
+      );
+      const self = selfRes.rows[0] || null;
+      const selfWithWorkplace = self ? { ...self, workplace: [] } : null;
+      return res.json({ employees: selfWithWorkplace ? [selfWithWorkplace] : [], managerSites: [] });
     }
     
     const managerSiteIds = managerSitesRes.rows.map(site => site.id);

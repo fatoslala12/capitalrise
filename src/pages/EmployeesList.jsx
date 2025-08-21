@@ -64,7 +64,7 @@ export default function EmployeesList() {
   const token = localStorage.getItem("token");
   if (!user) return <div className="p-4 text-center">Duke u ngarkuar...</div>;
   const isManager = user?.role === "manager";
-  const managerSites = user?.workplace || [];
+  const managerSites = Array.isArray(user?.workplace) ? user.workplace : [];
 
   // Merr kontratat nga backend
   useEffect(() => {
@@ -97,18 +97,40 @@ export default function EmployeesList() {
       let availableSites;
       if (isManager) {
         const managerData = employeesRes.data;
-        availableSites = managerData.managerSites || [];
-        const managerEmployees = managerData.employees || [];
+        console.log(`[DEBUG] Raw manager data:`, managerData);
+        
+        // Merr site-t dhe punonjësit nga API response
+        let returnedEmployees = [];
+        let returnedSites = [];
+        
+        if (managerData && typeof managerData === 'object') {
+          // API kthen { employees: [...], managerSites: [...] }
+          if (managerData.employees && Array.isArray(managerData.employees)) {
+            returnedEmployees = managerData.employees;
+            returnedSites = Array.isArray(managerData.managerSites) ? managerData.managerSites : [];
+            console.log(`[DEBUG] Got employees: ${returnedEmployees.length}, sites: ${returnedSites.length} from API`);
+          }
+        }
+        
+        // Nëse API nuk ka site, përdor user.workplace
+        if (returnedSites.length === 0) {
+          returnedSites = user?.workplace || [];
+          console.log(`[DEBUG] Using user.workplace as fallback:`, returnedSites);
+        }
+        
+        availableSites = returnedSites;
+        const managerEmployees = returnedEmployees.length > 0 ? returnedEmployees : [];
+        
         setEmployees(snakeToCamel(managerEmployees));
-        console.log(`[DEBUG] Manager data:`, managerData);
-        console.log(`[DEBUG] Manager employees:`, managerEmployees);
-        console.log(`[DEBUG] Manager sites:`, availableSites);
-        console.log(`[DEBUG] Employees count:`, managerEmployees.length);
+        console.log(`[DEBUG] Final - Manager employees:`, managerEmployees.length);
+        console.log(`[DEBUG] Final - Manager sites:`, availableSites);
       } else {
-        // Filtro vetëm kontratat me status "Ne progres" për workplace selection
+        // Admin: show all active sites from contracts for workplace selection
         const activeContracts = contractsData.filter(c => c.status === 'Ne progres');
         availableSites = [...new Set(activeContracts.map(c => c.siteName).filter(Boolean))];
         setEmployees(snakeToCamel(employeesRes.data));
+        console.log(`[DEBUG] Admin - Available sites: ${availableSites.length} sites`);
+        console.log(`[DEBUG] Admin - Active contracts: ${activeContracts.length} contracts`);
       }
       
       setSiteOptions(availableSites);
@@ -127,6 +149,15 @@ export default function EmployeesList() {
       setLoading(false);
     });
   }, [token]);
+
+  // Debug logging for siteOptions changes
+  useEffect(() => {
+    console.log(`[DEBUG] siteOptions changed:`, siteOptions);
+    console.log(`[DEBUG] Current user:`, user);
+    console.log(`[DEBUG] Is manager:`, isManager);
+    console.log(`[DEBUG] User workplace:`, user?.workplace);
+    console.log(`[DEBUG] User employee_id:`, user?.employee_id);
+  }, [siteOptions, user, isManager]);
 
   // Handle Escape key to close modal
   useEffect(() => {
@@ -227,9 +258,16 @@ export default function EmployeesList() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate that at least one workplace is selected
+    if (!newEmployee.workplace || newEmployee.workplace.length === 0) {
+      alert("Ju lutem zgjidhni të paktën një vend pune!");
+      return;
+    }
+    
     if (isManager) {
       const invalidSites = newEmployee.workplace.filter(
-        (wp) => !managerSites.includes(wp)
+        (wp) => !siteOptions.includes(wp)
       );
       if (invalidSites.length > 0) {
         alert("Nuk mund të shtoni punonjës në site që nuk ju përkasin.");
@@ -392,35 +430,29 @@ export default function EmployeesList() {
     }
   };
 
-  // Filtrim i avancuar për menaxherin bazuar në contract_id të përbashkët
-  const getManagerContractIds = () => {
-    if (!isManager) return [];
-    // Gjej të gjitha contract_id ku menaxheri ka punuar
-    const myHours = workHours.filter(h => h.employeeId === user.employeeId);
-    const myContractIds = Array.from(new Set(myHours.map(h => h.contractId)));
-    return myContractIds;
-  };
+
 
   const filteredEmployees = employees
     .filter((emp) => {
       const statusMatch = filterStatus === "All" || emp.status === filterStatus;
       let contractMatch = true;
       if (isManager) {
-        const managerContractIds = getManagerContractIds();
-        if (managerContractIds.length === 0) {
-          // Nëse menaxheri nuk ka kontrata, shfaq vetëm veten
-          contractMatch = emp.id === user.employeeId;
+        // For manager, show employees based on workplace filter
+        if (filterWorkplace === "All") {
+          // Show all employees that manager has access to
+          contractMatch = true;
         } else {
-          // Gjej të gjitha contract_id të punonjësit
-          const empHours = workHours.filter(h => h.employeeId === emp.id);
-          const empContractIds = new Set(empHours.map(h => h.contractId));
-          // Kontrollo nëse ka të paktën një contract_id të përbashkët
-          contractMatch = Array.from(empContractIds).some(cid => managerContractIds.includes(cid));
-          // Shto gjithmonë veten
-          if (emp.id === user.employeeId) contractMatch = true;
+          // Check if employee has the selected workplace
+          contractMatch = Array.isArray(emp.workplace) && emp.workplace.includes(filterWorkplace);
         }
       } else {
-        contractMatch = filterWorkplace === "All" || (Array.isArray(emp.workplace) && emp.workplace.includes(filterWorkplace));
+        // Admin filtering: filter by workplace if selected, or show all if "All" is selected
+        if (filterWorkplace === "All") {
+          contractMatch = true; // Show all employees for admin
+        } else {
+          // Check if employee has the selected workplace
+          contractMatch = Array.isArray(emp.workplace) && emp.workplace.includes(filterWorkplace);
+        }
       }
       const roleMatch = filterRole === "All" || emp.role === filterRole;
       const taxMatch = filterTax === "All" || emp.labelType === filterTax;
@@ -440,8 +472,18 @@ export default function EmployeesList() {
   const exportToCSV = () => {
     const filtered = employees.filter((e) => {
       const matchesStatus = filterStatus === "All" || e.status === filterStatus;
-      const matchesWorkplace =
-        filterWorkplace === "All" || e.workplace.includes(filterWorkplace);
+      let matchesWorkplace = true;
+      
+      if (filterWorkplace !== "All") {
+        if (isManager) {
+          // For manager, check if employee has the selected workplace
+          matchesWorkplace = Array.isArray(e.workplace) && e.workplace.includes(filterWorkplace);
+        } else {
+          // For admin, check if employee has the selected workplace
+          matchesWorkplace = Array.isArray(e.workplace) && e.workplace.includes(filterWorkplace);
+        }
+      }
+      
       return matchesStatus && matchesWorkplace;
     });
 
@@ -686,24 +728,26 @@ export default function EmployeesList() {
                       🏢 Vendet e Punës *
                     </label>
                     <div className="flex flex-wrap gap-3">
-                  {siteOptions.map((siteName) => {
-                    const canSelect = !isManager || managerSites.includes(siteName);
-                    if (!canSelect) return null;
-                    return (
+                      {siteOptions.length > 0 ? (
+                        siteOptions.map((siteName) => (
                           <label key={siteName} className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-blue-200 shadow-sm cursor-pointer hover:bg-blue-50 transition-all">
-                        <input
-                          type="checkbox"
-                          name="workplace"
-                          value={siteName}
-                          onChange={handleChange}
-                          checked={newEmployee.workplace.includes(siteName)}
+                            <input
+                              type="checkbox"
+                              name="workplace"
+                              value={siteName}
+                              onChange={handleChange}
+                              checked={newEmployee.workplace.includes(siteName)}
                               className="accent-blue-500 w-4 h-4"
                             /> 
                             <span className="text-sm font-medium text-slate-700">{siteName}</span>
-                      </label>
-                    );
-                  })}
-                </div>
+                          </label>
+                        ))
+                      ) : (
+                        <div className="text-red-500 text-sm">
+                          ⚠️ Nuk ka site të disponueshme. Kontrolloni që menaxheri të ketë site të caktuar.
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* CONTACT SECTION */}
