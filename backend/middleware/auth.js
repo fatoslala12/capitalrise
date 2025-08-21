@@ -29,7 +29,7 @@ const verifyToken = async (req, res, next) => {
       try {
         const userResult = await pool.query(
           `SELECT u.id, u.employee_id, u.email, u.role, u.created_at,
-                  e.first_name, e.last_name, e.phone, e.address, e.status,
+                  e.first_name, e.last_name, e.phone, e.status,
                   e.qualification, e.hourly_rate, e.start_date, e.label_type,
                   e.dob, e.pob, e.nid, e.residence, e.next_of_kin, e.next_of_kin_phone,
                   e.photo, e.created_by, e.updated_by, e.created_at as employee_created_at,
