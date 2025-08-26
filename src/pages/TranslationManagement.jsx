@@ -15,7 +15,10 @@ import {
   RefreshCw,
   Download,
   Upload,
-  BarChart3
+  BarChart3,
+  Clock,
+  DollarSign,
+  Bell
 } from 'lucide-react';
 import api from '../api';
 import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
@@ -41,7 +44,14 @@ const TranslationManagement = () => {
   const tables = [
     { id: 'employees', name: 'Punëtorët', icon: Users },
     { id: 'contracts', name: 'Kontratat', icon: Building2 },
-    { id: 'tasks', name: 'Detyrat', icon: CheckSquare }
+    { id: 'tasks', name: 'Detyrat', icon: CheckSquare },
+    { id: 'work_hours', name: 'Orët e Punës', icon: Clock },
+    { id: 'payments', name: 'Pagesat', icon: DollarSign },
+    { id: 'expenses', name: 'Shpenzimet', icon: FileText },
+    { id: 'invoices', name: 'Faturat', icon: FileText },
+    { id: 'notifications', name: 'Njoftimet', icon: Bell },
+    { id: 'users', name: 'Përdoruesit', icon: Users },
+    { id: 'audit_trail', name: 'Audit Trail', icon: FileText }
   ];
 
   // Initialize translations table
@@ -107,6 +117,27 @@ const TranslationManagement = () => {
           break;
         case 'tasks':
           response = await api.get('/api/tasks');
+          break;
+        case 'work_hours':
+          response = await api.get('/api/work-hours');
+          break;
+        case 'payments':
+          response = await api.get('/api/payments');
+          break;
+        case 'expenses':
+          response = await api.get('/api/expenses');
+          break;
+        case 'invoices':
+          response = await api.get('/api/invoices');
+          break;
+        case 'notifications':
+          response = await api.get('/api/notifications');
+          break;
+        case 'users':
+          response = await api.get('/api/users');
+          break;
+        case 'audit_trail':
+          response = await api.get('/api/audit-trail');
           break;
         default:
           return;

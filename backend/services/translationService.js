@@ -64,15 +64,19 @@ class TranslationService {
       const employees = await pool.query('SELECT id, name, position, address FROM employees');
       
       for (const employee of employees.rows) {
-        // Insert Albanian translations (original data)
-        await this.insertTranslation('employees', employee.id, 'name', 'sq', employee.name);
-        await this.insertTranslation('employees', employee.id, 'position', 'sq', employee.position);
-        await this.insertTranslation('employees', employee.id, 'address', 'sq', employee.address);
-        
-        // Insert English translations (placeholder for now)
-        await this.insertTranslation('employees', employee.id, 'name', 'en', employee.name);
-        await this.insertTranslation('employees', employee.id, 'position', 'en', employee.position);
-        await this.insertTranslation('employees', employee.id, 'address', 'en', employee.address);
+        // Only insert translations for non-null values
+        if (employee.name) {
+          await this.insertTranslation('employees', employee.id, 'name', 'sq', employee.name);
+          await this.insertTranslation('employees', employee.id, 'name', 'en', employee.name);
+        }
+        if (employee.position) {
+          await this.insertTranslation('employees', employee.id, 'position', 'sq', employee.position);
+          await this.insertTranslation('employees', employee.id, 'position', 'en', employee.position);
+        }
+        if (employee.address) {
+          await this.insertTranslation('employees', employee.id, 'address', 'sq', employee.address);
+          await this.insertTranslation('employees', employee.id, 'address', 'en', employee.address);
+        }
       }
       
       console.log(`✅ Migrated ${employees.rows.length} employees`);
@@ -88,17 +92,23 @@ class TranslationService {
       const contracts = await pool.query('SELECT id, title, description, company, address FROM contracts');
       
       for (const contract of contracts.rows) {
-        // Insert Albanian translations (original data)
-        await this.insertTranslation('contracts', contract.id, 'title', 'sq', contract.title);
-        await this.insertTranslation('contracts', contract.id, 'description', 'sq', contract.description);
-        await this.insertTranslation('contracts', contract.id, 'company', 'sq', contract.company);
-        await this.insertTranslation('contracts', contract.id, 'address', 'sq', contract.address);
-        
-        // Insert English translations (placeholder for now)
-        await this.insertTranslation('contracts', contract.id, 'title', 'en', contract.title);
-        await this.insertTranslation('contracts', contract.id, 'description', 'en', contract.description);
-        await this.insertTranslation('contracts', contract.id, 'company', 'en', contract.company);
-        await this.insertTranslation('contracts', contract.id, 'address', 'en', contract.address);
+        // Only insert translations for non-null values
+        if (contract.title) {
+          await this.insertTranslation('contracts', contract.id, 'title', 'sq', contract.title);
+          await this.insertTranslation('contracts', contract.id, 'title', 'en', contract.title);
+        }
+        if (contract.description) {
+          await this.insertTranslation('contracts', contract.id, 'description', 'sq', contract.description);
+          await this.insertTranslation('contracts', contract.id, 'description', 'en', contract.description);
+        }
+        if (contract.company) {
+          await this.insertTranslation('contracts', contract.id, 'company', 'sq', contract.company);
+          await this.insertTranslation('contracts', contract.id, 'company', 'en', contract.company);
+        }
+        if (contract.address) {
+          await this.insertTranslation('contracts', contract.id, 'address', 'sq', contract.address);
+          await this.insertTranslation('contracts', contract.id, 'address', 'en', contract.address);
+        }
       }
       
       console.log(`✅ Migrated ${contracts.rows.length} contracts`);
@@ -114,15 +124,19 @@ class TranslationService {
       const tasks = await pool.query('SELECT id, title, description, category FROM tasks');
       
       for (const task of tasks.rows) {
-        // Insert Albanian translations (original data)
-        await this.insertTranslation('tasks', task.id, 'title', 'sq', task.title);
-        await this.insertTranslation('tasks', task.id, 'description', 'sq', task.description);
-        await this.insertTranslation('tasks', task.id, 'category', 'sq', task.category);
-        
-        // Insert English translations (placeholder for now)
-        await this.insertTranslation('tasks', task.id, 'title', 'en', task.title);
-        await this.insertTranslation('tasks', task.id, 'description', 'en', task.description);
-        await this.insertTranslation('tasks', task.id, 'category', 'en', task.category);
+        // Only insert translations for non-null values
+        if (task.title) {
+          await this.insertTranslation('tasks', task.id, 'title', 'sq', task.title);
+          await this.insertTranslation('tasks', task.id, 'title', 'en', task.title);
+        }
+        if (task.description) {
+          await this.insertTranslation('tasks', task.id, 'description', 'sq', task.description);
+          await this.insertTranslation('tasks', task.id, 'description', 'en', task.description);
+        }
+        if (task.category) {
+          await this.insertTranslation('tasks', task.id, 'category', 'sq', task.category);
+          await this.insertTranslation('tasks', task.id, 'category', 'en', task.category);
+        }
       }
       
       console.log(`✅ Migrated ${tasks.rows.length} tasks`);

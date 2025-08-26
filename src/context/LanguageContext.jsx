@@ -17,11 +17,29 @@ export const LanguageProvider = ({ children }) => {
     // Get language from localStorage or default to Albanian
     return localStorage.getItem('language') || 'sq';
   });
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Set initial language
-    i18n.changeLanguage(currentLanguage);
-    localStorage.setItem('language', currentLanguage);
+    // Ensure i18n is ready before setting language
+    if (i18n.isInitialized) {
+      i18n.changeLanguage(currentLanguage);
+      localStorage.setItem('language', currentLanguage);
+      setIsInitialized(true);
+    } else {
+      // Wait for i18n to be ready
+      const handleInitialized = () => {
+        i18n.changeLanguage(currentLanguage);
+        localStorage.setItem('language', currentLanguage);
+        setIsInitialized(true);
+      };
+      
+      if (i18n.isInitialized) {
+        handleInitialized();
+      } else {
+        i18n.on('initialized', handleInitialized);
+        return () => i18n.off('initialized', handleInitialized);
+      }
+    }
   }, [currentLanguage, i18n]);
 
   const changeLanguage = (language) => {
