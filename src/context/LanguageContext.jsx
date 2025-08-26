@@ -18,6 +18,7 @@ export const LanguageProvider = ({ children }) => {
     return localStorage.getItem('language') || 'sq';
   });
   const [isInitialized, setIsInitialized] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0);
 
   useEffect(() => {
     // Ensure i18n is ready before setting language
@@ -42,14 +43,29 @@ export const LanguageProvider = ({ children }) => {
     }
   }, [currentLanguage, i18n]);
 
+  // Additional effect to handle language changes from localStorage
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== currentLanguage) {
+      console.log('🔄 Found saved language in localStorage:', savedLanguage);
+      setCurrentLanguage(savedLanguage);
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, []);
+
   const changeLanguage = (language) => {
+    console.log('🔤 Changing language to:', language);
     setCurrentLanguage(language);
     i18n.changeLanguage(language);
     localStorage.setItem('language', language);
+    // Force a re-render of all components
+    setForceUpdate(prev => prev + 1);
+    console.log('🔤 Language changed, current:', currentLanguage);
   };
 
   const toggleLanguage = () => {
     const newLang = currentLanguage === 'sq' ? 'en' : 'sq';
+    console.log('🔄 Toggling language from', currentLanguage, 'to', newLang);
     changeLanguage(newLang);
   };
 
@@ -58,7 +74,8 @@ export const LanguageProvider = ({ children }) => {
     changeLanguage,
     toggleLanguage,
     isAlbanian: currentLanguage === 'sq',
-    isEnglish: currentLanguage === 'en'
+    isEnglish: currentLanguage === 'en',
+    forceUpdate
   };
 
   return (

@@ -18,7 +18,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'sq', // default language
+    lng: localStorage.getItem('language') || 'sq', // Get from localStorage or default to Albanian
     fallbackLng: 'sq',
     interpolation: {
       escapeValue: false
