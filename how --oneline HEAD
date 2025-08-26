@@ -1,0 +1,10 @@
+[33m0624a6a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Fix manager employees list, beautify add task form, fix WorkHours error handling
+[33mcf9baa9[m  Fix manager role issues and add task creation
+[33m254b203[m  Fix manager scope issues
+[33m1f62d26[m  Manager Role Access Control Implementation
+[33me124f8c[m  Responsive Design Optimization for Mobile & Laptop
+[33m3bff71e[m  Fix employee email update error
+[33m08701ac[m  Modernize UI colors and fix employee save issues
+[33m5d65622[m  Improve Employee UI and filtering
+[33m703dd77[m  Completely redesign Employee Details edit form
+[33m2d85d8a[m  Fix useMemo import error in WorkHours.jsx
