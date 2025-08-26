@@ -11,6 +11,7 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 
 // Funksion për formatimin e datës
 const formatDate = (dateString) => {
@@ -35,6 +36,7 @@ const formatContractDate = (dateString) => {
 };
 
 export default function PaymentDetails() {
+  const { t } = useTranslation();
   const { contract_number } = useParams();
   const [contract, setContract] = useState(null);
   const [expensesInvoices, setExpensesInvoices] = useState([]);

@@ -25,6 +25,7 @@ import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card"
 import Button from "../components/ui/Button";
 import { Container, Grid } from "../components/ui/Layout";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 import { 
   Download, 
   FileText, 
@@ -64,6 +65,7 @@ function snakeToCamel(obj) {
 }
 
 export default function Reports() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
