@@ -3,8 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Bell, Search, Filter, Trash2, Check, CheckCheck, Download, FileText } from 'lucide-react';
 import api from '../api';
+import { useTranslation } from 'react-i18next';
 
 const NotificationsPage = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { notifications, loading, markAsRead, markAllAsRead, deleteNotification, fetchNotifications } = useNotifications();
   const [searchTerm, setSearchTerm] = useState('');
