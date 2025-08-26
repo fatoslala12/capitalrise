@@ -435,9 +435,9 @@ export default function AdminDashboard() {
           <ResponsiveContainer width="100%" height={450}>
             <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
+              <XAxis type="number" label={{ value: t('workHours.hours'), position: "insideBottomRight", offset: -5 }} />
               <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
-              <Tooltip formatter={v => [v, "Orë"]} />
+              <Tooltip formatter={v => [v, t('workHours.hours')]} />
               <Bar dataKey="hours" radius={[0, 6, 6, 0]} barSize={32}>
                 {dashboardStats.workHoursBysite.map((_, i) => (
                   <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -476,7 +476,7 @@ export default function AdminDashboard() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" domain={[0, 100]} label={{ value: "%", position: "insideBottomRight", offset: -5 }} tickFormatter={v => `${v}%`} />
               <YAxis type="category" dataKey="name" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
-              <Tooltip formatter={v => [`${v}%`, "Progresi"]} />
+              <Tooltip formatter={v => [`${v}%`, t('common.progress')]} />
               <Bar dataKey="progress" radius={[0, 6, 6, 0]} barSize={30}>
                 {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map((_, i) => (
                   <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
