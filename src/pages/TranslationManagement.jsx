@@ -48,7 +48,7 @@ const TranslationManagement = () => {
   const initializeTranslations = async () => {
     try {
       setInitializing(true);
-      const response = await api.post('/translations/initialize');
+      const response = await api.post('/api/translations/initialize');
       
       if (response.data.success) {
         alert('Tabela e përkthimeve u inicializua me sukses!');
@@ -67,7 +67,7 @@ const TranslationManagement = () => {
   const migrateData = async () => {
     try {
       setMigrating(true);
-      const response = await api.post('/translations/migrate');
+      const response = await api.post('/api/translations/migrate');
       
       if (response.data.success) {
         alert('Migrimi i të dhënave u krye me sukses!');
@@ -85,7 +85,7 @@ const TranslationManagement = () => {
   // Load translation statistics
   const loadStats = async () => {
     try {
-      const response = await api.get('/translations/stats');
+      const response = await api.get('/api/translations/stats');
       setStats(response.data.stats);
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -100,13 +100,13 @@ const TranslationManagement = () => {
       
       switch (selectedTable) {
         case 'employees':
-          response = await api.get('/employees');
+          response = await api.get('/api/employees');
           break;
         case 'contracts':
-          response = await api.get('/contracts');
+          response = await api.get('/api/contracts');
           break;
         case 'tasks':
-          response = await api.get('/tasks');
+          response = await api.get('/api/tasks');
           break;
         default:
           return;
@@ -128,7 +128,7 @@ const TranslationManagement = () => {
   // Load translations for multiple records
   const loadTranslations = async (recordIds) => {
     try {
-      const response = await api.post('/translations/batch', {
+      const response = await api.post('/api/translations/batch', {
         tableName: selectedTable,
         recordIds,
         language: 'en' // Load English translations for editing
@@ -157,7 +157,7 @@ const TranslationManagement = () => {
     if (!editingField) return;
     
     try {
-      const response = await api.post('/translations', {
+      const response = await api.post('/api/translations', {
         tableName: selectedTable,
         recordId: editingField.recordId,
         fieldName: editingField.fieldName,

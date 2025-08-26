@@ -5,6 +5,7 @@ import { MobileSidebar } from "../components/ui/Layout";
 import NotificationBell from "../components/NotificationBell";
 import api from "../api";
 // import Button from "../components/ui/Button";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const adminMenu = [
   { path: "/admin/dashboard", label: "🏠 Dashboard" },
@@ -149,6 +150,7 @@ export default function MainLayout() {
           
           {/* Right side actions */}
           <div className="flex items-center gap-2 sm:gap-4">
+            <LanguageSwitcher />
             <NotificationBell />
             <button
               onClick={logout}
