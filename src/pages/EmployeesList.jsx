@@ -570,10 +570,10 @@ export default function EmployeesList() {
                 </div>
                 <div>
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1">
-                    Lista e Punonjësve
+                    {t('employeesList.title')}
                   </h1>
                   <div className="text-base sm:text-lg font-semibold text-slate-600">
-                    {filteredEmployees.length} punonjës gjithsej
+                    {filteredEmployees.length} {t('employeesList.totalEmployees')}
                   </div>
                 </div>
               </div>
@@ -582,8 +582,8 @@ export default function EmployeesList() {
                 className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all flex items-center gap-2 justify-center text-sm sm:text-base hover:shadow-xl hover:scale-105"
         >
                 <span className="text-lg sm:text-xl">➕</span>
-                <span className="hidden sm:inline">Shto Punonjës të Ri</span>
-                <span className="sm:hidden">Shto Punonjës</span>
+                <span className="hidden sm:inline">{t('employeesList.addNewEmployee')}</span>
+                <span className="sm:hidden">{t('employeesList.addEmployee')}</span>
         </button>
             </div>
           </div>
@@ -607,7 +607,7 @@ export default function EmployeesList() {
                       <span className="text-2xl">👤</span>
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-white">
-                      Shto Punonjës të Ri
+                      {t('employeesList.addNewEmployee')}
                 </h3>
                   </div>
                 <button
@@ -627,15 +627,15 @@ export default function EmployeesList() {
                   {/* BASIC INFO SECTION */}
                   <div className="bg-slate-50/50 rounded-xl p-4 border border-slate-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      👤 Informacionet Personale
+                      👤 {t('employeesList.personalInfo')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Emri *</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.firstName')} *</label>
                         <input 
                           type="text" 
                           name="firstName" 
-                          placeholder="Emri" 
+                          placeholder={t('employeesList.firstName')} 
                           required 
                           value={newEmployee.firstName} 
                           onChange={handleChange} 
@@ -643,11 +643,11 @@ export default function EmployeesList() {
                         />
                 </div>
                 <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Mbiemri *</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.lastName')} *</label>
                         <input 
                           type="text" 
                           name="lastName" 
-                          placeholder="Mbiemri" 
+                          placeholder={t('employeesList.lastName')} 
                           required 
                           value={newEmployee.lastName} 
                           onChange={handleChange} 
@@ -655,11 +655,11 @@ export default function EmployeesList() {
                         />
                 </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Email *</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.email')} *</label>
                         <input 
                           type="email" 
                           name="email" 
-                          placeholder="Email" 
+                          placeholder={t('employeesList.email')} 
                           required 
                           value={newEmployee.email} 
                           onChange={handleChange} 
@@ -667,7 +667,7 @@ export default function EmployeesList() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">NID *</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.nationalId')} *</label>
                         <input 
                           type="text" 
                           name="nid" 
@@ -679,7 +679,7 @@ export default function EmployeesList() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Data e Fillimit *</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.startDate')} *</label>
                         <input 
                           type="date" 
                           name="startDate" 
@@ -690,7 +690,7 @@ export default function EmployeesList() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Datëlindja</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.dateOfBirth')}</label>
                         <input 
                           type="date" 
                           name="dob" 
@@ -700,7 +700,7 @@ export default function EmployeesList() {
                         />
                       </div>
                 <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Shtetësia</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.citizenship')}</label>
                         <input 
                           type="text" 
                           name="pob" 
@@ -711,7 +711,7 @@ export default function EmployeesList() {
                         />
                 </div>
                 <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Vendbanimi</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.residence')}</label>
                         <input 
                           type="text" 
                           name="residence" 
@@ -727,7 +727,7 @@ export default function EmployeesList() {
                   {/* WORKPLACE SECTION */}
                   <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      🏢 Vendet e Punës *
+                      🏢 {t('employeesList.workplacesSection')} *
                     </label>
                     <div className="flex flex-wrap gap-3">
                       {siteOptions.length > 0 ? (
@@ -755,11 +755,11 @@ export default function EmployeesList() {
                   {/* CONTACT SECTION */}
                   <div className="bg-purple-50/50 rounded-xl p-4 border border-purple-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      📞 Informacionet e Kontaktit
+                      📞 {t('employeesList.contactInfo')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Telefoni *</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.phoneNumber')} *</label>
                         <input 
                           type="text" 
                           name="phone" 
@@ -771,7 +771,7 @@ export default function EmployeesList() {
                         />
                 </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Next of Kin</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.nextOfKin')}</label>
                         <input 
                           type="text" 
                           name="nextOfKin" 
@@ -782,7 +782,7 @@ export default function EmployeesList() {
                         />
                       </div>
                 <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Next of Kin Phone</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.nextOfKinPhone')}</label>
                         <input 
                           type="text" 
                           name="nextOfKinPhone" 
@@ -924,7 +924,7 @@ export default function EmployeesList() {
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
           <div className="p-4 sm:p-6 lg:p-8">
             <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-              🔍 Filtro dhe Rregullo
+              🔍 {t('employeesList.filterAndSort')}
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               <select 
@@ -932,7 +932,7 @@ export default function EmployeesList() {
                 onChange={(e) => setFilterStatus(e.target.value)} 
                 className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
               >
-            <option value="All">Gjithë statuset</option>
+            <option value="All">{t('employeesList.allStatuses')}</option>
             <option value="Aktiv">Aktiv</option>
             <option value="Joaktiv">Joaktiv</option>
           </select>
@@ -941,7 +941,7 @@ export default function EmployeesList() {
                 onChange={(e) => setFilterWorkplace(e.target.value)} 
                 className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
               >
-            <option value="All">Të gjitha vendet</option>
+            <option value="All">{t('employeesList.allWorkplaces')}</option>
             {siteOptions.map(site => <option key={site} value={site}>{site}</option>)}
           </select>
               <select 
@@ -949,7 +949,7 @@ export default function EmployeesList() {
                 onChange={(e) => setFilterRole(e.target.value)} 
                 className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
               >
-            <option value="All">Gjithë rolet</option>
+            <option value="All">{t('employeesList.allRoles')}</option>
             <option value="user">Punonjës</option>
             <option value="manager">Menaxher</option>
           </select>
@@ -958,7 +958,7 @@ export default function EmployeesList() {
                 onChange={(e) => setFilterTax(e.target.value)} 
                 className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
               >
-            <option value="All">Gjithë taksimet</option>
+            <option value="All">{t('employeesList.allTaxTypes')}</option>
             <option value="NI">NI</option>
             <option value="UTR">UTR</option>
           </select>
@@ -967,10 +967,10 @@ export default function EmployeesList() {
                 onChange={(e) => setSortBy(e.target.value)} 
                 className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
               >
-            <option value="default">Pa sortim</option>
-            <option value="salaryHigh">Paga ↓</option>
-            <option value="salaryLow">Paga ↑</option>
-            <option value="nameAZ">Emri A-Z</option>
+            <option value="default">{t('employeesList.noSorting')}</option>
+            <option value="salaryHigh">{t('employeesList.salaryHigh')}</option>
+            <option value="salaryLow">{t('employeesList.salaryLow')}</option>
+            <option value="nameAZ">{t('employeesList.nameAZ')}</option>
           </select>
             </div>
           </div>
@@ -980,7 +980,7 @@ export default function EmployeesList() {
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
           <div className="p-4 sm:p-6 lg:p-8">
             <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              📋 Tabela e Punonjësve
+              📋 {t('employeesList.employeesTable')}
           </h3>
             
             {/* DESKTOP TABLE */}
@@ -988,16 +988,16 @@ export default function EmployeesList() {
               <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
                 <thead className="bg-gradient-to-r from-blue-100 to-purple-100">
                   <tr>
-                    <th className="py-3 px-2 text-left font-semibold text-slate-800">Foto</th>
-                    <th className="py-3 px-2 text-left font-semibold text-slate-800">ID</th>
-                    <th className="py-3 px-2 text-left font-semibold text-slate-800">Emër & Mbiemër</th>
-                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Roli</th>
-                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Vendet e punës</th>
-                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Tel</th>
-                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Paga</th>
-                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Statusi</th>
-                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Taksimi</th>
-                    <th className="py-3 px-2 text-center font-semibold text-slate-800">Veprime</th>
+                    <th className="py-3 px-2 text-left font-semibold text-slate-800">{t('employeesList.photo')}</th>
+                    <th className="py-3 px-2 text-left font-semibold text-slate-800">{t('employeesList.id')}</th>
+                    <th className="py-3 px-2 text-left font-semibold text-slate-800">{t('employeesList.nameAndSurname')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">{t('employeesList.role')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">{t('employeesList.workplaces')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">{t('employeesList.phone')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">{t('employeesList.salary')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">{t('employeesList.status')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">{t('employeesList.taxation')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-slate-800">{t('employeesList.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -1032,17 +1032,17 @@ export default function EmployeesList() {
                         <td className="py-3 px-2 text-center font-semibold text-blue-600">{emp.labelType || emp.label_type || ""}</td>
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-1 justify-center">
-                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-1.5 text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-sm" title="Shiko Detaje">
+                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-1.5 text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-sm" title={t('employeesList.viewDetails')}>
                         <FaEye />
                       </button>
                       <button
                         onClick={() => handleExtract(emp)}
                               className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:scale-110 transition-all text-sm"
-                        title="Eksporto të dhënat"
+                        title={t('employeesList.exportData')}
                       >
                         📥
                       </button>
-                            <button onClick={() => handleDelete(emp.id)} className="p-1.5 text-red-600 hover:text-red-800 hover:scale-110 transition-all text-sm" title="Fshi">
+                            <button onClick={() => handleDelete(emp.id)} className="p-1.5 text-red-600 hover:text-red-800 hover:scale-110 transition-all text-sm" title={t('employeesList.delete')}>
                         🗑
                       </button>
                           </div>
@@ -1122,8 +1122,8 @@ export default function EmployeesList() {
             className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 mx-auto hover:shadow-xl hover:scale-105"
         >
             <span className="text-xl">📤</span> 
-            <span className="hidden sm:inline">Eksporto punonjësit (CSV)</span>
-            <span className="sm:hidden">Eksporto CSV</span>
+            <span className="hidden sm:inline">{t('employeesList.exportEmployeesCSV')}</span>
+            <span className="sm:hidden">{t('employeesList.exportCSV')}</span>
         </button>
         </div>
       </div>
