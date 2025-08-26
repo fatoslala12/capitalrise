@@ -341,7 +341,7 @@ export default function AdminDashboard() {
       : "";
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat..." />;
+    return <LoadingSpinner fullScreen={true} size="xl" text={t('adminDashboard.loadingStats')} />;
   }
 
   return (
@@ -446,7 +446,7 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka orë pune të regjistruara për këtë javë</p>
+          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noWorkHours')}</p>
         )}
       </div>
 
@@ -485,7 +485,7 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka kontrata aktive për momentin</p>
+          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noActiveContracts')}</p>
         )}
       </div>
 
@@ -560,7 +560,7 @@ export default function AdminDashboard() {
             })}
           </ul>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka pagesa të regjistruara për këtë javë</p>
+          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noPayments')}</p>
         )}
       </div>
 
@@ -597,7 +597,7 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka pagesa të regjistruara për këtë javë</p>
+          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noPayments')}</p>
         )}
       </div>
 
@@ -617,16 +617,16 @@ export default function AdminDashboard() {
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
         {unpaid.length === 0 ? (
-          <p className="text-gray-500 italic">Të gjitha faturat janë të paguara ✅</p>
+          <p className="text-gray-500 italic">{t('adminDashboard.allInvoicesPaid')}</p>
         ) : (
           <ul className="space-y-2 text-red-700 text-base">
             {unpaid.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
                 <a href={`/admin/contracts/${item.contractNumber}`} className="font-bold text-red-700 underline cursor-pointer">
-                  🔴 Kontrata #{item.contractNumber || ''}
+                  🔴 {t('adminDashboard.contract')} #{item.contractNumber || ''}
                 </a>
-                <span className="font-bold text-black">Nr. Fature: <b>{item.invoiceNumber || ''}</b></span>
-                <span className="font-bold text-blue-700 flex items-center gap-1">🏢 Site: {(() => {
+                <span className="font-bold text-black">{t('adminDashboard.invoiceNumber')} <b>{item.invoiceNumber || ''}</b></span>
+                <span className="font-bold text-blue-700 flex items-center gap-1">🏢 {t('adminDashboard.site')} {(() => {
                   let c = null;
                   if (item.contract_id && contracts.length) {
                     c = contracts.find(c => String(c.id) === String(item.contract_id));
@@ -647,7 +647,7 @@ export default function AdminDashboard() {
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full mb-6 md:mb-8">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 {t('adminDashboard.unpaidExpensesTitle')}</h3>
         {unpaidExpenses.length === 0 ? (
-          <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
+          <p className="text-gray-500 italic">{t('adminDashboard.allExpensesPaid')}</p>
         ) : (
           <ul className="space-y-2 text-red-700 text-base">
             {unpaidExpenses.map((item, idx) => (
@@ -718,11 +718,11 @@ function VonesaFaturashChart() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-8">Duke ngarkuar...</div>;
+    return <div className="text-center py-8">{t('adminDashboard.loading')}</div>;
   }
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e invoice-ve</div>;
+    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noInvoiceData')}</div>;
   }
 
   return (
@@ -804,11 +804,11 @@ function StatusiShpenzimeveChart() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-8">Duke ngarkuar...</div>;
+    return <div className="text-center py-8">{t('adminDashboard.loading')}</div>;
   }
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e faturave të shpenzimeve</div>;
+    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noExpenseData')}</div>;
   }
 
   return (
@@ -936,11 +936,11 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
   }, [allExpenses, contracts, structuredWorkHours, allPayments]);
   
   if (loading) {
-    return <div className="text-center py-8">Duke ngarkuar...</div>;
+    return <div className="text-center py-8">{t('adminDashboard.loading')}</div>;
   }
   
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
+    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noExpenseData')}</div>;
   }
   
   return (
@@ -957,15 +957,15 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
       <ResponsiveContainer width="100%" height={450}>
         <BarChart data={data} layout="vertical" margin={{ left: 50, right: 50, top: 20, bottom: 20 }} barCategoryGap={18}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" label={{ value: "Shuma totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
+          <XAxis type="number" label={{ value: t('adminDashboard.totalAmount'), position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
           <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0284c7' }} />
           <Tooltip 
             contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} 
-            formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} 
+            formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? t('common.total') : n]} 
           />
           <Legend />
-          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name="Shpenzime (expenses_invoice.gross)" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[1]} name="Orët e Punës (work_hours.hours × rate)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name={t('adminDashboard.expenses')} radius={[0, 0, 0, 0]} />
+          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[1]} name={t('adminDashboard.workHours')} radius={[0, 0, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -1000,16 +1000,16 @@ function StatusiKontrataveChart({ contracts }) {
     });
     
     const chartData = Object.entries(statusCount).map(([status, count]) => ({
-      name: status === 'active' ? 'Aktive' : 
-            status === 'suspended' ? 'Të pezulluara' :
-            status === 'completed' ? 'Të mbyllura' :
-            status === 'cancelled' ? 'Të anuluara' :
-            status === 'pending' ? 'Në pritje' :
-            status === 'ne progres' ? 'Në progres' :
-            status === 'pezulluar' ? 'Të pezulluara' :
-            status === 'mbyllur me vonese' ? 'Mbyllur me vonesë' :
-            status === 'anulluar' ? 'Të anuluara' :
-            status === 'mbyllur' ? 'Të mbyllura' : status,
+      name: status === 'active' ? t('adminDashboard.active') : 
+            status === 'suspended' ? t('adminDashboard.suspended') :
+            status === 'completed' ? t('adminDashboard.completed') :
+            status === 'cancelled' ? t('adminDashboard.cancelled') :
+            status === 'pending' ? t('adminDashboard.pending') :
+            status === 'ne progres' ? t('adminDashboard.inProgress') :
+            status === 'pezulluar' ? t('adminDashboard.suspended') :
+            status === 'mbyllur me vonese' ? t('adminDashboard.closedWithDelay') :
+            status === 'anulluar' ? t('adminDashboard.cancelled') :
+            status === 'mbyllur' ? t('adminDashboard.closed') : status,
       value: count,
       color: statusColors[status] || '#6b7280'
     }));
@@ -1018,7 +1018,7 @@ function StatusiKontrataveChart({ contracts }) {
   }, [contracts]);
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e kontratave</div>;
+    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noContractData')}</div>;
   }
 
   return (
