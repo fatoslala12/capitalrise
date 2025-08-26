@@ -61,7 +61,7 @@ export default function Tasks() {
         
       } catch (error) {
         console.error("Error fetching tasks data:", error);
-        toast.error("Gabim gjatë ngarkimit të të dhënave!");
+        toast.error(t('tasks.validation.dataLoadError'));
         setEmployees([]);
         setContracts([]);
         setTasks([]);
@@ -118,7 +118,7 @@ export default function Tasks() {
     }
 
     if (!newTask.description.trim() || receivers.length === 0) {
-      toast.error("Plotëso përshkrimin dhe zgjidh marrësit!");
+              toast.error(t('tasks.validation.fillDescriptionAndAssignee'));
       return;
     }
 
@@ -174,10 +174,10 @@ export default function Tasks() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: newStatus } : t));
-      toast.success(`Statusi u ndryshua në "${newStatus === 'completed' ? 'Përfunduar' : 'Në vazhdim'}"`);
+              toast.success(`${t('tasks.validation.statusChangeSuccess')} "${newStatus === 'completed' ? t('tasks.completedStatus') : t('tasks.ongoing')}"`);
     } catch (error) {
       console.error('Error updating task status:', error);
-      toast.error("Gabim gjatë ndryshimit të statusit!");
+              toast.error(t('tasks.validation.statusChangeError'));
     }
   };
 
@@ -298,7 +298,7 @@ export default function Tasks() {
       }
     } catch (error) {
       console.error('Error checking overdue tasks:', error);
-      toast.error("Gabim gjatë kontrollit të detyrave jashtë afatit!");
+              toast.error(t('tasks.validation.overdueCheckError'));
     } finally {
       setIsCheckingDeadlines(false);
     }
@@ -322,7 +322,7 @@ export default function Tasks() {
       }
     } catch (error) {
       console.error('Error checking upcoming deadlines:', error);
-      toast.error("Gabim gjatë kontrollit të afateve që përfundojnë së shpejti!");
+              toast.error(t('tasks.validation.nearDeadlineCheckError'));
     } finally {
       setIsCheckingDeadlines(false);
     }
@@ -346,7 +346,7 @@ export default function Tasks() {
       }
     } catch (error) {
       console.error('Error running daily check:', error);
-      toast.error("Gabim gjatë kontrollit ditor të afateve!");
+              toast.error(t('tasks.validation.dailyCheckError'));
     } finally {
       setIsCheckingDeadlines(false);
     }
@@ -373,7 +373,7 @@ export default function Tasks() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-600">Duke ngarkuar detyrat...</h2>
+          <h2 className="text-xl font-semibold text-gray-600">{t('tasks.validation.dataLoadError')}</h2>
         </div>
       </div>
     );
@@ -390,8 +390,8 @@ export default function Tasks() {
           </svg>
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Menaxhimi i Detyrave</h2>
-          <div className="text-lg font-medium text-purple-700">Cakto, shiko dhe menaxho detyrat</div>
+                          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('tasks.title')}</h2>
+                <div className="text-lg font-medium text-purple-700">{t('tasks.subtitle')}</div>
         </div>
       </div>
 
@@ -400,7 +400,7 @@ export default function Tasks() {
         <div className="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 p-4 sm:p-6 rounded-xl shadow-sm border border-blue-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-700 text-xs sm:text-sm font-medium">Total Detyra</p>
+                              <p className="text-blue-700 text-xs sm:text-sm font-medium">{t('tasks.totalTasks')}</p>
               <p className="text-2xl sm:text-3xl font-bold">{stats.total}</p>
             </div>
             <div className="text-2xl sm:text-4xl">📋</div>
@@ -410,7 +410,7 @@ export default function Tasks() {
         <div className="bg-gradient-to-br from-green-100 to-green-200 text-green-800 p-4 sm:p-6 rounded-xl shadow-sm border border-green-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-700 text-xs sm:text-sm font-medium">Përfunduara</p>
+                              <p className="text-green-700 text-xs sm:text-sm font-medium">{t('tasks.completed')}</p>
               <p className="text-2xl sm:text-3xl font-bold">{stats.completed}</p>
             </div>
             <div className="text-2xl sm:text-4xl">✅</div>
@@ -420,7 +420,7 @@ export default function Tasks() {
         <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 text-yellow-800 p-4 sm:p-6 rounded-xl shadow-sm border border-yellow-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-yellow-700 text-xs sm:text-sm font-medium">Në Vazhdim</p>
+                              <p className="text-yellow-700 text-xs sm:text-sm font-medium">{t('tasks.inProgress')}</p>
               <p className="text-2xl sm:text-3xl font-bold">{stats.ongoing}</p>
             </div>
             <div className="text-2xl sm:text-4xl">🕒</div>
@@ -430,7 +430,7 @@ export default function Tasks() {
         <div className="bg-gradient-to-br from-red-100 to-red-200 text-red-800 p-4 sm:p-6 rounded-xl shadow-sm border border-red-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-red-700 text-xs sm:text-sm font-medium">Me Vonesë</p>
+                              <p className="text-red-700 text-xs sm:text-sm font-medium">{t('tasks.overdue')}</p>
               <p className="text-2xl sm:text-3xl font-bold">{stats.overdue}</p>
             </div>
             <div className="text-2xl sm:text-4xl">⚠️</div>
@@ -440,7 +440,7 @@ export default function Tasks() {
         <div className="bg-gradient-to-br from-purple-100 to-purple-200 text-purple-800 p-4 sm:p-6 rounded-xl shadow-sm border border-purple-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-700 text-xs sm:text-sm font-medium">Prioritet i Lartë</p>
+                              <p className="text-purple-700 text-xs sm:text-sm font-medium">{t('tasks.highPriority')}</p>
               <p className="text-2xl sm:text-3xl font-bold">{stats.highPriority}</p>
             </div>
             <div className="text-2xl sm:text-4xl">🔴</div>
@@ -451,7 +451,7 @@ export default function Tasks() {
       {/* KONTROLLET E KRYESORE */}
       <div className="bg-white/60 rounded-xl shadow-sm border border-blue-100 p-4 sm:p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          <h3 className="text-xl sm:text-2xl font-bold text-blue-800">🎯 Kontrolli i Detyrave</h3>
+                          <h3 className="text-xl sm:text-2xl font-bold text-blue-800">🎯 {t('tasks.taskControl')}</h3>
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             {/* View Mode Toggle */}
@@ -464,7 +464,7 @@ export default function Tasks() {
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                📊 Tabelë
+                📊 {t('tasks.table')}
               </button>
               <button
                 onClick={() => setViewMode("kanban")}
@@ -474,7 +474,7 @@ export default function Tasks() {
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                🎯 Kanban
+                🎯 {t('tasks.kanban')}
               </button>
             </div>
             
@@ -483,7 +483,7 @@ export default function Tasks() {
               onClick={() => setShowForm(!showForm)}
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 text-sm sm:text-base"
             >
-              {showForm ? "❌ Mbyll" : "➕ Shto Detyrë"}
+              {showForm ? `❌ ${t('tasks.close')}` : `➕ ${t('tasks.addTask')}`}
             </button>
           </div>
         </div>
@@ -491,7 +491,7 @@ export default function Tasks() {
         {/* DEADLINE NOTIFICATION CONTROLS */}
         <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl shadow-sm border border-amber-200 p-4 mb-6">
           <h4 className="text-lg font-semibold text-amber-800 mb-4 flex items-center gap-2">
-            ⏰ Kontrolli i Afateve dhe Njoftimeve
+            ⏰ {t('tasks.deadlineControl')}
           </h4>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -499,28 +499,28 @@ export default function Tasks() {
               onClick={handleCheckOverdueTasks}
               className="bg-gradient-to-r from-red-400 to-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-red-500 hover:to-red-600 transition-all shadow-sm"
             >
-              🔍 Kontrollo Jashtë Afatit
+                              🔍 {t('tasks.checkOverdue')}
             </button>
             
             <button
               onClick={handleCheckUpcomingDeadlines}
               className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-yellow-500 hover:to-yellow-600 transition-all shadow-sm"
             >
-              ⏰ Kontrollo Afatet e Afert
+                              ⏰ {t('tasks.checkNearDeadlines')}
             </button>
             
             <button
               onClick={handleRunDailyCheck}
               className="bg-gradient-to-r from-blue-400 to-blue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-blue-500 hover:to-blue-600 transition-all shadow-sm"
             >
-              📅 Kontrolli Ditor
+                              📅 {t('tasks.dailyControl')}
             </button>
             
             <button
               onClick={handleGetOverdueStats}
               className="bg-gradient-to-r from-purple-400 to-purple-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-purple-500 hover:to-purple-600 transition-all shadow-sm"
             >
-              📊 Statistikat
+                              📊 {t('tasks.statistics')}
             </button>
           </div>
           
@@ -529,19 +529,19 @@ export default function Tasks() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                 <div className="text-center">
                   <div className="text-lg font-bold text-red-600">{overdueStats.overdue?.total_overdue || 0}</div>
-                  <div className="text-red-700">Jashtë Afatit</div>
+                  <div className="text-red-700">{t('tasks.overdueCount')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-yellow-600">{overdueStats.upcoming?.total_upcoming || 0}</div>
-                  <div className="text-yellow-700">Përfundojnë Nesër</div>
+                  <div className="text-yellow-700">{t('tasks.dueTomorrow')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-blue-600">{overdueStats.overdue?.notifications_sent || 0}</div>
-                  <div className="text-blue-700">Njoftime Dërguar</div>
+                  <div className="text-blue-700">{t('tasks.notificationsSent')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-purple-600">{overdueStats.overdue?.notifications_pending || 0}</div>
-                  <div className="text-purple-700">Njoftime në Pritje</div>
+                  <div className="text-purple-700">{t('tasks.notificationsPending')}</div>
                 </div>
               </div>
             </div>
@@ -551,15 +551,15 @@ export default function Tasks() {
         {/* FORMA E SHTIMIT */}
         {showForm && (
           <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-xl shadow-sm border border-blue-200 p-4 sm:p-6 mb-6">
-            <h4 className="text-xl font-bold text-blue-900 mb-4">➕ Krijo Detyrë të Re</h4>
+                            <h4 className="text-xl font-bold text-blue-900 mb-4">➕ {t('tasks.createNewTask')}</h4>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-blue-800 mb-2">📝 Përshkrimi i Detyrës</label>
+                  <label className="block text-sm font-semibold text-blue-800 mb-2">📝 {t('tasks.taskDescription')}</label>
                   <textarea
                     name="description"
-                    placeholder="Shkruani përshkrimin e detyrës..."
+                                          placeholder={t('tasks.writeDescription')}
                     value={newTask.description}
                     onChange={handleChange}
                     rows={3}
@@ -569,14 +569,14 @@ export default function Tasks() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-blue-800 mb-2">👤 Zgjidh Punonjësin</label>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">👤 {t('tasks.selectEmployee')}</label>
                     <select
                       name="assignedTo"
                       value={newTask.assignedTo}
                       onChange={handleChange}
                       className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
                     >
-                      <option value="">-- Zgjidh punonjësin --</option>
+                                              <option value="">{t('tasks.selectEmployeePlaceholder')}</option>
                       {employees.map((e) => (
                         <option key={e.id} value={e.id}>
                           {e.first_name} {e.last_name} ({e.email})
@@ -586,14 +586,14 @@ export default function Tasks() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-blue-800 mb-2">🏗 Ose Zgjidh Site</label>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">🏗 {t('tasks.orSelectSite')}</label>
                     <select
                       name="siteName"
                       value={newTask.siteName}
                       onChange={handleChange}
                       className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
                     >
-                      <option value="">-- Zgjidh site --</option>
+                                              <option value="">{t('tasks.selectSitePlaceholder')}</option>
                       {filteredSites.map((site) => (
                         <option key={site} value={site}>{site}</option>
                       ))}
@@ -605,7 +605,7 @@ export default function Tasks() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-blue-800 mb-2">📅 Afati</label>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">📅 {t('tasks.dueDateLabel')}</label>
                     <input
                       type="date"
                       name="dueDate"
@@ -616,29 +616,29 @@ export default function Tasks() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-blue-800 mb-2">🔴 Prioriteti</label>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">🔴 {t('tasks.priorityLabel')}</label>
                     <select
                       name="priority"
                       value={newTask.priority}
                       onChange={handleChange}
                       className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
                     >
-                      <option value="low">🟢 I Ulët</option>
-                      <option value="medium">🟡 Mesatar</option>
-                      <option value="high">🔴 I Lartë</option>
+                      <option value="low">🟢 {t('tasks.low')}</option>
+                      <option value="medium">🟡 {t('tasks.medium')}</option>
+                      <option value="high">🔴 {t('tasks.high')}</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-blue-800 mb-2">📂 Kategoria</label>
+                  <label className="block text-sm font-semibold text-blue-800 mb-2">📂 {t('tasks.category')}</label>
                   <select
                     name="category"
                     value={newTask.category}
                     onChange={handleChange}
                     className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
                   >
-                    <option value="general">📋 E Përgjithshme</option>
+                    <option value="general">📋 {t('tasks.general')}</option>
                     <option value="construction">🏗️ Ndërtim</option>
                     <option value="maintenance">🔧 Mirëmbajtje</option>
                     <option value="cleaning">🧹 Pastrim</option>
@@ -658,7 +658,7 @@ export default function Tasks() {
                       Duke shtuar...
                     </div>
                   ) : (
-                    "📤 Cakto Detyrën"
+                    `📤 ${t('tasks.assignTask')}`
                   )}
                 </button>
               </div>
@@ -668,12 +668,12 @@ export default function Tasks() {
 
         {/* FILTRAT DHE KËRKIMI */}
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 sm:p-6 mb-6">
-          <h4 className="text-base sm:text-lg font-semibold text-purple-800 mb-4">🔍 Filtra dhe Kërkim</h4>
+          <h4 className="text-base sm:text-lg font-semibold text-purple-800 mb-4">🔍 {t('tasks.filtersAndSearch')}</h4>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
             <input
               type="text"
-              placeholder="🔍 Kërko në detyra..."
+              placeholder={t('tasks.searchInTasks')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="p-2 sm:p-3 border border-purple-200 rounded-lg focus:ring-1 focus:ring-purple-300 transition-all text-sm"
@@ -684,9 +684,9 @@ export default function Tasks() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="p-2 sm:p-3 border border-blue-200 rounded-lg focus:ring-1 focus:ring-blue-300 transition-all text-sm"
             >
-              <option value="all">📊 Të gjitha statuset</option>
-              <option value="ongoing">🕒 Në vazhdim</option>
-              <option value="completed">✅ Përfunduar</option>
+              <option value="all">📊 {t('tasks.allStatuses')}</option>
+              <option value="ongoing">🕒 {t('tasks.ongoing')}</option>
+              <option value="completed">✅ {t('tasks.completedStatus')}</option>
             </select>
             
             <select
@@ -694,10 +694,10 @@ export default function Tasks() {
               onChange={(e) => setPriorityFilter(e.target.value)}
               className="p-2 sm:p-3 border border-yellow-200 rounded-lg focus:ring-1 focus:ring-yellow-300 transition-all text-sm"
             >
-              <option value="all">🔴 Të gjitha prioritetet</option>
-              <option value="high">🔴 I lartë</option>
-              <option value="medium">🟡 Mesatar</option>
-              <option value="low">🟢 I ulët</option>
+              <option value="all">🔴 {t('tasks.allPriorities')}</option>
+              <option value="high">🔴 {t('tasks.high')}</option>
+              <option value="medium">🟡 {t('tasks.medium')}</option>
+              <option value="low">🟢 {t('tasks.low')}</option>
             </select>
             
             <select
@@ -705,7 +705,7 @@ export default function Tasks() {
               onChange={(e) => setSiteFilter(e.target.value)}
               className="p-2 sm:p-3 border border-green-200 rounded-lg focus:ring-1 focus:ring-green-300 transition-all text-sm"
             >
-              <option value="all">🏗️ Të gjitha site-t</option>
+              <option value="all">🏗️ {t('tasks.allSites')}</option>
               {uniqueSites.map((site) => (
                 <option key={site} value={site}>{site}</option>
               ))}
@@ -718,7 +718,7 @@ export default function Tasks() {
               onChange={(e) => setAssignedFilter(e.target.value)}
               className="p-2 sm:p-3 border border-indigo-200 rounded-lg focus:ring-1 focus:ring-indigo-300 transition-all text-sm"
             >
-              <option value="all">👤 Të gjithë punonjësit</option>
+              <option value="all">👤 {t('tasks.allEmployees')}</option>
               {employees.map((emp) => (
                 <option key={emp.id} value={emp.id}>
                   {emp.first_name} {emp.last_name}
@@ -735,14 +735,14 @@ export default function Tasks() {
               }}
               className="p-2 sm:p-3 border border-orange-200 rounded-lg focus:ring-1 focus:ring-orange-300 transition-all text-sm"
             >
-              <option value="created_at-desc">📅 Data (më e reja)</option>
-              <option value="created_at-asc">📅 Data (më e vjetra)</option>
-              <option value="due_date-asc">⏰ Afati (më i afërt)</option>
-              <option value="due_date-desc">⏰ Afati (më i largët)</option>
+              <option value="created_at-desc">📅 {t('tasks.date')} ({t('tasks.newest')})</option>
+              <option value="created_at-asc">📅 {t('tasks.date')} ({t('tasks.oldest')})</option>
+              <option value="due_date-asc">⏰ {t('tasks.deadline')} ({t('tasks.nearest')})</option>
+              <option value="due_date-desc">⏰ {t('tasks.deadline')} ({t('tasks.farthest')})</option>
             </select>
             
             <div className="text-xs sm:text-sm text-gray-600 flex items-center justify-center p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200">
-              📊 {filteredAndSortedTasks.length} detyra të gjetura
+                              📊 {filteredAndSortedTasks.length} {t('tasks.tasksFound')}
             </div>
           </div>
         </div>
@@ -751,14 +751,14 @@ export default function Tasks() {
       {/* LISTA E DETYRAVE */}
       <div className="bg-white/60 rounded-xl shadow-sm border border-blue-100 p-4 sm:p-6">
         <h3 className="text-xl sm:text-2xl font-bold text-blue-800 mb-4 sm:mb-6 flex items-center gap-2">
-          📋 Lista e Detyrave
+                      📋 {t('tasks.tasksList')}
           <span className="text-sm sm:text-lg text-gray-600">({filteredAndSortedTasks.length} detyra)</span>
         </h3>
         
         {filteredAndSortedTasks.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
             <div className="text-4xl sm:text-6xl mb-4">📝</div>
-            <p className="text-lg sm:text-xl text-gray-600 mb-2">Nuk ka detyra të gjetura</p>
+                            <p className="text-lg sm:text-xl text-gray-600 mb-2">{t('tasks.noTasksFound')}</p>
             <p className="text-sm sm:text-base text-gray-500">Provoni të ndryshoni filtra ose shtoni detyra të reja</p>
           </div>
         ) : viewMode === "table" ? (
@@ -767,15 +767,15 @@ export default function Tasks() {
             <table className="w-full text-xs sm:text-sm">
               <thead className="bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 text-blue-800 text-sm sm:text-base font-bold">
                 <tr>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">Statusi</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-left">Përshkrimi</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden sm:table-cell">Për</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{t('tasks.status')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-left">{t('tasks.description')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden sm:table-cell">{t('tasks.assignedTo')}</th>
                   <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden lg:table-cell">Site</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">Prioriteti</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">Afati</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{t('tasks.priority')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{t('tasks.dueDate')}</th>
                   <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden lg:table-cell">Nga</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden md:table-cell">Data</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">Veprime</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden md:table-cell">{t('tasks.dateCreated')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{t('tasks.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -790,14 +790,14 @@ export default function Tasks() {
                               ? "bg-yellow-100 text-yellow-700 border border-yellow-200" 
                               : "bg-green-100 text-green-700 border border-green-200"
                           }`}>
-                            {t.status === "ongoing" ? "🕒 Në vazhdim" : "✅ Përfunduar"}
+                            {t.status === "ongoing" ? `🕒 ${t('tasks.ongoing')}` : `✅ ${t('tasks.completedStatus')}`}
                           </span>
                           {t.status === "ongoing" && (
                             <button
                               onClick={() => handleStatusChange(t.id, "completed")}
                               className="px-2 sm:px-3 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all transform hover:scale-105"
                             >
-                              ✅ Përfundo
+                              ✅ {t('tasks.finish')}
                             </button>
                           )}
                         </div>
@@ -820,7 +820,7 @@ export default function Tasks() {
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle">
                         <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(t.priority)}`}>
-                          {getPriorityIcon(t.priority)} {t.priority === 'high' ? 'I Lartë' : t.priority === 'medium' ? 'Mesatar' : 'I Ulët'}
+                          {getPriorityIcon(t.priority)} {t.priority === 'high' ? t('tasks.high') : t.priority === 'medium' ? t('tasks.medium') : t('tasks.low')}
                         </span>
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle">
@@ -831,7 +831,7 @@ export default function Tasks() {
                               : "bg-green-100 text-green-700 border border-green-200"
                           }`}>
                             {format(new Date(t.due_date), "dd/MM/yyyy")}
-                            {isOverdue && <div className="text-xs">⚠️ Me vonesë!</div>}
+                            {isOverdue && <div className="text-xs">⚠️ {t('tasks.overdueWarningShort')}</div>}
                           </div>
                         ) : (
                           <span className="text-gray-500">-</span>
@@ -865,7 +865,7 @@ export default function Tasks() {
             {/* Në Vazhdim */}
             <div className="bg-yellow-50 rounded-xl p-3 sm:p-4 border border-yellow-200">
               <h4 className="text-base sm:text-lg font-bold text-yellow-800 mb-3 sm:mb-4 flex items-center gap-2">
-                🕒 Në Vazhdim
+                🕒 {t('tasks.inProgress')}
                 <span className="bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full text-xs sm:text-sm">
                   {filteredAndSortedTasks.filter(t => t.status === "ongoing").length}
                 </span>
@@ -887,17 +887,17 @@ export default function Tasks() {
                         {t.due_date && (
                           <div className={new Date(t.due_date) < new Date() ? "text-red-600 font-semibold" : ""}>
                             ⏰ {format(new Date(t.due_date), "dd/MM/yyyy")}
-                            {new Date(t.due_date) < new Date() && " ⚠️ Me vonesë!"}
-                          </div>
-                        )}
+                                                    {new Date(t.due_date) < new Date() && ` ⚠️ ${t('tasks.overdueWarningShort')}`}
                       </div>
-                      <div className="flex gap-2 mt-3">
-                        <button
-                          onClick={() => handleStatusChange(t.id, "completed")}
-                          className="flex-1 px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all"
-                        >
-                          ✅ Përfundo
-                        </button>
+                    )}
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={() => handleStatusChange(t.id, "completed")}
+                      className="flex-1 px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all"
+                    >
+                      ✅ {t('tasks.finish')}
+                    </button>
                         <button
                           onClick={() => handleDelete(t.id)}
                           className="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold hover:bg-red-600 transition-all"
@@ -913,7 +913,7 @@ export default function Tasks() {
             {/* Përfunduar */}
             <div className="bg-green-50 rounded-xl p-3 sm:p-4 border border-green-200">
               <h4 className="text-base sm:text-lg font-bold text-green-800 mb-3 sm:mb-4 flex items-center gap-2">
-                ✅ Përfunduar
+                ✅ {t('tasks.completedStatus')}
                 <span className="bg-green-200 text-green-800 px-2 py-1 rounded-full text-xs sm:text-sm">
                   {filteredAndSortedTasks.filter(t => t.status === "completed").length}
                 </span>
@@ -950,7 +950,7 @@ export default function Tasks() {
             {/* Me Vonesë */}
             <div className="bg-red-50 rounded-xl p-3 sm:p-4 border border-red-200">
               <h4 className="text-base sm:text-lg font-bold text-red-800 mb-3 sm:mb-4 flex items-center gap-2">
-                ⚠️ Me Vonesë
+                ⚠️ {t('tasks.overdue')}
                 <span className="bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs sm:text-sm">
                   {filteredAndSortedTasks.filter(t => 
                     t.due_date && new Date(t.due_date) < new Date() && t.status !== "completed"
@@ -972,7 +972,7 @@ export default function Tasks() {
                         <div>👤 {getEmployeeName(t.assigned_to)}</div>
                         {t.site_name && <div>🏗️ {t.site_name}</div>}
                         <div className="font-semibold">
-                          ⏰ {format(new Date(t.due_date), "dd/MM/yyyy")} ⚠️ Me vonesë!
+                          ⏰ {format(new Date(t.due_date), "dd/MM/yyyy")} ⚠️ {t('tasks.overdueWarningShort')}
                         </div>
                       </div>
                       <div className="flex gap-2 mt-3">
@@ -980,7 +980,7 @@ export default function Tasks() {
                           onClick={() => handleStatusChange(t.id, "completed")}
                           className="flex-1 px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all"
                         >
-                          ✅ Përfundo
+                          ✅ {t('tasks.finish')}
                         </button>
                         <button
                           onClick={() => handleDelete(t.id)}

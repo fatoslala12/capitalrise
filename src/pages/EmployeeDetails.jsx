@@ -549,31 +549,31 @@ export default function EmployeeDetails() {
   };
 
   // Funksion për export PDF
-  function exportProfileToPDF() {
+  const exportProfileToPDF = () => {
     const doc = new jsPDF();
-    doc.text(`Profili i punonjësit: ${first_name} ${last_name}`, 10, 10);
-    doc.text(`Email: ${employee?.email || ''}`, 10, 20);
-    doc.text(`NID: ${nid || ''}`, 10, 30);
-    doc.text(`Vendbanimi: ${residence || ''}`, 10, 40);
-    doc.text(`Paga/Orë: £${hourly_rate || ''}`, 10, 50);
-    doc.text(`Vendet e punës: ${workplace?.join(', ') || ''}`, 10, 60);
-    doc.text(`Kualifikimi: ${qualification || ''}`, 10, 70);
+    doc.text(`${t('employeeDetails.employeeProfile')}: ${first_name} ${last_name}`, 10, 10);
+    doc.text(`${t('employeeDetails.email')}: ${employee?.email || ''}`, 10, 20);
+    doc.text(`${t('employeeDetails.nationalId')}: ${nid || ''}`, 10, 30);
+    doc.text(`${t('employeeDetails.residence')}: ${residence || ''}`, 10, 40);
+    doc.text(`${t('employeeDetails.hourlyRate')}: £${hourly_rate || ''}`, 10, 50);
+    doc.text(`${t('employeeDetails.workplaces')}: ${workplace?.join(', ') || ''}`, 10, 60);
+    doc.text(`${t('employeeDetails.qualification')}: ${qualification || ''}`, 10, 70);
     doc.text('---', 10, 80);
-    doc.text('Historiku i orëve të punës:', 10, 90);
+    doc.text(`${t('employeeDetails.workHoursHistory')}:`, 10, 90);
     let y = 100;
     Object.entries(workHistory).forEach(([weekLabel, days]) => {
       doc.text(`${weekLabel}:`, 10, y);
       y += 7;
       Object.values(days).forEach(val => {
         if (val && val.hours > 0 && val.site) {
-          doc.text(`  ${val.site}: ${val.hours} orë`, 12, y);
+          doc.text(`  ${val.site}: ${val.hours} ${t('workHours.hours')}`, 12, y);
           y += 7;
         }
       });
       y += 2;
     });
     doc.save(`profili_${first_name}_${last_name}.pdf`);
-  }
+  };
 
   // Funksion për ruajtjen e komenteve të javës
   const saveWeekNote = async (weekLabel, note) => {
@@ -586,7 +586,7 @@ export default function EmployeeDetails() {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      showToast("Komenti u ruajt me sukses!", "success");
+      showToast(t('employeeDetails.commentSavedSuccess'), "success");
       // Rifresko komentet pas ruajtjes
       const res = await axios.get(`https://capitalrise-cwcq.onrender.com/api/work-hours/notes/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -594,7 +594,7 @@ export default function EmployeeDetails() {
       setWeekNotes(res.data || {});
     } catch (error) {
       console.error('Error saving note:', error);
-      showToast("Gabim gjatë ruajtjes së komentit!", "error");
+      showToast(t('employeeDetails.commentSaveError'), "error");
     } finally {
       setSubmittingNote(null);
     }
@@ -618,7 +618,7 @@ export default function EmployeeDetails() {
   // Funksion për export PDF të gjithë faqes
   async function exportFullPageToPDF() {
     try {
-      showToast("Duke krijuar raportin...", "info");
+      showToast(t('employeeDetails.creatingReport'), "info");
       
       // Krijo një div të përkohshëm për export
       const exportDiv = document.createElement('div');
@@ -692,11 +692,11 @@ export default function EmployeeDetails() {
       
       // Pastro
       document.body.removeChild(exportDiv);
-      showToast("Raporti u eksportua me sukses!", "success");
+      showToast(t('employeeDetails.reportExportedSuccess'), "success");
       
     } catch (error) {
       console.error('Export error:', error);
-      showToast("Gabim gjatë eksportit!", "error");
+      showToast(t('employeeDetails.exportError'), "error");
     }
   }
 
@@ -792,9 +792,9 @@ export default function EmployeeDetails() {
                           headers: { Authorization: `Bearer ${token}` }
                         });
                         setEmployee(prev => ({ ...prev, photo: reader.result }));
-                        showToast("Fotoja u ndryshua me sukses!", "success");
+                        showToast(t('employeeDetails.photoChangedSuccess'), "success");
                       } catch {
-                        showToast("Gabim gjatë ndryshimit të fotos!", "error");
+                        showToast(t('employeeDetails.photoChangeError'), "error");
                       }
                     };
                     reader.readAsDataURL(file);
@@ -1191,7 +1191,7 @@ export default function EmployeeDetails() {
         <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
           <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 {t('employeeDetailsExtended.workHoursHistory')}</h3>
           <div className="overflow-x-auto">
-            <EmployeeWorkHistory workHistory={workHistory} paidStatus={paidStatus} employee={employee} />
+                            <EmployeeWorkHistory workHistory={workHistory} paidStatus={paidStatus} employee={employee} t={t} />
           </div>
         </div>
 
@@ -1483,7 +1483,7 @@ export default function EmployeeDetails() {
   );
 }
 
-function EmployeeWorkHistory({ workHistory, paidStatus, employee }) {
+function EmployeeWorkHistory({ workHistory, paidStatus, employee, t }) {
   const weeks = Object.entries(workHistory); // [[weekLabel, {E hënë: {...}, ...}], ...]
   if (!weeks.length) {
     return <p className="text-sm text-gray-500 italic">Nuk ka orë të regjistruara për këtë punonjës.</p>;
