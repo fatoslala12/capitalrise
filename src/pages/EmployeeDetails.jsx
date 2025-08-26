@@ -1472,7 +1472,7 @@ export default function EmployeeDetails() {
                   onClick={() => navigate('/tasks')}
                   className="mt-4 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow hover:from-blue-200 hover:to-purple-200 transition-all duration-300 text-sm md:text-base border border-blue-200"
                 >
-                  📋 Shiko të gjitha detyrat
+                  📋 {t('employeeDetailsExtended.viewAllTasks')}
                 </button>
               </div>
             )}
@@ -1493,12 +1493,12 @@ function EmployeeWorkHistory({ workHistory, paidStatus, employee }) {
     <table className="w-full text-sm md:text-base border bg-white rounded-xl shadow min-w-[600px]">
       <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100">
         <tr>
-          <th className="p-2 border text-xs md:text-sm">Java</th>
-          <th className="p-2 border text-xs md:text-sm">Total Orë</th>
-          <th className="p-2 border text-xs md:text-sm">Bruto (£)</th>
-          <th className="p-2 border text-xs md:text-sm">Neto (£)</th>
-          <th className="p-2 border text-xs md:text-sm">Sipas Site-ve</th>
-          <th className="p-2 border text-xs md:text-sm">Statusi</th>
+          <th className="p-2 border text-xs md:text-sm">{t('employeeDetailsExtended.week')}</th>
+          <th className="p-2 border text-xs md:text-sm">{t('employeeDetailsExtended.totalHours')}</th>
+          <th className="p-2 border text-xs md:text-sm">{t('employeeDetailsExtended.gross')} (£)</th>
+          <th className="p-2 border text-xs md:text-sm">{t('employeeDetailsExtended.net')} (£)</th>
+          <th className="p-2 border text-xs md:text-sm">{t('employeeDetailsExtended.bySite')}</th>
+          <th className="p-2 border text-xs md:text-sm">{t('employeeDetailsExtended.status')}</th>
         </tr>
       </thead>
       <tbody>
@@ -1529,7 +1529,7 @@ function EmployeeWorkHistory({ workHistory, paidStatus, employee }) {
               <td className="p-2 border text-xs md:text-sm">{siteBreakdown}</td>
               <td className="p-2 border">
                 <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold shadow-md ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
-                  {isPaid ? "Paguar" : "Pa paguar"}
+                  {isPaid ? t('employeeDetailsExtended.paid') : t('employeeDetails.unpaid')}
                 </span>
               </td>
             </tr>
