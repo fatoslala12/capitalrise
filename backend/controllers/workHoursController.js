@@ -1957,6 +1957,27 @@ exports.bulkUpdateWorkHours = async (req, res) => {
         contract_id = contractRes.rows[0]?.id || null;
       }
       
+      // Get employee info for rate and label type
+      const empInfo = await client.query(
+        `SELECT hourly_rate, label_type FROM employees WHERE id = $1`,
+        [employeeId]
+      );
+      
+      let employeeRate = rate || 15; // Use provided rate or default
+      let labelType = 'UTR'; // default
+      
+      if (empInfo.rows.length > 0) {
+        if (!rate) {
+          employeeRate = Number(empInfo.rows[0].hourly_rate || 15);
+        }
+        labelType = empInfo.rows[0].label_type || 'UTR';
+      }
+      
+      // Calculate amounts
+      const hoursNum = parseFloat(hours || 0);
+      const grossAmount = hoursNum * employeeRate;
+      const netAmount = labelType === 'NI' ? grossAmount * 0.70 : grossAmount * 0.80;
+      
       // Check if entry exists
       const check = await client.query(
         `SELECT id FROM work_hours WHERE employee_id = $1 AND date = $2`,
@@ -1964,17 +1985,19 @@ exports.bulkUpdateWorkHours = async (req, res) => {
       );
       
       if (check.rows.length > 0) {
-        // Update existing entry
+        // Update existing entry with amounts
         await client.query(
-          `UPDATE work_hours SET hours = $1, site = $2, rate = $3, contract_id = $4, updated_at = NOW() WHERE id = $5`,
-          [hours, site || null, rate, contract_id, check.rows[0].id]
+          `UPDATE work_hours SET hours = $1, site = $2, rate = $3, contract_id = $4, 
+           gross_amount = $5, net_amount = $6, employee_type = $7, updated_at = NOW() WHERE id = $8`,
+          [hours, site || null, employeeRate, contract_id, grossAmount, netAmount, labelType, check.rows[0].id]
         );
       } else {
-        // Insert new entry
+        // Insert new entry with amounts
         await client.query(
-          `INSERT INTO work_hours (employee_id, date, hours, site, rate, contract_id, created_at, updated_at) 
-           VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
-          [employeeId, dateStr, hours, site || null, rate, contract_id]
+          `INSERT INTO work_hours (employee_id, date, hours, site, rate, contract_id, 
+           gross_amount, net_amount, employee_type, created_at, updated_at) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())`,
+          [employeeId, dateStr, hours, site || null, employeeRate, contract_id, grossAmount, netAmount, labelType]
         );
       }
     }
@@ -1987,5 +2010,53 @@ exports.bulkUpdateWorkHours = async (req, res) => {
     res.status(500).json({ error: err.message });
   } finally {
     client.release();
+  }
+};
+
+// Fix existing work hours that have 0.00 amounts
+exports.fixWorkHoursAmounts = async (req, res) => {
+  try {
+    console.log('[DEBUG] Starting to fix work hours amounts...');
+    
+    // Get all work hours that have 0.00 amounts or missing amounts
+    const workHoursToFix = await pool.query(`
+      SELECT wh.id, wh.employee_id, wh.hours, wh.rate, wh.gross_amount, wh.net_amount,
+             e.hourly_rate, e.label_type
+      FROM work_hours wh
+      LEFT JOIN employees e ON wh.employee_id = e.id
+      WHERE (wh.gross_amount = 0 OR wh.gross_amount IS NULL OR wh.net_amount = 0 OR wh.net_amount IS NULL)
+        AND wh.hours > 0
+    `);
+    
+    console.log(`[DEBUG] Found ${workHoursToFix.rows.length} work hours entries to fix`);
+    
+    let fixedCount = 0;
+    for (const row of workHoursToFix.rows) {
+      const hours = parseFloat(row.hours || 0);
+      const rate = parseFloat(row.rate || row.hourly_rate || 15);
+      const labelType = row.label_type || 'UTR';
+      
+      const grossAmount = hours * rate;
+      const netAmount = labelType === 'NI' ? grossAmount * 0.70 : grossAmount * 0.80;
+      
+      await pool.query(`
+        UPDATE work_hours 
+        SET gross_amount = $1, net_amount = $2, employee_type = $3, updated_at = NOW()
+        WHERE id = $4
+      `, [grossAmount, netAmount, labelType, row.id]);
+      
+      fixedCount++;
+      console.log(`[DEBUG] Fixed work hours ID ${row.id}: ${hours}h × £${rate} = £${grossAmount} gross, £${netAmount} net`);
+    }
+    
+    console.log(`[DEBUG] Fixed ${fixedCount} work hours entries`);
+    res.json({ 
+      message: `Fixed ${fixedCount} work hours entries`, 
+      fixedCount 
+    });
+    
+  } catch (err) {
+    console.error('[ERROR] Failed to fix work hours amounts:', err);
+    res.status(500).json({ error: err.message });
   }
 };
