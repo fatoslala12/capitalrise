@@ -492,46 +492,48 @@ exports.getPaidStatus = async (req, res) => {
 exports.setPaidStatus = async (req, res) => {
   const { week, employeeId, paid } = req.body;
   console.log('[DEBUG] setPaidStatus called by:', req.user);
+  console.log('[DEBUG] setPaidStatus params:', { week, employeeId, paid });
   try {
     // Calculate gross and net amounts from work hours for this week
     let grossAmount = 0;
     let netAmount = 0;
     
-    if (paid) {
-      // Get week start and end dates
-      const [weekStart, weekEnd] = week.split(' - ');
-      
-      // Get all work hours for this employee and week with amounts
-      const workHoursRes = await pool.query(`
-        SELECT 
-          wh.hours, 
-          wh.rate as work_rate,
-          e.hourly_rate, 
-          COALESCE(e.label_type, 'UTR') as employee_type,
-          COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
-          COALESCE(wh.net_amount, 
-            CASE 
-              WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
-              THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
-              ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
-            END
-          ) as net_amount
-        FROM work_hours wh
-        LEFT JOIN employees e ON wh.employee_id = e.id
-        WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3
-      `, [employeeId, weekStart, weekEnd]);
-      
-      // Sum up all amounts for the week
-      grossAmount = workHoursRes.rows.reduce((sum, row) => {
-        return sum + parseFloat(row.gross_amount || 0);
-      }, 0);
-      
-      netAmount = workHoursRes.rows.reduce((sum, row) => {
-        return sum + parseFloat(row.net_amount || 0);
-      }, 0);
-      
-      console.log(`[DEBUG] Calculated amounts for employee ${employeeId}, week ${week}: £${grossAmount} gross, £${netAmount} net`);
-    }
+    // Get week start and end dates
+    const [weekStart, weekEnd] = week.split(' - ');
+    console.log('[DEBUG] Week dates:', { weekStart, weekEnd });
+    
+    // Get all work hours for this employee and week with amounts
+    const workHoursRes = await pool.query(`
+      SELECT 
+        wh.hours, 
+        wh.rate as work_rate,
+        e.hourly_rate, 
+        COALESCE(e.label_type, 'UTR') as employee_type,
+        COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
+        COALESCE(wh.net_amount, 
+          CASE 
+            WHEN COALESCE(e.label_type, 'UTR') = 'NI' 
+            THEN (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.70
+            ELSE (wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) * 0.80
+          END
+        ) as net_amount
+      FROM work_hours wh
+      LEFT JOIN employees e ON wh.employee_id = e.id
+      WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3
+    `, [employeeId, weekStart, weekEnd]);
+    
+    console.log('[DEBUG] Work hours query result:', workHoursRes.rows);
+    
+    // Sum up all amounts for the week
+    grossAmount = workHoursRes.rows.reduce((sum, row) => {
+      return sum + parseFloat(row.gross_amount || 0);
+    }, 0);
+    
+    netAmount = workHoursRes.rows.reduce((sum, row) => {
+      return sum + parseFloat(row.net_amount || 0);
+    }, 0);
+    
+    console.log(`[DEBUG] Calculated amounts for employee ${employeeId}, week ${week}: £${grossAmount} gross, £${netAmount} net`);
 
     // Check if payment exists
     const check = await pool.query(
@@ -539,20 +541,27 @@ exports.setPaidStatus = async (req, res) => {
       [employeeId, week]
     );
     
+    console.log('[DEBUG] Payment check result:', check.rows);
+    
     if (check.rows.length > 0) {
       // Update with amounts
+      console.log('[DEBUG] Updating existing payment with amounts:', { paid, grossAmount, netAmount, employeeId, week });
       await pool.query(
         `UPDATE payments SET is_paid = $1, gross_amount = $2, net_amount = $3, updated_at = NOW() WHERE employee_id = $4 AND week_label = $5`,
         [paid, grossAmount, netAmount, employeeId, week]
       );
+      console.log('[DEBUG] Payment updated successfully');
     } else {
       // Insert with amounts
+      console.log('[DEBUG] Creating new payment with amounts:', { employeeId, week, paid, grossAmount, netAmount });
       await pool.query(
         `INSERT INTO payments (employee_id, week_label, is_paid, gross_amount, net_amount, created_at, updated_at) 
          VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
         [employeeId, week, paid, grossAmount, netAmount]
       );
+      console.log('[DEBUG] Payment created successfully');
     }
+    
     // Dërgo notifications kur pagesa bëhet
     if (paid) {
       try {
@@ -613,8 +622,11 @@ exports.setPaidStatus = async (req, res) => {
         // Mos ndal procesin kryesor për shkak të gabimit të njoftimit
       }
     }
-    res.json({ success: true });
+    
+    console.log('[DEBUG] setPaidStatus completed successfully');
+    res.json({ success: true, grossAmount, netAmount });
   } catch (err) {
+    console.error('[ERROR] setPaidStatus failed:', err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -1716,6 +1728,8 @@ exports.getWeekNotes = async (req, res) => {
 exports.updatePaymentStatus = async (req, res) => {
   const { updates } = req.body;
   
+  console.log('[DEBUG] updatePaymentStatus called with updates:', updates);
+  
   if (!updates || !Array.isArray(updates)) {
     return res.status(400).json({ error: 'Updates array is required' });
   }
@@ -1727,14 +1741,20 @@ exports.updatePaymentStatus = async (req, res) => {
     for (const update of updates) {
       const { employeeId, week, paid } = update;
       
+      console.log(`[DEBUG] Processing update for employee ${employeeId}, week ${week}, paid ${paid}`);
+      
       // Kontrollo nëse ekziston pagesa për këtë javë
       const checkPay = await client.query(
         `SELECT id, gross_amount, net_amount FROM payments WHERE employee_id = $1 AND week_label = $2`,
         [employeeId, week]
       );
       
+      console.log(`[DEBUG] Payment check result for employee ${employeeId}, week ${week}:`, checkPay.rows);
+      
       // Gjej të gjitha orët e punës për këtë punonjës dhe javë
       const [weekStart, weekEnd] = week.split(' - ');
+      
+      console.log(`[DEBUG] Week dates for employee ${employeeId}:`, { weekStart, weekEnd });
       
       // Check if work_hours has amount columns
       let hasAmountColumns = false;
@@ -1744,8 +1764,10 @@ exports.updatePaymentStatus = async (req, res) => {
           WHERE table_name = 'work_hours' AND column_name IN ('gross_amount', 'net_amount')
         `);
         hasAmountColumns = columnCheck.rows.length >= 2;
+        console.log(`[DEBUG] Has amount columns:`, hasAmountColumns);
       } catch (e) {
         hasAmountColumns = false;
+        console.log(`[DEBUG] Column check failed:`, e.message);
       }
 
       let workHoursRes;
@@ -1788,6 +1810,8 @@ exports.updatePaymentStatus = async (req, res) => {
         `, [employeeId, weekStart, weekEnd]);
       }
       
+      console.log(`[DEBUG] Work hours query result for employee ${employeeId}:`, workHoursRes.rows);
+      
       // Calculate total amounts from work hours
       let gross_amount = 0;
       let net_amount = 0;
@@ -1807,20 +1831,25 @@ exports.updatePaymentStatus = async (req, res) => {
       
       if (checkPay.rows.length > 0) {
         // Përditëso pagesën ekzistuese
+        console.log(`[DEBUG] Updating existing payment for employee ${employeeId}, week ${week} with amounts:`, { paid, gross_amount, net_amount });
         await client.query(
           `UPDATE payments SET is_paid = $1, gross_amount = $2, net_amount = $3, updated_at = NOW() WHERE employee_id = $4 AND week_label = $5`,
           [paid, gross_amount, net_amount, employeeId, week]
         );
+        console.log(`[DEBUG] Payment updated successfully for employee ${employeeId}, week ${week}`);
       } else {
         // Krijo pagesë të re
+        console.log(`[DEBUG] Creating new payment for employee ${employeeId}, week ${week} with amounts:`, { paid, gross_amount, net_amount });
         await client.query(
           `INSERT INTO payments (employee_id, week_label, is_paid, gross_amount, net_amount, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
           [employeeId, week, paid, gross_amount, net_amount]
         );
+        console.log(`[DEBUG] Payment created successfully for employee ${employeeId}, week ${week}`);
       }
     }
     
     await client.query('COMMIT');
+    console.log('[DEBUG] updatePaymentStatus completed successfully');
     res.json({ message: 'Payment status updated successfully' });
   } catch (err) {
     await client.query('ROLLBACK');
