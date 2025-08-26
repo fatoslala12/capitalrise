@@ -502,12 +502,27 @@ exports.setPaidStatus = async (req, res) => {
     const [weekStart, weekEnd] = week.split(' - ');
     console.log('[DEBUG] Week dates:', { weekStart, weekEnd });
     
+    // First, let's check if there are any work hours for this employee and week
+    const workHoursCheck = await pool.query(`
+      SELECT COUNT(*) as total_records, 
+             SUM(hours) as total_hours,
+             MIN(date) as first_date,
+             MAX(date) as last_date
+      FROM work_hours 
+      WHERE employee_id = $1 AND date >= $2 AND date <= $3
+    `, [employeeId, weekStart, weekEnd]);
+    
+    console.log('[DEBUG] Work hours summary:', workHoursCheck.rows[0]);
+    
     // Get all work hours for this employee and week with amounts
     const workHoursRes = await pool.query(`
       SELECT 
+        wh.id,
+        wh.date,
         wh.hours, 
         wh.rate as work_rate,
         e.hourly_rate, 
+        e.label_type,
         COALESCE(e.label_type, 'UTR') as employee_type,
         COALESCE(wh.gross_amount, wh.hours * COALESCE(wh.rate, e.hourly_rate, 15)) as gross_amount,
         COALESCE(wh.net_amount, 
@@ -520,24 +535,60 @@ exports.setPaidStatus = async (req, res) => {
       FROM work_hours wh
       LEFT JOIN employees e ON wh.employee_id = e.id
       WHERE wh.employee_id = $1 AND wh.date >= $2 AND wh.date <= $3
+      ORDER BY wh.date
     `, [employeeId, weekStart, weekEnd]);
     
     console.log('[DEBUG] Work hours query result:', workHoursRes.rows);
     
+    // Let's also check the employee details
+    const employeeCheck = await pool.query(`
+      SELECT id, first_name, last_name, hourly_rate, label_type
+      FROM employees 
+      WHERE id = $1
+    `, [employeeId]);
+    
+    console.log('[DEBUG] Employee details:', employeeCheck.rows[0]);
+    
+    // If no work hours found, let's check if we should create default values
+    if (workHoursRes.rows.length === 0) {
+      console.log('[DEBUG] No work hours found for this week, checking if we should create default values');
+      
+      // Check if there are any work hours for this employee at all
+      const anyWorkHours = await pool.query(`
+        SELECT COUNT(*) as total
+        FROM work_hours 
+        WHERE employee_id = $1
+      `, [employeeId]);
+      
+      console.log('[DEBUG] Total work hours for this employee:', anyWorkHours.rows[0]);
+      
+      if (anyWorkHours.rows[0].total > 0) {
+        // Employee has work hours but not for this week - this might be normal
+        console.log('[DEBUG] Employee has work hours but not for this specific week');
+      } else {
+        // Employee has no work hours at all - this might indicate a problem
+        console.log('[DEBUG] Employee has no work hours at all - this might be a problem');
+      }
+    }
+    
     // Sum up all amounts for the week
     grossAmount = workHoursRes.rows.reduce((sum, row) => {
-      return sum + parseFloat(row.gross_amount || 0);
+      const rowGross = parseFloat(row.gross_amount || 0);
+      console.log(`[DEBUG] Row ${row.date}: hours=${row.hours}, rate=${row.work_rate}, hourly_rate=${row.hourly_rate}, label_type=${row.label_type}, gross_amount=${row.gross_amount}, calculated_gross=${rowGross}`);
+      return sum + rowGross;
     }, 0);
     
     netAmount = workHoursRes.rows.reduce((sum, row) => {
-      return sum + parseFloat(row.net_amount || 0);
+      const rowNet = parseFloat(row.net_amount || 0);
+      console.log(`[DEBUG] Row ${row.date}: net_amount=${row.net_amount}, calculated_net=${rowNet}`);
+      return sum + rowNet;
     }, 0);
     
-    console.log(`[DEBUG] Calculated amounts for employee ${employeeId}, week ${week}: £${grossAmount} gross, £${netAmount} net`);
+    console.log(`[DEBUG] Final calculated amounts for employee ${employeeId}, week ${week}: £${grossAmount} gross, £${netAmount} net`);
 
     // Check if payment exists
     const check = await pool.query(
-      `SELECT id FROM payments WHERE employee_id = $1 AND week_label = $2`,
+      `SELECT id, gross_amount, net_amount, is_paid FROM payments WHERE employee_id = $1 AND week_label = $2`,
       [employeeId, week]
     );
     
@@ -546,21 +597,28 @@ exports.setPaidStatus = async (req, res) => {
     if (check.rows.length > 0) {
       // Update with amounts
       console.log('[DEBUG] Updating existing payment with amounts:', { paid, grossAmount, netAmount, employeeId, week });
-      await pool.query(
-        `UPDATE payments SET is_paid = $1, gross_amount = $2, net_amount = $3, updated_at = NOW() WHERE employee_id = $4 AND week_label = $5`,
+      const updateResult = await pool.query(
+        `UPDATE payments SET is_paid = $1, gross_amount = $2, net_amount = $3, updated_at = NOW() WHERE employee_id = $4 AND week_label = $5 RETURNING *`,
         [paid, grossAmount, netAmount, employeeId, week]
       );
-      console.log('[DEBUG] Payment updated successfully');
+      console.log('[DEBUG] Payment updated successfully:', updateResult.rows[0]);
     } else {
       // Insert with amounts
       console.log('[DEBUG] Creating new payment with amounts:', { employeeId, week, paid, grossAmount, netAmount });
-      await pool.query(
+      const insertResult = await pool.query(
         `INSERT INTO payments (employee_id, week_label, is_paid, gross_amount, net_amount, created_at, updated_at) 
-         VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
+         VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING *`,
         [employeeId, week, paid, grossAmount, netAmount]
       );
-      console.log('[DEBUG] Payment created successfully');
+      console.log('[DEBUG] Payment created successfully:', insertResult.rows[0]);
     }
+    
+    // Let's verify the payment was saved correctly
+    const verifyPayment = await pool.query(
+      `SELECT * FROM payments WHERE employee_id = $1 AND week_label = $2`,
+      [employeeId, week]
+    );
+    console.log('[DEBUG] Payment verification after save:', verifyPayment.rows[0]);
     
     // Dërgo notifications kur pagesa bëhet
     if (paid) {
