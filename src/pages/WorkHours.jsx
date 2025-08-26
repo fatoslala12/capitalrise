@@ -144,7 +144,7 @@ export default function WorkHours() {
         
         if (isAdmin) {
           // ADMIN: shfaq të gjithë punonjësit aktivë
-          const activeEmps = emps.filter(emp => emp.status !== 'Pasiv');
+          const activeEmps = emps.filter(emp =>             emp.status !== t('workHours.passive'));
           console.log('[DEBUG] Admin user - setting active employees:', activeEmps.length, 'of', emps.length);
           setEmployees(activeEmps);
           return;
@@ -207,7 +207,7 @@ export default function WorkHours() {
           // Filtro punonjësit që punojnë në site-t e menaxherit (vetëm aktivë)
           const filteredEmps = emps.filter(emp => {
             // Filtro punonjësit e pasiv (përveç menaxherit)
-            if (String(emp.id) !== String(user.employee_id) && emp.status === 'Pasiv') {
+            if (String(emp.id) !== String(user.employee_id) &&             emp.status === t('workHours.passive')) {
               console.log(`Excluding inactive employee: ${emp.first_name} ${emp.last_name} (Status: ${emp.status})`);
               return false;
             }
@@ -318,8 +318,8 @@ export default function WorkHours() {
       if (!map[site].some(e => e.id === emp.id)) map[site].push(emp);
     };
     (employees || []).forEach(e => {
-      const sites = Array.isArray(e.workplace) && e.workplace.length ? e.workplace : ['(Pa site)'];
-      sites.forEach(s => add(s || '(Pa site)', e)); // siguri
+                  const sites = Array.isArray(e.workplace) && e.workplace.length ? e.workplace : [t('workHours.noSite')];
+            sites.forEach(s => add(s || t('workHours.noSite'), e)); // siguri
     });
     return map;
   }, [employees]);
@@ -409,11 +409,11 @@ export default function WorkHours() {
         }
       }
       
-      showToast("Të dhënat u ruajtën me sukses!", "success");
+      showToast(t('workHours.dataSavedSuccess'), "success");
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {
       console.error("Error saving data:", error);
-      showToast("Gabim gjatë ruajtjes së të dhënave!", "error");
+              showToast(t('workHours.saveError'), "error");
       setSaved(false);
     }
   };
@@ -437,7 +437,7 @@ export default function WorkHours() {
             </div>
           </div>
           <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
-            Duke ngarkuar orët e punës...
+            {t('workHours.loadingMessage')}
           </h2>
         </div>
       </div>
@@ -467,15 +467,15 @@ export default function WorkHours() {
               </svg>
             </div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
-              {isManager ? "Menaxhimi i Orëve të Punës" : 
-               isAdmin ? "Paneli i Administrimit të Orëve" : 
-               "Orët e Mia të Punës"}
+              {isManager ? t('workHours.managementTitle') : 
+               isAdmin ? t('workHours.adminPanelTitle') : 
+               t('workHours.myWorkHoursTitle')}
             </h1>
           </div>
           <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4">
-            {isManager ? "Menaxhoni orët e punës të ekipit tuaj dhe kontrolloni progresin javor" : 
-             isAdmin ? "Administroni të gjitha orët e punës dhe statuset e pagesave" : 
-             "Shikoni orët tuaja të punës dhe progresin javor"}
+            {isManager ? t('workHours.managementSubtitle') : 
+             isAdmin ? t('workHours.adminSubtitle') : 
+             t('workHours.userSubtitle')}
           </p>
         </div>
 
@@ -489,7 +489,7 @@ export default function WorkHours() {
                 </svg>
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
-                Përmbledhje e Orëve të Punës
+                {t('workHours.title')} - {t('workHours.week')}
               </h2>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -497,7 +497,7 @@ export default function WorkHours() {
                 <div className="text-xl sm:text-2xl font-bold">
                   {employees.length}
                 </div>
-                <div className="text-xs sm:text-sm opacity-90 font-medium">Punonjës</div>
+                <div className="text-xs sm:text-sm opacity-90 font-medium">{t('workHours.employee')}</div>
               </div>
               
               <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
@@ -518,7 +518,7 @@ export default function WorkHours() {
                     }
                   })()}
                 </div>
-                <div className="text-xs sm:text-sm opacity-90 font-medium">Total Orë</div>
+                <div className="text-xs sm:text-sm opacity-90 font-medium">{t('workHours.total')} {t('workHours.hours')}</div>
               </div>
               
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
