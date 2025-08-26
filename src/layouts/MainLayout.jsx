@@ -6,6 +6,7 @@ import NotificationBell from "../components/NotificationBell";
 import api from "../api";
 // import Button from "../components/ui/Button";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import LanguageTest from "../components/LanguageTest";
 
 const adminMenu = [
   { path: "/admin/dashboard", label: "🏠 Dashboard" },
@@ -167,6 +168,7 @@ export default function MainLayout() {
         {/* Main Content */}
         <main className="flex-1 bg-gray-50 overflow-auto w-full">
           <Outlet />
+          <LanguageTest />
         </main>
       </div>
     </div>

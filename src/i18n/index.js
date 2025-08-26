@@ -23,7 +23,11 @@ i18n
     interpolation: {
       escapeValue: false
     },
-    debug: process.env.NODE_ENV === 'development'
+    debug: true // Always enable debug for now
+  }).then(() => {
+    console.log('🌐 i18n initialized with language:', i18n.language);
+    console.log('🌐 Available languages:', Object.keys(resources));
+    console.log('🌐 Current language from localStorage:', localStorage.getItem('language'));
   });
 
 export default i18n;

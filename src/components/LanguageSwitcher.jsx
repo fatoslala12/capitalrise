@@ -6,9 +6,16 @@ const LanguageSwitcher = ({ className = '' }) => {
   const { currentLanguage, toggleLanguage, isAlbanian, isEnglish } = useLanguage();
   const { t } = useTranslation();
 
+  console.log('🔤 LanguageSwitcher render:', { currentLanguage, isAlbanian, isEnglish });
+
+  const handleClick = () => {
+    console.log('🔤 LanguageSwitcher clicked! Current language:', currentLanguage);
+    toggleLanguage();
+  };
+
   return (
     <button
-      onClick={toggleLanguage}
+      onClick={handleClick}
       className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all duration-300 hover:scale-105 ${
         isAlbanian
           ? 'border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100'
