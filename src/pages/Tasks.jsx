@@ -3,8 +3,10 @@ import { useAuth } from "../context/AuthContext";
 import { format } from "date-fns";
 import axios from "axios";
 import toast from 'react-hot-toast';
+import { useTranslation } from "react-i18next";
 
 export default function Tasks() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [contracts, setContracts] = useState([]);
