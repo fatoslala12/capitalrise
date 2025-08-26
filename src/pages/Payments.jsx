@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaCalendarAlt, FaMapMarkerAlt, FaHashtag, FaBuilding } from "react-icons/fa";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 export default function Payments() {
+  const { t } = useTranslation();
   const [contracts, setContracts] = useState([]);
   const [filterStatus, setFilterStatus] = useState("All");
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export default function Payments() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar pagesat...</h2>
+          <h2 className="text-xl font-semibold text-gray-700">{t('payments.loadingMessage')}</h2>
         </div>
       </div>
     );
@@ -39,23 +41,23 @@ export default function Payments() {
     <div className="max-w-full xl:max-w-[90vw] mx-auto px-2 py-4 md:py-8 min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100">
       <div className="bg-gradient-to-br from-purple-100 via-white to-blue-100 rounded-xl md:rounded-3xl shadow-2xl border border-blue-100 p-4 md:p-8 lg:p-12 mb-8 md:mb-12 animate-fade-in">
         <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-6 md:mb-8 text-center drop-shadow-lg flex items-center justify-center gap-2 md:gap-3">
-          <span className="text-3xl md:text-4xl lg:text-5xl">💳</span> Pagesat & Kontratat
+          <span className="text-3xl md:text-4xl lg:text-5xl">💳</span> {t('payments.title')}
         </h2>
         {/* Filtri i statusit */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-2 md:gap-4 mb-6 md:mb-10">
-          <label className="text-sm md:text-lg font-semibold text-blue-800">Filtro sipas statusit:</label>
+          <label className="text-sm md:text-lg font-semibold text-blue-800">{t('payments.filterByStatus')}</label>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="border-2 border-blue-200 p-2 md:p-3 rounded-xl shadow focus:ring-2 focus:ring-blue-300 text-sm md:text-lg text-blue-800 bg-white/80"
           >
-            <option value="All">Të gjitha kontratat</option>
-            <option value="Draft">Draft</option>
-            <option value="Anulluar">Anulluar</option>
-            <option value="Ne progres">Ne progres</option>
-            <option value="Pezulluar">Pezulluar</option>
-            <option value="Mbyllur">Mbyllur</option>
-            <option value="Mbyllur me vonese">Mbyllur me vonese</option>
+            <option value="All">{t('payments.allContracts')}</option>
+            <option value="Draft">{t('payments.draft')}</option>
+            <option value="Anulluar">{t('payments.cancelled')}</option>
+            <option value="Ne progres">{t('payments.inProgress')}</option>
+            <option value="Pezulluar">{t('payments.suspended')}</option>
+            <option value="Mbyllur">{t('payments.closed')}</option>
+            <option value="Mbyllur me vonese">{t('payments.closedWithDelay')}</option>
           </select>
         </div>
         {/* Lista e pagesave/kontratave */}
@@ -89,8 +91,8 @@ export default function Payments() {
               </div>
               <div className="space-y-2 text-blue-900 text-sm md:text-base lg:text-lg">
                 <p className="flex items-center gap-2 font-bold"><FaMapMarkerAlt className="text-blue-400" /> {c.site_name}</p>
-                <p className="flex items-center gap-2"><FaCalendarAlt className="text-blue-400" /> Fillimi: {c.start_date ? new Date(c.start_date).toLocaleDateString() : '-'}</p>
-                <p className="flex items-center gap-2"><FaCalendarAlt className="text-blue-400" /> Fundi: {c.finish_date ? new Date(c.finish_date).toLocaleDateString() : '-'}</p>
+                <p className="flex items-center gap-2"><FaCalendarAlt className="text-blue-400" /> {t('payments.start')}: {c.start_date ? new Date(c.start_date).toLocaleDateString() : '-'}</p>
+                <p className="flex items-center gap-2"><FaCalendarAlt className="text-blue-400" /> {t('payments.end')}: {c.finish_date ? new Date(c.finish_date).toLocaleDateString() : '-'}</p>
               </div>
             </Link>
           ))}

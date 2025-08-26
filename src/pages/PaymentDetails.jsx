@@ -97,7 +97,7 @@ export default function PaymentDetails() {
         
       } catch (error) {
         console.error("Error fetching payment details:", error);
-        setError("Gabim gjatë ngarkimit të të dhënave. Ju lutem provoni përsëri.");
+        setError(t('paymentDetails.loadingError'));
         setContract(null);
         setWorkHours({});
         setEmployees([]);
@@ -156,7 +156,7 @@ export default function PaymentDetails() {
     }
 
     if (!newExpenseInvoice.gross || parseFloat(newExpenseInvoice.gross) <= 0) {
-      alert("Ju lutem plotësoni shumën bruto!");
+              alert(t('paymentDetails.fillGrossAmount'));
       return;
     }
 
@@ -235,7 +235,7 @@ export default function PaymentDetails() {
 
   // Fshi shpenzim nga backend
   const handleDelete = async (id) => {
-    if (!confirm("Jeni i sigurt që doni të fshini këtë shpenzim?")) {
+          if (!confirm(t('paymentDetails.deleteExpenseConfirm'))) {
       return;
     }
 
@@ -251,10 +251,10 @@ export default function PaymentDetails() {
       );
       console.log('Faturat pas fshirjes:', res.data);
       setExpensesInvoices(Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []));
-      alert("Shpenzimi u fshi me sukses!");
+              alert(t('paymentDetails.expenseDeletedSuccess'));
     } catch (error) {
       console.error('Error deleting expense:', error);
-      alert("Gabim gjatë fshirjes: " + (error.response?.data?.error || error.message));
+              alert(t('paymentDetails.deleteError') + " " + (error.response?.data?.error || error.message));
     }
   };
 
@@ -273,10 +273,10 @@ export default function PaymentDetails() {
       );
       console.log('Faturat pas ndryshimit të statusit:', res.data);
       setExpensesInvoices(Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []));
-      alert("Statusi i pagesës u ndryshua me sukses!");
+              alert(t('paymentDetails.paymentStatusChangedSuccess'));
     } catch (error) {
       console.error('Error toggling payment status:', error);
-      alert("Gabim gjatë ndryshimit të statusit të pagesës: " + (error.response?.data?.error || error.message));
+              alert(t('paymentDetails.statusChangeError') + " " + (error.response?.data?.error || error.message));
     }
   };
 
