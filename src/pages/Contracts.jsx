@@ -137,30 +137,30 @@ export default function Contracts() {
     const errors = {};
     
     if (!newContract.company.trim()) {
-      errors.company = "Emri i kompanisë është i detyrueshëm";
+      errors.company = t('contracts.validation.companyRequired');
     }
     
     if (!newContract.contract_value || isNaN(newContract.contract_value) || parseFloat(newContract.contract_value) <= 0) {
-      errors.contract_value = "Vlera e kontratës duhet të jetë një numër pozitiv";
+      errors.contract_value = t('contracts.validation.valuePositive');
     }
     
     if (!newContract.site_name.trim()) {
-      errors.site_name = "Vendodhja është e detyrueshme";
+      errors.site_name = t('contracts.validation.locationRequired');
     }
     
     if (!newContract.start_date) {
-      errors.start_date = "Data e fillimit është e detyrueshme";
+      errors.start_date = t('contracts.validation.startDateRequired');
     }
     
     if (!newContract.finish_date) {
-      errors.finish_date = "Data e mbarimit është e detyrueshme";
+      errors.finish_date = t('contracts.validation.endDateRequired');
     }
     
     if (newContract.start_date && newContract.finish_date) {
       const startDate = new Date(newContract.start_date);
       const finishDate = new Date(newContract.finish_date);
       if (startDate >= finishDate) {
-        errors.finish_date = "Data e mbarimit duhet të jetë pas datës së fillimit";
+        errors.finish_date = t('contracts.validation.endDateAfterStart');
       }
     }
     
@@ -318,7 +318,7 @@ export default function Contracts() {
       const res = await api.put(`/api/contracts/${contract.id}`, contract);
       updated[contractIndex] = res.data;
       setContracts(updated);
-      showToastMessage("Statusi i kontratës u ndryshua me sukses!");
+              showToastMessage(t('contracts.statusChangedSuccess'));
     } catch (err) {
       console.error("Error updating contract status:", err);
       showToastMessage("Gabim gjatë ndryshimit të statusit!", "error");
@@ -500,7 +500,7 @@ export default function Contracts() {
 
   const handleBulkDelete = async () => {
     if (selectedContracts.length === 0) {
-      toast.error('Zgjidh kontratat për fshirje!');
+              toast.error(t('contracts.selectContractsForDeletion'));
       return;
     }
     
@@ -553,14 +553,14 @@ export default function Contracts() {
       return {
         'ID': contract.id,
         'Emri i Kontratës': contract.company,
-        'Vendodhja': contract.site_name,
-        'Vlera (£)': contract.contract_value,
-        'Data e Fillimit': contract.start_date,
-        'Data e Mbarimit': contract.finish_date,
+        [t('contracts.exportHeaders.location')]: contract.site_name,
+        [t('contracts.exportHeaders.value')]: contract.contract_value,
+        [t('contracts.exportHeaders.startDate')]: contract.start_date,
+        [t('contracts.exportHeaders.endDate')]: contract.finish_date,
         'Statusi': contract.status,
         'Adresa': contract.address,
-        'Shpenzuar (£)': totalSpent.toFixed(2),
-        'Fitimi (£)': profit.toFixed(2)
+        [t('contracts.exportHeaders.spent')]: totalSpent.toFixed(2),
+        [t('contracts.exportHeaders.profit')]: profit.toFixed(2)
       };
     }));
     
@@ -875,7 +875,7 @@ export default function Contracts() {
                 onClick={confirmDialog.onCancel}
                 className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
-                Anulo
+                {t('contracts.cancel')}
               </button>
               <button
                 onClick={confirmDialog.onConfirm}
@@ -896,8 +896,8 @@ export default function Contracts() {
           </svg>
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Menaxhimi i Kontratave</h2>
-          <div className="text-lg font-medium text-purple-700">Shto, shiko dhe menaxho kontratat</div>
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('contracts.title')}</h2>
+          <div className="text-lg font-medium text-purple-700">{t('contracts.subtitle')}</div>
         </div>
       </div>
 
@@ -907,7 +907,7 @@ export default function Contracts() {
           onClick={openAddModal}
           className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
         >
-          <span className="text-xl">➕</span> Shto Kontratë të Re
+          <span className="text-xl">➕</span> {t('contracts.addNewContract')}
         </button>
       </div>
 
@@ -915,7 +915,7 @@ export default function Contracts() {
       <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 px-8 py-6 rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold text-blue-900 flex items-center gap-2">
-            📋 Lista e Kontratave
+            📋 {t('contracts.contractsList')}
             <span className="text-lg text-gray-600">({filteredAndSortedContracts.length} kontrata)</span>
           </h3>
           
@@ -927,7 +927,7 @@ export default function Contracts() {
                 onChange={handleSelectAll}
                 className="w-4 h-4"
               />
-              Zgjidh të gjitha
+              {t('contracts.selectAll')}
             </label>
             {selectedContracts.length > 0 && (
               <>
@@ -985,7 +985,7 @@ export default function Contracts() {
           <div className="md:col-span-2">
             <input
               type="text"
-              placeholder="🔍 Kërko kontrata..."
+              placeholder={t('contracts.searchContracts')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
@@ -998,7 +998,7 @@ export default function Contracts() {
               onChange={(e) => setFilterStatus(e.target.value)}
               className="w-full p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 shadow-sm"
             >
-              <option value="all">Të gjitha statuset</option>
+                              <option value="all">{t('contracts.allStatuses')}</option>
               <option value="Draft">Draft</option>
               <option value="Anulluar">Anulluar</option>
               <option value="Ne progres">Ne progres</option>
@@ -1014,7 +1014,7 @@ export default function Contracts() {
               onChange={(e) => setFilterContractType(e.target.value)}
               className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
             >
-              <option value="all">Të gjitha tipet</option>
+                              <option value="all">{t('contracts.allTypes')}</option>
               <option value="day_work">Day Work</option>
               <option value="price_work">Price Work</option>
             </select>
@@ -1030,12 +1030,12 @@ export default function Contracts() {
               }}
               className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
             >
-              <option value="start_date-desc">Data e fillimit (më e reja)</option>
-              <option value="start_date-asc">Data e fillimit (më e vjetra)</option>
-              <option value="contract_value-desc">Vlera (më e larta)</option>
-              <option value="contract_value-asc">Vlera (më e ulët)</option>
-              <option value="company-asc">Kompania (A-Z)</option>
-              <option value="company-desc">Kompania (Z-A)</option>
+                              <option value="start_date-desc">{t('contracts.startDateNewest')}</option>
+                <option value="start_date-asc">{t('contracts.startDateOldest')}</option>
+                <option value="contract_value-desc">{t('contracts.valueHighest')}</option>
+                <option value="contract_value-asc">{t('contracts.valueLowest')}</option>
+                <option value="company-asc">{t('contracts.companyAZ')}</option>
+                <option value="company-desc">{t('contracts.companyZA')}</option>
             </select>
           </div>
         </div>
@@ -1043,7 +1043,7 @@ export default function Contracts() {
         {/* Pagination */}
         <div className="flex items-center justify-between mb-4">
           <div className="text-sm text-gray-600">
-            Shfaq {((currentPage - 1) * 10) + 1} - {Math.min(currentPage * 10, filteredAndSortedContracts.length)} nga {filteredAndSortedContracts.length} kontrata
+            {t('contracts.showing')} {((currentPage - 1) * 10) + 1} - {Math.min(currentPage * 10, filteredAndSortedContracts.length)} {t('contracts.of')} {filteredAndSortedContracts.length} {t('contracts.contracts')}
           </div>
           
           <div className="flex gap-2">
@@ -1052,7 +1052,7 @@ export default function Contracts() {
               disabled={currentPage === 1}
               className="px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50"
             >
-              ← Para
+                              ← {t('contracts.previous')}
             </button>
             <span className="px-3 py-1 bg-blue-500 text-white rounded">
               {currentPage}
@@ -1062,7 +1062,7 @@ export default function Contracts() {
               disabled={currentPage >= Math.ceil(filteredAndSortedContracts.length / 10)}
               className="px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50"
             >
-              Pas →
+                              {t('contracts.next')} →
             </button>
           </div>
         </div>
@@ -1071,14 +1071,14 @@ export default function Contracts() {
           <table className="min-w-full bg-white rounded-lg shadow-lg overflow-hidden">
             <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-base font-bold">
               <tr>
-                <th className="py-4 px-4 text-center">Zgjidh</th>
-                <th className="py-4 px-4 text-center">Nr. Kontratës</th>
-                <th className="py-4 px-4 text-center">Tipi</th>
-                <th className="py-4 px-4 text-center">Vendodhja</th>
-                <th className="py-4 px-4 text-center">Kompania</th>
-                <th className="py-4 px-4 text-center">Vlera</th>
-                <th className="py-4 px-4 text-center">Shpenzuar</th>
-                <th className="py-4 px-4 text-center">Fitimi</th>
+                                    <th className="py-4 px-4 text-center">{t('contracts.select')}</th>
+                    <th className="py-4 px-4 text-center">{t('contracts.contractNumberHeader')}</th>
+                    <th className="py-4 px-4 text-center">{t('contracts.type')}</th>
+                    <th className="py-4 px-4 text-center">{t('contracts.locationHeader')}</th>
+                    <th className="py-4 px-4 text-center">{t('contracts.company')}</th>
+                    <th className="py-4 px-4 text-center">{t('contracts.value')}</th>
+                    <th className="py-4 px-4 text-center">{t('contracts.spent')}</th>
+                    <th className="py-4 px-4 text-center">{t('contracts.profit')}</th>
                 <th className="py-4 px-4 text-center">Statusi</th>
                 <th className="py-4 px-4 text-center">Progresi</th>
                 <th className="py-4 px-4 text-center">Veprime</th>
@@ -1215,7 +1215,7 @@ export default function Contracts() {
               <div className="flex justify-between items-center mb-4 sm:mb-6">
                 <h3 className="text-lg sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
                   <span className="text-xl sm:text-3xl">➕</span> 
-                  <span className="hidden sm:inline">Shto Kontratë të Re</span>
+                  <span className="hidden sm:inline">{t('contracts.addNewContract')}</span>
                   <span className="sm:hidden">Kontratë e Re</span>
                 </h3>
                 <button
@@ -1231,14 +1231,14 @@ export default function Contracts() {
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border border-blue-200">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Numri i Kontratës</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.contractNumber')}</label>
                       <div className="flex items-center p-3 bg-blue-100 rounded-lg border-2 border-blue-300">
                         <span className="text-2xl mr-2">📋</span>
                         <span className="text-xl font-bold text-blue-800">#{newContract.contract_number}</span>
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Lloji i Kontratës</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.contractType')}</label>
                       <select 
                         name="contract_type" 
                         value={newContract.contract_type} 
@@ -1255,14 +1255,14 @@ export default function Contracts() {
                 {/* Company Information Section */}
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <span className="text-xl">🏢</span> Të dhënat e Kompanisë
+                    <span className="text-xl">🏢</span> {t('contracts.companyData')}
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Emri i Kompanisë *</label>
+                                              <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.companyName')} *</label>
                       <input 
                         name="company" 
-                        placeholder="Emri i Kompanisë" 
+                                                  placeholder={t('contracts.companyName')} 
                         value={newContract.company} 
                         onChange={handleChange} 
                         className={`w-full p-3 border-2 rounded-lg text-base focus:ring-2 transition-all shadow-sm ${
@@ -1273,10 +1273,10 @@ export default function Contracts() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Email i Kompanisë</label>
+                                              <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.companyEmail')}</label>
                       <input 
                         name="company_email" 
-                        placeholder="Email i Kompanisë" 
+                                                  placeholder={t('contracts.companyEmail')} 
                         value={newContract.company_email} 
                         onChange={handleChange} 
                         type="email"
@@ -1289,14 +1289,14 @@ export default function Contracts() {
                 {/* Project Information Section */}
                 <div className="bg-green-50 p-4 rounded-xl border border-green-200">
                   <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <span className="text-xl">🏗️</span> Të dhënat e Projektit
+                    <span className="text-xl">🏗️</span> {t('contracts.projectData')}
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Vendodhja *</label>
+                                              <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.location')} *</label>
                       <input 
                         name="site_name" 
-                        placeholder="Vendodhja e projektit" 
+                                                  placeholder={t('contracts.location')} 
                         value={newContract.site_name} 
                         onChange={handleChange} 
                         className={`w-full p-3 border-2 rounded-lg text-base focus:ring-2 transition-all shadow-sm ${
@@ -1307,10 +1307,10 @@ export default function Contracts() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Adresa e Detajuar</label>
+                                              <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.detailedAddress')}</label>
                       <input 
                         name="address" 
-                        placeholder="Adresa e plotë e projektit" 
+                                                  placeholder={t('contracts.detailedAddress')} 
                         value={newContract.address} 
                         onChange={handleChange} 
                         className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-green-200 focus:border-green-400 transition-all shadow-sm"
@@ -1318,10 +1318,10 @@ export default function Contracts() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Vlera e Kontratës (£) *</label>
+                                              <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.contractValue')} *</label>
                       <input 
                         name="contract_value" 
-                        placeholder="Vlera e Kontratës (£)" 
+                                                  placeholder={t('contracts.contractValue')} 
                         value={newContract.contract_value} 
                         onChange={handleChange} 
                         type="number"
@@ -1335,7 +1335,7 @@ export default function Contracts() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Statusi i Kontratës</label>
+                                              <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.contractStatus')}</label>
                       <select 
                         name="status" 
                         value={newContract.status} 
@@ -1356,11 +1356,11 @@ export default function Contracts() {
                 {/* Timeline Section */}
                 <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
                   <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <span className="text-xl">📅</span> Kohëzgjatja e Projektit
+                    <span className="text-xl">📅</span> {t('contracts.projectDuration')}
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Data e Fillimit *</label>
+                                              <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.startDate')} *</label>
                       <input 
                         type="date" 
                         name="start_date" 
@@ -1374,7 +1374,7 @@ export default function Contracts() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Data e Mbarimit *</label>
+                                              <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.endDate')} *</label>
                       <input 
                         type="date" 
                         name="finish_date" 
@@ -1405,7 +1405,7 @@ export default function Contracts() {
                     ) : (
                       <>
                         <span className="text-xl">💾</span> 
-                        <span className="hidden sm:inline">Shto Kontratë</span>
+                        <span className="hidden sm:inline">{t('contracts.addContract')}</span>
                         <span className="sm:hidden">Shto</span>
                       </>
                     )}
@@ -1417,7 +1417,7 @@ export default function Contracts() {
                     className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 justify-center"
                   >
                     <span className="text-xl">✕</span> 
-                    <span className="hidden sm:inline">Anulo</span>
+                    <span className="hidden sm:inline">{t('contracts.cancel')}</span>
                     <span className="sm:hidden">Mbyll</span>
                   </button>
                 </div>
