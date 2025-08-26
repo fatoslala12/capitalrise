@@ -1048,20 +1048,20 @@ export default function EmployeeDetails() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-base mb-8">
-                    <p><span className="font-bold">📧 Email:</span> {employee?.email || user?.email || <span className="italic text-gray-400">N/A</span>}</p>
-                    <p><span className="font-bold">📞 Tel:</span> {phone || <span className="italic text-gray-400">N/A</span>}</p>
-                    <p><span className="font-bold">🆔 NID:</span> {nid || <span className="italic text-gray-400">N/A</span>}</p>
-                    <p><span className="font-bold">🎂 Data lindjes:</span> {formatDate(dob)}</p>
-                    <p><span className="font-bold">🏠 Vendbanimi:</span> {residence || <span className="italic text-gray-400">N/A</span>}</p>
-                    <p><span className="font-bold">💷 Paga/Orë:</span>
+                            <p><span className="font-bold">📧 {t('employeeDetailsExtended.email')}:</span> {employee?.email || user?.email || <span className="italic text-gray-400">N/A</span>}</p>
+        <p><span className="font-bold">📞 {t('employeeDetailsExtended.phone')}:</span> {phone || <span className="italic text-gray-400">N/A</span>}</p>
+        <p><span className="font-bold">🆔 {t('employeeDetailsExtended.nationalId')}:</span> {nid || <span className="italic text-gray-400">N/A</span>}</p>
+        <p><span className="font-bold">🎂 {t('employeeDetailsExtended.dateOfBirth')}:</span> {formatDate(dob)}</p>
+        <p><span className="font-bold">🏠 {t('employeeDetailsExtended.residence')}:</span> {residence || <span className="italic text-gray-400">N/A</span>}</p>
+        <p><span className="font-bold">💷 {t('employeeDetailsExtended.hourlyRate')}:</span>
                       <span className="text-green-700 font-bold">
                         £{hourly_rate && !isNaN(Number(hourly_rate)) ? Number(hourly_rate).toFixed(2) : "0.00"}
                       </span>
                     </p>
-                    <p><span className="font-bold">🏢 Vendet e punës:</span> {workplace?.join(", ") || <span className="italic text-gray-400">N/A</span>}</p>
-                    <p><span className="font-bold">👨‍👩‍👧 Next of Kin:</span> {next_of_kin || <span className="italic text-gray-400">N/A</span>}</p>
-                    <p><span className="font-bold">👨‍👩‍👧 Next of Kin Tel:</span> {next_of_kin_phone || <span className="italic text-gray-400">N/A</span>}</p>
-                    <p><span className="font-bold">🎓 Kualifikimi:</span> {qualification || <span className="italic text-gray-400">N/A</span>}</p>
+                            <p><span className="font-bold">🏢 {t('employeeDetailsExtended.workplaces')}:</span> {workplace?.join(", ") || <span className="italic text-gray-400">N/A</span>}</p>
+        <p><span className="font-bold">👨‍👩‍👧 {t('employeeDetailsExtended.nextOfKin')}:</span> {next_of_kin || <span className="italic text-gray-400">N/A</span>}</p>
+        <p><span className="font-bold">👨‍👩‍👧 {t('employeeDetailsExtended.nextOfKinPhone')}:</span> {next_of_kin_phone || <span className="italic text-gray-400">N/A</span>}</p>
+        <p><span className="font-bold">🎓 {t('employeeDetailsExtended.qualification')}:</span> {qualification || <span className="italic text-gray-400">N/A</span>}</p>
                 </div>
               )}
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-6 mt-4 sm:mt-6 lg:mt-10">
@@ -1100,14 +1100,14 @@ export default function EmployeeDetails() {
                   className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold text-sm sm:text-base lg:text-lg shadow hover:from-red-200 hover:to-pink-200 transition disabled:opacity-50 disabled:cursor-not-allowed border border-red-200"
                   title={!user ? t('employeeDetails.employeeNoAccount') : t('employeeDetails.resetPassword')}
                 >
-                  🔒 Reset Password
+                  🔒 {t('employeeDetailsExtended.resetPassword')}
                 </button>
                 <button
                   onClick={() => nextEmployee && navigate(`/admin/employee/${nextEmployee.id}`)}
                   className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-sm sm:text-base lg:text-lg disabled:opacity-50 border border-green-200"
                   disabled={!nextEmployee}
                 >
-                  Next ➡️
+                  {t('employeeDetailsExtended.next')} ➡️
                 </button>
                 <button
                   onClick={() => {
@@ -1115,7 +1115,7 @@ export default function EmployeeDetails() {
                   }}
                   className="bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold shadow hover:from-yellow-200 hover:to-orange-200 transition text-sm sm:text-base lg:text-lg border border-yellow-200"
                 >
-                  📊 Export Raport i Plotë
+                  📊 {t('employeeDetailsExtended.exportFullReport')}
                 </button>
               </div>
             </div>
@@ -1123,26 +1123,26 @@ export default function EmployeeDetails() {
         </div>
 
         <div className="bg-white/80 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl border border-blue-100 p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-10">
-          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-blue-800 mb-3 sm:mb-4 flex items-center gap-2">📄 Dokumentet</h3>
+          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-blue-800 mb-3 sm:mb-4 flex items-center gap-2">📄 {t('employeeDetailsExtended.documents')}</h3>
           <div className="flex flex-col md:flex-row flex-wrap gap-2 sm:gap-3 lg:gap-4 mb-3 sm:mb-4 items-center">
             <input
               type="text"
               value={searchDoc}
               onChange={e => setSearchDoc(e.target.value)}
-              placeholder="Kërko dokument..."
+              placeholder={t('employeeDetailsExtended.searchDocument')}
               className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl border-2 border-blue-200 w-full md:w-auto text-sm sm:text-base"
             />
             <button
               onClick={exportProfileToPDF}
               className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold shadow hover:from-purple-200 hover:to-blue-200 transition text-xs sm:text-sm lg:text-base border border-purple-200"
             >
-              ⬇️ Export PDF
+              ⬇️ {t('employeeDetailsExtended.exportPDF')}
             </button>
             <button
               onClick={downloadAllDocsZip}
               className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-xs sm:text-sm lg:text-base border border-green-200"
             >
-              ⬇️ Shkarko të gjitha
+              ⬇️ {t('employeeDetailsExtended.downloadAll')}
             </button>
           </div>
           <input type="file" onChange={handleDocumentUpload} className="mb-4 w-full" />
@@ -1189,7 +1189,7 @@ export default function EmployeeDetails() {
         </div>
 
         <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
-          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 Historiku i Orëve të Punës</h3>
+          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 {t('employeeDetailsExtended.workHoursHistory')}</h3>
           <div className="overflow-x-auto">
             <EmployeeWorkHistory workHistory={workHistory} paidStatus={paidStatus} employee={employee} />
           </div>
@@ -1197,11 +1197,11 @@ export default function EmployeeDetails() {
 
         {/* Seksioni i kalendarit të orëve të punës */}
         <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-2xl border-2 border-blue-200 p-4 md:p-8 mb-6 md:mb-10 mt-6 md:mt-10">
-          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📅 Kalendar i Orëve të Punës</h3>
+          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📅 {t('employeeDetailsExtended.workHoursCalendar')}</h3>
           <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 mb-4 items-center">
-            <label className="font-semibold text-blue-700 text-sm md:text-base">Filtro sipas site-it:</label>
+            <label className="font-semibold text-blue-700 text-sm md:text-base">{t('employeeDetailsExtended.filterBySite')}</label>
             <select value={filterSite} onChange={e => setFilterSite(e.target.value)} className="p-2 rounded-xl border-2 border-blue-200 text-sm md:text-base">
-              <option value="">Të gjitha</option>
+              <option value="">{t('employeeDetailsExtended.all')}</option>
               {employeeSites.map(site => (
                 <option key={site} value={site}>{site}</option>
               ))}
@@ -1210,7 +1210,7 @@ export default function EmployeeDetails() {
               onClick={() => exportMonthToCSV()}
               className="ml-auto bg-gradient-to-r from-green-400 to-blue-400 text-white px-4 md:px-6 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-green-600 transition text-sm md:text-base"
             >
-              ⬇️ Export Muaji
+              ⬇️ {t('employeeDetailsExtended.exportMonth')}
             </button>
           </div>
           <Calendar
@@ -1273,7 +1273,7 @@ export default function EmployeeDetails() {
 
         {/* Timeline vertikal poshtë kalendarit */}
         <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10 mt-6 md:mt-10">
-          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 Timeline i Orëve të Punës (Javë)</h3>
+          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 {t('employeeDetailsExtended.workHoursTimeline')}</h3>
           <div className="border-l-4 border-blue-200 pl-4 md:pl-6 space-y-4 md:space-y-8">
             {Object.entries(workHistory).map(([weekLabel, days], idx) => {
               let totalHours = 0;
@@ -1290,7 +1290,7 @@ export default function EmployeeDetails() {
                   <div className="absolute -left-5 md:-left-7 top-2 w-3 h-3 md:w-4 md:h-4 rounded-full border-2" style={{ background: isPaid ? '#bbf7d0' : '#fecaca', borderColor: isPaid ? '#22c55e' : '#ef4444' }}></div>
                   <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 bg-blue-50 rounded-xl p-3 md:p-4 shadow border border-blue-100">
                     <div className="font-bold text-blue-700 text-sm md:text-base min-w-[140px] md:min-w-[160px]">{weekLabel}</div>
-                    <div className="text-base md:text-lg font-semibold">Total orë: <span className="text-blue-900">{totalHours}</span></div>
+                    <div className="text-base md:text-lg font-semibold">{t('employeeDetailsExtended.totalHoursLabel')} <span className="text-blue-900">{totalHours}</span></div>
                     <div className="flex flex-wrap gap-1 md:gap-2 items-center">
                       {Object.entries(siteMap).map(([site, hours]) => (
                         <span key={site} className="px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold shadow border" style={{ background: currentSiteColors[site] || getSiteColor(site), color: '#222' }} title={`Site: ${site}`}>
@@ -1300,7 +1300,7 @@ export default function EmployeeDetails() {
                     </div>
                     <div>
                       <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold shadow-md border ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
-                        {isPaid ? 'Paguar' : 'Pa paguar'}
+                        {isPaid ? t('employeeDetailsExtended.paid') : t('employeeDetails.unpaid')}
                       </span>
                     </div>
                     {/* Koment/notes për këtë javë */}
@@ -1310,7 +1310,7 @@ export default function EmployeeDetails() {
                           type="text"
                           value={weekNotes[weekLabel] || ''}
                           onChange={e => setWeekNotes(prev => ({ ...prev, [weekLabel]: e.target.value }))}
-                          placeholder="Shkruaj koment për këtë javë..."
+                          placeholder={t('employeeDetailsExtended.writeCommentForWeek')}
                           className="p-2 rounded-xl border-2 border-blue-200 text-xs md:text-sm flex-1"
                         />
                         <button
@@ -1334,7 +1334,7 @@ export default function EmployeeDetails() {
 
         {/* Pie chart për ndarjen e orëve sipas site-ve */}
         <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10 mt-6 md:mt-10 flex flex-col items-center">
-          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📊 Ndarja e Orëve sipas Site-ve</h3>
+          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📊 {t('employeeDetailsExtended.hoursDistributionBySite')}</h3>
           <div className="w-full max-w-sm md:max-w-md">
             <Pie data={pieData} options={{
               plugins: {
@@ -1355,30 +1355,30 @@ export default function EmployeeDetails() {
 
         {/* Seksioni i Detyrave */}
         <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-8 mb-6 md:mb-10 mt-6 md:mt-10">
-          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📋 Detyrat e Mia</h3>
+          <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📋 {t('employeeDetailsExtended.myTasks')}</h3>
           
           {/* Filtra për detyrat */}
           <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 mb-4 md:mb-6 items-center">
-            <label className="font-semibold text-blue-700 text-sm md:text-lg">Filtro sipas statusit:</label>
+            <label className="font-semibold text-blue-700 text-sm md:text-lg">{t('employeeDetailsExtended.filterByStatus')}</label>
             <select 
               value={taskStatusFilter} 
               onChange={e => setTaskStatusFilter(e.target.value)} 
               className="p-2 md:p-3 rounded-xl border-2 border-blue-200 text-sm md:text-lg"
             >
-              <option value="all">Të gjitha</option>
+              <option value="all">{t('employeeDetailsExtended.all')}</option>
               <option value="pending">⏳ Në pritje</option>
               <option value="in_progress">🔄 Në progres</option>
               <option value="completed">✅ Përfunduar</option>
               <option value="cancelled">❌ Anuluar</option>
             </select>
             
-            <label className="font-semibold text-blue-700 text-sm md:text-lg md:ml-4">Filtro sipas prioritetit:</label>
+            <label className="font-semibold text-blue-700 text-sm md:text-lg md:ml-4">{t('employeeDetailsExtended.filterByPriority')}</label>
             <select 
               value={taskPriorityFilter} 
               onChange={e => setTaskPriorityFilter(e.target.value)} 
               className="p-2 md:p-3 rounded-xl border-2 border-blue-200 text-sm md:text-lg"
             >
-              <option value="all">Të gjitha</option>
+              <option value="all">{t('employeeDetailsExtended.all')}</option>
               <option value="high">🔴 E lartë</option>
               <option value="medium">🟡 Mesatare</option>
               <option value="low">🟢 E ulët</option>
@@ -1399,7 +1399,7 @@ export default function EmployeeDetails() {
                       <div className="flex items-center gap-2">
                         <span className="text-xl md:text-2xl">{getPriorityIcon(task.priority)}</span>
                         <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold border ${getPriorityColor(task.priority)}`}>
-                          {task.priority === 'high' ? 'E lartë' : task.priority === 'medium' ? 'Mesatare' : 'E ulët'}
+                          {task.priority === 'high' ? t('employeeDetails.high') : task.priority === 'medium' ? t('employeeDetailsExtended.medium') : t('employeeDetails.low')}
                         </span>
                       </div>
                       <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold border ${
@@ -1408,9 +1408,9 @@ export default function EmployeeDetails() {
                         task.status === 'cancelled' ? 'bg-red-100 text-red-700 border-red-200' :
                         'bg-yellow-100 text-yellow-700 border-yellow-200'
                       }`}>
-                        {task.status === 'completed' ? '✅ Përfunduar' :
-                         task.status === 'in_progress' ? '🔄 Në progres' :
-                         task.status === 'cancelled' ? '❌ Anuluar' : '⏳ Në pritje'}
+                        {task.status === 'completed' ? `✅ ${t('employeeDetailsExtended.completed')}` :
+                         task.status === 'in_progress' ? `🔄 ${t('employeeDetails.inProgress')}` :
+                         task.status === 'cancelled' ? `❌ ${t('employeeDetails.cancelled')}` : `⏳ ${t('employeeDetails.pending')}`}
                       </span>
                     </div>
 
@@ -1422,13 +1422,13 @@ export default function EmployeeDetails() {
                       <div className="flex flex-col md:flex-row flex-wrap gap-2 md:gap-4 text-sm md:text-base">
                         <span className="flex items-center gap-2">
                           <span className="text-base md:text-lg">📅</span>
-                          <span className="font-semibold">Data:</span>
+                          <span className="font-semibold">{t('employeeDetailsExtended.date')}</span>
                           <span>{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</span>
                         </span>
                         
                         <span className="flex items-center gap-2">
                           <span className="text-base md:text-lg">🏷️</span>
-                          <span className="font-semibold">Kategoria:</span>
+                          <span className="font-semibold">{t('employeeDetailsExtended.category')}</span>
                           <span>{getCategoryName(task.category)}</span>
                         </span>
                         
@@ -1450,13 +1450,13 @@ export default function EmployeeDetails() {
                         onClick={() => navigate(`/tasks/${task.id}`)}
                         className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-200 hover:to-purple-200 transition-all duration-300 text-xs md:text-sm border border-blue-200"
                       >
-                        👁️ Shiko
+                        👁️ {t('employeeDetailsExtended.view')}
                       </button>
                       <button 
                         onClick={() => navigate('/tasks')}
                         className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition-all duration-300 text-xs md:text-sm border border-green-200"
                       >
-                        📋 Të gjitha
+                        📋 {t('employeeDetailsExtended.allTasks')}
                       </button>
                     </div>
                   </div>
