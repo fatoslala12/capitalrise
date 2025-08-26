@@ -153,7 +153,7 @@ function TopContractsBarChart({ contracts }) {
             tick={{ fontSize: 16, fill: "#6d28d9" }}
             width={180}
           />
-          <Tooltip formatter={v => [`£${v.toLocaleString()}`, "Vlera"]} cursor={{ fill: "#f3f4f6" }} />
+          <Tooltip formatter={v => [`£${v.toLocaleString()}`, t('dashboard.value')]} cursor={{ fill: "#f3f4f6" }} />
           <Bar dataKey="value" radius={[8, 8, 8, 8]}>
             {topContracts.map((entry, index) => (
               <Cell key={entry.name} fill={barColors[index % barColors.length]} />
@@ -372,7 +372,7 @@ export default function Dashboard() {
             <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-4 md:p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-xs md:text-sm">Detyrat Aktive</p>
+                  <p className="text-green-100 text-xs md:text-sm">{t('dashboard.tasks')}</p>
                   <p className="text-xl md:text-2xl lg:text-3xl font-bold">
                     {tasks.filter(t => t.assignedTo === user.email && t.status === "ongoing").length}
                   </p>
@@ -409,7 +409,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <span className="text-blue-600">📌</span>
-                Detyrat e Mia
+                {t('dashboard.tasks')}
               </h3>
               <Link
                 to={`/${user.role}/my-tasks`}
@@ -521,8 +521,8 @@ export default function Dashboard() {
                     />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip 
-                      formatter={(value) => [`${value} orë`, 'Orët']}
-                      labelFormatter={(label) => `Java: ${new Date(label).toLocaleDateString('sq-AL')}`}
+                      formatter={(value) => [`${value} ${t('dashboard.hours')}`, t('dashboard.totalHours')]}
+                      labelFormatter={(label) => `${t('dashboard.week')}: ${new Date(label).toLocaleDateString('sq-AL')}`}
                     />
                     <Bar dataKey="hours" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -535,7 +535,7 @@ export default function Dashboard() {
           <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
               <span className="text-emerald-600">💰</span>
-              Pagesat e Fundit
+              {t('dashboard.recentPayments')}
             </h3>
             {(() => {
               // Simuloj pagesat e fundit bazuar në orët e punës
@@ -558,7 +558,7 @@ export default function Dashboard() {
                 return (
                   <div className="text-center py-8">
                     <div className="text-4xl mb-4">💳</div>
-                    <p className="text-gray-500">Nuk ka pagesa të regjistruara</p>
+                    <p className="text-gray-500">{t('dashboard.noPaymentsRecorded')}</p>
                   </div>
                 );
               }
@@ -573,10 +573,10 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <p className="font-semibold text-gray-800">
-                            Java: {new Date(payment.date).toLocaleDateString('sq-AL')}
+                            {t('dashboard.week')}: {new Date(payment.date).toLocaleDateString('sq-AL')}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {payment.hours} orë të punuara
+                            {payment.hours} {t('dashboard.hoursWorked')}
                           </p>
                         </div>
                       </div>
@@ -585,7 +585,7 @@ export default function Dashboard() {
                           £{payment.amount.toFixed(2)}
                         </p>
                         <p className="text-xs text-gray-500">
-                          £{hourlyRate}/orë
+                          £{hourlyRate}{t('dashboard.perHour')}
                         </p>
                       </div>
                     </div>
@@ -599,7 +599,7 @@ export default function Dashboard() {
           <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
               <span className="text-purple-600">🔐</span>
-              Siguria e Llogarisë
+              {t('dashboard.accountSecurity')}
             </h3>
             <ChangePassword />
           </section>
@@ -608,7 +608,7 @@ export default function Dashboard() {
           <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
               <span className="text-cyan-600">⚡</span>
-              Akses i Shpejtë
+              {t('dashboard.quickAccess')}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Link
@@ -616,7 +616,7 @@ export default function Dashboard() {
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:from-blue-100 hover:to-blue-200 transition-all duration-200 group"
               >
                 <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">🕒</div>
-                <span className="text-sm font-semibold text-blue-800 text-center">Orët e Punës</span>
+                <span className="text-sm font-semibold text-blue-800 text-center">{t('dashboard.workHours')}</span>
               </Link>
               
               <Link
@@ -624,7 +624,7 @@ export default function Dashboard() {
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 hover:from-green-100 hover:to-green-200 transition-all duration-200 group"
               >
                 <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">📋</div>
-                <span className="text-sm font-semibold text-green-800 text-center">Detyrat e Mia</span>
+                <span className="text-sm font-semibold text-green-800 text-center">{t('dashboard.tasks')}</span>
               </Link>
               
               <Link
@@ -632,7 +632,7 @@ export default function Dashboard() {
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:from-purple-100 hover:to-purple-200 transition-all duration-200 group"
               >
                 <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">👤</div>
-                <span className="text-sm font-semibold text-purple-800 text-center">Profili Im</span>
+                <span className="text-sm font-semibold text-purple-800 text-center">{t('dashboard.profile')}</span>
               </Link>
               
               <Link
@@ -801,7 +801,7 @@ export default function Dashboard() {
               to={`/${user.role}/my-tasks`}
               className="inline-block mt-3 bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 text-blue-700 text-sm font-medium px-4 py-2 rounded-lg transition-all duration-300 border border-blue-200"
             >
-              ➕ Shiko të gjitha detyrat
+                              ➕ {t('dashboard.tasks')}
             </Link>
           </section>
 
@@ -835,7 +835,7 @@ export default function Dashboard() {
                 className="bg-gradient-to-br from-indigo-100 to-indigo-200 border border-indigo-300 text-indigo-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-indigo-200 hover:to-indigo-300 transition-all duration-300 text-center group"
               >
                 <div className="text-2xl mb-2 text-indigo-600 group-hover:scale-110 transition-transform">👤</div>
-                <div className="font-semibold">Profili Im</div>
+                <div className="font-semibold">{t('dashboard.profile')}</div>
                 <div className="text-sm opacity-80">Shiko dhe edito profilin tuaj</div>
               </Link>
 
