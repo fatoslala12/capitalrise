@@ -480,5 +480,31 @@
     "completed": "E përfunduar",
     "ongoing": "Në vazhdim",
     "cancelled": "E anuluar"
+  },
+  "adminDashboard": {
+    "title": "Paneli i Administrimit",
+    "subtitle": "Statistika, detyra, pagesa dhe më shumë",
+    "tasksTitle": "Detyrat",
+    "filter": "Filtro:",
+    "onlyActive": "Vetëm aktive",
+    "onlyCompleted": "Vetëm të përfunduara",
+    "all": "Të gjitha",
+    "total": "Totali",
+    "completed": "Të përfunduara",
+    "ongoing": "Në vazhdim",
+    "deadline": "Afati:",
+    "by": "Nga:",
+    "hoursBySiteThisWeek": "Ora të punuara këtë javë sipas site-ve",
+    "totalHoursWorked": "Total orë të punuara:",
+    "contractsProgressTitle": "Progresi i kontratave aktive (%)",
+    "topPaidEmployees": "Top 5 punonjësit më të paguar",
+    "paid": "E paguar",
+    "unpaid": "E papaguar",
+    "expensesBySiteTitle": "Shpenzimet (expenses_invoice.gross) + Orët e Punës (work_hours.hours × rate) sipas Site-ve",
+    "calcExplanation": "Shpjegim i llogaritjes:",
+    "calcExpenses": "Shpenzime: Shpenzimet nga tabela expenses_invoice - kolona [gross] sipas site-ve",
+    "calcWorkHours": "Orët e Punës: Orët e punuara × rate nga tabela work_hours - kolona [hours] × kolona [rate]",
+    "calcTotal": "Totali: Shpenzime + Orët e Punës",
+    "unpaidExpensesTitle": "Shpenzimet e Papaguara"
   }
 }

@@ -355,8 +355,8 @@ export default function AdminDashboard() {
         </div>
         <div className="text-center md:text-left">
          
-          <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</div>
-          <div className="text-sm md:text-lg font-medium text-purple-700">Statistika, detyra, pagesa dhe më shumë</div>
+          <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('adminDashboard.title')}</div>
+          <div className="text-sm md:text-lg font-medium text-purple-700">{t('adminDashboard.subtitle')}</div>
         </div>
       </div>
 
@@ -392,19 +392,19 @@ export default function AdminDashboard() {
 
       {/* Detyrat - më të dukshme */}
       <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-xl col-span-full border border-yellow-200">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📋 Detyrat</h3>
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📋 {t('adminDashboard.tasksTitle')}</h3>
         <div className="mb-4 flex flex-col sm:flex-row gap-2 md:gap-4 items-start sm:items-center">
-          <label className="font-medium text-sm md:text-base">Filtro:</label>
+          <label className="font-medium text-sm md:text-base">{t('adminDashboard.filter')}</label>
           <select value={taskFilter} onChange={e => setTaskFilter(e.target.value)} className="border p-2 rounded text-sm md:text-base">
-            <option value="ongoing">Vetëm aktive</option>
-            <option value="completed">Vetëm të përfunduara</option>
-            <option value="all">Të gjitha</option>
+            <option value="ongoing">{t('adminDashboard.onlyActive')}</option>
+            <option value="completed">{t('adminDashboard.onlyCompleted')}</option>
+            <option value="all">{t('adminDashboard.all')}</option>
           </select>
         </div>
         <div className="mb-4 flex flex-col sm:flex-row flex-wrap gap-2 md:gap-6">
-          <div className="bg-blue-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">Totali: {allTasks.length}</div>
-          <div className="bg-green-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">✅ Të përfunduara: {allTasks.filter(t => t.status === 'completed').length}</div>
-          <div className="bg-yellow-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">🕒 Në vazhdim: {allTasks.filter(t => t.status === 'ongoing').length}</div>
+          <div className="bg-blue-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">{t('adminDashboard.total')}: {allTasks.length}</div>
+          <div className="bg-green-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">✅ {t('adminDashboard.completed')}: {allTasks.filter(t => t.status === 'completed').length}</div>
+          <div className="bg-yellow-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">🕒 {t('adminDashboard.ongoing')}: {allTasks.filter(t => t.status === 'ongoing').length}</div>
         </div>
         {filteredTasks.length > 0 ? (
           <ul className="space-y-3">
@@ -413,8 +413,8 @@ export default function AdminDashboard() {
                 <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
                 <span className="font-semibold flex-1 text-sm md:text-lg">{t.description || t.title || ''}</span>
                 <span className="text-sm md:text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
-                <span className="text-sm md:text-lg text-purple-700 font-bold">Afati: {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'Pa afat'}</span>
-                <span className="text-xs text-gray-500">Nga: {t.assigned_by || t.assignedBy || ''}</span>
+                <span className="text-sm md:text-lg text-purple-700 font-bold">{t('adminDashboard.deadline')} {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'N/A'}</span>
+                <span className="text-xs text-gray-500">{t('adminDashboard.by')} {t.assigned_by || t.assignedBy || ''}</span>
               </li>
             ))}
           </ul>
@@ -426,11 +426,11 @@ export default function AdminDashboard() {
       {/* Grafik për site */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
-            📊 Ora të punuara këtë javë sipas site-ve
+            📊 {t('adminDashboard.hoursBySiteThisWeek')}
           </h3>
-        <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
-          Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
-        </div>
+                  <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
+            {t('adminDashboard.totalHoursWorked')} <span className="text-blue-600">{dashboardStats.totalWorkHours}</span>
+          </div>
         {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
             <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
@@ -452,7 +452,7 @@ export default function AdminDashboard() {
 
       {/* Grafik për progresin e kontratave aktive */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 Progresi i kontratave aktive (%)</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 {t('adminDashboard.contractsProgressTitle')}</h3>
         {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
             <BarChart
@@ -492,7 +492,7 @@ export default function AdminDashboard() {
       {/* Top 5 më të paguar */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            🏅 Top 5 punonjësit më të paguar
+            🏅 {t('adminDashboard.topPaidEmployees')}
           </h3>
         {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
@@ -551,7 +551,7 @@ export default function AdminDashboard() {
                       {displayName}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
+                      {e.isPaid ? `✅ ${t('adminDashboard.paid')}` : `⏳ ${t('adminDashboard.unpaid')}`}
                     </p>
                   </div>
                   <div className="text-blue-700 font-extrabold text-xl">£{Number(amount).toFixed(2)}</div>
@@ -569,7 +569,7 @@ export default function AdminDashboard() {
 
       {/* Grafik për shpenzimet sipas site-ve */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 Shpenzimet (expenses_invoice.gross) + Orët e Punës (work_hours.hours × rate) sipas Site-ve</h3>
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 {t('adminDashboard.expensesBySiteTitle')}</h3>
         <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} structuredWorkHours={structuredWorkHours} allPayments={allPayments} />
       </div>
 
@@ -645,7 +645,7 @@ export default function AdminDashboard() {
 
       {/* Shpenzimet e papaguara */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full mb-6 md:mb-8">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 {t('adminDashboard.unpaidExpensesTitle')}</h3>
         {unpaidExpenses.length === 0 ? (
           <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
         ) : (
@@ -946,11 +946,11 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
   return (
     <div>
       <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h4 className="font-semibold text-blue-800 mb-2">📊 Shpjegim i llogaritjes:</h4>
+        <h4 className="font-semibold text-blue-800 mb-2">📊 {t('adminDashboard.calcExplanation')}</h4>
         <div className="text-sm text-blue-700 space-y-1">
-          <p><strong>Shpenzime:</strong> Shpenzimet nga tabela expenses_invoice - kolona [gross] sipas site-ve</p>
-          <p><strong>Orët e Punës:</strong> Orët e punuara × rate nga tabela work_hours - kolona [hours] × kolona [rate]</p>
-          <p><strong>Totali:</strong> Shpenzime + Orët e Punës</p>
+          <p><strong>{t('payments.expenses')}:</strong> {t('adminDashboard.calcExpenses')}</p>
+          <p><strong>{t('workHours.title')}:</strong> {t('adminDashboard.calcWorkHours')}</p>
+          <p><strong>{t('common.total') || 'Total'}:</strong> {t('adminDashboard.calcTotal')}</p>
         </div>
       </div>
       

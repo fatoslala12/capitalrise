@@ -480,5 +480,31 @@
     "completed": "Completed",
     "ongoing": "Ongoing",
     "cancelled": "Cancelled"
+  },
+  "adminDashboard": {
+    "title": "Admin Dashboard",
+    "subtitle": "Statistics, tasks, payments and more",
+    "tasksTitle": "Tasks",
+    "filter": "Filter:",
+    "onlyActive": "Only active",
+    "onlyCompleted": "Only completed",
+    "all": "All",
+    "total": "Total",
+    "completed": "Completed",
+    "ongoing": "Ongoing",
+    "deadline": "Deadline:",
+    "by": "By:",
+    "hoursBySiteThisWeek": "Work hours this week by sites",
+    "totalHoursWorked": "Total hours worked:",
+    "contractsProgressTitle": "Active contracts progress (%)",
+    "topPaidEmployees": "Top 5 highest paid employees",
+    "paid": "Paid",
+    "unpaid": "Unpaid",
+    "expensesBySiteTitle": "Expenses (expenses_invoice.gross) + Work Hours (work_hours.hours × rate) by Sites",
+    "calcExplanation": "Calculation explanation:",
+    "calcExpenses": "Expenses: From expenses_invoice table - [gross] column by site",
+    "calcWorkHours": "Work Hours: Hours × rate from work_hours table - [hours] × [rate]",
+    "calcTotal": "Total: Expenses + Work Hours",
+    "unpaidExpensesTitle": "Unpaid Expenses"
   }
 }
