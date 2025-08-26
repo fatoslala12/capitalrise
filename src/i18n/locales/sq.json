@@ -48,6 +48,7 @@
   "dashboard": {
     "title": "Paneli",
     "topEmployees": "🏆 Top 5 Punonjësit më Produktivë",
+    "topContracts": "💼 Kontratat më të mëdha sipas vlerës",
     "workHours": "Orët e punës",
     "employees": "Punëtorët",
     "contracts": "Kontratat",
@@ -56,7 +57,21 @@
     "tasks": "Detyrat",
     "notifications": "Njoftimet",
     "settings": "Cilësimet",
-    "profile": "Profili im"
+    "profile": "Profili im",
+    "adminDashboard": "Paneli i Administratorit",
+    "totalPaid": "Total i Paguar",
+    "totalProfit": "Totali i Fitimit",
+    "totalWorkHours": "Totali i Orëve të Punës",
+    "paidEmployees": "Punëtorët e Paguar",
+    "employeesWithHours": "Punëtorët me Orë",
+    "hoursThisWeek": "Orët e Kësaj Jave",
+    "grossThisWeek": "Bruto e Kësaj Jave",
+    "ongoingTasks": "Detyrat në Vazhdim",
+    "completedTasks": "Detyrat e Përfunduara",
+    "totalTasks": "Totali i Detyrave",
+    "unpaidExpenses": "Shpenzimet e Papaguara",
+    "weeklyProfit": "Fitimi Javor",
+    "recentPayments": "Pagesat e Fundit"
   },
   "navigation": {
     "home": "Kryesore",

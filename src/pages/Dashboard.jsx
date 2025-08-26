@@ -8,6 +8,7 @@ import DashboardStats from "../components/DashboardStats";
 import api from "../api";
 import axios from "axios";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
+import { useTranslation } from "react-i18next";
 
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
@@ -47,11 +48,12 @@ function getTop5Employees(employees, hourData) {
 }
 
 function EmployeeBarChart({ employees, hourData }) {
+  const { t } = useTranslation();
   const top5 = getTop5Employees(employees, hourData);
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
       <h3 className="text-xl font-bold mb-6 text-blue-800 flex items-center gap-2">
-        <span>🏆</span> Top 5 Punonjësit më Produktivë
+        <span>🏆</span> {t('dashboard.topEmployees')}
       </h3>
       <ResponsiveContainer width="100%" height={320}>
         <BarChart
@@ -108,7 +110,7 @@ function EmployeeBarChart({ employees, hourData }) {
             )}
           />
           <Tooltip
-            formatter={(value) => [`${value} orë`, "Total Orë"]}
+            formatter={(value) => [`${value} ${t('workHours.hours')}`, t('workHours.totalHours')]}
             cursor={{ fill: "#f3f4f6" }}
           />
           <Bar dataKey="totalHours" radius={[8, 8, 8, 8]}>
@@ -123,18 +125,19 @@ function EmployeeBarChart({ employees, hourData }) {
 }
 
 function TopContractsBarChart({ contracts }) {
+  const { t } = useTranslation();
   const topContracts = [...contracts]
     .filter(c => c.contract_value && !isNaN(Number(c.contract_value)))
     .sort((a, b) => Number(b.contract_value) - Number(a.contract_value))
     .slice(0, 5)
     .map(c => ({
-      name: c.site_name || c.company || c.contract_number,
+      name: c.site_name || c.company || c.contract_value,
       value: Number(c.contract_value),
     }));
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
       <h3 className="text-xl font-bold mb-6 text-purple-800 flex items-center gap-2">
-        <span>💼</span> Kontratat më të mëdha sipas vlerës
+        <span>💼</span> {t('dashboard.topContracts')}
       </h3>
       <ResponsiveContainer width="100%" height={320}>
         <BarChart

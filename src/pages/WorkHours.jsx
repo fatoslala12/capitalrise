@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import WorkHoursTable from "../components/WorkHoursTable";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
@@ -54,6 +55,7 @@ const formatDateRange = (startDate) => {
 };
 
 export default function WorkHours() {
+  const { t } = useTranslation();
   const { user, setUser } = useAuth();
   const isManager = user?.role === "manager";
   const isAdmin = user?.role === "admin";

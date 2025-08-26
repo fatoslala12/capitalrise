@@ -10,6 +10,7 @@ import { Container, Grid, Stack } from "../components/ui/Layout";
 import { CountStatCard, MoneyStatCard } from "../components/ui/StatCard";
 import { StatusBadge, PaymentBadge } from "../components/ui/Badge";
 import EmptyState, { NoTasksEmpty } from "../components/ui/EmptyState";
+import { useTranslation } from "react-i18next";
 
 // Global color palette for charts
 const CHART_COLORS = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"];
@@ -33,6 +34,7 @@ function snakeToCamel(obj) {
 }
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
