@@ -7,6 +7,7 @@ import api from "../api";
 // import Button from "../components/ui/Button";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import LanguageTest from "../components/LanguageTest";
+import { useTranslation } from "react-i18next";
 
 const adminMenu = [
   { path: "/admin/dashboard", label: "🏠 Dashboard" },
@@ -42,6 +43,7 @@ export default function MainLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useTranslation();
   // Merr emrin e përdoruesit direkt nga user object me fallback
   const getUserDisplayName = () => {
     if (user?.firstName && user?.lastName) {
@@ -51,6 +53,20 @@ export default function MainLayout() {
     } else {
       return user?.email || '';
     }
+  };
+
+  const translateNavText = (path, fallbackText) => {
+    // Determine translation key based on path suffix
+    if (path.endsWith('/dashboard')) return t('navigation.dashboard');
+    if (path.includes('/employees')) return t('navigation.employees');
+    if (path.includes('/work-hours')) return t('navigation.workHours');
+    if (path.includes('/payments')) return t('navigation.payments');
+    if (path.includes('/contracts')) return t('navigation.contracts');
+    if (path.includes('/tasks')) return t('navigation.tasks');
+    if (path.includes('/reports')) return t('navigation.reports');
+    if (path.includes('/notifications')) return t('navigation.notifications');
+    // Fallback to original provided text if no key found
+    return fallbackText;
   };
 
   let menu = [];
@@ -67,6 +83,8 @@ export default function MainLayout() {
       <nav className="flex-1 px-2 py-4 space-y-2">
         {menu.map((item) => {
           const isActive = location.pathname === item.path;
+          const icon = item.label.split(" ")[0];
+          const translatedText = translateNavText(item.path, item.label.replace(/^[^ ]+ /, ""));
           return (
             <Link
               key={item.path}
@@ -76,8 +94,8 @@ export default function MainLayout() {
                 ${isActive ? "bg-white/20 border-l-4 border-blue-200 shadow text-blue-50" : "hover:bg-blue-700/70 hover:shadow-md hover:scale-[1.02] md:hover:scale-[1.04]"}
               `}
             >
-              <span className="text-lg md:text-xl">{item.label.split(" ")[0]}</span>
-              <span className="ml-1 whitespace-nowrap">{item.label.replace(/^[^ ]+ /, "")}</span>
+              <span className="text-lg md:text-xl">{icon}</span>
+              <span className="ml-1 whitespace-nowrap">{translatedText}</span>
             </Link>
           );
         })}
@@ -138,14 +156,14 @@ export default function MainLayout() {
           {/* Center welcome message */}
           <div className="hidden sm:flex flex-1 justify-center">
             <span className="text-gray-600 font-medium text-sm sm:text-base">
-              Mirë se vini, {getUserDisplayName()}
+              {t('auth.welcome')}, {getUserDisplayName()}
             </span>
           </div>
           
           {/* Mobile welcome message */}
           <div className="sm:hidden flex flex-1 justify-center">
             <span className="text-gray-600 font-medium text-xs">
-              Mirë se vini
+              {t('auth.welcome')}
             </span>
           </div>
           
@@ -159,8 +177,8 @@ export default function MainLayout() {
             >
               <span className="hidden sm:inline">🚪</span>
               <span className="sm:hidden">🚪</span>
-              <span className="hidden sm:inline">Dil</span>
-              <span className="sm:hidden">Dil</span>
+              <span className="hidden sm:inline">{t('navigation.logout')}</span>
+              <span className="sm:hidden">{t('navigation.logout')}</span>
             </button>
           </div>
         </header>
