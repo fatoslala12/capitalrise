@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 const employeePlaceholder = "https://via.placeholder.com/100";
 
@@ -23,6 +24,7 @@ function snakeToCamel(obj) {
 }
 
 export default function EmployeesList() {
+  const { t } = useTranslation();
   const [employees, setEmployees] = useState([]);
   const [siteOptions, setSiteOptions] = useState([]);
   const [contracts, setContracts] = useState([]);
@@ -44,7 +46,7 @@ export default function EmployeesList() {
     phone: "",
     role: "user",
     hourlyRate: "",
-    status: "Aktiv",
+    status: t('employees.active'),
     qualification: "CSS",
     labelType: "UTR",
     photo: employeePlaceholder,
@@ -62,7 +64,7 @@ export default function EmployeesList() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const token = localStorage.getItem("token");
-  if (!user) return <div className="p-4 text-center">Duke u ngarkuar...</div>;
+  if (!user) return <div className="p-4 text-center">{t('common.loading')}</div>;
   const isManager = user?.role === "manager";
   const managerSites = Array.isArray(user?.workplace) ? user.workplace : [];
 

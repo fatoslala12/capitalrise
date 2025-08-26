@@ -9,6 +9,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import NotificationService from '../utils/notifications';
 import { StatusBadge } from "../components/ui/Badge";
+import { useTranslation } from "react-i18next";
 
 // Konstante për statuset e kontratave
 const CONTRACT_STATUSES = [
@@ -21,6 +22,7 @@ const CONTRACT_STATUSES = [
 ];
 
 export default function Contracts() {
+  const { t } = useTranslation();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,7 +43,7 @@ export default function Contracts() {
     address: "",
     company_email: "", // Company email field
     contract_type: "day_work", // Added contract_type field
-    status: "Ne progres",
+    status: t('contracts.inProgress'),
     closed_manually: false,
     closed_date: null,
     documents: []
