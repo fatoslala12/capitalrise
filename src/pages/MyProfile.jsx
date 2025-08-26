@@ -8,9 +8,11 @@ import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { useTranslation } from "react-i18next";
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 export default function MyProfile() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [employee, setEmployee] = useState(null);
   const [workHistory, setWorkHistory] = useState([]);
