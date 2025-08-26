@@ -42,8 +42,8 @@ export default function MyTasks() {
     
     // Përdor endpoint të ndryshëm për manager vs user
     const endpoint = user?.role === "manager" 
-      ? `https://building-system.onrender.com/api/tasks/manager/${user.employee_id}`
-      : `https://building-system.onrender.com/api/tasks?assignedTo=${user.employee_id}`;
+      ? `https://capitalrise-cwcq.onrender.com/api/tasks/manager/${user.employee_id}`
+      : `https://capitalrise-cwcq.onrender.com/api/tasks?assignedTo=${user.employee_id}`;
     
     axios
       .get(endpoint, {
@@ -63,7 +63,7 @@ export default function MyTasks() {
   useEffect(() => {
     if (user?.role === "manager" && user?.employee_id) {
       // Merr punonjësit e site-ve të managerit
-      axios.get(`https://building-system.onrender.com/api/employees/manager/${user.employee_id}`, {
+      axios.get(`https://capitalrise-cwcq.onrender.com/api/employees/manager/${user.employee_id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => {
@@ -83,7 +83,7 @@ export default function MyTasks() {
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       await axios.put(
-        `https://building-system.onrender.com/api/tasks/${taskId}`,
+        `https://capitalrise-cwcq.onrender.com/api/tasks/${taskId}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -121,7 +121,7 @@ export default function MyTasks() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        'https://building-system.onrender.com/api/tasks',
+        'https://capitalrise-cwcq.onrender.com/api/tasks',
         {
           ...newTask,
           assigned_by: user.employee_id,

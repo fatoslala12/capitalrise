@@ -42,13 +42,13 @@ export default function MyProfile() {
     }
 
     setLoading(true);
-    axios.get(`https://building-system.onrender.com/api/employees/${user.employee_id}`, {
+    axios.get(`https://capitalrise-cwcq.onrender.com/api/employees/${user.employee_id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
         setEmployee(res.data);
         // Merr komentet e ruajtura
-        return axios.get(`https://building-system.onrender.com/api/work-hours/notes/${user.employee_id}`, {
+        return axios.get(`https://capitalrise-cwcq.onrender.com/api/work-hours/notes/${user.employee_id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
       })
@@ -61,13 +61,13 @@ export default function MyProfile() {
   useEffect(() => {
     if (!user?.employee_id) return;
     
-    axios.get(`https://building-system.onrender.com/api/work-hours/structured/${user.employee_id}`, {
+    axios.get(`https://capitalrise-cwcq.onrender.com/api/work-hours/structured/${user.employee_id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setWorkHistory(res.data || {}))
       .catch(() => setWorkHistory({}));
 
-    axios.get(`https://building-system.onrender.com/api/payments/${user.employee_id}`, {
+    axios.get(`https://capitalrise-cwcq.onrender.com/api/payments/${user.employee_id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -82,7 +82,7 @@ export default function MyProfile() {
   useEffect(() => {
     if (!user?.employee_id) return;
     
-    axios.get(`https://building-system.onrender.com/api/employees/${user.employee_id}/attachments`, {
+    axios.get(`https://capitalrise-cwcq.onrender.com/api/employees/${user.employee_id}/attachments`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setAttachments(res.data))
@@ -95,8 +95,8 @@ export default function MyProfile() {
     
     // Përdor endpoint të ndryshëm për manager vs user
     const endpoint = user?.role === "manager" 
-      ? `https://building-system.onrender.com/api/tasks/manager/${user.employee_id}`
-      : `https://building-system.onrender.com/api/tasks?assignedTo=${user.employee_id}&status=completed`;
+      ? `https://capitalrise-cwcq.onrender.com/api/tasks/manager/${user.employee_id}`
+      : `https://capitalrise-cwcq.onrender.com/api/tasks?assignedTo=${user.employee_id}&status=completed`;
     
     axios.get(endpoint, {
       headers: { Authorization: `Bearer ${token}` }
@@ -119,7 +119,7 @@ export default function MyProfile() {
     }
     
     try {
-      await axios.put(`https://building-system.onrender.com/api/users/${user.id}/password`, {
+      await axios.put(`https://capitalrise-cwcq.onrender.com/api/users/${user.id}/password`, {
         current_password: passwordData.current,
         new_password: passwordData.new
       }, {
@@ -144,7 +144,7 @@ export default function MyProfile() {
       try {
         setUploadProgress(10);
         await axios.post(
-          `https://building-system.onrender.com/api/employees/${user.employee_id}/attachments`,
+          `https://capitalrise-cwcq.onrender.com/api/employees/${user.employee_id}/attachments`,
           {
             file_name: file.name,
             file_path: reader.result,
@@ -162,7 +162,7 @@ export default function MyProfile() {
         setUploadProgress(0);
         
         // Rifresko attachments
-        const res = await axios.get(`https://building-system.onrender.com/api/employees/${user.employee_id}/attachments`, {
+        const res = await axios.get(`https://capitalrise-cwcq.onrender.com/api/employees/${user.employee_id}/attachments`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setAttachments(res.data);
@@ -317,7 +317,7 @@ export default function MyProfile() {
   const saveWeekNote = async (weekLabel, note) => {
     try {
       setSubmittingNote(weekLabel);
-      await axios.post(`https://building-system.onrender.com/api/work-hours/notes`, {
+      await axios.post(`https://capitalrise-cwcq.onrender.com/api/work-hours/notes`, {
         employee_id: user.employee_id,
         week_label: weekLabel,
         note: note
@@ -326,7 +326,7 @@ export default function MyProfile() {
       });
       showToast("Komenti u ruajt me sukses!", "success");
       // Rifresko komentet pas ruajtjes
-      const res = await axios.get(`https://building-system.onrender.com/api/work-hours/notes/${user.employee_id}`, {
+      const res = await axios.get(`https://capitalrise-cwcq.onrender.com/api/work-hours/notes/${user.employee_id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setWeekNotes(res.data || {});

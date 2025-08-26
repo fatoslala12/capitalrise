@@ -42,13 +42,13 @@ export default function Tasks() {
         setLoading(true);
         
         const [employeesRes, contractsRes, tasksRes] = await Promise.all([
-          axios.get("https://building-system.onrender.com/api/employees", {
+          axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("https://building-system.onrender.com/api/contracts", {
+          axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("https://building-system.onrender.com/api/tasks", {
+          axios.get("https://capitalrise-cwcq.onrender.com/api/tasks", {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -134,7 +134,7 @@ export default function Tasks() {
           assignedBy: user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.email
         });
         console.log('[DEBUG] Task payload:', entry);
-        const res = await axios.post("https://building-system.onrender.com/api/tasks", entry, {
+        const res = await axios.post("https://capitalrise-cwcq.onrender.com/api/tasks", entry, {
           headers: { Authorization: `Bearer ${token}` }
         });
         return res.data;
@@ -154,7 +154,7 @@ export default function Tasks() {
   const handleDelete = async (id) => {
     if (!confirm("Jeni i sigurt që doni të fshini këtë detyrë?")) return;
     try {
-      await axios.delete(`https://building-system.onrender.com/api/tasks/${id}`, {
+      await axios.delete(`https://capitalrise-cwcq.onrender.com/api/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks((prev) => prev.filter((t) => t.id !== id));
@@ -168,7 +168,7 @@ export default function Tasks() {
   // Funksion për të ndryshuar statusin e detyrës
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const res = await axios.put(`https://building-system.onrender.com/api/tasks/${id}`, { status: newStatus }, {
+      const res = await axios.put(`https://capitalrise-cwcq.onrender.com/api/tasks/${id}`, { status: newStatus }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: newStatus } : t));
@@ -284,7 +284,7 @@ export default function Tasks() {
     setIsCheckingDeadlines(true);
     try {
       const response = await axios.post(
-        "https://building-system.onrender.com/api/task-deadlines/check-overdue",
+        "https://capitalrise-cwcq.onrender.com/api/task-deadlines/check-overdue",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -308,7 +308,7 @@ export default function Tasks() {
     setIsCheckingDeadlines(true);
     try {
       const response = await axios.post(
-        "https://building-system.onrender.com/api/task-deadlines/check-upcoming",
+        "https://capitalrise-cwcq.onrender.com/api/task-deadlines/check-upcoming",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -332,7 +332,7 @@ export default function Tasks() {
     setIsCheckingDeadlines(true);
     try {
       const response = await axios.post(
-        "https://building-system.onrender.com/api/task-deadlines/run-daily-check",
+        "https://capitalrise-cwcq.onrender.com/api/task-deadlines/run-daily-check",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -353,7 +353,7 @@ export default function Tasks() {
   const handleGetOverdueStats = async () => {
     try {
       const response = await axios.get(
-        "https://building-system.onrender.com/api/task-deadlines/overdue-stats",
+        "https://capitalrise-cwcq.onrender.com/api/task-deadlines/overdue-stats",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       

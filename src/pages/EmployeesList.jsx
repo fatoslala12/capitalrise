@@ -72,20 +72,20 @@ export default function EmployeesList() {
     
     // Përdor endpoint të ndryshëm për manager vs admin
     const employeesEndpoint = isManager 
-      ? `https://building-system.onrender.com/api/employees/manager/${user.employee_id}`
-      : "https://building-system.onrender.com/api/employees";
+      ? `https://capitalrise-cwcq.onrender.com/api/employees/manager/${user.employee_id}`
+      : "https://capitalrise-cwcq.onrender.com/api/employees";
     
     Promise.all([
-      axios.get("https://building-system.onrender.com/api/contracts", {
+      axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
         headers: { Authorization: `Bearer ${token}` }
       }),
       axios.get(employeesEndpoint, {
         headers: { Authorization: `Bearer ${token}` }
       }),
-      axios.get("https://building-system.onrender.com/api/work-hours", {
+      axios.get("https://capitalrise-cwcq.onrender.com/api/work-hours", {
         headers: { Authorization: `Bearer ${token}` }
       }),
-      axios.get("https://building-system.onrender.com/api/tasks", {
+      axios.get("https://capitalrise-cwcq.onrender.com/api/tasks", {
         headers: { Authorization: `Bearer ${token}` }
       })
     ])
@@ -298,7 +298,7 @@ export default function EmployeesList() {
         workplace: newEmployee.workplace
       };
 
-      const res = await axios.post("https://building-system.onrender.com/api/user-management/create", userData, {
+      const res = await axios.post("https://capitalrise-cwcq.onrender.com/api/user-management/create", userData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -416,11 +416,11 @@ export default function EmployeesList() {
     if (!id) return;
     if (window.confirm("A jeni i sigurt që doni të fshini këtë punonjës?")) {
       try {
-        await axios.delete(`https://building-system.onrender.com/api/employees/${id}`, {
+        await axios.delete(`https://capitalrise-cwcq.onrender.com/api/employees/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         // Rifresko listën nga backend
-        const res = await axios.get("https://building-system.onrender.com/api/employees", {
+        const res = await axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
           headers: { Authorization: `Bearer ${token}` }
         });
         setEmployees(res.data);

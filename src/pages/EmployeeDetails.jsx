@@ -54,7 +54,7 @@ export default function EmployeeDetails() {
     }
 
     try {
-      await axios.post(`https://building-system.onrender.com/api/users/reset-password`, {
+      await axios.post(`https://capitalrise-cwcq.onrender.com/api/users/reset-password`, {
         email: user.email
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -69,7 +69,7 @@ export default function EmployeeDetails() {
   // Merr të gjithë punonjësit për workplace
   useEffect(() => {
     setLoading(true);
-    axios.get("https://building-system.onrender.com/api/employees", {
+    axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -90,7 +90,7 @@ export default function EmployeeDetails() {
     if (emp) {
       setEmployee(emp);
       // Merr komentet e ruajtura për këtë punonjës
-      axios.get(`https://building-system.onrender.com/api/work-hours/notes/${id}`, {
+      axios.get(`https://capitalrise-cwcq.onrender.com/api/work-hours/notes/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => setWeekNotes(res.data || {}))
@@ -104,7 +104,7 @@ export default function EmployeeDetails() {
   // Merr historikun e orëve të punës nga backend
   useEffect(() => {
     if (!id) return;
-    axios.get(`https://building-system.onrender.com/api/work-hours/structured/${id}`, {
+    axios.get(`https://capitalrise-cwcq.onrender.com/api/work-hours/structured/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -115,7 +115,7 @@ export default function EmployeeDetails() {
         console.log('workHistory API error:', err);
         setWorkHistory({});
       });
-    axios.get(`https://building-system.onrender.com/api/payments/${id}`, {
+    axios.get(`https://capitalrise-cwcq.onrender.com/api/payments/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -129,7 +129,7 @@ export default function EmployeeDetails() {
   // Merr të dhënat e user-it përkatës nga backend (bazuar në employee.id)
   useEffect(() => {
     if (!employee) return;
-    axios.get(`https://building-system.onrender.com/api/users?employee_id=${employee.id}`, {
+    axios.get(`https://capitalrise-cwcq.onrender.com/api/users?employee_id=${employee.id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setUser(res.data[0] || null))
@@ -139,7 +139,7 @@ export default function EmployeeDetails() {
   // Merr attachments kur hapet faqja
   useEffect(() => {
     if (!id) return;
-    axios.get(`https://building-system.onrender.com/api/employees/${id}/attachments`, {
+    axios.get(`https://capitalrise-cwcq.onrender.com/api/employees/${id}/attachments`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setAttachments(res.data))
@@ -149,7 +149,7 @@ export default function EmployeeDetails() {
   // Merr detyrat e punonjësit
   useEffect(() => {
     if (!id) return;
-    axios.get(`https://building-system.onrender.com/api/tasks?assignedTo=${id}`, {
+    axios.get(`https://capitalrise-cwcq.onrender.com/api/tasks?assignedTo=${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setTasks(res.data || []))
@@ -158,7 +158,7 @@ export default function EmployeeDetails() {
 
   // Merr available sites nga contracts (vetëm aktivë - "Ne progres")
   useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/contracts", {
+    axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -214,7 +214,7 @@ export default function EmployeeDetails() {
       
       console.log('[DEBUG] Saving employee data:', updatedEmployee);
       
-      const response = await axios.put(`https://building-system.onrender.com/api/employees/${id}`, updatedEmployee, {
+      const response = await axios.put(`https://capitalrise-cwcq.onrender.com/api/employees/${id}`, updatedEmployee, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -250,7 +250,7 @@ export default function EmployeeDetails() {
       try {
         setUploadProgress(10);
         await axios.post(
-          `https://building-system.onrender.com/api/employees/${id}/attachments`,
+          `https://capitalrise-cwcq.onrender.com/api/employees/${id}/attachments`,
           {
             file_name: file.name,
             file_path: reader.result,
@@ -267,7 +267,7 @@ export default function EmployeeDetails() {
         );
         setUploadProgress(0);
         // Rifresko attachments
-        const res = await axios.get(`https://building-system.onrender.com/api/employees/${id}/attachments`, {
+        const res = await axios.get(`https://capitalrise-cwcq.onrender.com/api/employees/${id}/attachments`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setAttachments(res.data);
@@ -284,11 +284,11 @@ export default function EmployeeDetails() {
     if (!window.confirm("A jeni i sigurt që doni të fshini këtë dokument?")) return;
     try {
       await axios.delete(
-        `https://building-system.onrender.com/api/employees/${id}/attachments/${attachmentId}`,
+        `https://capitalrise-cwcq.onrender.com/api/employees/${id}/attachments/${attachmentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Rifresko attachments pas fshirjes
-      const res = await axios.get(`https://building-system.onrender.com/api/employees/${id}/attachments`, {
+      const res = await axios.get(`https://capitalrise-cwcq.onrender.com/api/employees/${id}/attachments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAttachments(res.data);
@@ -302,11 +302,11 @@ export default function EmployeeDetails() {
     if (!window.confirm("A jeni i sigurt që doni të fshini këtë dokument?")) return;
     try {
       await axios.delete(
-        `https://building-system.onrender.com/api/employees/${id}/attachments/${attachmentId}`,
+        `https://capitalrise-cwcq.onrender.com/api/employees/${id}/attachments/${attachmentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Rifresko attachments pas fshirjes
-      const res = await axios.get(`https://building-system.onrender.com/api/employees/${id}/attachments`, {
+      const res = await axios.get(`https://capitalrise-cwcq.onrender.com/api/employees/${id}/attachments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAttachments(res.data);
@@ -577,7 +577,7 @@ export default function EmployeeDetails() {
   const saveWeekNote = async (weekLabel, note) => {
     try {
       setSubmittingNote(weekLabel);
-      await axios.post(`https://building-system.onrender.com/api/work-hours/notes`, {
+      await axios.post(`https://capitalrise-cwcq.onrender.com/api/work-hours/notes`, {
         employee_id: id,
         week_label: weekLabel,
         note: note
@@ -586,7 +586,7 @@ export default function EmployeeDetails() {
       });
       showToast("Komenti u ruajt me sukses!", "success");
       // Rifresko komentet pas ruajtjes
-      const res = await axios.get(`https://building-system.onrender.com/api/work-hours/notes/${id}`, {
+      const res = await axios.get(`https://capitalrise-cwcq.onrender.com/api/work-hours/notes/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setWeekNotes(res.data || {});
@@ -783,7 +783,7 @@ export default function EmployeeDetails() {
                     const reader = new FileReader();
                     reader.onloadend = async () => {
                       try {
-                        await axios.put(`https://building-system.onrender.com/api/employees/${id}`, {
+                        await axios.put(`https://capitalrise-cwcq.onrender.com/api/employees/${id}`, {
                           ...toSnakeCase(employee),
                           photo: reader.result
                         }, {

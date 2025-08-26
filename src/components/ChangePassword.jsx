@@ -18,7 +18,7 @@ export default function ChangePassword() {
     }
     try {
       await axios.post(
-        "https://building-system.onrender.com/api/users/change-password",
+        "https://capitalrise-cwcq.onrender.com/api/users/change-password",
         {
           email: user.email,
           currentPassword: current,

@@ -68,16 +68,16 @@ export default function PaymentDetails() {
         setError(null);
         
         const [contractRes, workHoursRes, employeesRes, expensesRes] = await Promise.all([
-          axios.get(`https://building-system.onrender.com/api/contracts/contract-number/${contract_number}`, {
+          axios.get(`https://capitalrise-cwcq.onrender.com/api/contracts/contract-number/${contract_number}`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get(`https://building-system.onrender.com/api/work-hours/structured`, {
+          axios.get(`https://capitalrise-cwcq.onrender.com/api/work-hours/structured`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("https://building-system.onrender.com/api/employees", {
+          axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get(`https://building-system.onrender.com/api/expenses/${contract_number}`, {
+          axios.get(`https://capitalrise-cwcq.onrender.com/api/expenses/${contract_number}`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -184,14 +184,14 @@ export default function PaymentDetails() {
       };
       try {
         await axios.post(
-          `https://building-system.onrender.com/api/expenses/${contract_number}`,
+          `https://capitalrise-cwcq.onrender.com/api/expenses/${contract_number}`,
           expenseInvoice,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         
         // Rifresko të gjithë expenses-et pas shtimit
         const expensesRes = await axios.get(
-          `https://building-system.onrender.com/api/expenses/${contract_number}`,
+          `https://capitalrise-cwcq.onrender.com/api/expenses/${contract_number}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         console.log('Expenses pas shtimit:', expensesRes.data);
@@ -239,12 +239,12 @@ export default function PaymentDetails() {
 
     try {
       await axios.delete(
-        `https://building-system.onrender.com/api/expenses/${id}`,
+        `https://capitalrise-cwcq.onrender.com/api/expenses/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Rifresko faturat pas fshirjes
       const res = await axios.get(
-        `https://building-system.onrender.com/api/expenses/${contract_number}`,
+        `https://capitalrise-cwcq.onrender.com/api/expenses/${contract_number}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log('Faturat pas fshirjes:', res.data);
@@ -260,13 +260,13 @@ export default function PaymentDetails() {
   const togglePaid = async (id) => {
     try {
       await axios.put(
-        `https://building-system.onrender.com/api/expenses/${id}/toggle-paid`,
+        `https://capitalrise-cwcq.onrender.com/api/expenses/${id}/toggle-paid`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Rifresko faturat pas ndryshimit të statusit
       const res = await axios.get(
-        `https://building-system.onrender.com/api/expenses/${contract_number}`,
+        `https://capitalrise-cwcq.onrender.com/api/expenses/${contract_number}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log('Faturat pas ndryshimit të statusit:', res.data);

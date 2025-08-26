@@ -12,7 +12,7 @@ export default function Payments() {
   useEffect(() => {
     setLoading(true);
     axios
-      .get("https://building-system.onrender.com/api/contracts", {
+      .get("https://capitalrise-cwcq.onrender.com/api/contracts", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setContracts(res.data || []))

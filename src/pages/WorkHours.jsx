@@ -102,7 +102,7 @@ export default function WorkHours() {
   // Shto këtë useEffect në fillim të komponentit
   useEffect(() => {
     if (user && user.role === "manager" && !user.workplace && user.employee_id) {
-      axios.get(`https://building-system.onrender.com/api/employees/${user.employee_id}`, {
+      axios.get(`https://capitalrise-cwcq.onrender.com/api/employees/${user.employee_id}`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
         if (res.data && res.data.workplace) {
@@ -116,7 +116,7 @@ export default function WorkHours() {
   useEffect(() => {
     if (user && user.role === "manager" && user.employee_id) {
       console.log("Checking manager access for employee_id:", user.employee_id);
-      axios.get(`https://building-system.onrender.com/api/work-hours/check-manager-access?employee_id=${user.employee_id}`, {
+      axios.get(`https://capitalrise-cwcq.onrender.com/api/work-hours/check-manager-access?employee_id=${user.employee_id}`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
         console.log("Manager access check result:", res.data);
@@ -133,7 +133,7 @@ export default function WorkHours() {
     console.log('[DEBUG] Starting to fetch employees for user:', user);
     setLoading(true);
     
-    axios.get("https://building-system.onrender.com/api/employees", {
+    axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(async res => {
@@ -253,7 +253,7 @@ export default function WorkHours() {
     
     setLoading(true);
     
-    axios.get("https://building-system.onrender.com/api/work-hours/structured", {
+    axios.get("https://capitalrise-cwcq.onrender.com/api/work-hours/structured", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -282,7 +282,7 @@ export default function WorkHours() {
 
   // Merr kontratat për site options
   useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/contracts", {
+    axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -294,7 +294,7 @@ export default function WorkHours() {
 
   // Merr statusin e pagesës nga backend
   useEffect(() => {
-    axios.get("https://building-system.onrender.com/api/work-hours/paid-status", {
+    axios.get("https://capitalrise-cwcq.onrender.com/api/work-hours/paid-status", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -371,7 +371,7 @@ export default function WorkHours() {
         });
         
         if (paymentUpdates.length > 0) {
-          await axios.post("https://building-system.onrender.com/api/work-hours/update-payment-status", {
+          await axios.post("https://capitalrise-cwcq.onrender.com/api/work-hours/update-payment-status", {
             updates: paymentUpdates
           }, {
             headers: { Authorization: `Bearer ${token}` }
@@ -399,7 +399,7 @@ export default function WorkHours() {
         });
         
         if (updates.length > 0) {
-          await axios.post("https://building-system.onrender.com/api/work-hours/bulk-update", {
+          await axios.post("https://capitalrise-cwcq.onrender.com/api/work-hours/bulk-update", {
             updates: updates
           }, {
             headers: { Authorization: `Bearer ${token}` }

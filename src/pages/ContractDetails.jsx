@@ -111,20 +111,20 @@ export default function ContractDetails() {
         setLoading(true);
         
         const contractRes = await axios.get(
-          `https://building-system.onrender.com/api/contracts/contract-number/${contract_number}`,
+          `https://capitalrise-cwcq.onrender.com/api/contracts/contract-number/${contract_number}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setContract(contractRes.data);
 
         const invoicesRes = await axios.get(
-          `https://building-system.onrender.com/api/invoices/${contract_number}`,
+          `https://capitalrise-cwcq.onrender.com/api/invoices/${contract_number}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setInvoices(invoicesRes.data || []);
 
         // Merr orët e punës për këtë kontratë
         const workHoursRes = await axios.get(
-          `https://building-system.onrender.com/api/work-hours/contract/${contract_number}`,
+          `https://capitalrise-cwcq.onrender.com/api/work-hours/contract/${contract_number}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         console.log('🔍 Work hours data:', workHoursRes.data);
@@ -132,7 +132,7 @@ export default function ContractDetails() {
 
         // Merr listën e punonjësve për të marrë labelType (NI/UTR)
         const employeesRes = await axios.get(
-          `https://building-system.onrender.com/api/employees`,
+          `https://capitalrise-cwcq.onrender.com/api/employees`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setEmployees(employeesRes.data || []);
@@ -181,7 +181,7 @@ export default function ContractDetails() {
       const newDoc = { name: file.name, content: reader.result };
       try {
         const res = await axios.put(
-          `https://building-system.onrender.com/api/contracts/${contract.id}/documents`,
+          `https://capitalrise-cwcq.onrender.com/api/contracts/${contract.id}/documents`,
           { document: newDoc },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -207,7 +207,7 @@ export default function ContractDetails() {
         
         try {
           const res = await axios.delete(
-            `https://building-system.onrender.com/api/contracts/${contract.id}/documents/${index}`,
+            `https://capitalrise-cwcq.onrender.com/api/contracts/${contract.id}/documents/${index}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setContract(res.data);
@@ -228,7 +228,7 @@ export default function ContractDetails() {
     
     try {
       const res = await axios.post(
-        `https://building-system.onrender.com/api/contracts/${contract.id}/comments`,
+        `https://capitalrise-cwcq.onrender.com/api/contracts/${contract.id}/comments`,
         { text: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -309,13 +309,13 @@ export default function ContractDetails() {
     };
     try {
       await axios.post(
-        `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
+        `https://capitalrise-cwcq.onrender.com/api/invoices/${contract.contract_number}`,
         newInvoiceWithContract,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Refresh invoices after saving
       const invoicesRes = await axios.get(
-        `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
+        `https://capitalrise-cwcq.onrender.com/api/invoices/${contract.contract_number}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setInvoices(invoicesRes.data || []);
@@ -361,12 +361,12 @@ export default function ContractDetails() {
         
         try {
           await axios.delete(
-            `https://building-system.onrender.com/api/invoices/${invoiceId}`,
+            `https://capitalrise-cwcq.onrender.com/api/invoices/${invoiceId}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           // Rifresko faturat pas fshirjes
           const invoicesRes = await axios.get(
-            `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
+            `https://capitalrise-cwcq.onrender.com/api/invoices/${contract.contract_number}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setInvoices(invoicesRes.data || []);
@@ -385,13 +385,13 @@ export default function ContractDetails() {
     
     try {
       await axios.put(
-        `https://building-system.onrender.com/api/invoices/${invoiceId}/toggle-paid`,
+        `https://capitalrise-cwcq.onrender.com/api/invoices/${invoiceId}/toggle-paid`,
         { paid: !currentPaid },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Refresh invoices after toggle
       const invoicesRes = await axios.get(
-        `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
+        `https://capitalrise-cwcq.onrender.com/api/invoices/${contract.contract_number}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setInvoices(invoicesRes.data || []);
@@ -421,7 +421,7 @@ export default function ContractDetails() {
     
     try {
       const response = await axios.post(
-        `https://building-system.onrender.com/api/invoices/${invoiceId}/send-email`,
+        `https://capitalrise-cwcq.onrender.com/api/invoices/${invoiceId}/send-email`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -431,7 +431,7 @@ export default function ContractDetails() {
         
         // Rifresko faturat për të treguar statusin e përditësuar
         const invoicesRes = await axios.get(
-          `https://building-system.onrender.com/api/invoices/${contract.contract_number}`,
+          `https://capitalrise-cwcq.onrender.com/api/invoices/${contract.contract_number}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setInvoices(invoicesRes.data || []);
@@ -450,7 +450,7 @@ export default function ContractDetails() {
     
     try {
       const response = await axios.post(
-        `https://building-system.onrender.com/api/invoices/${contract.contract_number}/send-contract-details`,
+        `https://capitalrise-cwcq.onrender.com/api/invoices/${contract.contract_number}/send-contract-details`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

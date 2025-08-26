@@ -57,7 +57,7 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      await axios.post("https://building-system.onrender.com/api/auth/forgot-password", {
+      await axios.post("https://capitalrise-cwcq.onrender.com/api/auth/forgot-password", {
         email: email.trim().toLowerCase(),
       });
       
@@ -91,7 +91,7 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      await axios.post("https://building-system.onrender.com/api/auth/verify-reset-code", {
+      await axios.post("https://capitalrise-cwcq.onrender.com/api/auth/verify-reset-code", {
         email: email.trim().toLowerCase(),
         code: verificationCode.trim(),
       });
@@ -129,7 +129,7 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      await axios.post("https://building-system.onrender.com/api/auth/reset-password", {
+      await axios.post("https://capitalrise-cwcq.onrender.com/api/auth/reset-password", {
         email: email.trim().toLowerCase(),
         verificationCode: verificationCode.trim(),
         newPassword,

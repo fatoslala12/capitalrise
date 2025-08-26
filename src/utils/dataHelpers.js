@@ -1,7 +1,7 @@
 // src/utils/dataHelpers.js
 import axios from "axios";
 
-const API = "https://building-system.onrender.com/api";
+const API = "https://capitalrise-cwcq.onrender.com/api";
 const token = localStorage.getItem("token");
 const headers = { Authorization: `Bearer ${token}` };
 
