@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Backend for Building System",
+  "description": "Backend for CapitalRise",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",

@@ -41,7 +41,7 @@ class BackupService {
       console.log('🔄 Duke krijuar backup të plotë...');
       
       // Merr connection string nga environment
-      const connectionString = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_vzOic6bTHB5o@ep-shy-truth-a2p7hce5-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+      const connectionString = process.env.DATABASE_URL;
       
       // Krijo backup me pg_dump
       const pgDumpCommand = `pg_dump "${connectionString}" --no-owner --no-privileges --clean --if-exists > "${filepath}"`;
@@ -88,7 +88,7 @@ class BackupService {
     try {
       console.log('🔄 Duke krijuar backup të pjesshëm...');
       
-      const connectionString = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_vzOic6bTHB5o@ep-shy-truth-a2p7hce5-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+      const connectionString = process.env.DATABASE_URL;
       
       // Krijo backup vetëm për tabelat e specifikuara
       const tableList = tables.join(' ');
@@ -135,7 +135,7 @@ class BackupService {
       // Kontrollo nëse file ekziston
       await fs.access(filepath);
       
-      const connectionString = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_vzOic6bTHB5o@ep-shy-truth-a2p7hce5-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+      const connectionString = process.env.DATABASE_URL;
       
       // Restore me psql
       const psqlCommand = `psql "${connectionString}" < "${filepath}"`;

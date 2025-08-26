@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 
 // Enhanced connection pool configuration with keep-alive
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_vzOic6bTHB5o@ep-shy-truth-a2p7hce5-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
   
   // Connection pool optimizations for long-running applications
@@ -20,7 +20,7 @@ const pool = new Pool({
   statement_timeout: 30000,   // 30 seconds timeout for queries
   
   // Application name for monitoring
-  application_name: 'building-system-backend'
+  application_name: 'capitalrise-backend'
 });
 
 // Enhanced error handling
@@ -91,7 +91,7 @@ const reconnectPool = async () => {
     
     // Recreate the pool
     const newPool = new Pool({
-      connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_vzOic6bTHB5o@ep-shy-truth-a2p7hce5-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+      connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
       max: 20,
       min: 2,
