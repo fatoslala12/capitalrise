@@ -1,39 +1,110 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require("cors");
+const cors = require('cors');
+const compression = require('compression');
 const logger = require('./middleware/logger');
+
+const {
+  errorHandler,
+  notFoundHandler,
+  validationErrorHandler,
+  databaseErrorHandler,
+  rateLimitErrorHandler,
+  securityErrorHandler,
+} = require('./middleware/errorHandler');
+
+const RateLimitService = require('./services/rateLimitService');
+
+// ----------------------------------------------------------------------------
+// App bootstrap
+// ----------------------------------------------------------------------------
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Konfigurimi CORS për prodhim dhe dev lokal
-app.use(cors({
-  origin: [
-    process.env.FRONTEND_ORIGIN,
-    "https://building-system-seven.vercel.app",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-  ].filter(Boolean),
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+app.set('trust proxy', 1);
+app.disable('x-powered-by');
+
+// ----------------------------------------------------------------------------
+// CORS
+// ----------------------------------------------------------------------------
+const normalize = (u) => (u || '').replace(/\/$/, ''); // heq '/' në fund
+const FRONTEND_URL =
+  normalize(process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN);
+
+const allowedOrigins = [
+  FRONTEND_URL,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // lejo server-to-server ose pa origin
+    const cleanOrigin = origin.replace(/\/$/, '');
+    if (allowedOrigins.includes(cleanOrigin)) return cb(null, true);
+
+    // lejo preview domains të Vercel për të njëjtin projekt (opsionale)
+    try {
+      if (FRONTEND_URL && FRONTEND_URL.includes('.vercel.app')) {
+        const baseHost = new URL(FRONTEND_URL).hostname; // p.sh. capitalrise-seven.vercel.app
+        const basePrefix = baseHost.split('.')[0].split('-')[0]; // "capitalrise"
+        const previewRe = new RegExp(`^https://${basePrefix}-.*\\.vercel\\.app$`);
+        if (previewRe.test(cleanOrigin)) return cb(null, true);
+      }
+    } catch (_) {}
+
+    return cb(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-}));
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // preflight
 
-// Opsionale – për të kthyer përgjigje për OPTIONS
-app.options('*', cors());
-
-// Add logger middleware
+// ----------------------------------------------------------------------------
+// Logging & parsers
+// ----------------------------------------------------------------------------
 app.use(logger);
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
-});
-
-// Middleware për JSON me limit të optimizuar
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// ----------------------------------------------------------------------------
+// Compression (shmang kompresimin e SSE stream-it)
+// ----------------------------------------------------------------------------
+app.use(
+  compression({
+    filter: (req, res) => {
+      if (req.path === '/api/notifications/stream') return false;
+      return compression.filter(req, res);
+    },
+  })
+);
+
+// ----------------------------------------------------------------------------
+// Rate limits (para rrugeve që të aplikohen)
+// ----------------------------------------------------------------------------
+const rateLimitService = new RateLimitService();
+rateLimitService.startAutoCleanup();
+
+app.use('/api/auth', rateLimitService.authRateLimitMiddleware());
+app.use('/api/backup', rateLimitService.backupRateLimitMiddleware());
+app.use('/api/real-time-alerts', rateLimitService.alertsRateLimitMiddleware());
+app.use('/api', rateLimitService.apiRateLimitMiddleware());
+
+// ----------------------------------------------------------------------------
+// Health & Root
+// ----------------------------------------------------------------------------
+app.head('/', (_req, res) => res.status(200).end());
+app.get('/', (_req, res) => res.send('🚀 CapitalRise API is running ✅'));
+app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/api/health', (_req, res) =>
+  res.json({ status: 'OK', message: 'Server is running' })
+);
+
+// ----------------------------------------------------------------------------
 // Routes
+// ----------------------------------------------------------------------------
 const employeeRoutes = require('./routes/employees');
 app.use('/api/employees', employeeRoutes);
 
@@ -61,8 +132,8 @@ app.use('/api/auth', authRoutes);
 const userRoutes = require('./routes/users');
 app.use('/api/users', userRoutes);
 
-const todosRouter = require("./routes/todos");
-app.use("/api/todos", todosRouter);
+const todosRouter = require('./routes/todos');
+app.use('/api/todos', todosRouter);
 
 const invoiceRoutes = require('./routes/invoices');
 app.use('/api/invoices', invoiceRoutes);
@@ -94,42 +165,9 @@ app.use('/api/audit-trail', auditTrailRoutes);
 const taskDeadlineRoutes = require('./routes/taskDeadlines');
 app.use('/api/task-deadlines', taskDeadlineRoutes);
 
-// Compression middleware për të reduktuar madhësinë e përgjigjeve (pas routes)
-const compression = require('compression');
-app.use(compression({
-  filter: (req, res) => {
-    // Mos kompreso EventSource responses
-    if (req.path === '/api/notifications/stream') {
-      return false;
-    }
-    return compression.filter(req, res);
-  }
-}));
-
-// Import error handling middleware
-const {
-  errorHandler,
-  notFoundHandler,
-  validationErrorHandler,
-  databaseErrorHandler,
-  rateLimitErrorHandler,
-  securityErrorHandler
-} = require('./middleware/errorHandler');
-
-// Import rate limit service
-const RateLimitService = require('./services/rateLimitService');
-const rateLimitService = new RateLimitService();
-
-// Start auto cleanup për rate limits
-rateLimitService.startAutoCleanup();
-
-// Apply rate limiting middleware
-app.use('/api/auth', rateLimitService.authRateLimitMiddleware());
-app.use('/api', rateLimitService.apiRateLimitMiddleware());
-app.use('/api/backup', rateLimitService.backupRateLimitMiddleware());
-app.use('/api/real-time-alerts', rateLimitService.alertsRateLimitMiddleware());
-
-// Error handling middleware (duhet të jenë në fund)
+// ----------------------------------------------------------------------------
+// Error handling (në fund)
+// ----------------------------------------------------------------------------
 app.use(validationErrorHandler);
 app.use(databaseErrorHandler);
 app.use(rateLimitErrorHandler);
@@ -137,15 +175,15 @@ app.use(securityErrorHandler);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+// ----------------------------------------------------------------------------
 // Start server
+// ----------------------------------------------------------------------------
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  
-  // Fillo real-time monitoring automatikisht
+
   const RealTimeAlertService = require('./services/realTimeAlertService');
   const realTimeAlertService = new RealTimeAlertService();
-  
-  // Fillo monitoring pas 5 sekondash
+
   setTimeout(async () => {
     try {
       await realTimeAlertService.startMonitoring();
