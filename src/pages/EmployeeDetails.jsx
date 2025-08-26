@@ -9,11 +9,13 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import jsPDF from 'jspdf';
 import JSZip from 'jszip';
 import html2canvas from 'html2canvas';
+import { useTranslation } from "react-i18next";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const employeePlaceholder = "https://via.placeholder.com/100";
 
 export default function EmployeeDetails() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [employee, setEmployee] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -49,7 +51,7 @@ export default function EmployeeDetails() {
   // Funksion për reset password
   const handleResetPassword = async () => {
     if (!user) {
-      showToast("Punonjësi nuk ka llogari të krijuar!", "error");
+      showToast(t('employeeDetails.employeeNoAccount'), "error");
       return;
     }
 
@@ -59,10 +61,10 @@ export default function EmployeeDetails() {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      showToast("Fjalëkalimi u reset me sukses! Fjalëkalimi i ri është: 123456789", "success");
+      showToast(t('employeeDetails.passwordResetSuccess'), "success");
     } catch (error) {
       console.error('Error resetting password:', error);
-      showToast("Gabim gjatë resetimit të fjalëkalimit!", "error");
+      showToast(t('employeeDetails.passwordResetError'), "error");
     }
   };
 
@@ -223,11 +225,11 @@ export default function EmployeeDetails() {
       // Update local state
       setEmployee(prev => ({ ...prev, workplace: selectedWorkplaces }));
       setEditing(false);
-      showToast("Të dhënat u ruajtën me sukses!", "success");
+              showToast(t('employeeDetails.dataSavedSuccess'), "success");
     } catch (error) {
       console.error('[ERROR] Failed to save employee:', error);
       console.error('[ERROR] Error response:', error.response?.data);
-      showToast(`Gabim gjatë ruajtjes: ${error.response?.data?.message || error.message}`, "error");
+              showToast(`${t('employeeDetails.saveError')}: ${error.response?.data?.message || error.message}`, "error");
     }
   };
 
@@ -327,10 +329,10 @@ export default function EmployeeDetails() {
             </div>
           </div>
           <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
-            Duke ngarkuar detajet e punonjësit...
+            {t('employeeDetails.loadingMessage')}
           </h2>
           <p className="text-gray-600 text-lg max-w-md mx-auto">
-            Ju lutem prisni ndërsa marrim informacionet e plota të punonjësit nga databaza
+            {t('employeeDetails.loadingDescription')}
           </p>
           <div className="mt-6 flex justify-center space-x-2">
             <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"></div>
@@ -353,10 +355,10 @@ export default function EmployeeDetails() {
             </div>
           </div>
           <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
-            Duke ngarkuar detajet e punonjësit...
+            {t('employeeDetails.loadingMessage')}
           </h2>
           <p className="text-gray-600 text-lg max-w-md mx-auto">
-            Ju lutem prisni ndërsa marrim informacionet e plota të punonjësit nga databaza
+            {t('employeeDetails.loadingDescription')}
           </p>
           <div className="mt-6 flex justify-center space-x-2">
             <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"></div>
@@ -717,7 +719,7 @@ export default function EmployeeDetails() {
           <div className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-blue-200">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-blue-700 text-xs sm:text-sm lg:text-base font-medium truncate">Total Orë</p>
+                <p className="text-blue-700 text-xs sm:text-sm lg:text-base font-medium truncate">{t('employeeDetails.totalHours')}</p>
                 <p className="text-base sm:text-lg lg:text-3xl font-bold truncate">
                   {Object.values(workHistory).reduce((total, days) => {
                     return total + Object.values(days).reduce((dayTotal, val) => {
@@ -733,7 +735,7 @@ export default function EmployeeDetails() {
           <div className="bg-gradient-to-r from-green-100 to-green-200 text-green-800 rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-green-200">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-green-700 text-xs sm:text-sm lg:text-base font-medium truncate">Paga Bruto</p>
+                <p className="text-green-700 text-xs sm:text-sm lg:text-base font-medium truncate">{t('employeeDetails.grossSalary')}</p>
                 <p className="text-base sm:text-lg lg:text-3xl font-bold truncate">
                   £{Object.values(workHistory).reduce((total, days) => {
                     return total + Object.values(days).reduce((dayTotal, val) => {
@@ -749,7 +751,7 @@ export default function EmployeeDetails() {
           <div className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-purple-200">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-purple-700 text-xs sm:text-sm lg:text-base font-medium truncate">Site-t</p>
+                <p className="text-purple-700 text-xs sm:text-sm lg:text-base font-medium truncate">{t('employeeDetails.sites')}</p>
                 <p className="text-base sm:text-lg lg:text-3xl font-bold truncate">{employeeSites.length}</p>
               </div>
               <div className="text-lg sm:text-2xl lg:text-4xl ml-2 flex-shrink-0">🏗️</div>
@@ -759,7 +761,7 @@ export default function EmployeeDetails() {
           <div className="bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-orange-200">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-orange-700 text-xs sm:text-sm lg:text-base font-medium truncate">Detyrat</p>
+                <p className="text-orange-700 text-xs sm:text-sm lg:text-base font-medium truncate">{t('employeeDetails.tasks')}</p>
                 <p className="text-base sm:text-lg lg:text-3xl font-bold truncate">
                   {tasks.filter(task => task.assignedTo === parseInt(id) || task.assigned_to === parseInt(id)).length}
                 </p>
@@ -801,7 +803,7 @@ export default function EmployeeDetails() {
                 input.click();
               }}
               className="cursor-pointer hover:scale-105 transition-all duration-300"
-              title="Kliko për të ndryshuar foton"
+              title={t('employeeDetails.clickToChangePhoto')}
             >
               {photo ? (
                 <img
@@ -828,14 +830,14 @@ export default function EmployeeDetails() {
                       value={employee.first_name}
                       onChange={handleChange}
                       className="p-2 md:p-3 border-2 border-blue-200 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-full md:w-1/2 text-gray-800"
-                      placeholder="Emri"
+                      placeholder={t('employeeDetails.firstName')}
                     />
                     <input
                       name="last_name"
                       value={employee.last_name}
                       onChange={handleChange}
                       className="p-2 md:p-3 border-2 border-blue-200 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-full md:w-1/2 text-gray-800"
-                      placeholder="Mbiemri"
+                      placeholder={t('employeeDetails.lastName')}
                     />
                   </div>
                 ) : (
@@ -852,50 +854,50 @@ export default function EmployeeDetails() {
                 /* Modern Edit Form */
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg sm:rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 border-2 border-blue-200 shadow-lg lg:shadow-xl mb-6 sm:mb-8">
                   <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-800 mb-4 sm:mb-6 flex items-center gap-2">
-                    ✏️ Edito të dhënat e punonjësit
+                    ✏️ {t('employeeDetails.editEmployeeData')}
                   </h3>
                   
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     {/* Left Column - Personal Info */}
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-gray-700 border-b border-gray-200 pb-2">📋 Informacione Personale</h4>
+                      <h4 className="font-semibold text-gray-700 border-b border-gray-200 pb-2">📋 {t('employeeDetails.personalInformation')}</h4>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-600 mb-1">📧 Email</label>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">📧 {t('employeeDetails.email')}</label>
                           <input
                             name="email"
                             value={employee.email || ""}
                             onChange={handleChange}
                             className="w-full p-2 sm:p-3 border-2 border-blue-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all text-sm sm:text-base"
-                            placeholder="Email adresa"
+                            placeholder={t('employeeDetails.emailAddress')}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-600 mb-1">📞 Telefoni</label>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">📞 {t('employeeDetails.phone')}</label>
                           <input
                             name="phone"
                             value={employee.phone || ""}
                             onChange={handleChange}
                             className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
-                            placeholder="Numri i telefonit"
+                            placeholder={t('employeeDetails.phoneNumber')}
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-600 mb-1">🆔 NID</label>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">🆔 {t('employeeDetails.nationalId')}</label>
                           <input
                             name="nid"
                             value={employee.nid || ""}
                             onChange={handleChange}
                             className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
-                            placeholder="Numri i identitetit"
+                            placeholder={t('employeeDetails.identityNumber')}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-600 mb-1">🎂 Data e lindjes</label>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">🎂 {t('employeeDetails.dateOfBirth')}</label>
                           <input
                             name="dob"
                             type="date"
@@ -907,35 +909,35 @@ export default function EmployeeDetails() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-600 mb-1">🏠 Vendbanimi</label>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">🏠 {t('employeeDetails.residence')}</label>
                         <input
                           name="residence"
                           value={employee.residence || ""}
                           onChange={handleChange}
                           className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
-                          placeholder="Adresa e banimit"
+                                                      placeholder={t('employeeDetails.address')}
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-600 mb-1">👨‍👩‍👧 Next of Kin</label>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">👨‍👩‍👧 {t('employeeDetails.nextOfKin')}</label>
                           <input
                             name="next_of_kin"
                             value={employee.next_of_kin || ""}
                             onChange={handleChange}
                             className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
-                            placeholder="Personi më i afërt"
+                            placeholder={t('employeeDetails.closestPerson')}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-600 mb-1">📞 Next of Kin Tel</label>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">📞 {t('employeeDetails.nextOfKinPhone')}</label>
                           <input
                             name="next_of_kin_phone"
                             value={employee.next_of_kin_phone || ""}
                             onChange={handleChange}
                             className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
-                            placeholder="Telefoni i personit më të afërt"
+                            placeholder={t('employeeDetails.closestPersonPhone')}
                           />
                         </div>
                       </div>
@@ -943,11 +945,11 @@ export default function EmployeeDetails() {
 
                     {/* Right Column - Work Info */}
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-gray-700 border-b border-gray-200 pb-2">💼 Informacione Pune</h4>
+                      <h4 className="font-semibold text-gray-700 border-b border-gray-200 pb-2">💼 {t('employeeDetails.workInformation')}</h4>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-600 mb-1">💷 Paga/Orë (£)</label>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">💷 {t('employeeDetails.hourlyRate')} (£)</label>
                           <input
                             name="hourly_rate"
                             type="number"
@@ -959,47 +961,47 @@ export default function EmployeeDetails() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-600 mb-1">🎓 Kualifikimi</label>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">🎓 {t('employeeDetails.qualification')}</label>
                           <input
                             name="qualification"
                             value={employee.qualification || ""}
                             onChange={handleChange}
                             className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
-                            placeholder="Kualifikimi profesional"
+                            placeholder={t('employeeDetails.professionalQualification')}
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-600 mb-1">📊 Statusi</label>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">📊 {t('employeeDetails.status')}</label>
                           <select
                             name="status"
                             value={employee.status || "Aktiv"}
                             onChange={handleChange}
                             className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white"
                           >
-                            <option value="Aktiv">✅ Aktiv</option>
-                            <option value="Pasiv">❌ Pasiv</option>
+                            <option value="Aktiv">✅ {t('employeeDetails.active')}</option>
+                            <option value="Pasiv">❌ {t('employeeDetails.passive')}</option>
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-600 mb-1">🏷️ Tipi</label>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">🏷️ {t('employeeDetails.type')}</label>
                           <select
                             name="label_type"
                             value={employee.label_type || "UTR"}
                             onChange={handleChange}
                             className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white"
                           >
-                            <option value="UTR">🏢 UTR (80% net)</option>
-                            <option value="NI">👷 NI (70% net)</option>
+                            <option value="UTR">🏢 {t('employeeDetails.UTR')}</option>
+                            <option value="NI">👷 {t('employeeDetails.NI')}</option>
                           </select>
                         </div>
                       </div>
 
                       {/* Site Management */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-600 mb-2">🏗️ Vendet e Punës</label>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">🏗️ {t('employeeDetails.workplaces')}</label>
                         <div className="bg-white rounded-xl border-2 border-blue-200 p-4 max-h-40 overflow-y-auto">
                           <div className="space-y-2">
                             {availableSites.map(site => (
@@ -1020,7 +1022,7 @@ export default function EmployeeDetails() {
                           </div>
                           {selectedWorkplaces.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-gray-200">
-                              <p className="text-xs text-gray-500 mb-2">Të zgjedhur ({selectedWorkplaces.length}):</p>
+                              <p className="text-xs text-gray-500 mb-2">{t('employeeDetails.selected')} ({selectedWorkplaces.length}):</p>
                               <div className="flex flex-wrap gap-1">
                                 {selectedWorkplaces.map(site => (
                                   <span
@@ -1067,7 +1069,7 @@ export default function EmployeeDetails() {
                   onClick={() => navigate('/admin/employees-list')}
                   className="bg-gradient-to-r from-gray-400 to-blue-400 text-white px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold shadow hover:from-blue-600 hover:to-gray-600 transition text-sm sm:text-base lg:text-lg"
                 >
-                  ⬅️ Kthehu
+                  ⬅️ {t('employeeDetails.back')}
                 </button>
                 {editing ? (
                   <>
@@ -1075,13 +1077,13 @@ export default function EmployeeDetails() {
                       onClick={handleSave}
                       className="bg-gradient-to-r from-green-100 to-blue-100 text-green-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold shadow hover:from-green-200 hover:to-blue-200 transition text-sm sm:text-base lg:text-lg border border-green-200"
                     >
-                      💾 Ruaj
+                      💾 {t('employeeDetails.save')}
                     </button>
                     <button
                       onClick={() => setEditing(false)}
                       className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold shadow hover:from-red-200 hover:to-pink-200 transition text-sm sm:text-base lg:text-lg border border-red-200"
                     >
-                      Anulo
+                      {t('employeeDetails.cancel')}
                     </button>
                   </>
                 ) : (
@@ -1089,14 +1091,14 @@ export default function EmployeeDetails() {
                     onClick={() => setEditing(true)}
                     className="bg-gradient-to-r from-purple-400 to-blue-400 text-white px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold text-sm sm:text-base lg:text-lg shadow hover:from-blue-600 hover:to-purple-600 transition"
                   >
-                    ✏️ Edito
+                    ✏️ {t('employeeDetails.edit')}
                   </button>
                 )}
                 <button
                   onClick={handleResetPassword}
                   disabled={!user}
                   className="bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-3 sm:px-4 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl lg:rounded-2xl font-bold text-sm sm:text-base lg:text-lg shadow hover:from-red-200 hover:to-pink-200 transition disabled:opacity-50 disabled:cursor-not-allowed border border-red-200"
-                  title={!user ? "Punonjësi nuk ka llogari të krijuar" : "Reset fjalëkalimin e punonjësit"}
+                  title={!user ? t('employeeDetails.employeeNoAccount') : t('employeeDetails.resetPassword')}
                 >
                   🔒 Reset Password
                 </button>
