@@ -151,7 +151,7 @@ export default function PaymentDetails() {
 
     // Validimi i formës
     if (!newExpenseInvoice.expense_type.trim()) {
-      alert("Ju lutem plotësoni llojin e shpenzimit!");
+              alert(t('paymentDetails.fillGrossAmount'));
       return;
     }
 
@@ -203,10 +203,10 @@ export default function PaymentDetails() {
         resetForm();
         setShowAddModal(false);
         
-        alert("Shpenzimi u shtua me sukses!");
+                  alert(t('paymentDetails.expenseDeletedSuccess'));
       } catch (error) {
         console.error('Error adding expense:', error);
-        alert("Gabim gjatë shtimit të shpenzimit: " + (error.response?.data?.error || error.message));
+        alert(t('paymentDetails.deleteError') + " " + (error.response?.data?.error || error.message));
       }
     }
   };
@@ -382,7 +382,7 @@ export default function PaymentDetails() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar detajet e pagesës...</h2>
+          <h2 className="text-xl font-semibold text-gray-700">{t('paymentDetails.loadingDetails')}</h2>
         </div>
       </div>
     );
@@ -409,8 +409,8 @@ export default function PaymentDetails() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Kontrata nuk u gjet</h2>
-          <p className="text-gray-600">Kontrata nuk ekziston ose ka ndodhur një gabim!</p>
+                  <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {t('paymentDetails.contractNotFound')}</h2>
+        <p className="text-gray-600">{t('paymentDetails.contractNotFoundError')}</p>
         </div>
       </div>
     );
@@ -431,10 +431,10 @@ export default function PaymentDetails() {
                 </div>
                 <div>
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-blue-700 tracking-tight mb-1">
-                    Detajet e Pagesës
+                    {t('paymentDetails.title')}
                   </h1>
                   <div className="text-base sm:text-lg font-semibold text-slate-600">
-                    Kontrata #{contract_number}
+                    {t('paymentDetails.contractNumber')}{contract_number}
                   </div>
                 </div>
               </div>
@@ -449,25 +449,25 @@ export default function PaymentDetails() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 <div className="lg:col-span-2 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📌 Projekti</span>
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📌 {t('paymentDetails.project')}</span>
                     <span className="text-lg sm:text-xl font-bold text-slate-800">{contract.site_name}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏢 Kompania</span>
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏢 {t('paymentDetails.company')}</span>
                     <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.company}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 Fillimi</span>
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 {t('paymentDetails.startDate')}</span>
                     <span className="text-base sm:text-lg font-semibold text-slate-800">{formatContractDate(contract.start_date)}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">💰 Vlera</span>
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">💰 {t('paymentDetails.value')}</span>
                     <span className="text-base sm:text-lg font-bold text-emerald-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</span>
                   </div>
                 </div>
                 
                 <div className="flex flex-col items-start lg:items-end justify-start lg:justify-center">
-                  <span className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-2">📊 Statusi</span>
+                  <span className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-2">📊 {t('paymentDetails.contractStatus')}</span>
                   <span className={`inline-flex px-4 py-2 rounded-full text-sm font-bold border ${
                     contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700 border-blue-200' :
                     contract.status === 'Draft' ? 'bg-gray-100 text-gray-700 border-gray-200' :
@@ -503,7 +503,7 @@ export default function PaymentDetails() {
                       <span className="text-2xl">💰</span>
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-white">
-                      Shto Shpenzim/Faturë të Ri
+                      {t('paymentDetails.addNewExpenseInvoice')}
                     </h3>
                   </div>
                   <button
@@ -521,14 +521,14 @@ export default function PaymentDetails() {
                   {/* BASIC INFO SECTION */}
                   <div className="bg-slate-50/50 rounded-xl p-4 border border-slate-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      📝 Informacionet Bazë
+                      📝 {t('paymentDetails.basicInformation')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Lloji i Shpenzimit</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.expenseTypeLabel')}</label>
                         <input 
                           name="expense_type" 
-                          placeholder="p.sh. Material, Transport, Shërbime" 
+                          placeholder={t('paymentDetails.expenseTypePlaceholder')} 
                           value={newExpenseInvoice.expense_type} 
                           onChange={handleChange} 
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
@@ -536,7 +536,7 @@ export default function PaymentDetails() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Data</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.dateLabel')}</label>
                         <input 
                           type="date" 
                           name="date" 
@@ -552,11 +552,11 @@ export default function PaymentDetails() {
                   {/* AMOUNTS SECTION */}
                   <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      💰 Shumat Financiare
+                      💰 {t('paymentDetails.financialAmounts')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Shuma Bruto (£)</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.grossAmountLabel')}</label>
                         <input 
                           name="gross" 
                           placeholder="0.00" 
@@ -570,10 +570,10 @@ export default function PaymentDetails() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Shuma Neto (£)</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.netAmountLabel')}</label>
                         <input 
                           name="net" 
-                          placeholder="Llogaritet automatikisht" 
+                          placeholder={t('paymentDetails.netAmountCalculated')} 
                           value={newExpenseInvoice.net} 
                           onChange={handleChange} 
                           className="w-full p-3 border-2 border-slate-200 rounded-lg bg-slate-100 text-base font-semibold text-slate-700" 
@@ -581,10 +581,10 @@ export default function PaymentDetails() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">TVSH (£)</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.vatLabel')}</label>
                         <input 
                           name="tax" 
-                          placeholder="Llogaritet automatikisht" 
+                          placeholder={t('paymentDetails.vatCalculated')} 
                           value={newExpenseInvoice.tax} 
                           onChange={handleChange} 
                           className="w-full p-3 border-2 border-slate-200 rounded-lg bg-slate-100 text-base font-semibold text-slate-700" 
@@ -597,11 +597,11 @@ export default function PaymentDetails() {
                   {/* FILE & STATUS SECTION */}
                   <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      📎 Dokumenti & Statusi
+                      📎 {t('paymentDetails.documentAndStatus')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Bashkëngjit Dokument</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.attachDocument')}</label>
                         <input 
                           type="file" 
                           name="file" 
@@ -618,7 +618,7 @@ export default function PaymentDetails() {
                           onChange={handleChange} 
                           className="w-5 h-5 accent-emerald-500" 
                         />
-                        <label className="text-base font-medium text-slate-700">Paguar</label>
+                        <label className="text-base font-medium text-slate-700">{t('paymentDetails.paidStatus')}</label>
                       </div>
                     </div>
                   </div>
@@ -656,32 +656,32 @@ export default function PaymentDetails() {
           <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
             <div className="p-4 sm:p-6 lg:p-8">
             <h4 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-              👷‍♂️ Orët e Punës & Pagesat
+              👷‍♂️ {t('paymentDetails.workHoursAndPayments')}
             </h4>
             
             {/* Filtra për orët e punës - MOBILE RESPONSIVE */}
             <div className="bg-emerald-50/50 rounded-xl p-4 mb-6 border border-emerald-200">
               <h5 className="text-base sm:text-lg font-semibold text-emerald-700 mb-4 flex items-center gap-2">
-                🔍 Filtra për Orët e Punës
+                🔍 {t('paymentDetails.workHoursFilter')}
               </h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <input
                   type="text"
-                  placeholder="Kërko punonjës ose javë..."
+                  placeholder={t('paymentDetails.searchEmployeeOrWeek')}
                   value={workHoursSearchTerm}
                   onChange={(e) => setWorkHoursSearchTerm(e.target.value)}
                   className="p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
                 />
                 <input
                   type="date"
-                  placeholder="Data fillimit"
+                  placeholder={t('paymentDetails.startDatePlaceholder')}
                   value={workHoursDateFilter.start}
                   onChange={(e) => setWorkHoursDateFilter(prev => ({ ...prev, start: e.target.value }))}
                   className="p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
                 />
                 <input
                   type="date"
-                  placeholder="Data fundit"
+                  placeholder={t('paymentDetails.endDatePlaceholder')}
                   value={workHoursDateFilter.end}
                   onChange={(e) => setWorkHoursDateFilter(prev => ({ ...prev, end: e.target.value }))}
                   className="p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
@@ -694,11 +694,11 @@ export default function PaymentDetails() {
                 <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
                   <thead className="bg-gradient-to-r from-emerald-100 to-blue-100">
                     <tr>
-                      <th className="py-3 px-2 text-left font-semibold text-emerald-800">Punonjësi</th>
-                      <th className="py-3 px-2 text-center font-semibold text-emerald-800 hidden sm:table-cell">Java</th>
-                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">Orë</th>
-                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">Bruto (£)</th>
-                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">Neto (£)</th>
+                      <th className="py-3 px-2 text-left font-semibold text-emerald-800">{t('paymentDetails.employee')}</th>
+                      <th className="py-3 px-2 text-center font-semibold text-emerald-800 hidden sm:table-cell">{t('paymentDetails.week')}</th>
+                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('paymentDetails.hours')}</th>
+                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('paymentDetails.grossAmount')}</th>
+                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('paymentDetails.netAmount')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -719,8 +719,8 @@ export default function PaymentDetails() {
                   </tbody>
                   <tfoot className="bg-emerald-100">
                     <tr>
-                      <td colSpan={2} className="py-4 px-2 text-right font-bold text-emerald-800 sm:hidden">Totalet:</td>
-                      <td colSpan={3} className="py-4 px-2 text-right font-bold text-emerald-800 hidden sm:table-cell">Totalet:</td>
+                      <td colSpan={2} className="py-4 px-2 text-right font-bold text-emerald-800 sm:hidden">{t('paymentDetails.totals')}:</td>
+                      <td colSpan={3} className="py-4 px-2 text-right font-bold text-emerald-800 hidden sm:table-cell">{t('paymentDetails.totals')}:</td>
                       <td className="py-4 px-2 text-center font-bold text-orange-700 text-base">
                         £{filteredWorkHoursRows.reduce((sum, r) => sum + r.bruto, 0).toFixed(2)}
                       </td>
@@ -734,7 +734,7 @@ export default function PaymentDetails() {
             ) : (
               <div className="text-center py-12">
                 <div className="text-slate-400 text-4xl mb-4">👷‍♂️</div>
-                <p className="text-slate-500 text-lg font-medium">Nuk ka orë pune të regjistruara</p>
+                <p className="text-slate-500 text-lg font-medium">{t('paymentDetails.noWorkHoursRecorded')}</p>
                 <p className="text-slate-400 text-sm">për këtë kontratë akoma</p>
               </div>
             )}
@@ -746,7 +746,7 @@ export default function PaymentDetails() {
             <div className="p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <h4 className="text-xl sm:text-2xl font-bold text-blue-700 flex items-center gap-2">
-                🧾 Shpenzime & Fatura 
+                🧾 {t('paymentDetails.expensesAndInvoices')} 
                 <span className="text-sm sm:text-base font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
                   {filteredExpenses.length}
                 </span>
@@ -756,20 +756,20 @@ export default function PaymentDetails() {
                 className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all flex items-center gap-2 justify-center text-sm sm:text-base hover:shadow-xl hover:scale-105"
               >
                 <span className="text-lg sm:text-xl">➕</span>
-                <span className="hidden sm:inline">Shto Shpenzim/Faturë</span>
-                <span className="sm:hidden">Shto Shpenzim</span>
+                <span className="hidden sm:inline">{t('paymentDetails.addExpenseInvoice')}</span>
+                <span className="sm:hidden">{t('paymentDetails.addExpenseInvoice')}</span>
               </button>
             </div>
             
             {/* Filtra për shpenzimet - MOBILE RESPONSIVE */}
             <div className="bg-blue-50/50 rounded-xl p-4 mb-6 border border-blue-200">
               <h5 className="text-base sm:text-lg font-semibold text-blue-700 mb-4 flex items-center gap-2">
-                🔍 Filtra për Shpenzimet
+                🔍 {t('paymentDetails.expensesFilter')}
               </h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <input
                   type="text"
-                  placeholder="Kërko në shpenzime..."
+                  placeholder={t('paymentDetails.searchInExpenses')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="p-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
@@ -795,13 +795,13 @@ export default function PaymentDetails() {
               <table className="w-full text-base text-blue-900">
                 <thead className="bg-gradient-to-r from-purple-100 to-blue-100">
                   <tr>
-                    <th className="py-3 px-3 text-left">Lloji</th>
-                    <th className="py-3 px-3 text-center">Data</th>
-                    <th className="py-3 px-3 text-center">Bruto (£)</th>
-                    <th className="py-3 px-3 text-center">Neto (£)</th>
-                    <th className="py-3 px-3 text-center">TVSH (£)</th>
-                    <th className="py-3 px-3 text-center">Statusi</th>
-                    <th className="py-3 px-3 text-center">Fshi</th>
+                    <th className="py-3 px-3 text-left">{t('paymentDetails.type')}</th>
+                    <th className="py-3 px-3 text-center">{t('paymentDetails.date')}</th>
+                    <th className="py-3 px-3 text-center">{t('paymentDetails.gross')} (£)</th>
+                    <th className="py-3 px-3 text-center">{t('paymentDetails.net')} (£)</th>
+                    <th className="py-3 px-3 text-center">{t('paymentDetails.tax')} (£)</th>
+                    <th className="py-3 px-3 text-center">{t('paymentDetails.status')}</th>
+                    <th className="py-3 px-3 text-center">{t('paymentDetails.deleteAction')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -817,7 +817,7 @@ export default function PaymentDetails() {
                               link.click();
                             }}
                             className="text-blue-600 hover:text-blue-800 underline cursor-pointer transition-colors"
-                            title="Klikoni për të shkarkuar dokumentin"
+                            title={t('paymentDetails.attachDocument')}
                           >
                             {inv.expense_type}
                           </button>
@@ -836,7 +836,7 @@ export default function PaymentDetails() {
                             ${inv.paid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}
                           `}
                         >
-                          {inv.paid ? 'Paguar' : 'Jo i paguar'}
+                          {inv.paid ? t('paymentDetails.paid') : t('paymentDetails.unpaid')}
                         </button>
                       </td>
                       <td className="py-2 px-3 text-center">
@@ -853,7 +853,7 @@ export default function PaymentDetails() {
                 </tbody>
                 <tfoot>
                   <tr className="bg-purple-50 font-bold">
-                    <td colSpan={2} className="py-2 px-3 text-right">Totali:</td>
+                    <td colSpan={2} className="py-2 px-3 text-right">{t('paymentDetails.totals')}:</td>
                     <td className="py-2 px-3 text-center text-blue-700">£{filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0).toFixed(2)}</td>
                     <td className="py-2 px-3 text-center text-green-700">£{filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.net || 0), 0).toFixed(2)}</td>
                     <td colSpan={3}></td>
@@ -862,14 +862,14 @@ export default function PaymentDetails() {
               </table>
             ) : (
               <div className="text-center py-8 text-gray-500 italic">
-                Nuk ka expenses për këtë kontratë
+                {t('paymentDetails.noExpenseData')}
               </div>
             )}
             
             {/* Note për shkarkimin */}
             <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
               <p className="text-sm text-purple-700 text-center">
-                💡 <strong>Shënim:</strong> Klikoni në llojin e shpenzimit për të shkarkuar dokumentin e bashkëngjitur
+                💡 <strong>{t('paymentDetails.note')}</strong>
               </p>
             </div>
           </div>
@@ -880,14 +880,14 @@ export default function PaymentDetails() {
         {/* TOTALI I PËRGJITHSHËM - MOBILE RESPONSIVE */}
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 p-4 sm:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="text-lg sm:text-xl font-bold text-slate-800">💼 Totali i Përgjithshëm</div>
+            <div className="text-lg sm:text-xl font-bold text-slate-800">💼 {t('paymentDetails.overallTotal')}</div>
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-500">Bruto:</span>
+                <span className="text-sm font-medium text-slate-500">{t('paymentDetails.grossTotal')}</span>
                 <span className="text-lg sm:text-xl font-bold text-orange-600">£{totalOverallGross.toFixed(2)}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-500">Neto:</span>
+                <span className="text-sm font-medium text-slate-500">{t('paymentDetails.netTotal')}</span>
                 <span className="text-lg sm:text-xl font-bold text-emerald-600">£{totalOverallNet.toFixed(2)}</span>
               </div>
             </div>
@@ -900,7 +900,7 @@ export default function PaymentDetails() {
         <div className="bg-gradient-to-r from-emerald-100 to-blue-100 rounded-2xl sm:rounded-3xl shadow-xl border border-emerald-200 p-4 sm:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="text-lg sm:text-xl font-bold text-emerald-800 flex items-center gap-2">
-              💰 Para të Mbetura
+              💰 {t('paymentDetails.remainingMoney')}
             </div>
             <div className={`text-xl sm:text-2xl lg:text-3xl font-bold ${remainingAmount >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
               £{remainingAmount.toFixed(2)}
@@ -910,7 +910,7 @@ export default function PaymentDetails() {
 
         {/* Grafikë i trendit të shpenzimeve - FARE NË FUND */}
         <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 mt-10">
-          <h4 className="text-xl font-bold text-blue-800 mb-2">📊 Trendi i Shpenzimeve</h4>
+                        <h4 className="text-xl font-bold text-blue-800 mb-2">📊 {t('paymentDetails.expensesTrend')}</h4>
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData}>
