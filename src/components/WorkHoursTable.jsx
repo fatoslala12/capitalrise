@@ -489,19 +489,19 @@ export default function WorkHoursTable({
           <div className="bg-gradient-to-r from-gray-100 to-blue-100 rounded-xl p-4 font-bold">
             <div className="grid grid-cols-4 gap-4 text-center">
               <div>
-                <div className="text-lg text-gray-700">📊 Total Orë</div>
+                <div className="text-lg text-gray-700">📊 Total {t('workHours.hoursHeader')}</div>
                 <div className="text-2xl text-gray-900">{weekTotals.totalHours ? Number(weekTotals.totalHours).toFixed(2) : '0.00'}</div>
               </div>
               <div>
-                <div className="text-lg text-green-700">💷 Total Bruto</div>
+                <div className="text-lg text-green-700">💷 Total {t('workHours.grossHeader')}</div>
                 <div className="text-2xl text-green-700">£{weekTotals.totalBruto ? Number(weekTotals.totalBruto).toFixed(2) : '0.00'}</div>
               </div>
               <div>
-                <div className="text-lg text-yellow-700">📋 Total TVSH</div>
+                <div className="text-lg text-yellow-700">📋 Total {t('workHours.vatHeader')}</div>
                 <div className="text-2xl text-yellow-700">£{weekTotals.totalTVSH ? Number(weekTotals.totalTVSH).toFixed(2) : '0.00'}</div>
               </div>
               <div>
-                <div className="text-lg text-blue-700">💰 Total Neto</div>
+                <div className="text-lg text-blue-700">💰 Total {t('workHours.netHeader')}</div>
                 <div className="text-2xl text-blue-700">£{weekTotals.totalNeto ? Number(weekTotals.totalNeto).toFixed(2) : '0.00'}</div>
               </div>
             </div>
@@ -522,10 +522,10 @@ export default function WorkHoursTable({
                   <th className="py-4 px-3 text-center">{t('workHours.rateHeader')}</th>
                   <th className="py-4 px-3 text-center">{t('workHours.total')}</th>
                   <th className="py-4 px-3 text-center">{t('workHours.grossHeader')}</th>
-                  <th className="py-4 px-3 text-center">TVSH</th>
-                  <th className="py-4 px-3 text-center">Neto</th>
+                  <th className="py-4 px-3 text-center">{t('workHours.vatHeader')}</th>
+                  <th className="py-4 px-3 text-center">{t('workHours.netHeader')}</th>
                   {showPaymentControl && <th className="py-4 px-3 text-center">💸</th>}
-                  {showPaymentControl && <th className="py-4 px-3 text-center">Statusi i Pagesës</th>}
+                  {showPaymentControl && <th className="py-4 px-3 text-center">{t('workHours.statusHeader')}</th>}
                 </tr>
               </thead>
           <tbody>
