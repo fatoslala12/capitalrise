@@ -10,7 +10,7 @@ import { Container, Grid, Stack } from "../components/ui/Layout";
 import { CountStatCard, MoneyStatCard } from "../components/ui/StatCard";
 import { StatusBadge, PaymentBadge } from "../components/ui/Badge";
 import EmptyState, { NoTasksEmpty } from "../components/ui/EmptyState";
-import { useTranslation } from "react-i18next";
+
 
 // Error Boundary Component
 class ErrorBoundary extends Component {
@@ -58,32 +58,125 @@ function snakeToCamel(obj) {
 }
 
 export default function AdminDashboard() {
-  let t;
-  
-  try {
-    const translation = useTranslation();
-    t = translation.t;
-  } catch (error) {
-    console.warn('[WARNING] Translation hook failed, using fallback:', error);
-    // Fallback function for translations
-    t = (key, fallback = key) => {
-      // Ensure fallback is always a string
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-      return key;
+  // Translation function with fallback
+  const t = (key, fallback = key) => {
+    // Simple translation mapping for Albanian/English
+    const translations = {
+      // Albanian translations
+      'adminDashboard.title': 'Admin Dashboard',
+      'adminDashboard.subtitle': 'Menaxhimi i sistemit',
+      'adminDashboard.paid': 'E paguar',
+      'adminDashboard.unpaid': 'E papaguar',
+      'adminDashboard.noPayments': 'Nuk ka pagesa të regjistruara për këtë javë',
+      'adminDashboard.expensesBySiteTitle': 'Shpenzimet (expenses_invoice.gross) + Orët e Punës (work_hours.hours × rate) sipas Site-ve',
+      'adminDashboard.tasksTitle': 'Detyrat',
+      'adminDashboard.filter': 'Filtro',
+      'adminDashboard.onlyActive': 'Vetëm aktive',
+      'adminDashboard.onlyCompleted': 'Vetëm të përfunduara',
+      'adminDashboard.all': 'Të gjitha',
+      'adminDashboard.total': 'Total',
+      'adminDashboard.completed': 'Përfunduar',
+      'adminDashboard.ongoing': 'Në progres',
+      'adminDashboard.deadline': 'Afati',
+      'adminDashboard.by': 'Nga',
+      'adminDashboard.hoursBySiteThisWeek': 'Orët sipas site-ve këtë javë',
+      'adminDashboard.totalHoursWorked': 'Totali i orëve të punuara',
+      'adminDashboard.noWorkHours': 'Nuk ka orë të punuara',
+      'adminDashboard.contractsProgressTitle': 'Progresi i kontratave',
+      'adminDashboard.noActiveContracts': 'Nuk ka kontrata aktive',
+      'adminDashboard.topPaidEmployees': 'Top 5 punonjësit më të paguar',
+      'adminDashboard.loadingStats': 'Duke ngarkuar...',
+      'adminDashboard.loading': 'Duke ngarkuar...',
+      'adminDashboard.noInvoiceData': 'Nuk ka të dhëna',
+      'adminDashboard.noExpenseData': 'Nuk ka të dhëna',
+      'adminDashboard.calcExplanation': 'Shpjegimi i llogaritjes',
+      'adminDashboard.calcExpenses': 'Llogaritja e shpenzimeve',
+      'adminDashboard.calcWorkHours': 'Llogaritja e orëve',
+      'adminDashboard.calcTotal': 'Totali i përgjithshëm',
+      'adminDashboard.totalAmount': 'Shuma totale',
+      'adminDashboard.expenses': 'Shpenzimet',
+      'adminDashboard.workHours': 'Orët e punuara',
+      'adminDashboard.active': 'Aktiv',
+      'adminDashboard.suspended': 'I pezulluar',
+      'adminDashboard.completed': 'I përfunduar',
+      'adminDashboard.cancelled': 'I anulluar',
+      'adminDashboard.pending': 'Në pritje',
+      'adminDashboard.inProgress': 'Në progres',
+      'adminDashboard.closedWithDelay': 'I mbyllur me vonesë',
+      'adminDashboard.closed': 'I mbyllur',
+      'adminDashboard.noContractData': 'Nuk ka të dhëna të kontratave',
+      'adminDashboard.allInvoicesPaid': 'Të gjitha faturat janë paguar',
+      'adminDashboard.contract': 'Kontrata',
+      'adminDashboard.invoiceNumber': 'Numri i faturës',
+      'adminDashboard.site': 'Site',
+      'adminDashboard.unpaidExpensesTitle': 'Shpenzimet e papaguara',
+      'adminDashboard.allExpensesPaid': 'Të gjitha shpenzimet janë paguar',
+      'workHours.hours': 'Hours',
+      'common.progress': 'Progress',
+      'common.total': 'Total',
+      'payments.expenses': 'Shpenzimet',
+      
+      // English translations
+      'adminDashboard.title.en': 'Admin Dashboard',
+      'adminDashboard.subtitle.en': 'System Management',
+      'adminDashboard.paid.en': 'Paid',
+      'adminDashboard.unpaid.en': 'Unpaid',
+      'adminDashboard.noPayments.en': 'No payments recorded for this week',
+      'adminDashboard.expensesBySiteTitle.en': 'Expenses (expenses_invoice.gross) + Work Hours (work_hours.hours × rate) by Site',
+      'adminDashboard.tasksTitle.en': 'Tasks',
+      'adminDashboard.filter.en': 'Filter',
+      'adminDashboard.onlyActive.en': 'Active only',
+      'adminDashboard.onlyCompleted.en': 'Completed only',
+      'adminDashboard.all.en': 'All',
+      'adminDashboard.total.en': 'Total',
+      'adminDashboard.completed.en': 'Completed',
+      'adminDashboard.ongoing.en': 'In Progress',
+      'adminDashboard.deadline.en': 'Deadline',
+      'adminDashboard.by.en': 'By',
+      'adminDashboard.hoursBySiteThisWeek.en': 'Hours by sites this week',
+      'adminDashboard.totalHoursWorked.en': 'Total hours worked',
+      'adminDashboard.noWorkHours.en': 'No work hours',
+      'adminDashboard.contractsProgressTitle.en': 'Contracts Progress',
+      'adminDashboard.noActiveContracts.en': 'No active contracts',
+      'adminDashboard.topPaidEmployees.en': 'Top 5 highest paid employees',
+      'adminDashboard.loadingStats.en': 'Loading...',
+      'adminDashboard.loading.en': 'Loading...',
+      'adminDashboard.noInvoiceData.en': 'No data',
+      'adminDashboard.noExpenseData.en': 'No data',
+      'adminDashboard.calcExplanation.en': 'Calculation explanation',
+      'adminDashboard.calcExpenses.en': 'Expenses calculation',
+      'adminDashboard.calcWorkHours.en': 'Work hours calculation',
+      'adminDashboard.calcTotal.en': 'Total calculation',
+      'adminDashboard.totalAmount.en': 'Total amount',
+      'adminDashboard.expenses.en': 'Expenses',
+      'adminDashboard.workHours.en': 'Work Hours',
+      'adminDashboard.active.en': 'Active',
+      'adminDashboard.suspended.en': 'Suspended',
+      'adminDashboard.completed.en': 'Completed',
+      'adminDashboard.cancelled.en': 'Cancelled',
+      'adminDashboard.pending.en': 'Pending',
+      'adminDashboard.inProgress.en': 'In Progress',
+      'adminDashboard.closedWithDelay.en': 'Closed with Delay',
+      'adminDashboard.closed.en': 'Closed',
+      'adminDashboard.noContractData.en': 'No contract data',
+      'adminDashboard.allInvoicesPaid.en': 'All invoices are paid',
+      'adminDashboard.contract.en': 'Contract',
+      'adminDashboard.invoiceNumber.en': 'Invoice number',
+      'adminDashboard.site.en': 'Site',
+      'adminDashboard.unpaidExpensesTitle.en': 'Unpaid expenses',
+      'adminDashboard.allExpensesPaid.en': 'All expenses are paid',
+      'workHours.hours.en': 'Hours',
+      'common.progress.en': 'Progress',
+      'common.total.en': 'Total',
+      'payments.expenses.en': 'Expenses',
     };
-  }
-
-  // Ensure t is always a function
-  if (typeof t !== 'function') {
-    t = (key, fallback = key) => {
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-      return key;
-    };
-  }
+    
+    // Check if user prefers English (you can add logic here to detect language preference)
+    const userLanguage = localStorage.getItem('language') || 'sq'; // Default to Albanian
+    const langKey = userLanguage === 'en' ? `${key}.en` : key;
+    
+    return translations[langKey] || translations[key] || fallback || key;
+  };
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
@@ -707,19 +800,34 @@ export default function AdminDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-8 lg:py-10 space-y-4 md:space-y-8 lg:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
-      {/* HEADER MODERN */}
-      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-4 md:px-10 py-4 md:py-6 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
-        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 md:p-3 shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-8 h-8 md:w-12 md:h-12">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
-          </svg>
-        </div>
-        <div className="text-center md:text-left">
+             {/* HEADER MODERN */}
+       <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-4 md:px-10 py-4 md:py-6 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
+         <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 md:p-3 shadow-sm">
+           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-8 h-8 md:w-12 md:h-12">
+             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
+           </svg>
+         </div>
+         <div className="text-center md:text-left flex-1">
+          
+           <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('adminDashboard.title') || 'Admin Dashboard'}</div>
+           <div className="text-sm md:text-lg font-medium text-purple-700">{t('adminDashboard.subtitle') || 'Menaxhimi i sistemit'}</div>
+         </div>
          
-          <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('adminDashboard.title') || 'Admin Dashboard'}</div>
-          <div className="text-sm md:text-lg font-medium text-purple-700">{t('adminDashboard.subtitle') || 'Menaxhimi i sistemit'}</div>
-        </div>
-      </div>
+         {/* Language Switcher */}
+         <div className="flex-shrink-0">
+           <select 
+             value={localStorage.getItem('language') || 'sq'} 
+             onChange={(e) => {
+               localStorage.setItem('language', e.target.value);
+               window.location.reload(); // Reload to apply language change
+             }}
+             className="bg-white border border-blue-300 rounded-lg px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+           >
+             <option value="sq">🇦🇱 Shqip</option>
+             <option value="en">🇬🇧 English</option>
+           </select>
+         </div>
+       </div>
 
       {/* Statistika kryesore */}
       <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="md" className="mb-6 md:mb-12">
@@ -1084,30 +1192,20 @@ export default function AdminDashboard() {
 }
 
 function VonesaFaturashChart() {
-  let t;
-  
-  try {
-    const translation = useTranslation();
-    t = translation.t;
-  } catch (error) {
-    console.warn('[WARNING] Translation hook failed in VonesaFaturashChart, using fallback:', error);
-    t = (key, fallback = key) => {
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-      return key;
+  // Simple translation function for this component
+  const t = (key, fallback = key) => {
+    const translations = {
+      'adminDashboard.loading': 'Duke ngarkuar...',
+      'adminDashboard.noInvoiceData': 'Nuk ka të dhëna',
+      'adminDashboard.loading.en': 'Loading...',
+      'adminDashboard.noInvoiceData.en': 'No data',
     };
-  }
-
-  // Ensure t is always a function
-  if (typeof t !== 'function') {
-    t = (key, fallback = key) => {
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-      return key;
-    };
-  }
+    
+    const userLanguage = localStorage.getItem('language') || 'sq';
+    const langKey = userLanguage === 'en' ? `${key}.en` : key;
+    
+    return translations[langKey] || translations[key] || fallback || key;
+  };
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1213,30 +1311,20 @@ function VonesaFaturashChart() {
 }
 
 function StatusiShpenzimeveChart() {
-  let t;
-  
-  try {
-    const translation = useTranslation();
-    t = translation.t;
-  } catch (error) {
-    console.warn('[WARNING] Translation hook failed in StatusiShpenzimeveChart, using fallback:', error);
-    t = (key, fallback = key) => {
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-      return key;
+  // Simple translation function for this component
+  const t = (key, fallback = key) => {
+    const translations = {
+      'adminDashboard.loading': 'Duke ngarkuar...',
+      'adminDashboard.noExpenseData': 'Nuk ka të dhëna',
+      'adminDashboard.loading.en': 'Loading...',
+      'adminDashboard.noExpenseData.en': 'No data',
     };
-  }
-
-  // Ensure t is always a function
-  if (typeof t !== 'function') {
-    t = (key, fallback = key) => {
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-      return key;
-    };
-  }
+    
+    const userLanguage = localStorage.getItem('language') || 'sq';
+    const langKey = userLanguage === 'en' ? `${key}.en` : key;
+    
+    return translations[langKey] || translations[key] || fallback || key;
+  };
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1343,30 +1431,36 @@ function StatusiShpenzimeveChart() {
 }
 
 function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, allPayments }) {
-  let t;
-  
-  try {
-    const translation = useTranslation();
-    t = translation.t;
-  } catch (error) {
-    console.warn('[WARNING] Translation hook failed in ShpenzimePerSiteChart, using fallback:', error);
-    t = (key, fallback = key) => {
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-      return key;
+  // Simple translation function for this component
+  const t = (key, fallback = key) => {
+    const translations = {
+      'adminDashboard.loading': 'Duke ngarkuar...',
+      'adminDashboard.noExpenseData': 'Nuk ka të dhëna',
+      'adminDashboard.calcExplanation': 'Shpjegimi i llogaritjes',
+      'adminDashboard.calcExpenses': 'Llogaritja e shpenzimeve',
+      'adminDashboard.calcWorkHours': 'Llogaritja e orëve',
+      'adminDashboard.calcTotal': 'Totali i përgjithshëm',
+      'adminDashboard.totalAmount': 'Shuma totale',
+      'adminDashboard.expenses': 'Shpenzimet',
+      'adminDashboard.workHours': 'Orët e punuara',
+      'common.total': 'Total',
+      'adminDashboard.loading.en': 'Loading...',
+      'adminDashboard.noExpenseData.en': 'No data',
+      'adminDashboard.calcExplanation.en': 'Calculation explanation',
+      'adminDashboard.calcExpenses.en': 'Expenses calculation',
+      'adminDashboard.calcWorkHours.en': 'Work hours calculation',
+      'adminDashboard.calcTotal.en': 'Total calculation',
+      'adminDashboard.totalAmount.en': 'Total amount',
+      'adminDashboard.expenses.en': 'Expenses',
+      'adminDashboard.workHours.en': 'Work Hours',
+      'common.total.en': 'Total',
     };
-  }
-
-  // Ensure t is always a function
-  if (typeof t !== 'function') {
-    t = (key, fallback = key) => {
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-      return key;
-    };
-  }
+    
+    const userLanguage = localStorage.getItem('language') || 'sq';
+    const langKey = userLanguage === 'en' ? `${key}.en` : key;
+    
+    return translations[langKey] || translations[key] || fallback || key;
+  };
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1504,30 +1598,34 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
 }
 
 function StatusiKontrataveChart({ contracts }) {
-  let t;
-  
-  try {
-    const translation = useTranslation();
-    t = translation.t;
-  } catch (error) {
-    console.warn('[WARNING] Translation hook failed in StatusiKontrataveChart, using fallback:', error);
-    t = (key, fallback = key) => {
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-      return key;
+  // Simple translation function for this component
+  const t = (key, fallback = key) => {
+    const translations = {
+      'adminDashboard.active': 'Aktiv',
+      'adminDashboard.suspended': 'I pezulluar',
+      'adminDashboard.completed': 'I përfunduar',
+      'adminDashboard.cancelled': 'I anulluar',
+      'adminDashboard.pending': 'Në pritje',
+      'adminDashboard.inProgress': 'Në progres',
+      'adminDashboard.closedWithDelay': 'I mbyllur me vonesë',
+      'adminDashboard.closed': 'I mbyllur',
+      'adminDashboard.noContractData': 'Nuk ka të dhëna të kontratave',
+      'adminDashboard.active.en': 'Active',
+      'adminDashboard.suspended.en': 'Suspended',
+      'adminDashboard.completed.en': 'Completed',
+      'adminDashboard.cancelled.en': 'Cancelled',
+      'adminDashboard.pending.en': 'Pending',
+      'adminDashboard.inProgress.en': 'In Progress',
+      'adminDashboard.closedWithDelay.en': 'Closed with Delay',
+      'adminDashboard.closed.en': 'Closed',
+      'adminDashboard.noContractData.en': 'No contract data',
     };
-  }
-
-  // Ensure t is always a function
-  if (typeof t !== 'function') {
-    t = (key, fallback = key) => {
-      if (typeof fallback === 'string') {
-        return fallback;
-      }
-      return key;
-    };
-  }
+    
+    const userLanguage = localStorage.getItem('language') || 'sq';
+    const langKey = userLanguage === 'en' ? `${key}.en` : key;
+    
+    return translations[langKey] || translations[key] || fallback || key;
+  };
 
   const [data, setData] = useState([]);
   
