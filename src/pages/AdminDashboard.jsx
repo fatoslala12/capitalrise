@@ -1554,11 +1554,11 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
   }, [allExpenses, contracts, structuredWorkHours, allPayments]);
   
   if (loading) {
-            return <div className="text-center py-8">{t('adminDashboard.loading') || 'Duke ngarkuar...'}</div>;
+    return <div className="text-center py-8">{t('adminDashboard.loading') || 'Duke ngarkuar...'}</div>;
   }
   
   if (data.length === 0) {
-            return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noExpenseData') || 'Nuk ka të dhëna'}</div>;
+    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noExpenseData') || 'Nuk ka të dhëna'}</div>;
   }
   
   return (
