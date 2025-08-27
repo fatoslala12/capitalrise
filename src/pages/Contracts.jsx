@@ -1004,7 +1004,7 @@ export default function Contracts() {
               <option value="Ne progres">Ne progres</option>
               <option value="Pezulluar">Pezulluar</option>
               <option value="Mbyllur">Mbyllur</option>
-              <option value="Mbyllur me vonese">Mbyllur me vonese</option>
+              <option value="Mbyllur me vonese">{t('contracts.closedWithDelay')}</option>
             </select>
           </div>
 
@@ -1347,7 +1347,7 @@ export default function Contracts() {
                         <option value="Ne progres">🟡 Ne progres</option>
                         <option value="Pezulluar">⏸️ Pezulluar</option>
                         <option value="Mbyllur">✅ Mbyllur</option>
-                        <option value="Mbyllur me vonese">⏰ Mbyllur me vonese</option>
+                        <option value="Mbyllur me vonese">⏰ {t('contracts.closedWithDelay')}</option>
                       </select>
                     </div>
                   </div>
