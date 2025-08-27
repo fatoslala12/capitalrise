@@ -1,5 +1,5 @@
 // src/pages/AdminDashboard.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, Component } from "react";
 import api from "../api";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie, Legend
@@ -11,6 +11,30 @@ import { CountStatCard, MoneyStatCard } from "../components/ui/StatCard";
 import { StatusBadge, PaymentBadge } from "../components/ui/Badge";
 import EmptyState, { NoTasksEmpty } from "../components/ui/EmptyState";
 import { useTranslation } from "react-i18next";
+
+// Error Boundary Component
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('[ERROR] Chart component error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || <div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>;
+    }
+
+    return this.props.children;
+  }
+}
 
 // Global color palette for charts
 const CHART_COLORS = ["#a5b4fc", "#fbcfe8", "#fef08a", "#bbf7d0", "#bae6fd", "#fca5a5", "#fdba74", "#ddd6fe"];
@@ -34,7 +58,16 @@ function snakeToCamel(obj) {
 }
 
 export default function AdminDashboard() {
-  const { t } = useTranslation();
+  let t;
+  
+  try {
+    const translation = useTranslation();
+    t = translation.t;
+  } catch (error) {
+    console.warn('[WARNING] Translation hook failed, using fallback:', error);
+    // Fallback function for translations
+    t = (key, fallback = key) => fallback;
+  }
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
@@ -119,6 +152,36 @@ export default function AdminDashboard() {
           workHoursRes = { data: {} };
         }
         
+        // Validate API responses
+        if (!contractsRes?.data || !Array.isArray(contractsRes.data)) {
+          console.warn('[WARNING] Invalid contracts data, using empty array');
+          contractsRes = { data: [] };
+        }
+        if (!employeesRes?.data || !Array.isArray(employeesRes.data)) {
+          console.warn('[WARNING] Invalid employees data, using empty array');
+          employeesRes = { data: [] };
+        }
+        if (!invoicesRes?.data || !Array.isArray(invoicesRes.data)) {
+          console.warn('[WARNING] Invalid invoices data, using empty array');
+          invoicesRes = { data: [] };
+        }
+        if (!tasksRes?.data || !Array.isArray(tasksRes.data)) {
+          console.warn('[WARNING] Invalid tasks data, using empty array');
+          tasksRes = { data: [] };
+        }
+        if (!expensesRes?.data || !Array.isArray(expensesRes.data)) {
+          console.warn('[WARNING] Invalid expenses data, using empty array');
+          expensesRes = { data: [] };
+        }
+        if (!paymentsRes?.data || !Array.isArray(paymentsRes.data)) {
+          console.warn('[WARNING] Invalid payments data, using empty array');
+          paymentsRes = { data: [] };
+        }
+        if (!workHoursRes?.data || typeof workHoursRes.data !== 'object') {
+          console.warn('[WARNING] Invalid work hours data, using empty object');
+          workHoursRes = { data: {} };
+        }
+        
         setContracts(snakeToCamel(contractsRes.data || []));
         setEmployees(snakeToCamel(employeesRes.data || []));
         
@@ -176,65 +239,93 @@ export default function AdminDashboard() {
         }
         
         // Gjej pagesat për këtë javë
-        const thisWeekPayments = allPayments.filter(p => (p.weekLabel || p.week_label) === weekToUse);
+        const thisWeekPayments = allPayments.filter(p => p && (p.weekLabel || p.week_label) === weekToUse);
         
         // Gjej pagesat e paguara për këtë javë
-        const paidThisWeek = thisWeekPayments.filter(p => (p.isPaid || p.is_paid) === true);
+        const paidThisWeek = thisWeekPayments.filter(p => p && (p.isPaid || p.is_paid) === true);
         
         // Llogarit totalin e paguar
-        const totalPaid = paidThisWeek.reduce((sum, p) => sum + parseFloat(p.grossAmount || p.gross_amount || 0), 0);
+        const totalPaid = paidThisWeek.reduce((sum, p) => {
+          if (!p) return sum;
+          const amount = parseFloat(p.grossAmount || p.gross_amount || 0);
+          return isNaN(amount) ? sum : sum + amount;
+        }, 0);
         
         // Llogarit orët e punuara për këtë javë
         let totalWorkHours = 0;
         const siteHours = {};
         
-        Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
-          const weekData = empData[weekToUse] || {};
-          
-          Object.values(weekData).forEach(dayData => {
-            if (dayData?.hours) {
-              const hours = parseFloat(dayData.hours);
-              totalWorkHours += hours;
-              if (dayData.site) {
-                siteHours[dayData.site] = (siteHours[dayData.site] || 0) + hours;
+        if (structuredWorkHours && typeof structuredWorkHours === 'object') {
+          Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
+            if (!empData || typeof empData !== 'object') return;
+            
+            const weekData = empData[weekToUse] || {};
+            
+            Object.values(weekData).forEach(dayData => {
+              if (dayData && dayData.hours) {
+                const hours = parseFloat(dayData.hours);
+                if (!isNaN(hours)) {
+                  totalWorkHours += hours;
+                  if (dayData.site) {
+                    siteHours[dayData.site] = (siteHours[dayData.site] || 0) + hours;
+                  }
+                }
               }
-            }
+            });
           });
-        });
+        }
         
         // Llogarit total gross për këtë javë nga work_hours
         let totalGrossThisWeek = 0;
-        Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
-          const weekData = empData[weekToUse] || {};
-          const emp = employees.find(e => e.id === empId);
-          const hourlyRate = parseFloat(emp?.hourlyRate || emp?.hourly_rate || 0);
-          
-          Object.values(weekData).forEach(dayData => {
-            if (dayData?.hours) {
-              const hours = parseFloat(dayData.hours);
-              totalGrossThisWeek += hours * hourlyRate;
-            }
+        if (structuredWorkHours && typeof structuredWorkHours === 'object') {
+          Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
+            if (!empData || typeof empData !== 'object') return;
+            
+            const weekData = empData[weekToUse] || {};
+            const emp = employees.find(e => e && e.id === empId);
+            const hourlyRate = parseFloat(emp?.hourlyRate || emp?.hourly_rate || 0);
+            
+            if (isNaN(hourlyRate)) return;
+            
+            Object.values(weekData).forEach(dayData => {
+              if (dayData && dayData.hours) {
+                const hours = parseFloat(dayData.hours);
+                if (!isNaN(hours)) {
+                  totalGrossThisWeek += hours * hourlyRate;
+                }
+              }
+            });
           });
-        });
+        }
         
         // Top 5 punonjësit më të paguar (vetëm të paguarat)
         const top5Employees = paidThisWeek
-          .sort((a, b) => parseFloat(b.grossAmount || b.gross_amount || 0) - parseFloat(a.grossAmount || a.gross_amount || 0))
+          .filter(p => p && typeof p === 'object')
+          .sort((a, b) => {
+            const aAmount = parseFloat(a?.grossAmount || a?.gross_amount || 0);
+            const bAmount = parseFloat(b?.grossAmount || b?.gross_amount || 0);
+            return isNaN(bAmount) ? -1 : isNaN(aAmount) ? 1 : bAmount - aAmount;
+          })
           .slice(0, 5)
           .map(p => {
-            const emp = employees.find(e => e.id === (p.employeeId || p.employee_id));
+            if (!p) return null;
+            
+            const emp = employees.find(e => e && e.id === (p.employeeId || p.employee_id));
+            const grossAmount = parseFloat(p.grossAmount || p.gross_amount || 0);
+            
             return {
               id: p.employeeId || p.employee_id,
               employee_id: p.employeeId || p.employee_id, // Add this for consistency
               name: emp ? `${emp.firstName || emp.first_name || emp.name || 'Unknown'} ${emp.lastName || emp.last_name || ''}`.trim() : 'Unknown',
-              grossAmount: parseFloat(p.grossAmount || p.gross_amount || 0),
+              grossAmount: isNaN(grossAmount) ? 0 : grossAmount,
               isPaid: p.isPaid || p.is_paid,
               photo: emp?.photo || null,
               // Add these fields for better name display
               firstName: emp?.firstName || emp?.first_name || '',
               lastName: emp?.lastName || emp?.last_name || ''
             };
-          });
+          })
+          .filter(Boolean); // Remove any null entries
         
         const finalStats = {
           thisWeek: weekToUse,
@@ -258,38 +349,64 @@ export default function AdminDashboard() {
         // Process unpaid invoices
         const unpaidList = [];
         invoices.forEach(inv => {
-          if (inv && !inv.paid && Array.isArray(inv.items)) {
-            const net = inv.items.reduce((a, i) => a + (i.amount || 0), 0);
-            const vat = net * 0.2;
-            const total = net + vat + parseFloat(inv.other || 0);
-            if (total <= 0) return;
-            const contract = contractsRes.data.find(c => c.contract_number === inv.contract_number);
-            unpaidList.push({
-              contractNumber: inv.contractNumber,
-              invoiceNumber: inv.invoiceNumber || "-",
-              total,
-              siteName: contract?.site_name || "-"
-            });
+          if (inv && typeof inv === 'object' && !inv.paid && Array.isArray(inv.items)) {
+            try {
+              const net = inv.items.reduce((a, i) => {
+                if (!i || typeof i !== 'object') return a;
+                const amount = parseFloat(i.amount || 0);
+                return a + (isNaN(amount) ? 0 : amount);
+              }, 0);
+              
+              if (isNaN(net) || net <= 0) return;
+              
+              const vat = net * 0.2;
+              const other = parseFloat(inv.other || 0);
+              const total = net + vat + (isNaN(other) ? 0 : other);
+              
+              if (total <= 0) return;
+              
+              const contract = contractsRes.data.find(c => c && c.contract_number === inv.contract_number);
+              unpaidList.push({
+                contractNumber: inv.contractNumber || inv.contract_number || "-",
+                invoiceNumber: inv.invoiceNumber || "-",
+                total,
+                siteName: contract?.site_name || contract?.siteName || "-"
+              });
+            } catch (error) {
+              console.warn('[WARNING] Failed to process invoice:', inv, error);
+            }
           }
         });
         setUnpaid(unpaidList);
         
         // Process unpaid expenses
-        const unpaidExpensesList = allExpenses.filter(exp => !exp.paid).map(exp => ({
-          id: exp.id,
-          date: exp.date,
-          type: exp.type || exp.description,
-          gross: exp.gross || exp.amount,
-          description: exp.description,
-          contract_id: exp.contractId || exp.contract_id
-        }));
+        const unpaidExpensesList = allExpenses
+          .filter(exp => exp && typeof exp === 'object' && !exp.paid)
+          .map(exp => ({
+            id: exp.id || exp.expense_id || '',
+            date: exp.date || exp.expense_date || '',
+            type: exp.type || exp.description || exp.expense_type || '',
+            gross: exp.gross || exp.amount || exp.expense_amount || 0,
+            description: exp.description || exp.expense_description || '',
+            contract_id: exp.contractId || exp.contract_id || exp.contractId || ''
+          }))
+          .filter(exp => exp.id && exp.gross > 0); // Only include valid expenses
         setUnpaidExpenses(unpaidExpensesList);
         
         // Process weekly profit data
-        const weekLabels = [...new Set(allPayments.map(p => p.weekLabel || p.week_label))].sort();
+        const weekLabels = [...new Set(allPayments
+          .filter(p => p && typeof p === 'object')
+          .map(p => p.weekLabel || p.week_label)
+          .filter(Boolean)
+        )].sort();
+        
         const weeklyData = weekLabels.map(week => {
-          const weekPayments = allPayments.filter(p => (p.weekLabel || p.week_label) === week);
-          const totalPaid = weekPayments.reduce((sum, p) => sum + parseFloat(p.grossAmount || p.gross_amount || 0), 0);
+          const weekPayments = allPayments.filter(p => p && (p.weekLabel || p.week_label) === week);
+          const totalPaid = weekPayments.reduce((sum, p) => {
+            if (!p || typeof p !== 'object') return sum;
+            const amount = parseFloat(p.grossAmount || p.gross_amount || 0);
+            return sum + (isNaN(amount) ? 0 : amount);
+          }, 0);
           return { week, totalPaid };
         });
         setWeeklyProfitData(weeklyData);
@@ -322,26 +439,39 @@ export default function AdminDashboard() {
   }, []);
 
   // Llogarit site-t aktive dhe punonjësit aktivë
-  const activeSites = contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar");
-  const activeEmployees = employees.filter(e => e.status === "active" || e.status === "Aktiv");
+  const activeSites = contracts.filter(c => c && typeof c === 'object' && (c.status === "Ne progres" || c.status === "Pezulluar"));
+  const activeEmployees = employees.filter(e => e && typeof e === 'object' && (e.status === "active" || e.status === "Aktiv"));
 
   // Filtro detyrat
   const filteredTasks = allTasks.filter(t => {
+    if (!t || typeof t !== 'object') return false;
     if (taskFilter === 'ongoing') return t.status === 'ongoing';
     if (taskFilter === 'completed') return t.status === 'completed';
     return true; // all
   });
 
   // Merr emër + mbiemër për user-in (mos shfaq email në asnjë rast)
-  const user = JSON.parse(localStorage.getItem("user"));
-  const userFullName = (user?.first_name && user?.last_name)
-    ? `${user.first_name} ${user.last_name}`
-    : (user?.firstName && user?.lastName)
-      ? `${user.firstName} ${user.lastName}`
-      : "";
+  let user = null;
+  let userFullName = "";
+  
+  try {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      user = JSON.parse(userStr);
+      userFullName = (user?.first_name && user?.last_name)
+        ? `${user.first_name} ${user.last_name}`
+        : (user?.firstName && user?.lastName)
+          ? `${user.firstName} ${user.lastName}`
+          : "";
+    }
+  } catch (error) {
+    console.warn('[WARNING] Failed to parse user from localStorage:', error);
+    user = null;
+    userFullName = "";
+  }
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text={t('adminDashboard.loadingStats')} />;
+    return <LoadingSpinner fullScreen={true} size="xl" text={t('adminDashboard.loadingStats') || 'Duke ngarkuar...'} />;
   }
 
   return (
@@ -355,8 +485,8 @@ export default function AdminDashboard() {
         </div>
         <div className="text-center md:text-left">
          
-          <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('adminDashboard.title')}</div>
-          <div className="text-sm md:text-lg font-medium text-purple-700">{t('adminDashboard.subtitle')}</div>
+          <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('adminDashboard.title') || 'Admin Dashboard'}</div>
+          <div className="text-sm md:text-lg font-medium text-purple-700">{t('adminDashboard.subtitle') || 'Menaxhimi i sistemit'}</div>
         </div>
       </div>
 
@@ -392,19 +522,19 @@ export default function AdminDashboard() {
 
       {/* Detyrat - më të dukshme */}
       <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-xl col-span-full border border-yellow-200">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📋 {t('adminDashboard.tasksTitle')}</h3>
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📋 {t('adminDashboard.tasksTitle') || 'Detyrat'}</h3>
         <div className="mb-4 flex flex-col sm:flex-row gap-2 md:gap-4 items-start sm:items-center">
-          <label className="font-medium text-sm md:text-base">{t('adminDashboard.filter')}</label>
+          <label className="font-medium text-sm md:text-base">{t('adminDashboard.filter') || 'Filtro'}</label>
           <select value={taskFilter} onChange={e => setTaskFilter(e.target.value)} className="border p-2 rounded text-sm md:text-base">
-            <option value="ongoing">{t('adminDashboard.onlyActive')}</option>
-            <option value="completed">{t('adminDashboard.onlyCompleted')}</option>
-            <option value="all">{t('adminDashboard.all')}</option>
+            <option value="ongoing">{t('adminDashboard.onlyActive') || 'Vetëm aktive'}</option>
+            <option value="completed">{t('adminDashboard.onlyCompleted') || 'Vetëm të përfunduara'}</option>
+            <option value="all">{t('adminDashboard.all') || 'Të gjitha'}</option>
           </select>
         </div>
         <div className="mb-4 flex flex-col sm:flex-row flex-wrap gap-2 md:gap-6">
-          <div className="bg-blue-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">{t('adminDashboard.total')}: {allTasks.length}</div>
-          <div className="bg-green-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">✅ {t('adminDashboard.completed')}: {allTasks.filter(t => t.status === 'completed').length}</div>
-          <div className="bg-yellow-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">🕒 {t('adminDashboard.ongoing')}: {allTasks.filter(t => t.status === 'ongoing').length}</div>
+          <div className="bg-blue-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">{t('adminDashboard.total') || 'Total'}: {allTasks.length}</div>
+          <div className="bg-green-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">✅ {t('adminDashboard.completed') || 'Përfunduar'}: {allTasks.filter(t => t && t.status === 'completed').length}</div>
+          <div className="bg-yellow-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">🕒 {t('adminDashboard.ongoing') || 'Në progres'}: {allTasks.filter(t => t && t.status === 'ongoing').length}</div>
         </div>
         {filteredTasks.length > 0 ? (
           <ul className="space-y-3">
@@ -413,8 +543,8 @@ export default function AdminDashboard() {
                 <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
                 <span className="font-semibold flex-1 text-sm md:text-lg">{t.description || t.title || ''}</span>
                 <span className="text-sm md:text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
-                <span className="text-sm md:text-lg text-purple-700 font-bold">{t('adminDashboard.deadline')} {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'N/A'}</span>
-                <span className="text-xs text-gray-500">{t('adminDashboard.by')} {t.assigned_by || t.assignedBy || ''}</span>
+                <span className="text-sm md:text-lg text-purple-700 font-bold">{t('adminDashboard.deadline') || 'Afati'} {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'N/A'}</span>
+                <span className="text-xs text-gray-500">{t('adminDashboard.by') || 'Nga'} {t.assigned_by || t.assignedBy || ''}</span>
               </li>
             ))}
           </ul>
@@ -425,11 +555,11 @@ export default function AdminDashboard() {
 
       {/* Grafik për site */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
-            📊 {t('adminDashboard.hoursBySiteThisWeek')}
+                  <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+            📊 {t('adminDashboard.hoursBySiteThisWeek') || 'Orët sipas site-ve këtë javë'}
           </h3>
                   <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
-            {t('adminDashboard.totalHoursWorked')} <span className="text-blue-600">{dashboardStats.totalWorkHours}</span>
+            {t('adminDashboard.totalHoursWorked') || 'Totali i orëve të punuara'} <span className="text-blue-600">{dashboardStats.totalWorkHours}</span>
           </div>
         {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
@@ -446,13 +576,13 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noWorkHours')}</p>
+          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noWorkHours') || 'Nuk ka orë të punuara'}</p>
         )}
       </div>
 
       {/* Grafik për progresin e kontratave aktive */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 {t('adminDashboard.contractsProgressTitle')}</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 {t('adminDashboard.contractsProgressTitle') || 'Progresi i kontratave'}</h3>
         {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
             <BarChart
@@ -485,14 +615,14 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noActiveContracts')}</p>
+          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noActiveContracts') || 'Nuk ka kontrata aktive'}</p>
         )}
       </div>
 
       {/* Top 5 më të paguar */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            🏅 {t('adminDashboard.topPaidEmployees')}
+            🏅 {t('adminDashboard.topPaidEmployees') || 'Top 5 punonjësit më të paguar'}
           </h3>
         {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
@@ -551,7 +681,7 @@ export default function AdminDashboard() {
                       {displayName}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {e.isPaid ? `✅ ${t('adminDashboard.paid')}` : `⏳ ${t('adminDashboard.unpaid')}`}
+                      {e.isPaid ? `✅ ${t('adminDashboard.paid') || 'Paguar'}` : `⏳ ${t('adminDashboard.unpaid') || 'Pa paguar'}`}
                     </p>
                   </div>
                   <div className="text-blue-700 font-extrabold text-xl">£{Number(amount).toFixed(2)}</div>
@@ -560,7 +690,7 @@ export default function AdminDashboard() {
             })}
           </ul>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noPayments')}</p>
+          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noPayments') || 'Nuk ka pagesa'}</p>
         )}
       </div>
 
@@ -569,14 +699,18 @@ export default function AdminDashboard() {
 
       {/* Grafik për shpenzimet sipas site-ve */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 {t('adminDashboard.expensesBySiteTitle')}</h3>
-        <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} structuredWorkHours={structuredWorkHours} allPayments={allPayments} />
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 {t('adminDashboard.expensesBySiteTitle') || 'Shpenzimet sipas site-ve'}</h3>
+        <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+          <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} structuredWorkHours={structuredWorkHours} allPayments={allPayments} />
+        </ErrorBoundary>
       </div>
 
       {/* Grafik për statusin e kontratave */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i kontratave</h3>
-        <StatusiKontrataveChart contracts={contracts} />
+        <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+          <StatusiKontrataveChart contracts={contracts} />
+        </ErrorBoundary>
       </div>
 
       {/* Grafik për pagesat javore */}
@@ -597,36 +731,40 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noPayments')}</p>
+          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noPayments') || 'Nuk ka pagesa'}</p>
         )}
       </div>
 
       {/* Grafik për vonesat në pagesa/fatura */}
       <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i Invoice-ve të dërguar</h3>
-        <VonesaFaturashChart />
+        <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+          <VonesaFaturashChart />
+        </ErrorBoundary>
       </div>
 
       {/* Grafik për statusin e faturave të shpenzimeve */}
       <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📈 Statusi i faturave të shpenzimeve</h3>
-        <StatusiShpenzimeveChart />
+        <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+          <StatusiShpenzimeveChart />
+        </ErrorBoundary>
       </div>
 
       {/* Faturat e papaguara */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
         {unpaid.length === 0 ? (
-          <p className="text-gray-500 italic">{t('adminDashboard.allInvoicesPaid')}</p>
+          <p className="text-gray-500 italic">{t('adminDashboard.allInvoicesPaid') || 'Të gjitha faturat janë paguar'}</p>
         ) : (
           <ul className="space-y-2 text-red-700 text-base">
             {unpaid.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
                 <a href={`/admin/contracts/${item.contractNumber}`} className="font-bold text-red-700 underline cursor-pointer">
-                  🔴 {t('adminDashboard.contract')} #{item.contractNumber || ''}
+                  🔴 {t('adminDashboard.contract') || 'Kontrata'} #{item.contractNumber || ''}
                 </a>
-                <span className="font-bold text-black">{t('adminDashboard.invoiceNumber')} <b>{item.invoiceNumber || ''}</b></span>
-                <span className="font-bold text-blue-700 flex items-center gap-1">🏢 {t('adminDashboard.site')} {(() => {
+                <span className="font-bold text-black">{t('adminDashboard.invoiceNumber') || 'Numri i faturës'} <b>{item.invoiceNumber || ''}</b></span>
+                <span className="font-bold text-blue-700 flex items-center gap-1">🏢 {t('adminDashboard.site') || 'Site'} {(() => {
                   let c = null;
                   if (item.contract_id && contracts.length) {
                     c = contracts.find(c => String(c.id) === String(item.contract_id));
@@ -645,9 +783,9 @@ export default function AdminDashboard() {
 
       {/* Shpenzimet e papaguara */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full mb-6 md:mb-8">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 {t('adminDashboard.unpaidExpensesTitle')}</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 {t('adminDashboard.unpaidExpensesTitle') || 'Shpenzimet e papaguara'}</h3>
         {unpaidExpenses.length === 0 ? (
-          <p className="text-gray-500 italic">{t('adminDashboard.allExpensesPaid')}</p>
+          <p className="text-gray-500 italic">{t('adminDashboard.allExpensesPaid') || 'Të gjitha shpenzimet janë paguar'}</p>
         ) : (
           <ul className="space-y-2 text-red-700 text-base">
             {unpaidExpenses.map((item, idx) => (
@@ -673,23 +811,31 @@ export default function AdminDashboard() {
 }
 
 function VonesaFaturashChart() {
+  const { t } = useTranslation();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   
   useEffect(() => {
     async function fetchInvoices() {
       try {
         setLoading(true);
+        setError(false);
         const res = await api.get("/api/invoices");
         const invoices = res.data || [];
+        
+        // Validate data structure
+        if (!Array.isArray(invoices)) {
+          throw new Error('Invalid invoices data structure');
+        }
         
         // Thjeshtëzo: vetëm paid TRUE vs FALSE
         const result = { "Paguar": 0, "Pa paguar": 0 };
         
         invoices.forEach(inv => {
-          if (inv.paid) {
+          if (inv && typeof inv === 'object' && inv.paid) {
             result["Paguar"]++;
-          } else {
+          } else if (inv && typeof inv === 'object') {
             result["Pa paguar"]++;
           }
         });
@@ -704,6 +850,7 @@ function VonesaFaturashChart() {
         setData(chartData);
       } catch (error) {
         console.error('[ERROR] Failed to fetch invoices:', error);
+        setError(true);
         // Nëse ka error, vendos të dhëna bosh
         setData([
           { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
@@ -718,11 +865,15 @@ function VonesaFaturashChart() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-8">{t('adminDashboard.loading')}</div>;
+    return <div className="text-center py-8">{t('adminDashboard.loading') || 'Duke ngarkuar...'}</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500 py-8">Gabim në ngarkimin e të dhënave</div>;
   }
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noInvoiceData')}</div>;
+    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noInvoiceData') || 'Nuk ka të dhëna'}</div>;
   }
 
   return (
@@ -758,24 +909,32 @@ function VonesaFaturashChart() {
 }
 
 function StatusiShpenzimeveChart() {
+  const { t } = useTranslation();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   
   useEffect(() => {
     async function fetchExpensesInvoices() {
       try {
         setLoading(true);
+        setError(false);
         // Merr të gjitha shpenzimet nga expenses
         const res = await api.get("/api/expenses");
         const expenses = res.data || [];
+        
+        // Validate data structure
+        if (!Array.isArray(expenses)) {
+          throw new Error('Invalid expenses data structure');
+        }
         
         // Llogarit statusin e pagesës për shpenzimet
         const result = { "Paguar": 0, "Pa paguar": 0 };
         
         expenses.forEach(exp => {
-          if (exp.paid) {
+          if (exp && typeof exp === 'object' && exp.paid) {
             result["Paguar"]++;
-          } else {
+          } else if (exp && typeof exp === 'object') {
             result["Pa paguar"]++;
           }
         });
@@ -790,6 +949,7 @@ function StatusiShpenzimeveChart() {
         setData(chartData);
       } catch (error) {
         console.error('[ERROR] Failed to fetch expenses:', error);
+        setError(true);
         // Nëse ka error, vendos të dhëna bosh
         setData([
           { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
@@ -804,11 +964,15 @@ function StatusiShpenzimeveChart() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-8">{t('adminDashboard.loading')}</div>;
+    return <div className="text-center py-8">{t('adminDashboard.loading') || 'Duke ngarkuar...'}</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500 py-8">Gabim në ngarkimin e të dhënave</div>;
   }
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noExpenseData')}</div>;
+    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noExpenseData') || 'Nuk ka të dhëna'}</div>;
   }
 
   return (
@@ -844,6 +1008,7 @@ function StatusiShpenzimeveChart() {
 }
 
 function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, allPayments }) {
+  const { t } = useTranslation();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -936,36 +1101,36 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
   }, [allExpenses, contracts, structuredWorkHours, allPayments]);
   
   if (loading) {
-    return <div className="text-center py-8">{t('adminDashboard.loading')}</div>;
+            return <div className="text-center py-8">{t('adminDashboard.loading') || 'Duke ngarkuar...'}</div>;
   }
   
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noExpenseData')}</div>;
+            return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noExpenseData') || 'Nuk ka të dhëna'}</div>;
   }
   
   return (
     <div>
       <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h4 className="font-semibold text-blue-800 mb-2">📊 {t('adminDashboard.calcExplanation')}</h4>
+        <h4 className="font-semibold text-blue-800 mb-2">📊 {t('adminDashboard.calcExplanation') || 'Shpjegimi i llogaritjes'}</h4>
         <div className="text-sm text-blue-700 space-y-1">
-          <p><strong>{t('payments.expenses')}:</strong> {t('adminDashboard.calcExpenses')}</p>
-          <p><strong>{t('workHours.title')}:</strong> {t('adminDashboard.calcWorkHours')}</p>
-          <p><strong>{t('common.total') || 'Total'}:</strong> {t('adminDashboard.calcTotal')}</p>
+          <p><strong>{t('payments.expenses') || 'Shpenzimet'}:</strong> {t('adminDashboard.calcExpenses') || 'Llogaritja e shpenzimeve'}</p>
+          <p><strong>{t('workHours.title') || 'Orët e punuara'}:</strong> {t('adminDashboard.calcWorkHours') || 'Llogaritja e orëve'}</p>
+          <p><strong>{t('common.total') || 'Total'}:</strong> {t('adminDashboard.calcTotal') || 'Totali i përgjithshëm'}</p>
         </div>
       </div>
       
       <ResponsiveContainer width="100%" height={450}>
         <BarChart data={data} layout="vertical" margin={{ left: 50, right: 50, top: 20, bottom: 20 }} barCategoryGap={18}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" label={{ value: t('adminDashboard.totalAmount'), position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
+          <XAxis type="number" label={{ value: t('adminDashboard.totalAmount') || 'Shuma totale', position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
           <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0284c7' }} />
           <Tooltip 
             contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} 
             formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? t('common.total') : n]} 
           />
           <Legend />
-          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name={t('adminDashboard.expenses')} radius={[0, 0, 0, 0]} />
-          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[1]} name={t('adminDashboard.workHours')} radius={[0, 0, 0, 0]} />
+          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name={t('adminDashboard.expenses') || 'Shpenzimet'} radius={[0, 0, 0, 0]} />
+          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[1]} name={t('adminDashboard.workHours') || 'Orët e punuara'} radius={[0, 0, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -973,6 +1138,7 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
 }
 
 function StatusiKontrataveChart({ contracts }) {
+  const { t } = useTranslation();
   const [data, setData] = useState([]);
   
   // Ngjyra të ndryshme për çdo status
@@ -1000,16 +1166,16 @@ function StatusiKontrataveChart({ contracts }) {
     });
     
     const chartData = Object.entries(statusCount).map(([status, count]) => ({
-      name: status === 'active' ? t('adminDashboard.active') : 
-            status === 'suspended' ? t('adminDashboard.suspended') :
-            status === 'completed' ? t('adminDashboard.completed') :
-            status === 'cancelled' ? t('adminDashboard.cancelled') :
-            status === 'pending' ? t('adminDashboard.pending') :
-            status === 'ne progres' ? t('adminDashboard.inProgress') :
-            status === 'pezulluar' ? t('adminDashboard.suspended') :
-            status === 'mbyllur me vonese' ? t('adminDashboard.closedWithDelay') :
-            status === 'anulluar' ? t('adminDashboard.cancelled') :
-            status === 'mbyllur' ? t('adminDashboard.closed') : status,
+      name: status === 'active' ? t('adminDashboard.active') || 'Aktiv' : 
+            status === 'suspended' ? t('adminDashboard.suspended') || 'I pezulluar' :
+            status === 'completed' ? t('adminDashboard.completed') || 'I përfunduar' :
+            status === 'cancelled' ? t('adminDashboard.cancelled') || 'I anulluar' :
+            status === 'pending' ? t('adminDashboard.pending') || 'Në pritje' :
+            status === 'ne progres' ? t('adminDashboard.inProgress') || 'Në progres' :
+            status === 'pezulluar' ? t('adminDashboard.suspended') || 'I pezulluar' :
+            status === 'mbyllur me vonese' ? t('adminDashboard.closedWithDelay') || 'I mbyllur me vonesë' :
+            status === 'anulluar' ? t('adminDashboard.cancelled') || 'I anulluar' :
+            status === 'mbyllur' ? t('adminDashboard.closed') || 'I mbyllur' : status,
       value: count,
       color: statusColors[status] || '#6b7280'
     }));
@@ -1018,7 +1184,7 @@ function StatusiKontrataveChart({ contracts }) {
   }, [contracts]);
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noContractData')}</div>;
+    return <div className="text-center text-gray-400 py-8">{t('adminDashboard.noContractData') || 'Nuk ka të dhëna të kontratave'}</div>;
   }
 
   return (
