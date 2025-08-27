@@ -321,7 +321,7 @@ export default function Contracts() {
               showToastMessage(t('contracts.statusChangedSuccess'));
     } catch (err) {
       console.error("Error updating contract status:", err);
-      showToastMessage("Gabim gjatë ndryshimit të statusit!", "error");
+              showToastMessage(t('contracts.statusChangeError'), "error");
     } finally {
       // Clear loading state
       setLoadingStates(prev => ({ ...prev, toggleStatus: { ...prev.toggleStatus, [contract_number]: false } }));
@@ -557,7 +557,7 @@ export default function Contracts() {
         [t('contracts.exportHeaders.value')]: contract.contract_value,
         [t('contracts.exportHeaders.startDate')]: contract.start_date,
         [t('contracts.exportHeaders.endDate')]: contract.finish_date,
-        'Statusi': contract.status,
+        [t('contracts.statusHeader')]: contract.status,
         'Adresa': contract.address,
         [t('contracts.exportHeaders.spent')]: totalSpent.toFixed(2),
         [t('contracts.exportHeaders.profit')]: profit.toFixed(2)
@@ -585,7 +585,7 @@ export default function Contracts() {
             <th>Vlera (£)</th>
             <th>Data e Fillimit</th>
             <th>Data e Mbarimit</th>
-            <th>Statusi</th>
+            <th>{t('contracts.statusHeader')}</th>
             <th>Adresa</th>
             <th>Shpenzuar (£)</th>
             <th>Fitimi (£)</th>
@@ -735,11 +735,11 @@ export default function Contracts() {
         }
       }
       
-      toast.success(`Statusi i kontratës u ndryshua në "${newStatus}"`);
+              toast.success(t('contracts.statusChangedSuccess'));
       refetchContracts();
     } catch (err) {
       console.error('❌ Error updating status:', err);
-      toast.error('Gabim gjatë ndryshimit të statusit!');
+              toast.error(t('contracts.statusChangeError'));
     } finally {
       // Clear loading state
       setLoadingStates(prev => ({ ...prev, statusChange: { ...prev.statusChange, [contractId]: false } }));
@@ -1079,9 +1079,9 @@ export default function Contracts() {
                     <th className="py-4 px-4 text-center">{t('contracts.value')}</th>
                     <th className="py-4 px-4 text-center">{t('contracts.spent')}</th>
                     <th className="py-4 px-4 text-center">{t('contracts.profit')}</th>
-                <th className="py-4 px-4 text-center">Statusi</th>
-                <th className="py-4 px-4 text-center">Progresi</th>
-                <th className="py-4 px-4 text-center">Veprime</th>
+                <th className="py-4 px-4 text-center">{t('contracts.statusHeader')}</th>
+                <th className="py-4 px-4 text-center">{t('contracts.progressHeader')}</th>
+                <th className="py-4 px-4 text-center">{t('contracts.actionsHeader')}</th>
               </tr>
             </thead>
             <tbody>

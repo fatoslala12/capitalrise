@@ -130,7 +130,21 @@
     "noWorkHours": "No work hours for this week",
     "loading": "Loading...",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "employeeHeader": "Employee",
+    "rateHeader": "Rate",
+    "hoursHeader": "Hours",
+    "grossHeader": "Gross",
+    "vatHeader": "VAT",
+    "netHeader": "Net",
+    "actionsHeader": "Actions",
+    "statusHeader": "Payment Status",
+    "deletePayment": "Delete Payment",
+    "paidStatus": "Paid",
+    "dailyDetails": "Daily Details",
+    "rest": "Rest",
+    "selectSite": "Select Site",
+    "total": "Total"
   },
   "tasks": {
     "title": "Task Management",
@@ -300,6 +314,8 @@
     "statusHeader": "Status",
     "progressHeader": "Progress",
     "actionsHeader": "Actions",
+    "statusChangedSuccess": "Contract status changed successfully!",
+    "statusChangeError": "Error changing contract status!",
     "exportHeaders": {
       "location": "Location",
       "value": "Value (£)",
@@ -363,7 +379,18 @@
     "dateRange": "Date Range",
     "export": "Export",
     "print": "Print",
-    "download": "Download"
+    "download": "Download",
+    "filterByStatus": "Filter by status",
+    "allContracts": "All contracts",
+    "draft": "Draft",
+    "cancelled": "Cancelled",
+    "inProgress": "In Progress",
+    "suspended": "Suspended",
+    "closed": "Closed",
+    "closedWithDelay": "Closed with delay",
+    "start": "Start",
+    "end": "End",
+    "loadingMessage": "Loading payments..."
   },
   "notifications": {
     "title": "Notifications",
@@ -735,7 +762,9 @@
     "grossSalary": "Gross Salary",
     "sites": "Sites",
     "tasks": "Tasks",
-    "viewAllTasks": "View All Tasks"
+    "viewAllTasks": "View All Tasks",
+    "priority": "Priority",
+    "site": "Site"
   },
   "workHours": {
     "title": "Work Hours",
