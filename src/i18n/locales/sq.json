@@ -132,7 +132,8 @@
     "deletePayment": "Fshi pagesen",
     "paidStatus": "Paguar",
     "dailyDetails": "Detajet e ditëve:",
-    "rest": "Pushim"
+    "rest": "Pushim",
+    "selectSite": "Zgjidh vendin"
   },
   "tasks": {
     "title": "Menaxhimi i Detyrave",

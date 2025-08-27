@@ -803,7 +803,8 @@
     "deletePayment": "Delete Payment",
     "paidStatus": "Paid",
     "dailyDetails": "Daily Details:",
-    "rest": "Rest"
+    "rest": "Rest",
+    "selectSite": "Select site"
   },
   "payments": {
     "title": "Payments & Contracts",

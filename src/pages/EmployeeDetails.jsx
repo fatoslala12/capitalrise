@@ -444,16 +444,15 @@ export default function EmployeeDetails() {
   function exportMonthToCSV() {
     if (!filteredWorkDays) return;
     const rows = [
-      ["Data", "Site", "Orë", "Pagesë (£)"]
+              ["Data", t('employeeDetails.hours'), "Pagesë (£)"]
     ];
     Object.entries(filteredWorkDays).forEach(([date, entries]) => {
       entries.forEach(entry => {
-        rows.push([
-          date,
-          entry.site,
-          entry.hours,
-          (entry.hours * entry.rate).toFixed(2)
-        ]);
+                  rows.push([
+            date,
+            entry.hours,
+            (entry.hours * entry.rate).toFixed(2)
+          ]);
       });
     });
     const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
@@ -538,7 +537,7 @@ export default function EmployeeDetails() {
   // Funksion për të marrë emrin e kategorisë
   const getCategoryName = (category) => {
     const categories = {
-      'general': '📋 E Përgjithshme',
+      'general': `📋 ${t('employeeDetails.general')}`,
       'construction': '🏗️ Ndërtim',
       'maintenance': '🔧 Mirëmbajtje',
       'cleaning': '🧹 Pastrim',
@@ -566,7 +565,7 @@ export default function EmployeeDetails() {
       y += 7;
       Object.values(days).forEach(val => {
         if (val && val.hours > 0 && val.site) {
-          doc.text(`  ${val.site}: ${val.hours} ${t('workHours.hours')}`, 12, y);
+          doc.text(`  ${val.site}: ${val.hours} ${t('employeeDetails.hours')}`, 12, y);
           y += 7;
         }
       });
@@ -1294,7 +1293,7 @@ export default function EmployeeDetails() {
                     <div className="flex flex-wrap gap-1 md:gap-2 items-center">
                       {Object.entries(siteMap).map(([site, hours]) => (
                         <span key={site} className="px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold shadow border" style={{ background: currentSiteColors[site] || getSiteColor(site), color: '#222' }} title={`Site: ${site}`}>
-                          {site}: {hours} orë
+                          {site}: {hours} {t('employeeDetails.hours')}
                         </span>
                       ))}
                     </div>
@@ -1517,7 +1516,7 @@ function EmployeeWorkHistory({ workHistory, paidStatus, employee, t }) {
           const net = gross * (employee.label_type === "NI" ? 0.7 : 0.8);
           const isPaid = paidStatus[weekLabel];
           const siteBreakdown = Object.entries(siteMap).map(([site, hours]) =>
-            `${site}: ${hours} orë (£${(hours * rate).toFixed(2)})`
+                                `${site}: ${hours} ${t('employeeDetails.hours')} (£${(hours * rate).toFixed(2)})`
           ).join(", ");
 
           return (
