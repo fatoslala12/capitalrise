@@ -512,6 +512,31 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
+  // Error handling
+  if (error) {
+    console.error('[ERROR] AdminDashboard error state:', error);
+    return (
+      <div className="text-center text-red-500 py-8">
+        <h3 className="text-xl font-bold mb-4">Gabim në ngarkimin e dashboard</h3>
+        <p className="mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Provoni Përsëri
+        </button>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (loading) {
+    console.log('[DEBUG] AdminDashboard loading state');
+    return <LoadingSpinner />;
+  }
+
+  console.log('[DEBUG] AdminDashboard rendering main content');
+
   // Llogarit site-t aktive dhe punonjësit aktivë
   const activeSites = contracts.filter(c => c && typeof c === 'object' && (c.status === "Ne progres" || c.status === "Pezulluar"));
   const activeEmployees = employees.filter(e => e && typeof e === 'object' && (e.status === "active" || e.status === "Aktiv"));
@@ -794,40 +819,39 @@ export default function AdminDashboard() {
     safeChartData.allExpenses = [];
   }
 
-  if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text={t('adminDashboard.loadingStats') || 'Duke ngarkuar...'} />;
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-8 lg:py-10 space-y-4 md:space-y-8 lg:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
-             {/* HEADER MODERN */}
-       <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-4 md:px-10 py-4 md:py-6 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
-         <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 md:p-3 shadow-sm">
-           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-8 h-8 md:w-12 md:h-12">
-             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
-           </svg>
-         </div>
-         <div className="text-center md:text-left flex-1">
-          
-           <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('adminDashboard.title') || 'Admin Dashboard'}</div>
-           <div className="text-sm md:text-lg font-medium text-purple-700">{t('adminDashboard.subtitle') || 'Menaxhimi i sistemit'}</div>
-         </div>
-         
-         {/* Language Switcher */}
-         <div className="flex-shrink-0">
-           <select 
-             value={localStorage.getItem('language') || 'sq'} 
-             onChange={(e) => {
-               localStorage.setItem('language', e.target.value);
-               window.location.reload(); // Reload to apply language change
-             }}
-             className="bg-white border border-blue-300 rounded-lg px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-           >
-             <option value="sq">🇦🇱 Shqip</option>
-             <option value="en">🇬🇧 English</option>
-           </select>
-         </div>
-       </div>
+      {/* HEADER MODERN */}
+      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-4 md:px-10 py-4 md:py-6 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
+        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 md:p-3 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-8 h-8 md:w-12 md:h-12">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
+          </svg>
+        </div>
+        <div className="text-center md:text-left flex-1">
+          <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">
+            {t('adminDashboard.title') || 'Admin Dashboard'}
+          </div>
+          <div className="text-sm md:text-lg font-medium text-purple-700">
+            {t('adminDashboard.subtitle') || 'Menaxhimi i sistemit'}
+          </div>
+        </div>
+        
+        {/* Language Switcher */}
+        <div className="flex-shrink-0">
+          <select 
+            value={localStorage.getItem('language') || 'sq'} 
+            onChange={(e) => {
+              localStorage.setItem('language', e.target.value);
+              window.location.reload(); // Reload to apply language change
+            }}
+            className="bg-white border border-blue-300 rounded-lg px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="sq">🇦🇱 Shqip</option>
+            <option value="en">🇬🇧 English</option>
+          </select>
+        </div>
+      </div>
 
       {/* Statistika kryesore */}
       <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="md" className="mb-6 md:mb-12">
@@ -843,14 +867,12 @@ export default function AdminDashboard() {
           icon="👷"
           color="green"
         />
-        {/* Orë të punuara këtë javë */}
         <CountStatCard
           title="Orë të punuara këtë javë"
           value={dashboardStats.totalHoursThisWeek || 0}
           icon="⏰"
           color="purple"
         />
-        {/* Pagesa për punëtorët këtë javë */}
         <MoneyStatCard
           title="Pagesa për punëtorët këtë javë"
           value={`£${dashboardStats.totalPaid || 0}`}
@@ -861,29 +883,51 @@ export default function AdminDashboard() {
 
       {/* Detyrat - më të dukshme */}
       <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-xl col-span-full border border-yellow-200">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📋 {t('adminDashboard.tasksTitle') || 'Detyrat'}</h3>
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+          📋 {t('adminDashboard.tasksTitle') || 'Detyrat'}
+        </h3>
         <div className="mb-4 flex flex-col sm:flex-row gap-2 md:gap-4 items-start sm:items-center">
-          <label className="font-medium text-sm md:text-base">{t('adminDashboard.filter') || 'Filtro'}</label>
-          <select value={taskFilter} onChange={(event) => setTaskFilter(event.target.value)} className="border p-2 rounded text-sm md:text-base">
+          <label className="font-medium text-sm md:text-base">
+            {t('adminDashboard.filter') || 'Filtro'}
+          </label>
+          <select 
+            value={taskFilter} 
+            onChange={(event) => setTaskFilter(event.target.value)} 
+            className="border p-2 rounded text-sm md:text-base"
+          >
             <option value="ongoing">{t('adminDashboard.onlyActive') || 'Vetëm aktive'}</option>
             <option value="completed">{t('adminDashboard.onlyCompleted') || 'Vetëm të përfunduara'}</option>
             <option value="all">{t('adminDashboard.all') || 'Të gjitha'}</option>
           </select>
         </div>
         <div className="mb-4 flex flex-col sm:flex-row flex-wrap gap-2 md:gap-6">
-          <div className="bg-blue-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">{t('adminDashboard.total') || 'Total'}: {allTasks.length}</div>
-          <div className="bg-green-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">✅ {t('adminDashboard.completed') || 'Përfunduar'}: {allTasks.filter(t => t && t.status === 'completed').length}</div>
-          <div className="bg-yellow-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">🕒 {t('adminDashboard.ongoing') || 'Në progres'}: {allTasks.filter(t => t && t.status === 'ongoing').length}</div>
+          <div className="bg-blue-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">
+            {t('adminDashboard.total') || 'Total'}: {allTasks.length}
+          </div>
+          <div className="bg-green-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">
+            ✅ {t('adminDashboard.completed') || 'Përfunduar'}: {allTasks.filter(t => t && t.status === 'completed').length}
+          </div>
+          <div className="bg-yellow-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">
+            🕒 {t('adminDashboard.ongoing') || 'Në progres'}: {allTasks.filter(t => t && t.status === 'ongoing').length}
+          </div>
         </div>
         {filteredTasks.length > 0 ? (
           <ul className="space-y-3">
             {filteredTasks.map((t, idx) => (
               <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-3 md:p-4 shadow border border-blue-100">
                 <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
-                <span className="font-semibold flex-1 text-sm md:text-lg">{t.description || t.title || ''}</span>
-                <span className="text-sm md:text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
-                <span className="text-sm md:text-lg text-purple-700 font-bold">{t('adminDashboard.deadline') || 'Afati'} {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'N/A'}</span>
-                <span className="text-xs text-gray-500">{t('adminDashboard.by') || 'Nga'} {t.assigned_by || t.assignedBy || ''}</span>
+                <span className="font-semibold flex-1 text-sm md:text-lg">
+                  {t.description || t.title || ''}
+                </span>
+                <span className="text-sm md:text-lg text-blue-700 font-bold">
+                  {t.site_name || t.siteName || ''}
+                </span>
+                <span className="text-sm md:text-lg text-purple-700 font-bold">
+                  {t('adminDashboard.deadline') || 'Afati'} {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'N/A'}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {t('adminDashboard.by') || 'Nga'} {t.assigned_by || t.assignedBy || ''}
+                </span>
               </li>
             ))}
           </ul>
@@ -894,298 +938,55 @@ export default function AdminDashboard() {
 
       {/* Grafik për site */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-                  <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
-            📊 {t('adminDashboard.hoursBySiteThisWeek') || 'Orët sipas site-ve këtë javë'}
-          </h3>
-                  <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
-            {t('adminDashboard.totalHoursWorked') || 'Totali i orëve të punuara'} <span className="text-blue-600">{dashboardStats.totalWorkHours || 0}</span>
-          </div>
-        {safeChartData.workHoursBysite && safeChartData.workHoursBysite.length > 0 ? (
-          <ResponsiveContainer width="100%" height={450}>
-            <BarChart data={safeChartData.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" label={{ value: t('workHours.hours') || 'Hours', position: "insideBottomRight", offset: -5 }} />
-              <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
-              <Tooltip formatter={v => {
-                try {
-                  return [v, t('workHours.hours') || 'Hours'];
-                } catch (error) {
-                  console.error('[ERROR] Tooltip formatter error:', error);
-                  return [v, 'Hours'];
-                }
-              }} />
-              <Bar dataKey="hours" radius={[0, 6, 6, 0]} barSize={32}>
-                {safeChartData.workHoursBysite.map((_, i) => {
-                  try {
-                    return <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />;
-                  } catch (error) {
-                    console.error('[ERROR] Failed to render chart cell:', error);
-                    return <Cell key={i} fill={CHART_COLORS[0]} />;
-                  }
-                })}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noWorkHours') || 'Nuk ka orë të punuara'}</p>
-        )}
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+          📊 {t('adminDashboard.hoursBySiteThisWeek') || 'Orët sipas site-ve këtë javë'}
+        </h3>
+        <div className="h-80">
+          <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+            <ShpenzimePerSiteChart 
+              allExpenses={allExpenses}
+              contracts={contracts}
+              structuredWorkHours={structuredWorkHours}
+              allPayments={allPayments}
+            />
+          </ErrorBoundary>
+        </div>
       </div>
 
-      {/* Grafik për progresin e kontratave aktive */}
+      {/* Grafik për kontratat */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 {t('adminDashboard.contractsProgressTitle') || 'Progresi i kontratave'}</h3>
-        {safeChartData.contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
-          <ResponsiveContainer width="100%" height={450}>
-            <BarChart
-              data={safeChartData.contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
-                const start = c.startDate ? new Date(c.startDate) : (c.start_date ? new Date(c.start_date) : null);
-                const end = c.finishDate ? new Date(c.finishDate) : (c.finish_date ? new Date(c.finish_date) : null);
-                const now = new Date();
-                let progress = 0;
-                if (!start || !end || isNaN(start) || isNaN(end)) progress = 0;
-                else if (now < start) progress = 0;
-                else if (now > end) progress = 100;
-                else progress = Math.floor(((now - start) / (end - start)) * 100);
-                return {
-                  name: c.site_name || c.siteName || c.company || (c.contract_number ? `Kontrata #${c.contract_number}` : '') || 'Pa emër',
-                  progress
-                };
-              })}
-              layout="vertical"
-              margin={{ left: 50 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" domain={[0, 100]} label={{ value: "%", position: "insideBottomRight", offset: -5 }} tickFormatter={v => `${v}%`} />
-              <YAxis type="category" dataKey="name" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
-              <Tooltip formatter={v => {
-                try {
-                  return [`${v}%`, t('common.progress') || 'Progress'];
-                } catch (error) {
-                  console.error('[ERROR] Tooltip formatter error:', error);
-                  return [`${v}%`, 'Progress'];
-                }
-              }} />
-              <Bar dataKey="progress" radius={[0, 6, 6, 0]} barSize={30}>
-                {safeChartData.contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map((_, i) => {
-                  try {
-                    return <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />;
-                  } catch (error) {
-                    console.error('[ERROR] Failed to render chart cell:', error);
-                    return <Cell key={i} fill={CHART_COLORS[0]} />;
-                  }
-                })}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noActiveContracts') || 'Nuk ka kontrata aktive'}</p>
-        )}
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+          📋 {t('adminDashboard.contractsProgressTitle') || 'Progresi i kontratave'}
+        </h3>
+        <div className="h-80">
+          <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+            <StatusiKontrataveChart contracts={contracts} />
+          </ErrorBoundary>
+        </div>
       </div>
 
-      {/* Top 5 më të paguar */}
+      {/* Grafik për shpenzimet */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            🏅 {t('adminDashboard.topPaidEmployees') || 'Top 5 punonjësit më të paguar'}
-          </h3>
-        {safeChartData.top5Employees && safeChartData.top5Employees.length > 0 ? (
-          <ul className="space-y-3 text-gray-800">
-            {safeChartData.top5Employees.map((employee, i) => {
-              const amount = employee.grossAmount ?? employee.amount ?? 0;
-              
-              // Merr të dhënat e plota të punonjësit nga employees array
-              const employeeData = safeChartData.employees.find(emp => emp.id === employee.employee_id || emp.id === employee.id);
-              
-              const employeeName = employeeData 
-                ? `${employeeData.firstName || employeeData.first_name || employeeData.user_first_name || ''} ${employeeData.lastName || employeeData.last_name || employeeData.user_last_name || ''}`.trim()
-                : employee.name || 'Unknown';
-              
-              // Use the name from the top5Employees data if available
-              const displayName = employee.firstName && employee.lastName 
-                ? `${employee.firstName} ${employee.lastName}`.trim()
-                : employeeName;
-              
-              const photoSrc = employeeData?.photo
-                ? employeeData.photo.startsWith('data:image')
-                  ? employeeData.photo
-                  : employeeData.photo
-                : '/placeholder.png';
-              
-              return (
-                <li key={employee.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
-                  <div className="relative w-14 h-14">
-                    {employeeData?.photo ? (
-                      <img 
-                        src={photoSrc} 
-                        alt={displayName} 
-                        className="w-full h-full rounded-full object-cover border-2 border-blue-300 shadow"
-                        onError={(event) => {
-                          if (event.target && event.target.nextSibling) {
-                            event.target.style.display = 'none';
-                            event.target.nextSibling.style.display = 'flex';
-                          }
-                        }}
-                      />
-                    ) : null}
-                    <div 
-                      className={`w-full h-full rounded-full border-2 border-blue-300 shadow flex items-center justify-center text-blue-600 font-bold text-lg ${employeeData?.photo ? 'hidden' : 'flex'}`}
-                      style={{
-                        background: '#e0e7ef',
-                        display: employeeData?.photo ? 'none' : 'flex'
-                      }}
-                    >
-                      {displayName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
-                    </div>
-                    <span className="absolute -top-2 -left-2 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">{i + 1}</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-lg">
-                      {displayName}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {employee.isPaid ? `✅ ${t('adminDashboard.paid') || 'Paguar'}` : `⏳ ${t('adminDashboard.unpaid') || 'Pa paguar'}`}
-                    </p>
-                  </div>
-                  <div className="text-blue-700 font-extrabold text-xl">£{Number(amount).toFixed(2)}</div>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noPayments') || 'Nuk ka pagesa'}</p>
-        )}
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+          💰 Statusi i Shpenzimeve
+        </h3>
+        <div className="h-80">
+          <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+            <StatusiShpenzimeveChart />
+          </ErrorBoundary>
+        </div>
       </div>
 
-
-      
-
-      {/* Grafik për shpenzimet sipas site-ve */}
+      {/* Grafik për faturat */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 {t('adminDashboard.expensesBySiteTitle') || 'Shpenzimet sipas site-ve'}</h3>
-        <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
-          <ShpenzimePerSiteChart 
-            allExpenses={safeChartData.allExpenses} 
-            contracts={safeChartData.contracts} 
-            structuredWorkHours={structuredWorkHours} 
-            allPayments={safeChartData.weeklyProfitData} 
-          />
-        </ErrorBoundary>
-      </div>
-
-      {/* Grafik për statusin e kontratave */}
-      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i kontratave</h3>
-        <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
-          <StatusiKontrataveChart contracts={safeChartData.contracts} />
-        </ErrorBoundary>
-      </div>
-
-      {/* Grafik për pagesat javore */}
-      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore për stafin</h3>
-        {safeChartData.weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
-          <ResponsiveContainer width="100%" height={450}>
-            <BarChart data={safeChartData.weeklyProfitData.filter(w => w.totalPaid > 0)} margin={{ left: 50 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
-              <YAxis label={{ value: "Pagesa totale (£)", angle: -90, position: "insideLeft", offset: 0 }} tick={{ fontSize: 14, fill: '#6366f1' }} />
-              <Tooltip formatter={v => {
-                try {
-                  return [`£${Number(v).toFixed(2)}`, "Pagesa"];
-                } catch (error) {
-                  console.error('[ERROR] Tooltip formatter error:', error);
-                  return [`£${Number(v).toFixed(2)}`, "Payment"];
-                }
-              }} />
-              <Bar dataKey="totalPaid" radius={[6, 6, 0, 0]} barSize={32}>
-                {safeChartData.weeklyProfitData.filter(w => w.totalPaid > 0).map((_, i) => {
-                  try {
-                    return <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />;
-                  } catch (error) {
-                    console.error('[ERROR] Failed to render chart cell:', error);
-                    return <Cell key={i} fill={CHART_COLORS[0]} />;
-                  }
-                })}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <p className="text-gray-500 italic text-center py-8">{t('adminDashboard.noPayments') || 'Nuk ka pagesa'}</p>
-        )}
-      </div>
-
-      {/* Grafik për vonesat në pagesa/fatura */}
-      <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i Invoice-ve të dërguar</h3>
-        <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
-          <VonesaFaturashChart />
-        </ErrorBoundary>
-      </div>
-
-      {/* Grafik për statusin e faturave të shpenzimeve */}
-      <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📈 Statusi i faturave të shpenzimeve</h3>
-        <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
-          <StatusiShpenzimeveChart />
-        </ErrorBoundary>
-      </div>
-
-      {/* Faturat e papaguara */}
-      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
-        {safeChartData.unpaid.length === 0 ? (
-          <p className="text-gray-500 italic">{t('adminDashboard.allInvoicesPaid') || 'Të gjitha faturat janë paguar'}</p>
-        ) : (
-          <ul className="space-y-2 text-red-700 text-base">
-            {safeChartData.unpaid.map((item, idx) => (
-              <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <a href={`/admin/contracts/${item.contractNumber}`} className="font-bold text-red-700 underline cursor-pointer">
-                  🔴 {t('adminDashboard.contract') || 'Kontrata'} #{item.contractNumber || ''}
-                </a>
-                <span className="font-bold text-black">{t('adminDashboard.invoiceNumber') || 'Numri i faturës'} <b>{item.invoiceNumber || ''}</b></span>
-                <span className="font-bold text-blue-700 flex items-center gap-1">🏢 {t('adminDashboard.site') || 'Site'} {(() => {
-                  let c = null;
-                  if (item.contract_id && safeChartData.contracts.length) {
-                    c = safeChartData.contracts.find(c => String(c.id) === String(item.contract_id));
-                  }
-                  if (!c && item.contractNumber && safeChartData.contracts.length) {
-                    c = safeChartData.contracts.find(c => String(c.contract_number) === String(item.contractNumber));
-                  }
-                  return c ? `${c.site_name || c.siteName || ''}` : '';
-                })()}</span>
-                <span className="font-bold text-lg flex items-center gap-1">💷 {item.total !== undefined ? `£${Number(item.total).toFixed(2)}` : ''}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Shpenzimet e papaguara */}
-      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full mb-6 md:mb-8">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 {t('adminDashboard.unpaidExpensesTitle') || 'Shpenzimet e papaguara'}</h3>
-        {safeChartData.unpaidExpenses.length === 0 ? (
-          <p className="text-gray-500 italic">{t('adminDashboard.allExpensesPaid') || 'Të gjitha shpenzimet janë paguar'}</p>
-        ) : (
-          <ul className="space-y-2 text-red-700 text-base">
-            {safeChartData.unpaidExpenses.map((item, idx) => (
-              <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <span className="font-bold flex items-center gap-1">📅 {item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
-                <span className="font-bold text-lg">{item.type || ''}</span>
-                <span className="font-bold text-lg flex items-center gap-1">💷 {item.gross !== undefined ? `£${Number(item.gross).toFixed(2)}` : ''}</span>
-                <span className="font-bold text-blue-700 flex items-center gap-1">
-                  🏢 {(() => {
-                    if (!item.contract_id || !safeChartData.contracts.length) return '';
-                    const c = safeChartData.contracts.find(c => String(c.id) === String(item.contract_id));
-                    return c ? `${c.site_name || c.siteName || ''}` : '';
-                  })()}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+          📄 Statusi i Faturave
+        </h3>
+        <div className="h-80">
+          <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+            <VonesaFaturashChart />
+          </ErrorBoundary>
+        </div>
       </div>
     </div>
   );
