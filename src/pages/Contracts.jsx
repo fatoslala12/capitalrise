@@ -18,7 +18,7 @@ const CONTRACT_STATUSES = [
   "Ne progres",
   "Pezulluar",
   "Mbyllur",
-  t('contracts.closedWithDelay')
+  "Mbyllur me vonese"
 ];
 
 export default function Contracts() {
@@ -43,7 +43,7 @@ export default function Contracts() {
     address: "",
     company_email: "", // Company email field
     contract_type: "day_work", // Added contract_type field
-    status: t('contracts.inProgress'),
+    status: "Ne progres",
     closed_manually: false,
     closed_date: null,
     documents: []
