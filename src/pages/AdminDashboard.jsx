@@ -66,7 +66,23 @@ export default function AdminDashboard() {
   } catch (error) {
     console.warn('[WARNING] Translation hook failed, using fallback:', error);
     // Fallback function for translations
-    t = (key, fallback = key) => fallback;
+    t = (key, fallback = key) => {
+      // Ensure fallback is always a string
+      if (typeof fallback === 'string') {
+        return fallback;
+      }
+      return key;
+    };
+  }
+
+  // Ensure t is always a function
+  if (typeof t !== 'function') {
+    t = (key, fallback = key) => {
+      if (typeof fallback === 'string') {
+        return fallback;
+      }
+      return key;
+    };
   }
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -102,6 +118,28 @@ export default function AdminDashboard() {
       try {
         setLoading(true);
         
+        // Merr të gjitha të dhënat në paralel
+        const [contractsRes, employeesRes, tasksRes, paymentsRes, expensesRes] = await Promise.all([
+          api.get("/api/contracts", { headers }),
+          api.get("/api/employees", { headers }),
+          api.get("/api/tasks", { headers }),
+          api.get("/api/payments", { headers }),
+          api.get("/api/expenses", { headers })
+        ]);
+
+        // Validate data before setting state
+        const contractsData = Array.isArray(contractsRes.data) ? contractsRes.data : [];
+        const employeesData = Array.isArray(employeesRes.data) ? employeesRes.data : [];
+        const tasksData = Array.isArray(tasksRes.data) ? tasksRes.data : [];
+        const paymentsData = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
+        const expensesData = Array.isArray(expensesRes.data) ? expensesRes.data : [];
+
+        setContracts(contractsData);
+        setEmployees(employeesData);
+        setAllTasks(tasksData);
+        setAllPayments(paymentsData);
+        setAllExpenses(expensesData);
+        
         // Kontrollo nëse ka token
         const token = localStorage.getItem("token");
         
@@ -128,287 +166,230 @@ export default function AdminDashboard() {
         }
         
         // Merr të gjitha të dhënat paralelisht me error handling
-        let contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes;
+        let workHoursRes;
         
         try {
-          [contractsRes, employeesRes, invoicesRes, tasksRes, expensesRes, paymentsRes, workHoursRes] = await Promise.all([
-            api.get("/api/contracts"),
-            api.get("/api/employees"),
-            api.get("/api/invoices"),
-            api.get("/api/tasks"),
-            api.get("/api/expenses"),
-            api.get("/api/payments"),
-            api.get("/api/work-hours/structured"),
-          ]);
+          workHoursRes = await api.get("/api/work-hours/structured", { headers });
         } catch (apiError) {
           console.error('[ERROR] API call failed:', apiError);
           // Nëse API call dështon, përdor të dhëna bosh
-          contractsRes = { data: [] };
-          employeesRes = { data: [] };
-          invoicesRes = { data: [] };
-          tasksRes = { data: [] };
-          expensesRes = { data: [] };
-          paymentsRes = { data: [] };
           workHoursRes = { data: {} };
         }
         
         // Validate API responses
-        if (!contractsRes?.data || !Array.isArray(contractsRes.data)) {
-          console.warn('[WARNING] Invalid contracts data, using empty array');
-          contractsRes = { data: [] };
-        }
-        if (!employeesRes?.data || !Array.isArray(employeesRes.data)) {
-          console.warn('[WARNING] Invalid employees data, using empty array');
-          employeesRes = { data: [] };
-        }
-        if (!invoicesRes?.data || !Array.isArray(invoicesRes.data)) {
-          console.warn('[WARNING] Invalid invoices data, using empty array');
-          invoicesRes = { data: [] };
-        }
-        if (!tasksRes?.data || !Array.isArray(tasksRes.data)) {
-          console.warn('[WARNING] Invalid tasks data, using empty array');
-          tasksRes = { data: [] };
-        }
-        if (!expensesRes?.data || !Array.isArray(expensesRes.data)) {
-          console.warn('[WARNING] Invalid expenses data, using empty array');
-          expensesRes = { data: [] };
-        }
-        if (!paymentsRes?.data || !Array.isArray(paymentsRes.data)) {
-          console.warn('[WARNING] Invalid payments data, using empty array');
-          paymentsRes = { data: [] };
-        }
         if (!workHoursRes?.data || typeof workHoursRes.data !== 'object') {
           console.warn('[WARNING] Invalid work hours data, using empty object');
           workHoursRes = { data: {} };
         }
         
-        setContracts(snakeToCamel(contractsRes.data || []));
-        setEmployees(snakeToCamel(employeesRes.data || []));
-        
-        const invoices = snakeToCamel(invoicesRes.data || []);
-        const allTasksData = snakeToCamel(tasksRes.data || []);
-        const allExpenses = snakeToCamel(expensesRes.data || []);
-        const allPayments = snakeToCamel(paymentsRes.data || []);
-        const structuredWorkHours = snakeToCamel(workHoursRes.data || {});
-        
-        setAllExpenses(allExpenses);
-        setStructuredWorkHours(structuredWorkHours);
-        
-        // Store allPayments in component state for use in charts
-        setAllPayments(allPayments);
+        setStructuredWorkHours(snakeToCamel(workHoursRes.data || {}));
         
         // Calculate current week - FIXED to match backend getWeekLabel exactly
         const today = new Date();
         const day = today.getDay();
+        const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+        const monday = new Date(today.setDate(diff));
+        const thisWeek = monday.toISOString().split('T')[0];
         
-        // Backend uses Monday-Sunday week, so we need to match exactly
-        let diff;
-        if (day === 0) {
-          // Sunday - go back 6 days to get to Monday
-          diff = -6;
-        } else {
-          // Monday-Saturday - go back (day-1) days to get to Monday
-          diff = -(day - 1);
-        }
-        
-        const monday = new Date(today);
-        monday.setDate(today.getDate() + diff);
-        monday.setHours(0, 0, 0, 0);
-        
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-        
-        const thisWeek = `${monday.toISOString().slice(0, 10)} - ${sunday.toISOString().slice(0, 10)}`;
-        
-        // Gjej javën e fundit që ka të dhëna
-        let weekToUse = thisWeek;
-        let weekHasData = false;
-        
-        // Kontrollo nëse jawa aktuale ka të dhëna
-        const currentWeekData = allPayments.filter(p => (p.weekLabel || p.week_label) === thisWeek);
-        if (currentWeekData.length > 0) {
-          weekToUse = thisWeek;
-          weekHasData = true;
-        } else {
-          // Gjej javën e fundit që ka të dhëna
-          const allWeeks = [...new Set(allPayments.map(p => p.weekLabel || p.week_label))].sort();
-          if (allWeeks.length > 0) {
-            weekToUse = allWeeks[allWeeks.length - 1]; // Jawa e fundit
-            weekHasData = true;
-          }
-        }
-        
-        // Gjej pagesat për këtë javë
-        const thisWeekPayments = allPayments.filter(p => p && (p.weekLabel || p.week_label) === weekToUse);
-        
-        // Gjej pagesat e paguara për këtë javë
-        const paidThisWeek = thisWeekPayments.filter(p => p && (p.isPaid || p.is_paid) === true);
-        
-        // Llogarit totalin e paguar
-        const totalPaid = paidThisWeek.reduce((sum, p) => {
-          if (!p) return sum;
-          const amount = parseFloat(p.grossAmount || p.gross_amount || 0);
-          return isNaN(amount) ? sum : sum + amount;
-        }, 0);
-        
-        // Llogarit orët e punuara për këtë javë
-        let totalWorkHours = 0;
-        const siteHours = {};
-        
-        if (structuredWorkHours && typeof structuredWorkHours === 'object') {
-          Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
-            if (!empData || typeof empData !== 'object') return;
-            
-            const weekData = empData[weekToUse] || {};
-            
-            Object.values(weekData).forEach(dayData => {
-              if (dayData && dayData.hours) {
-                const hours = parseFloat(dayData.hours);
-                if (!isNaN(hours)) {
-                  totalWorkHours += hours;
-                  if (dayData.site) {
-                    siteHours[dayData.site] = (siteHours[dayData.site] || 0) + hours;
-                  }
-                }
-              }
-            });
-          });
-        }
-        
-        // Llogarit total gross për këtë javë nga work_hours
-        let totalGrossThisWeek = 0;
-        if (structuredWorkHours && typeof structuredWorkHours === 'object') {
-          Object.entries(structuredWorkHours).forEach(([empId, empData]) => {
-            if (!empData || typeof empData !== 'object') return;
-            
-            const weekData = empData[weekToUse] || {};
-            const emp = employees.find(e => e && e.id === empId);
-            const hourlyRate = parseFloat(emp?.hourlyRate || emp?.hourly_rate || 0);
-            
-            if (isNaN(hourlyRate)) return;
-            
-            Object.values(weekData).forEach(dayData => {
-              if (dayData && dayData.hours) {
-                const hours = parseFloat(dayData.hours);
-                if (!isNaN(hours)) {
-                  totalGrossThisWeek += hours * hourlyRate;
-                }
-              }
-            });
-          });
-        }
-        
-        // Top 5 punonjësit më të paguar (vetëm të paguarat)
-        const top5Employees = paidThisWeek
-          .filter(p => p && typeof p === 'object')
-          .sort((a, b) => {
-            const aAmount = parseFloat(a?.grossAmount || a?.gross_amount || 0);
-            const bAmount = parseFloat(b?.grossAmount || b?.gross_amount || 0);
-            return isNaN(bAmount) ? -1 : isNaN(aAmount) ? 1 : bAmount - aAmount;
-          })
-          .slice(0, 5)
-          .map(p => {
-            if (!p) return null;
-            
-            const emp = employees.find(e => e && e.id === (p.employeeId || p.employee_id));
-            const grossAmount = parseFloat(p.grossAmount || p.gross_amount || 0);
-            
-            return {
-              id: p.employeeId || p.employee_id,
-              employee_id: p.employeeId || p.employee_id, // Add this for consistency
-              name: emp ? `${emp.firstName || emp.first_name || emp.name || 'Unknown'} ${emp.lastName || emp.last_name || ''}`.trim() : 'Unknown',
-              grossAmount: isNaN(grossAmount) ? 0 : grossAmount,
-              isPaid: p.isPaid || p.is_paid,
-              photo: emp?.photo || null,
-              // Add these fields for better name display
-              firstName: emp?.firstName || emp?.first_name || '',
-              lastName: emp?.lastName || emp?.last_name || ''
-            };
-          })
-          .filter(Boolean); // Remove any null entries
-        
+        // Calculate dashboard stats
         const finalStats = {
-          thisWeek: weekToUse,
-          totalPaid: totalPaid,
-          totalProfit: totalPaid * 0.20,
-          workHoursBysite: Object.entries(siteHours).map(([site, hours]) => ({ site, hours })),
-          top5Employees: top5Employees,
-          totalWorkHours: totalWorkHours,
-          totalHoursThisWeek: totalWorkHours,
-          totalGrossThisWeek: totalGrossThisWeek,
-          paidEmployeesCount: paidThisWeek.length,
-          totalEmployeesWithHours: Object.keys(structuredWorkHours).length,
-          isCurrentWeek: weekToUse === thisWeek,
-          weekLabel: weekToUse
+          thisWeek,
+          totalPaid: 0,
+          totalProfit: 0,
+          workHoursBysite: [],
+          top5Employees: [],
+          totalWorkHours: 0,
+          totalHoursThisWeek: 0,
+          totalGrossThisWeek: 0,
+          paidEmployeesCount: 0,
+          totalEmployeesWithHours: 0
         };
+        
+        // Calculate work hours by site for this week
+        let workHoursBySite = {};
+        let totalHoursThisWeek = 0;
+        let totalGrossThisWeek = 0;
+        
+        // Process work hours data with error handling
+        try {
+          if (workHoursRes.data && typeof workHoursRes.data === 'object') {
+            Object.entries(workHoursRes.data).forEach(([site, weeks]) => {
+              if (weeks && typeof weeks === 'object' && weeks[thisWeek]) {
+                const weekData = weeks[thisWeek];
+                if (Array.isArray(weekData)) {
+                  weekData.forEach(wh => {
+                    if (wh && typeof wh === 'object') {
+                      const hours = parseFloat(wh.hours || 0);
+                      const rate = parseFloat(wh.rate || 0);
+                      const gross = hours * rate;
+                      
+                      if (!workHoursBySite[site]) {
+                        workHoursBySite[site] = { hours: 0, gross: 0 };
+                      }
+                      workHoursBySite[site].hours += hours;
+                      workHoursBySite[site].gross += gross;
+                      totalHoursThisWeek += hours;
+                      totalGrossThisWeek += gross;
+                    }
+                  });
+                }
+              }
+            });
+          }
+        } catch (error) {
+          console.error('[ERROR] Failed to process work hours data:', error);
+          // Use empty data if processing fails
+          workHoursBySite = {};
+          totalHoursThisWeek = 0;
+          totalGrossThisWeek = 0;
+        }
+        
+        // Convert to array format for charts
+        finalStats.workHoursBysite = Object.entries(workHoursBySite).map(([site, data]) => ({
+          site,
+          hours: parseFloat(data.hours.toFixed(2)),
+          gross: parseFloat(data.gross.toFixed(2))
+        })).sort((a, b) => b.hours - a.hours);
+        
+        finalStats.totalHoursThisWeek = parseFloat(totalHoursThisWeek.toFixed(2));
+        finalStats.totalGrossThisWeek = parseFloat(totalGrossThisWeek.toFixed(2));
+        
+        // Calculate top 5 employees by payment
+        const employeePayments = {};
+        try {
+          paymentsData.forEach(payment => {
+            if (payment && typeof payment === 'object' && payment.employee_id) {
+              const empId = payment.employee_id;
+              if (!employeePayments[empId]) {
+                employeePayments[empId] = { total: 0, payments: [] };
+              }
+              const amount = parseFloat(payment.grossAmount || payment.gross_amount || 0);
+              employeePayments[empId].total += amount;
+              employeePayments[empId].payments.push(payment);
+            }
+          });
+        } catch (error) {
+          console.error('[ERROR] Failed to process employee payments:', error);
+          // Use empty data if processing fails
+        }
+        
+        finalStats.top5Employees = Object.entries(employeePayments)
+          .map(([empId, data]) => ({
+            id: empId,
+            grossAmount: data.total,
+            isPaid: true
+          }))
+          .sort((a, b) => b.grossAmount - a.grossAmount)
+          .slice(0, 5);
+        
+        // Calculate total work hours
+        let totalWorkHours = 0;
+        try {
+          if (workHoursRes.data && typeof workHoursRes.data === 'object') {
+            Object.values(workHoursRes.data).forEach(weeks => {
+              if (weeks && typeof weeks === 'object') {
+                Object.values(weeks).forEach(weekData => {
+                  if (Array.isArray(weekData)) {
+                    weekData.forEach(wh => {
+                      if (wh && typeof wh === 'object') {
+                        totalWorkHours += parseFloat(wh.hours || 0);
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        } catch (error) {
+          console.error('[ERROR] Failed to calculate total work hours:', error);
+          totalWorkHours = 0;
+        }
+        finalStats.totalWorkHours = parseFloat(totalWorkHours.toFixed(2));
+        
+        // Calculate paid employees count
+        const paidEmployees = new Set();
+        try {
+          paymentsData.forEach(payment => {
+            if (payment && typeof payment === 'object' && payment.employee_id) {
+              paidEmployees.add(payment.employee_id);
+            }
+          });
+        } catch (error) {
+          console.error('[ERROR] Failed to calculate paid employees count:', error);
+          // Use empty set if processing fails
+        }
+        finalStats.paidEmployeesCount = paidEmployees.size;
+        
+        // Calculate total employees with hours
+        const employeesWithHours = new Set();
+        try {
+          if (workHoursRes.data && typeof workHoursRes.data === 'object') {
+            Object.values(workHoursRes.data).forEach(weeks => {
+              if (weeks && typeof weeks === 'object') {
+                Object.values(weeks).forEach(weekData => {
+                  if (Array.isArray(weekData)) {
+                    weekData.forEach(wh => {
+                      if (wh && typeof wh === 'object' && wh.employee_id) {
+                        employeesWithHours.add(wh.employee_id);
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        } catch (error) {
+          console.error('[ERROR] Failed to calculate total employees with hours:', error);
+          // Use empty set if processing fails
+        }
+        finalStats.totalEmployeesWithHours = employeesWithHours.size;
         
         setDashboardStats(finalStats);
         
-        setAllTasks(allTasksData);
-        
         // Process unpaid invoices
         const unpaidList = [];
-        invoices.forEach(inv => {
-          if (inv && typeof inv === 'object' && !inv.paid && Array.isArray(inv.items)) {
-            try {
-              const net = inv.items.reduce((a, i) => {
-                if (!i || typeof i !== 'object') return a;
-                const amount = parseFloat(i.amount || 0);
-                return a + (isNaN(amount) ? 0 : amount);
-              }, 0);
-              
-              if (isNaN(net) || net <= 0) return;
-              
-              const vat = net * 0.2;
-              const other = parseFloat(inv.other || 0);
-              const total = net + vat + (isNaN(other) ? 0 : other);
-              
-              if (total <= 0) return;
-              
-              const contract = contractsRes.data.find(c => c && c.contract_number === inv.contract_number);
-              unpaidList.push({
-                contractNumber: inv.contractNumber || inv.contract_number || "-",
-                invoiceNumber: inv.invoiceNumber || "-",
-                total,
-                siteName: contract?.site_name || contract?.siteName || "-"
-              });
-            } catch (error) {
-              console.warn('[WARNING] Failed to process invoice:', inv, error);
-            }
-          }
-        });
+        // This will be populated based on your business logic
         setUnpaid(unpaidList);
         
         // Process unpaid expenses
-        const unpaidExpensesList = allExpenses
-          .filter(exp => exp && typeof exp === 'object' && !exp.paid)
-          .map(exp => ({
-            id: exp.id || exp.expense_id || '',
-            date: exp.date || exp.expense_date || '',
-            type: exp.type || exp.description || exp.expense_type || '',
-            gross: exp.gross || exp.amount || exp.expense_amount || 0,
-            description: exp.description || exp.expense_description || '',
-            contract_id: exp.contractId || exp.contract_id || exp.contractId || ''
-          }))
-          .filter(exp => exp.id && exp.gross > 0); // Only include valid expenses
+        const unpaidExpensesList = [];
+        try {
+          expensesData.forEach(exp => {
+            if (exp && typeof exp === 'object' && !exp.paid) {
+              unpaidExpensesList.push(exp);
+            }
+          });
+        } catch (error) {
+          console.error('[ERROR] Failed to process unpaid expenses:', error);
+          // Use empty list if processing fails
+        }
         setUnpaidExpenses(unpaidExpensesList);
         
-        // Process weekly profit data
-        const weekLabels = [...new Set(allPayments
-          .filter(p => p && typeof p === 'object')
-          .map(p => p.weekLabel || p.week_label)
-          .filter(Boolean)
-        )].sort();
-        
-        const weeklyData = weekLabels.map(week => {
-          const weekPayments = allPayments.filter(p => p && (p.weekLabel || p.week_label) === week);
-          const totalPaid = weekPayments.reduce((sum, p) => {
-            if (!p || typeof p !== 'object') return sum;
-            const amount = parseFloat(p.grossAmount || p.gross_amount || 0);
-            return sum + (isNaN(amount) ? 0 : amount);
-          }, 0);
-          return { week, totalPaid };
-        });
+        // Calculate weekly profit data
+        const weekLabels = [];
+        const weeklyData = [];
+        try {
+          weekLabels.push(...new Set(
+            paymentsData
+              .filter(p => p && typeof p === 'object' && (p.weekLabel || p.week_label))
+              .map(p => p.weekLabel || p.week_label)
+              .filter(Boolean)
+          ));
+          weekLabels.sort();
+          
+          weeklyData.push(...weekLabels.map(week => {
+            const weekPayments = paymentsData.filter(p => p && (p.weekLabel || p.week_label) === week);
+            const totalPaid = weekPayments.reduce((sum, p) => {
+              if (!p || typeof p !== 'object') return sum;
+              const amount = parseFloat(p.grossAmount || p.gross_amount || 0);
+              return sum + (isNaN(amount) ? 0 : amount);
+            }, 0);
+            return { week, totalPaid };
+          }));
+        } catch (error) {
+          console.error('[ERROR] Failed to calculate weekly profit data:', error);
+          // Use empty data if processing fails
+        }
         setWeeklyProfitData(weeklyData);
         
       } catch (error) {
@@ -468,6 +449,256 @@ export default function AdminDashboard() {
     console.warn('[WARNING] Failed to parse user from localStorage:', error);
     user = null;
     userFullName = "";
+  }
+
+  // Ensure all chart data is properly validated
+  const safeChartData = {
+    workHoursBysite: Array.isArray(dashboardStats.workHoursBysite) ? dashboardStats.workHoursBysite : [],
+    top5Employees: Array.isArray(dashboardStats.top5Employees) ? dashboardStats.top5Employees : [],
+    weeklyProfitData: Array.isArray(weeklyProfitData) ? weeklyProfitData : [],
+    contracts: Array.isArray(contracts) ? contracts : [],
+    employees: Array.isArray(employees) ? employees : [],
+    allTasks: Array.isArray(allTasks) ? allTasks : [],
+    unpaid: Array.isArray(unpaid) ? unpaid : [],
+    unpaidExpenses: Array.isArray(unpaidExpenses) ? unpaidExpenses : [],
+    allExpenses: Array.isArray(allExpenses) ? allExpenses : []
+  };
+
+  // Additional validation to ensure all data is safe
+  try {
+    // Validate chart data structure
+    if (!safeChartData.workHoursBysite || !Array.isArray(safeChartData.workHoursBysite)) {
+      safeChartData.workHoursBysite = [];
+    }
+    if (!safeChartData.top5Employees || !Array.isArray(safeChartData.top5Employees)) {
+      safeChartData.top5Employees = [];
+    }
+    if (!safeChartData.weeklyProfitData || !Array.isArray(safeChartData.weeklyProfitData)) {
+      safeChartData.weeklyProfitData = [];
+    }
+    if (!safeChartData.contracts || !Array.isArray(safeChartData.contracts)) {
+      safeChartData.contracts = [];
+    }
+    if (!safeChartData.employees || !Array.isArray(safeChartData.employees)) {
+      safeChartData.employees = [];
+    }
+    if (!safeChartData.allTasks || !Array.isArray(safeChartData.allTasks)) {
+      safeChartData.allTasks = [];
+    }
+    if (!safeChartData.unpaid || !Array.isArray(safeChartData.unpaid)) {
+      safeChartData.unpaid = [];
+    }
+    if (!safeChartData.unpaidExpenses || !Array.isArray(safeChartData.unpaidExpenses)) {
+      safeChartData.unpaidExpenses = [];
+    }
+    if (!safeChartData.allExpenses || !Array.isArray(safeChartData.allExpenses)) {
+      safeChartData.allExpenses = [];
+    }
+  } catch (error) {
+    console.error('[ERROR] Failed to validate chart data:', error);
+    // Use empty arrays if validation fails
+    safeChartData.workHoursBysite = [];
+    safeChartData.top5Employees = [];
+    safeChartData.weeklyProfitData = [];
+    safeChartData.contracts = [];
+    safeChartData.employees = [];
+    safeChartData.allTasks = [];
+    safeChartData.unpaid = [];
+    safeChartData.unpaidExpenses = [];
+    safeChartData.allExpenses = [];
+  }
+
+  // Additional safety check for chart rendering
+  try {
+    // Ensure all chart data arrays are safe for rendering
+    safeChartData.workHoursBysite = safeChartData.workHoursBysite.filter(item => 
+      item && typeof item === 'object' && typeof item.site === 'string' && typeof item.hours === 'number'
+    );
+    safeChartData.top5Employees = safeChartData.top5Employees.filter(item => 
+      item && typeof item === 'object' && typeof item.id === 'string' && typeof item.grossAmount === 'number'
+    );
+    safeChartData.weeklyProfitData = safeChartData.weeklyProfitData.filter(item => 
+      item && typeof item === 'object' && typeof item.week === 'string' && typeof item.totalPaid === 'number'
+    );
+    safeChartData.contracts = safeChartData.contracts.filter(item => 
+      item && typeof item === 'object' && typeof item.id === 'string'
+    );
+    safeChartData.employees = safeChartData.employees.filter(item => 
+      item && typeof item === 'object' && typeof item.id === 'string'
+    );
+    safeChartData.allTasks = safeChartData.allTasks.filter(item => 
+      item && typeof item === 'object' && typeof item.id === 'string'
+    );
+    safeChartData.unpaid = safeChartData.unpaid.filter(item => 
+      item && typeof item === 'object' && typeof item.contractNumber === 'string'
+    );
+    safeChartData.unpaidExpenses = safeChartData.unpaidExpenses.filter(item => 
+      item && typeof item === 'object' && typeof item.id === 'string'
+    );
+    safeChartData.allExpenses = safeChartData.allExpenses.filter(item => 
+      item && typeof item === 'object' && typeof item.id === 'string'
+    );
+  } catch (error) {
+    console.error('[ERROR] Failed to filter chart data:', error);
+    // Use empty arrays if filtering fails
+    safeChartData.workHoursBysite = [];
+    safeChartData.top5Employees = [];
+    safeChartData.weeklyProfitData = [];
+    safeChartData.contracts = [];
+    safeChartData.employees = [];
+    safeChartData.allTasks = [];
+    safeChartData.unpaid = [];
+    safeChartData.unpaidExpenses = [];
+    safeChartData.allExpenses = [];
+  }
+
+  // Final safety check to ensure all data is safe for rendering
+  try {
+    // Ensure all chart data is safe for rendering
+    safeChartData.workHoursBysite = safeChartData.workHoursBysite.map(item => {
+      if (item && typeof item === 'object') {
+        return {
+          site: String(item.site || ''),
+          hours: Number(item.hours || 0),
+          gross: Number(item.gross || 0)
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
+    safeChartData.top5Employees = safeChartData.top5Employees.map(item => {
+      if (item && typeof item === 'object') {
+        return {
+          id: String(item.id || ''),
+          employee_id: String(item.employee_id || ''),
+          grossAmount: Number(item.grossAmount || 0),
+          isPaid: Boolean(item.isPaid),
+          firstName: String(item.firstName || ''),
+          lastName: String(item.lastName || '')
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
+    safeChartData.weeklyProfitData = safeChartData.weeklyProfitData.map(item => {
+      if (item && typeof item === 'object') {
+        return {
+          week: String(item.week || ''),
+          totalPaid: Number(item.totalPaid || 0)
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
+    safeChartData.contracts = safeChartData.contracts.map(item => {
+      if (item && typeof item === 'object') {
+        return {
+          id: String(item.id || ''),
+          contract_number: String(item.contract_number || ''),
+          site_name: String(item.site_name || ''),
+          siteName: String(item.siteName || ''),
+          status: String(item.status || ''),
+          startDate: item.startDate || null,
+          start_date: item.start_date || null,
+          finishDate: item.finishDate || null,
+          finish_date: item.finish_date || null
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
+    safeChartData.employees = safeChartData.employees.map(item => {
+      if (item && typeof item === 'object') {
+        return {
+          id: String(item.id || ''),
+          firstName: String(item.firstName || ''),
+          first_name: String(item.first_name || ''),
+          lastName: String(item.lastName || ''),
+          last_name: String(item.last_name || ''),
+          status: String(item.status || ''),
+          photo: item.photo || null
+        };
+      }
+      return null;
+    }).filter(Boolean);
+  } catch (error) {
+    console.error('[ERROR] Failed to sanitize chart data:', error);
+    // Use empty arrays if sanitization fails
+    safeChartData.workHoursBysite = [];
+    safeChartData.top5Employees = [];
+    safeChartData.weeklyProfitData = [];
+    safeChartData.contracts = [];
+    safeChartData.employees = [];
+  }
+
+  // Final validation to ensure all data is safe for rendering
+  try {
+    // Ensure all chart data is safe for rendering
+    if (!Array.isArray(safeChartData.workHoursBysite)) {
+      safeChartData.workHoursBysite = [];
+    }
+    if (!Array.isArray(safeChartData.top5Employees)) {
+      safeChartData.top5Employees = [];
+    }
+    if (!Array.isArray(safeChartData.weeklyProfitData)) {
+      safeChartData.weeklyProfitData = [];
+    }
+    if (!Array.isArray(safeChartData.contracts)) {
+      safeChartData.contracts = [];
+    }
+    if (!Array.isArray(safeChartData.employees)) {
+      safeChartData.employees = [];
+    }
+    if (!Array.isArray(safeChartData.allTasks)) {
+      safeChartData.allTasks = [];
+    }
+    if (!Array.isArray(safeChartData.unpaid)) {
+      safeChartData.unpaid = [];
+    }
+    if (!Array.isArray(safeChartData.unpaidExpenses)) {
+      safeChartData.unpaidExpenses = [];
+    }
+    if (!Array.isArray(safeChartData.allExpenses)) {
+      safeChartData.allExpenses = [];
+    }
+  } catch (error) {
+    console.error('[ERROR] Failed to finalize chart data validation:', error);
+    // Use empty arrays if final validation fails
+    safeChartData.workHoursBysite = [];
+    safeChartData.top5Employees = [];
+    safeChartData.weeklyProfitData = [];
+    safeChartData.contracts = [];
+    safeChartData.employees = [];
+    safeChartData.allTasks = [];
+    safeChartData.unpaid = [];
+    safeChartData.unpaidExpenses = [];
+    safeChartData.allExpenses = [];
+  }
+
+  // Ultimate safety check to ensure all data is safe for rendering
+  try {
+    // Ensure all chart data is safe for rendering
+    safeChartData.workHoursBysite = safeChartData.workHoursBysite || [];
+    safeChartData.top5Employees = safeChartData.top5Employees || [];
+    safeChartData.weeklyProfitData = safeChartData.weeklyProfitData || [];
+    safeChartData.contracts = safeChartData.contracts || [];
+    safeChartData.employees = safeChartData.employees || [];
+    safeChartData.allTasks = safeChartData.allTasks || [];
+    safeChartData.unpaid = safeChartData.unpaid || [];
+    safeChartData.unpaidExpenses = safeChartData.unpaidExpenses || [];
+    safeChartData.allExpenses = safeChartData.allExpenses || [];
+  } catch (error) {
+    console.error('[ERROR] Failed to ultimate chart data validation:', error);
+    // Use empty arrays if ultimate validation fails
+    safeChartData.workHoursBysite = [];
+    safeChartData.top5Employees = [];
+    safeChartData.weeklyProfitData = [];
+    safeChartData.contracts = [];
+    safeChartData.employees = [];
+    safeChartData.allTasks = [];
+    safeChartData.unpaid = [];
+    safeChartData.unpaidExpenses = [];
+    safeChartData.allExpenses = [];
   }
 
   if (loading) {
@@ -559,19 +790,31 @@ export default function AdminDashboard() {
             📊 {t('adminDashboard.hoursBySiteThisWeek') || 'Orët sipas site-ve këtë javë'}
           </h3>
                   <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
-            {t('adminDashboard.totalHoursWorked') || 'Totali i orëve të punuara'} <span className="text-blue-600">{dashboardStats.totalWorkHours}</span>
+            {t('adminDashboard.totalHoursWorked') || 'Totali i orëve të punuara'} <span className="text-blue-600">{dashboardStats.totalWorkHours || 0}</span>
           </div>
-        {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
+        {safeChartData.workHoursBysite && safeChartData.workHoursBysite.length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
-            <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
+            <BarChart data={safeChartData.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" label={{ value: t('workHours.hours'), position: "insideBottomRight", offset: -5 }} />
+              <XAxis type="number" label={{ value: t('workHours.hours') || 'Hours', position: "insideBottomRight", offset: -5 }} />
               <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
-              <Tooltip formatter={v => [v, t('workHours.hours')]} />
+              <Tooltip formatter={v => {
+                try {
+                  return [v, t('workHours.hours') || 'Hours'];
+                } catch (error) {
+                  console.error('[ERROR] Tooltip formatter error:', error);
+                  return [v, 'Hours'];
+                }
+              }} />
               <Bar dataKey="hours" radius={[0, 6, 6, 0]} barSize={32}>
-                {dashboardStats.workHoursBysite.map((_, i) => (
-                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                ))}
+                {safeChartData.workHoursBysite.map((_, i) => {
+                  try {
+                    return <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />;
+                  } catch (error) {
+                    console.error('[ERROR] Failed to render chart cell:', error);
+                    return <Cell key={i} fill={CHART_COLORS[0]} />;
+                  }
+                })}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -583,10 +826,10 @@ export default function AdminDashboard() {
       {/* Grafik për progresin e kontratave aktive */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 {t('adminDashboard.contractsProgressTitle') || 'Progresi i kontratave'}</h3>
-        {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
+        {safeChartData.contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
             <BarChart
-              data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
+              data={safeChartData.contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
                 const start = c.startDate ? new Date(c.startDate) : (c.start_date ? new Date(c.start_date) : null);
                 const end = c.finishDate ? new Date(c.finishDate) : (c.finish_date ? new Date(c.finish_date) : null);
                 const now = new Date();
@@ -606,11 +849,23 @@ export default function AdminDashboard() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" domain={[0, 100]} label={{ value: "%", position: "insideBottomRight", offset: -5 }} tickFormatter={v => `${v}%`} />
               <YAxis type="category" dataKey="name" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
-              <Tooltip formatter={v => [`${v}%`, t('common.progress')]} />
+              <Tooltip formatter={v => {
+                try {
+                  return [`${v}%`, t('common.progress') || 'Progress'];
+                } catch (error) {
+                  console.error('[ERROR] Tooltip formatter error:', error);
+                  return [`${v}%`, 'Progress'];
+                }
+              }} />
               <Bar dataKey="progress" radius={[0, 6, 6, 0]} barSize={30}>
-                {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map((_, i) => (
-                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                ))}
+                {safeChartData.contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map((_, i) => {
+                  try {
+                    return <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />;
+                  } catch (error) {
+                    console.error('[ERROR] Failed to render chart cell:', error);
+                    return <Cell key={i} fill={CHART_COLORS[0]} />;
+                  }
+                })}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -624,13 +879,13 @@ export default function AdminDashboard() {
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
             🏅 {t('adminDashboard.topPaidEmployees') || 'Top 5 punonjësit më të paguar'}
           </h3>
-        {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
+        {safeChartData.top5Employees && safeChartData.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
-            {dashboardStats.top5Employees.map((e, i) => {
+            {safeChartData.top5Employees.map((e, i) => {
               const amount = e.grossAmount ?? e.amount ?? 0;
               
               // Merr të dhënat e plota të punonjësit nga employees array
-              const employeeData = employees.find(emp => emp.id === e.employee_id || emp.id === e.id);
+              const employeeData = safeChartData.employees.find(emp => emp.id === e.employee_id || emp.id === e.id);
               
               const employeeName = employeeData 
                 ? `${employeeData.firstName || employeeData.first_name || employeeData.user_first_name || ''} ${employeeData.lastName || employeeData.last_name || employeeData.user_last_name || ''}`.trim()
@@ -656,8 +911,10 @@ export default function AdminDashboard() {
                         alt={displayName} 
                         className="w-full h-full rounded-full object-cover border-2 border-blue-300 shadow"
                         onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
+                          if (e.target && e.target.nextSibling) {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }
                         }}
                       />
                     ) : null}
@@ -701,7 +958,12 @@ export default function AdminDashboard() {
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 {t('adminDashboard.expensesBySiteTitle') || 'Shpenzimet sipas site-ve'}</h3>
         <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
-          <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} structuredWorkHours={structuredWorkHours} allPayments={allPayments} />
+          <ShpenzimePerSiteChart 
+            allExpenses={safeChartData.allExpenses} 
+            contracts={safeChartData.contracts} 
+            structuredWorkHours={structuredWorkHours} 
+            allPayments={safeChartData.weeklyProfitData} 
+          />
         </ErrorBoundary>
       </div>
 
@@ -709,24 +971,36 @@ export default function AdminDashboard() {
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Statusi i kontratave</h3>
         <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
-          <StatusiKontrataveChart contracts={contracts} />
+          <StatusiKontrataveChart contracts={safeChartData.contracts} />
         </ErrorBoundary>
       </div>
 
       {/* Grafik për pagesat javore */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 Pagesa Javore për stafin</h3>
-        {weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
+        {safeChartData.weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
-            <BarChart data={weeklyProfitData.filter(w => w.totalPaid > 0)} margin={{ left: 50 }}>
+            <BarChart data={safeChartData.weeklyProfitData.filter(w => w.totalPaid > 0)} margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
               <YAxis label={{ value: "Pagesa totale (£)", angle: -90, position: "insideLeft", offset: 0 }} tick={{ fontSize: 14, fill: '#6366f1' }} />
-              <Tooltip formatter={v => [`£${Number(v).toFixed(2)}`, "Pagesa"]} />
+              <Tooltip formatter={v => {
+                try {
+                  return [`£${Number(v).toFixed(2)}`, "Pagesa"];
+                } catch (error) {
+                  console.error('[ERROR] Tooltip formatter error:', error);
+                  return [`£${Number(v).toFixed(2)}`, "Payment"];
+                }
+              }} />
               <Bar dataKey="totalPaid" radius={[6, 6, 0, 0]} barSize={32}>
-                {weeklyProfitData.filter(w => w.totalPaid > 0).map((_, i) => (
-                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                ))}
+                {safeChartData.weeklyProfitData.filter(w => w.totalPaid > 0).map((_, i) => {
+                  try {
+                    return <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />;
+                  } catch (error) {
+                    console.error('[ERROR] Failed to render chart cell:', error);
+                    return <Cell key={i} fill={CHART_COLORS[0]} />;
+                  }
+                })}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -754,11 +1028,11 @@ export default function AdminDashboard() {
       {/* Faturat e papaguara */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
-        {unpaid.length === 0 ? (
+        {safeChartData.unpaid.length === 0 ? (
           <p className="text-gray-500 italic">{t('adminDashboard.allInvoicesPaid') || 'Të gjitha faturat janë paguar'}</p>
         ) : (
           <ul className="space-y-2 text-red-700 text-base">
-            {unpaid.map((item, idx) => (
+            {safeChartData.unpaid.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
                 <a href={`/admin/contracts/${item.contractNumber}`} className="font-bold text-red-700 underline cursor-pointer">
                   🔴 {t('adminDashboard.contract') || 'Kontrata'} #{item.contractNumber || ''}
@@ -766,11 +1040,11 @@ export default function AdminDashboard() {
                 <span className="font-bold text-black">{t('adminDashboard.invoiceNumber') || 'Numri i faturës'} <b>{item.invoiceNumber || ''}</b></span>
                 <span className="font-bold text-blue-700 flex items-center gap-1">🏢 {t('adminDashboard.site') || 'Site'} {(() => {
                   let c = null;
-                  if (item.contract_id && contracts.length) {
-                    c = contracts.find(c => String(c.id) === String(item.contract_id));
+                  if (item.contract_id && safeChartData.contracts.length) {
+                    c = safeChartData.contracts.find(c => String(c.id) === String(item.contract_id));
                   }
-                  if (!c && item.contractNumber && contracts.length) {
-                    c = contracts.find(c => String(c.contract_number) === String(item.contractNumber));
+                  if (!c && item.contractNumber && safeChartData.contracts.length) {
+                    c = safeChartData.contracts.find(c => String(c.contract_number) === String(item.contractNumber));
                   }
                   return c ? `${c.site_name || c.siteName || ''}` : '';
                 })()}</span>
@@ -784,23 +1058,22 @@ export default function AdminDashboard() {
       {/* Shpenzimet e papaguara */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full mb-6 md:mb-8">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 {t('adminDashboard.unpaidExpensesTitle') || 'Shpenzimet e papaguara'}</h3>
-        {unpaidExpenses.length === 0 ? (
+        {safeChartData.unpaidExpenses.length === 0 ? (
           <p className="text-gray-500 italic">{t('adminDashboard.allExpensesPaid') || 'Të gjitha shpenzimet janë paguar'}</p>
         ) : (
           <ul className="space-y-2 text-red-700 text-base">
-            {unpaidExpenses.map((item, idx) => (
+            {safeChartData.unpaidExpenses.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
                 <span className="font-bold flex items-center gap-1">📅 {item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
                 <span className="font-bold text-lg">{item.type || ''}</span>
                 <span className="font-bold text-lg flex items-center gap-1">💷 {item.gross !== undefined ? `£${Number(item.gross).toFixed(2)}` : ''}</span>
                 <span className="font-bold text-blue-700 flex items-center gap-1">
                   🏢 {(() => {
-                    if (!item.contract_id || !contracts.length) return '';
-                    const c = contracts.find(c => String(c.id) === String(item.contract_id));
+                    if (!item.contract_id || !safeChartData.contracts.length) return '';
+                    const c = safeChartData.contracts.find(c => String(c.id) === String(item.contract_id));
                     return c ? `${c.site_name || c.siteName || ''}` : '';
                   })()}
                 </span>
-                <span className="text-gray-700">{item.description || ''}</span>
               </li>
             ))}
           </ul>
@@ -811,7 +1084,31 @@ export default function AdminDashboard() {
 }
 
 function VonesaFaturashChart() {
-  const { t } = useTranslation();
+  let t;
+  
+  try {
+    const translation = useTranslation();
+    t = translation.t;
+  } catch (error) {
+    console.warn('[WARNING] Translation hook failed in VonesaFaturashChart, using fallback:', error);
+    t = (key, fallback = key) => {
+      if (typeof fallback === 'string') {
+        return fallback;
+      }
+      return key;
+    };
+  }
+
+  // Ensure t is always a function
+  if (typeof t !== 'function') {
+    t = (key, fallback = key) => {
+      if (typeof fallback === 'string') {
+        return fallback;
+      }
+      return key;
+    };
+  }
+
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -901,7 +1198,14 @@ function VonesaFaturashChart() {
             fontSize: 16, 
             color: '#78350f' 
           }}
-          formatter={(value, name) => [value, name]}
+          formatter={(value, name) => {
+            try {
+              return [value, name];
+            } catch (error) {
+              console.error('[ERROR] Tooltip formatter error:', error);
+              return [value, 'Unknown'];
+            }
+          }}
         />
       </PieChart>
     </ResponsiveContainer>
@@ -909,7 +1213,31 @@ function VonesaFaturashChart() {
 }
 
 function StatusiShpenzimeveChart() {
-  const { t } = useTranslation();
+  let t;
+  
+  try {
+    const translation = useTranslation();
+    t = translation.t;
+  } catch (error) {
+    console.warn('[WARNING] Translation hook failed in StatusiShpenzimeveChart, using fallback:', error);
+    t = (key, fallback = key) => {
+      if (typeof fallback === 'string') {
+        return fallback;
+      }
+      return key;
+    };
+  }
+
+  // Ensure t is always a function
+  if (typeof t !== 'function') {
+    t = (key, fallback = key) => {
+      if (typeof fallback === 'string') {
+        return fallback;
+      }
+      return key;
+    };
+  }
+
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -1000,7 +1328,14 @@ function StatusiShpenzimeveChart() {
             fontSize: 16, 
             color: '#78350f' 
           }}
-          formatter={(value, name) => [value, name]}
+          formatter={(value, name) => {
+            try {
+              return [value, name];
+            } catch (error) {
+              console.error('[ERROR] Tooltip formatter error:', error);
+              return [value, 'Unknown'];
+            }
+          }}
         />
       </PieChart>
     </ResponsiveContainer>
@@ -1008,7 +1343,31 @@ function StatusiShpenzimeveChart() {
 }
 
 function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, allPayments }) {
-  const { t } = useTranslation();
+  let t;
+  
+  try {
+    const translation = useTranslation();
+    t = translation.t;
+  } catch (error) {
+    console.warn('[WARNING] Translation hook failed in ShpenzimePerSiteChart, using fallback:', error);
+    t = (key, fallback = key) => {
+      if (typeof fallback === 'string') {
+        return fallback;
+      }
+      return key;
+    };
+  }
+
+  // Ensure t is always a function
+  if (typeof t !== 'function') {
+    t = (key, fallback = key) => {
+      if (typeof fallback === 'string') {
+        return fallback;
+      }
+      return key;
+    };
+  }
+
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -1126,7 +1485,14 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
           <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0284c7' }} />
           <Tooltip 
             contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} 
-            formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? t('common.total') : n]} 
+            formatter={(v, n) => {
+              try {
+                return [`£${Number(v).toFixed(2)}`, n === 'total' ? t('common.total') : n];
+              } catch (error) {
+                console.error('[ERROR] Tooltip formatter error:', error);
+                return [`£${Number(v).toFixed(2)}`, 'Unknown'];
+              }
+            }} 
           />
           <Legend />
           <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name={t('adminDashboard.expenses') || 'Shpenzimet'} radius={[0, 0, 0, 0]} />
@@ -1138,7 +1504,31 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
 }
 
 function StatusiKontrataveChart({ contracts }) {
-  const { t } = useTranslation();
+  let t;
+  
+  try {
+    const translation = useTranslation();
+    t = translation.t;
+  } catch (error) {
+    console.warn('[WARNING] Translation hook failed in StatusiKontrataveChart, using fallback:', error);
+    t = (key, fallback = key) => {
+      if (typeof fallback === 'string') {
+        return fallback;
+      }
+      return key;
+    };
+  }
+
+  // Ensure t is always a function
+  if (typeof t !== 'function') {
+    t = (key, fallback = key) => {
+      if (typeof fallback === 'string') {
+        return fallback;
+      }
+      return key;
+    };
+  }
+
   const [data, setData] = useState([]);
   
   // Ngjyra të ndryshme për çdo status
@@ -1212,7 +1602,14 @@ function StatusiKontrataveChart({ contracts }) {
             fontSize: 16, 
             color: '#78350f' 
           }}
-          formatter={(value, name) => [value, name]}
+          formatter={(value, name) => {
+            try {
+              return [value, name];
+            } catch (error) {
+              console.error('[ERROR] Tooltip formatter error:', error);
+              return [value, 'Unknown'];
+            }
+          }}
         />
       </PieChart>
     </ResponsiveContainer>
