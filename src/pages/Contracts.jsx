@@ -18,7 +18,7 @@ const CONTRACT_STATUSES = [
   "Ne progres",
   "Pezulluar",
   "Mbyllur",
-  "Mbyllur me vonese"
+  t('contracts.closedWithDelay')
 ];
 
 export default function Contracts() {
@@ -308,7 +308,7 @@ export default function Contracts() {
     contract.closed_date = today.toISOString();
 
     if (contract.closed_manually) {
-      contract.status = today > finishDate ? "Mbyllur me vonese" : "Mbyllur";
+              contract.status = today > finishDate ? t('contracts.closedWithDelay') : t('contracts.closed');
     } else {
       contract.status = "Ne progres";
       contract.closed_date = null;
@@ -690,7 +690,7 @@ export default function Contracts() {
       'Ne progres': 'bg-blue-100 text-blue-800',
       'Pezulluar': 'bg-yellow-100 text-yellow-800',
       'Mbyllur': 'bg-green-100 text-green-800',
-      'Mbyllur me vonese': 'bg-orange-100 text-orange-800'
+              [t('contracts.closedWithDelay')]: 'bg-orange-100 text-orange-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
@@ -702,7 +702,7 @@ export default function Contracts() {
     const finishDate = new Date(contract.finish_date);
     
     if (contract.closed_manually) {
-      return contract.closed_date ? "Mbyllur" : "Mbyllur me vonese";
+              return contract.closed_date ? t('contracts.closed') : t('contracts.closedWithDelay');
     }
     
     if (today < startDate) {
@@ -710,7 +710,7 @@ export default function Contracts() {
     } else if (today >= startDate && today <= finishDate) {
       return "Ne progres";
     } else if (today > finishDate) {
-      return "Mbyllur me vonese";
+              return t('contracts.closedWithDelay');
     }
     
     return "Ne progres"; // default
