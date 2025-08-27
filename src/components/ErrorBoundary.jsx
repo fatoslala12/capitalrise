@@ -93,17 +93,17 @@ class ErrorBoundary extends React.Component {
             <div className="text-center mb-8">
               <div className="text-6xl mb-4">🚨</div>
               <h1 className="text-3xl font-bold text-red-800 mb-2">
-                Ndodhi një Gabim
+                {t('error.title')}
               </h1>
               <p className="text-red-600 text-lg">
-                Na falni, diçka shkoi keq në aplikacion
+                {t('error.message')}
               </p>
             </div>
 
             {/* Error Details */}
             <div className="bg-red-50 rounded-lg p-4 mb-6 border border-red-200">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-red-700 font-semibold">ID e Gabimit:</span>
+                <span className="text-red-700 font-semibold">{t('error.errorId')}</span>
                 <code className="bg-red-100 px-2 py-1 rounded text-sm font-mono">
                   {this.state.errorId}
                 </code>
@@ -111,7 +111,7 @@ class ErrorBoundary extends React.Component {
               
               {this.state.error && (
                 <div className="mb-3">
-                  <span className="text-red-700 font-semibold">Mesazhi:</span>
+                  <span className="text-red-700 font-semibold">{t('error.messageLabel')}</span>
                   <p className="text-red-600 mt-1">{this.state.error.message}</p>
                 </div>
               )}
@@ -134,31 +134,31 @@ class ErrorBoundary extends React.Component {
                 onClick={this.handleRetry}
                 className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
               >
-                🔄 Provoni Përsëri
+                🔄 {t('error.retry')}
               </Button>
               
               <Button
                 onClick={this.handleReload}
                 className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
               >
-                🔄 Rifresko Faqen
+                🔄 {t('error.reload')}
               </Button>
               
               <Button
                 onClick={this.handleGoHome}
                 className="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-colors"
               >
-                🏠 Kthehu në Ballina
+                🏠 {t('error.goHome')}
               </Button>
             </div>
 
             {/* Help Text */}
             <div className="mt-8 text-center text-gray-600">
               <p className="mb-2">
-                Nëse problemi vazhdon, ju lutem kontaktoni suportin teknik
+                {t('error.contactSupport')}
               </p>
               <p className="text-sm">
-                ID e gabimit: <strong>{this.state.errorId}</strong>
+                {t('error.errorIdLabel')} <strong>{this.state.errorId}</strong>
               </p>
             </div>
           </div>
@@ -177,7 +177,7 @@ export const useErrorHandler = () => {
     
     // Shfaq toast notification
     toast.error(
-      error.message || 'Ndodhi një gabim. Provoni përsëri.',
+      error.message || t('error.message'),
       {
         duration: 5000,
         id: `error-${Date.now()}`

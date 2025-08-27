@@ -16,6 +16,17 @@
     "total": "Total",
     "progress": "Progresi"
   },
+  "error": {
+    "title": "Ndodhi një Gabim",
+    "message": "Na falni, diçka shkoi keq në aplikacion",
+    "errorId": "ID e Gabimit:",
+    "messageLabel": "Mesazhi:",
+    "retry": "Provoni Përsëri",
+    "reload": "Rifresko Faqen",
+    "goHome": "Kthehu në Ballina",
+    "contactSupport": "Nëse problemi vazhdon, ju lutem kontaktoni suportin teknik",
+    "errorIdLabel": "ID e gabimit:"
+  },
   "auth": {
     "welcome": "Mirëseerdhët",
     "loginCredentials": "Vendosni kredencialet për të hyrë në sistem",
@@ -98,8 +109,8 @@
     "workHoursSaved": "Orët e punës u ruajtën me sukses!",
     "errorSaving": "Gabim gjatë ruajtjes së orëve të punës",
     "viewMode": "Mënyra e shikimit",
-    "viewAll": "Shiko të gjitha",
-    "viewBySite": "Shiko sipas vendit",
+    "viewAll": "Të gjithë",
+    "viewBySite": "Sipas Site",
     "currentWeek": "Java aktuale",
     "previousWeek": "Java e mëparshme",
     "nextWeek": "Java e ardhshme",
@@ -109,7 +120,19 @@
     "noWorkHours": "Nuk ka orë të punës për këtë javë",
     "loading": "Duke ngarkuar...",
     "save": "Ruaj",
-    "cancel": "Anulo"
+    "cancel": "Anulo",
+    "employeeHeader": "Punonjësi",
+    "rateHeader": "Rate",
+    "hoursHeader": "Orë",
+    "grossHeader": "Bruto",
+    "vatHeader": "TVSH",
+    "netHeader": "Neto",
+    "actionsHeader": "Veprime",
+    "statusHeader": "Statusi",
+    "deletePayment": "Fshi pagesen",
+    "paidStatus": "Paguar",
+    "dailyDetails": "Detajet e ditëve:",
+    "rest": "Pushim"
   },
   "tasks": {
     "title": "Menaxhimi i Detyrave",
@@ -276,6 +299,9 @@
     "profit": "Fitimi",
     "statusChangedSuccess": "Statusi i kontratës u ndryshua me sukses!",
     "selectContractsForDeletion": "Zgjidh kontratat për fshirje!",
+    "statusHeader": "Statusi",
+    "progressHeader": "Progresi",
+    "actionsHeader": "Veprime",
     "exportHeaders": {
       "location": "Vendodhja",
       "value": "Vlera (£)",
@@ -308,7 +334,9 @@
     "end": "Fundi",
     "contractNumber": "Numri i Kontratës",
     "company": "Kompania",
-    "siteName": "Emri i Site-it"
+    "siteName": "Emri i Site-it",
+    "filterByStatus": "Filtro sipas statusit:",
+    "allContracts": "Të gjitha kontratat"
   },
   "paymentDetails": {
     "title": "Detajet e Pagesës",
@@ -755,6 +783,7 @@
     "nextOfKinPhone": "Next of Kin Tel",
     "qualification": "Kualifikimi",
     "goBack": "Kthehu",
+    "back": "Kthehu",
     "edit": "Edito",
     "resetPassword": "Reset Password",
     "next": "Tjetra",
@@ -785,6 +814,7 @@
     "medium": "Mesatare",
     "completed": "Përfunduar",
     "date": "Data",
+    "hours": "orë",
     "category": "Kategoria",
     "general": "E Përgjithshme",
     "view": "Shiko",

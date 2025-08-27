@@ -26,6 +26,17 @@
     "sort": "Sort",
     "total": "Total"
   },
+  "error": {
+    "title": "An Error Occurred",
+    "message": "Sorry, something went wrong in the application",
+    "errorId": "Error ID:",
+    "messageLabel": "Message:",
+    "retry": "Try Again",
+    "reload": "Refresh Page",
+    "goHome": "Go to Home",
+    "contactSupport": "If the problem persists, please contact technical support",
+    "errorIdLabel": "Error ID:"
+  },
   "auth": {
     "welcome": "Welcome",
     "loginCredentials": "Enter your credentials to access the system",
@@ -286,6 +297,9 @@
     "profit": "Profit",
     "statusChangedSuccess": "Contract status changed successfully!",
     "selectContractsForDeletion": "Select contracts for deletion!",
+    "statusHeader": "Status",
+    "progressHeader": "Progress",
+    "actionsHeader": "Actions",
     "exportHeaders": {
       "location": "Location",
       "value": "Value (£)",
@@ -660,6 +674,7 @@
     "nextOfKinPhone": "Next of Kin Phone",
     "qualification": "Qualification",
     "goBack": "Go Back",
+    "back": "Back",
     "edit": "Edit",
     "resetPassword": "Reset Password",
     "next": "Next",
@@ -690,6 +705,7 @@
     "medium": "Medium",
     "completed": "Completed",
     "date": "Date",
+    "hours": "hours",
     "category": "Category",
     "general": "General",
     "view": "View",
@@ -773,7 +789,21 @@
     "thursday": "Thursday",
     "friday": "Friday",
     "saturday": "Saturday",
-    "sunday": "Sunday"
+    "sunday": "Sunday",
+    "viewAll": "View All",
+    "viewBySite": "View by Site",
+    "employeeHeader": "Employee",
+    "rateHeader": "Rate",
+    "hoursHeader": "Hours",
+    "grossHeader": "Gross",
+    "vatHeader": "VAT",
+    "netHeader": "Net",
+    "actionsHeader": "Actions",
+    "statusHeader": "Status",
+    "deletePayment": "Delete Payment",
+    "paidStatus": "Paid",
+    "dailyDetails": "Daily Details:",
+    "rest": "Rest"
   },
   "payments": {
     "title": "Payments & Contracts",
@@ -790,7 +820,9 @@
     "end": "End",
     "contractNumber": "Contract Number",
     "company": "Company",
-    "siteName": "Site Name"
+    "siteName": "Site Name",
+    "filterByStatus": "Filter by status:",
+    "allContracts": "All contracts"
   },
   "paymentDetails": {
     "title": "Payment Details",

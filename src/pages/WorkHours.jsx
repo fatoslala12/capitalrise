@@ -647,7 +647,7 @@ export default function WorkHours() {
                   : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'
               }`}
             >
-              👥 Të gjithë
+              👥 {t('workHours.viewAll')}
             </button>
             <button 
               onClick={() => setViewMode('bySite')} 
@@ -657,7 +657,7 @@ export default function WorkHours() {
                   : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'
               }`}
             >
-              🏗️ Sipas Site
+              🏗️ {t('workHours.viewBySite')}
             </button>
           </div>
         )}

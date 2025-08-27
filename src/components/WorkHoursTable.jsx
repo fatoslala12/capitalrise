@@ -1,7 +1,31 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import api from "../api";
 
-const days = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte", "E shtunë", "E diel"];
+import { useTranslation } from "react-i18next";
+
+const WorkHoursTable = ({
+  employees,
+  weekLabel,
+  data,
+  onChange = () => {},
+  readOnly,
+  showPaymentControl = false,
+  siteOptions = [],
+  paidStatus = {},
+  setPaidStatus = () => {},
+  siteScope = ''  // NEW: filter calculations by site
+}) => {
+  const { t } = useTranslation();
+  
+  const days = [
+    t('workHours.monday'),
+    t('workHours.tuesday'),
+    t('workHours.wednesday'),
+    t('workHours.thursday'),
+    t('workHours.friday'),
+    t('workHours.saturday'),
+    t('workHours.sunday')
+  ];
 
 export default function WorkHoursTable({
   employees,
@@ -398,11 +422,11 @@ export default function WorkHoursTable({
                     <div className="font-bold text-gray-900">{calc.total && !isNaN(calc.total) ? Number(calc.total).toFixed(2) : '0.00'}</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-600 mb-1">Bruto</div>
+                    <div className="text-xs text-gray-600 mb-1">{t('workHours.grossHeader')}</div>
                     <div className="font-bold text-green-700">£{calc.bruto && !isNaN(calc.bruto) ? Number(calc.bruto).toFixed(2) : '0.00'}</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-600 mb-1">Neto</div>
+                    <div className="text-xs text-gray-600 mb-1">{t('workHours.netHeader')}</div>
                     <div className="font-bold text-blue-700">£{calc.neto && !isNaN(calc.neto) ? Number(calc.neto).toFixed(2) : '0.00'}</div>
                   </div>
                 </div>
@@ -414,7 +438,7 @@ export default function WorkHoursTable({
                       onClick={() => handlePaymentToggle(calc.emp.id)}
                       className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
                     >
-                      {calc.paid ? '❌ Fshi pagesen' : '✅ Paguaj'}
+                      {calc.paid ? `❌ ${t('workHours.deletePayment')}` : `✅ ${t('workHours.paidStatus')}`}
                     </button>
                   )}
                   <span className={`px-3 py-1 rounded-full text-xs font-bold border ${calc.statusBg} ${calc.statusClass}`}>
@@ -426,7 +450,7 @@ export default function WorkHoursTable({
               {/* Detajet e zgjeruara */}
               {expandedRows.has(calc.emp.id) && (
                 <div className="border-t border-blue-200 bg-gray-50 p-4">
-                  <h4 className="font-semibold text-blue-800 mb-3">Detajet e ditëve:</h4>
+                  <h4 className="font-semibold text-blue-800 mb-3">{t('workHours.dailyDetails')}</h4>
                   <div className="grid grid-cols-7 gap-2">
                     {days.map((day) => (
                       <div key={day} className="text-center">
@@ -491,13 +515,13 @@ export default function WorkHoursTable({
             <table className="min-w-full text-base text-blue-900 rounded-2xl overflow-hidden shadow-xl">
               <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-base font-bold">
                 <tr>
-                  <th className="py-4 px-3 text-left">Punonjësi</th>
+                  <th className="py-4 px-3 text-left">{t('workHours.employeeHeader')}</th>
                   {days.map((day) => (
                     <th key={day} className="py-4 px-3 text-center">{day}</th>
                   ))}
-                  <th className="py-4 px-3 text-center">Rate</th>
-                  <th className="py-4 px-3 text-center">Totali</th>
-                  <th className="py-4 px-3 text-center">Bruto</th>
+                  <th className="py-4 px-3 text-center">{t('workHours.rateHeader')}</th>
+                  <th className="py-4 px-3 text-center">{t('workHours.total')}</th>
+                  <th className="py-4 px-3 text-center">{t('workHours.grossHeader')}</th>
                   <th className="py-4 px-3 text-center">TVSH</th>
                   <th className="py-4 px-3 text-center">Neto</th>
                   {showPaymentControl && <th className="py-4 px-3 text-center">💸</th>}
