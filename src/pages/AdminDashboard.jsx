@@ -756,7 +756,7 @@ export default function AdminDashboard() {
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📋 {t('adminDashboard.tasksTitle') || 'Detyrat'}</h3>
         <div className="mb-4 flex flex-col sm:flex-row gap-2 md:gap-4 items-start sm:items-center">
           <label className="font-medium text-sm md:text-base">{t('adminDashboard.filter') || 'Filtro'}</label>
-          <select value={taskFilter} onChange={e => setTaskFilter(e.target.value)} className="border p-2 rounded text-sm md:text-base">
+          <select value={taskFilter} onChange={(event) => setTaskFilter(event.target.value)} className="border p-2 rounded text-sm md:text-base">
             <option value="ongoing">{t('adminDashboard.onlyActive') || 'Vetëm aktive'}</option>
             <option value="completed">{t('adminDashboard.onlyCompleted') || 'Vetëm të përfunduara'}</option>
             <option value="all">{t('adminDashboard.all') || 'Të gjitha'}</option>
@@ -881,19 +881,19 @@ export default function AdminDashboard() {
           </h3>
         {safeChartData.top5Employees && safeChartData.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
-            {safeChartData.top5Employees.map((e, i) => {
-              const amount = e.grossAmount ?? e.amount ?? 0;
+            {safeChartData.top5Employees.map((employee, i) => {
+              const amount = employee.grossAmount ?? employee.amount ?? 0;
               
               // Merr të dhënat e plota të punonjësit nga employees array
-              const employeeData = safeChartData.employees.find(emp => emp.id === e.employee_id || emp.id === e.id);
+              const employeeData = safeChartData.employees.find(emp => emp.id === employee.employee_id || emp.id === employee.id);
               
               const employeeName = employeeData 
                 ? `${employeeData.firstName || employeeData.first_name || employeeData.user_first_name || ''} ${employeeData.lastName || employeeData.last_name || employeeData.user_last_name || ''}`.trim()
-                : e.name || 'Unknown';
+                : employee.name || 'Unknown';
               
               // Use the name from the top5Employees data if available
-              const displayName = e.firstName && e.lastName 
-                ? `${e.firstName} ${e.lastName}`.trim()
+              const displayName = employee.firstName && employee.lastName 
+                ? `${employee.firstName} ${employee.lastName}`.trim()
                 : employeeName;
               
               const photoSrc = employeeData?.photo
@@ -903,17 +903,17 @@ export default function AdminDashboard() {
                 : '/placeholder.png';
               
               return (
-                <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
+                <li key={employee.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
                   <div className="relative w-14 h-14">
                     {employeeData?.photo ? (
                       <img 
                         src={photoSrc} 
                         alt={displayName} 
                         className="w-full h-full rounded-full object-cover border-2 border-blue-300 shadow"
-                        onError={(e) => {
-                          if (e.target && e.target.nextSibling) {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'flex';
+                        onError={(event) => {
+                          if (event.target && event.target.nextSibling) {
+                            event.target.style.display = 'none';
+                            event.target.nextSibling.style.display = 'flex';
                           }
                         }}
                       />
@@ -938,7 +938,7 @@ export default function AdminDashboard() {
                       {displayName}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {e.isPaid ? `✅ ${t('adminDashboard.paid') || 'Paguar'}` : `⏳ ${t('adminDashboard.unpaid') || 'Pa paguar'}`}
+                      {employee.isPaid ? `✅ ${t('adminDashboard.paid') || 'Paguar'}` : `⏳ ${t('adminDashboard.unpaid') || 'Pa paguar'}`}
                     </p>
                   </div>
                   <div className="text-blue-700 font-extrabold text-xl">£{Number(amount).toFixed(2)}</div>
