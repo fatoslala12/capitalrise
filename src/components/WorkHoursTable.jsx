@@ -1,31 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import api from "../api";
-
 import { useTranslation } from "react-i18next";
-
-const WorkHoursTable = ({
-  employees,
-  weekLabel,
-  data,
-  onChange = () => {},
-  readOnly,
-  showPaymentControl = false,
-  siteOptions = [],
-  paidStatus = {},
-  setPaidStatus = () => {},
-  siteScope = ''  // NEW: filter calculations by site
-}) => {
-  const { t } = useTranslation();
-  
-  const days = [
-    t('workHours.monday'),
-    t('workHours.tuesday'),
-    t('workHours.wednesday'),
-    t('workHours.thursday'),
-    t('workHours.friday'),
-    t('workHours.saturday'),
-    t('workHours.sunday')
-  ];
 
 export default function WorkHoursTable({
   employees,
@@ -39,6 +14,18 @@ export default function WorkHoursTable({
   setPaidStatus = () => {},
   siteScope = ''  // NEW: filter calculations by site
 }) {
+  const { t } = useTranslation();
+  
+  const days = [
+    t('workHours.monday'),
+    t('workHours.tuesday'),
+    t('workHours.wednesday'),
+    t('workHours.thursday'),
+    t('workHours.friday'),
+    t('workHours.saturday'),
+    t('workHours.sunday')
+  ];
+  
   const [expandedRows, setExpandedRows] = useState(new Set());
 
   // Optimized calculations me useMemo
