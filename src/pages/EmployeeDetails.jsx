@@ -1222,7 +1222,7 @@ export default function EmployeeDetails() {
                     {filteredWorkDays[key].map((entry, idx) => (
                       <span
                         key={idx}
-                        title={`Site: ${entry.site}\nOrë: ${entry.hours}\nPagesë: £${(entry.hours * entry.rate).toFixed(2)}`}
+                        title={`${t('employeeDetails.siteLabel')}: ${entry.site}\n${t('employeeDetails.hoursLabel')}: ${entry.hours}\n${t('employeeDetails.paymentLabel')}: £${(entry.hours * entry.rate).toFixed(2)}`}
                         className="inline-block w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-lg transition-all duration-300 hover:scale-125"
                         style={{ 
                           background: currentSiteColors[entry.site] || getSiteColor(entry.site), 
@@ -1256,14 +1256,14 @@ export default function EmployeeDetails() {
                   <ul className="space-y-2 md:space-y-3">
                     {filteredWorkDays[selectedDate.toISOString().slice(0, 10)].map((entry, idx) => (
                       <li key={idx} className="flex flex-col gap-1 bg-blue-50 rounded-xl p-3 shadow">
-                        <span><b>Site:</b> <span className="font-semibold" style={{ color: siteColors[entry.site] }}>{entry.site}</span></span>
-                        <span><b>Orë:</b> {entry.hours}</span>
-                        <span><b>Pagesë:</b> £{(entry.hours * entry.rate).toFixed(2)}</span>
+                        <span><b>{t('employeeDetails.siteLabel')}:</b> <span className="font-semibold" style={{ color: siteColors[entry.site] }}>{entry.site}</span></span>
+                        <span><b>{t('employeeDetails.hoursLabel')}:</b> {entry.hours}</span>
+                        <span><b>{t('employeeDetails.paymentLabel')}:</b> £{(entry.hours * entry.rate).toFixed(2)}</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-gray-500 italic">Nuk ka orë të regjistruara për këtë ditë.</p>
+                  <p className="text-gray-500 italic">{t('employeeDetails.noHoursRecorded')}</p>
                 )}
               </div>
             </div>
@@ -1465,8 +1465,8 @@ export default function EmployeeDetails() {
             {tasks.length === 0 && (
               <div className="text-center py-8 md:py-12">
                 <div className="text-4xl md:text-6xl mb-4">📋</div>
-                <h4 className="text-lg md:text-xl font-bold text-gray-600 mb-2">Nuk ka detyra të caktuara</h4>
-                <p className="text-gray-500 text-sm md:text-lg">Ky punonjës nuk ka detyra të caktuara për momentin.</p>
+                <h4 className="text-lg md:text-xl font-bold text-gray-600 mb-2">{t('employeeDetails.noTasksAssigned')}</h4>
+                <p className="text-gray-500 text-sm md:text-lg">{t('employeeDetails.noTasksAssignedDescription')}</p>
                 <button 
                   onClick={() => navigate('/tasks')}
                   className="mt-4 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow hover:from-blue-200 hover:to-purple-200 transition-all duration-300 text-sm md:text-base border border-blue-200"
@@ -1485,7 +1485,7 @@ export default function EmployeeDetails() {
 function EmployeeWorkHistory({ workHistory, paidStatus, employee, t }) {
   const weeks = Object.entries(workHistory); // [[weekLabel, {E hënë: {...}, ...}], ...]
   if (!weeks.length) {
-    return <p className="text-sm text-gray-500 italic">Nuk ka orë të regjistruara për këtë punonjës.</p>;
+    return <p className="text-sm text-gray-500 italic">{t('employeeDetails.noHoursRecordedForEmployee')}</p>;
   }
 
   return (

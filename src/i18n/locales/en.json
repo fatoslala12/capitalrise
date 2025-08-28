@@ -764,7 +764,21 @@
     "tasks": "Tasks",
     "viewAllTasks": "View All Tasks",
     "priority": "Priority",
-    "site": "Site"
+    "site": "Site",
+    "hours": "Hours",
+    "general": "General",
+    "back": "Back",
+    "edit": "Edit",
+    "date": "Date",
+    "category": "Category",
+    "type": "Type",
+    "noHoursRecorded": "No hours recorded for this day",
+    "noHoursRecordedForEmployee": "No hours recorded for this employee",
+    "noTasksAssigned": "No tasks assigned",
+    "noTasksAssignedDescription": "This employee has no tasks assigned at the moment",
+    "siteLabel": "Site",
+    "hoursLabel": "Hours",
+    "paymentLabel": "Payment"
   },
   "workHours": {
     "title": "Work Hours",
