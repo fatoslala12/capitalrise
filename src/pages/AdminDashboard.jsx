@@ -254,7 +254,6 @@ function AdminDashboardContent() {
           // Fetch all data in parallel
           console.debug('[DEBUG] fetchData: Making API calls');
           const [
-            sitesResponse,
             employeesResponse,
             tasksResponse,
             expensesResponse,
@@ -262,7 +261,6 @@ function AdminDashboardContent() {
             workHoursResponse,
             paymentsResponse
           ] = await Promise.all([
-            api.get('/api/sites'),
             api.get('/api/employees'),
             api.get('/api/tasks'),
             api.get('/api/expenses'),
@@ -272,9 +270,11 @@ function AdminDashboardContent() {
           ]);
           console.debug('[DEBUG] fetchData: API calls completed');
 
-          // Process sites
-          const sites = sitesResponse.data || [];
-          setActiveSites(sites.filter(site => site.status === 'active'));
+          // Process sites from contracts data
+          const contracts = contractsResponse.data || [];
+          const uniqueSites = [...new Set(contracts.map(contract => contract.site_name).filter(Boolean))];
+          const activeSites = uniqueSites.map(siteName => ({ name: siteName, status: 'active' }));
+          setActiveSites(activeSites);
 
           // Process employees
           const employees = employeesResponse.data || [];
