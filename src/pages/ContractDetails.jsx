@@ -189,7 +189,7 @@ export default function ContractDetails() {
         );
         setContract(res.data);
       } catch {
-        alert("Gabim gjatë ngarkimit të dokumentit!");
+        alert(t('contractDetails.documentUploadError'));
       } finally {
         setLoadingStates(prev => ({ ...prev, documentUpload: false }));
       }
@@ -202,8 +202,8 @@ export default function ContractDetails() {
     const document = contract.documents[index];
     
     showConfirmDialog(
-      "Fshi Dokumentin",
-      `Jeni i sigurt që doni të fshini dokumentin "${document.name}"?`,
+      t('contractDetails.deleteDocument'),
+      t('contractDetails.deleteDocumentConfirm', { name: document.name }),
       async () => {
         setLoadingStates(prev => ({ ...prev, documentDelete: true }));
         
@@ -214,7 +214,7 @@ export default function ContractDetails() {
           );
           setContract(res.data);
         } catch {
-          alert("Gabim gjatë fshirjes së dokumentit!");
+          alert(t('contractDetails.documentDeleteError'));
         } finally {
           setLoadingStates(prev => ({ ...prev, documentDelete: false }));
         }
@@ -237,7 +237,7 @@ export default function ContractDetails() {
       setContract(res.data);
       setNewComment("");
     } catch {
-      alert("Gabim gjatë shtimit të komentit!");
+              alert(t('contractDetails.commentAddError'));
     } finally {
       setLoadingStates(prev => ({ ...prev, addComment: false }));
     }
@@ -252,9 +252,9 @@ export default function ContractDetails() {
     const elapsedDays = Math.max(0, Math.min((today - start) / (1000 * 60 * 60 * 24), totalDays));
 
     return [
-      { name: "Fillimi", progress: 0 },
-      { name: "Tani", progress: Math.floor((elapsedDays / totalDays) * 100) },
-      { name: "Përfundimi", progress: 100 }
+      { name: t('contractDetails.start'), progress: 0 },
+      { name: t('contractDetails.now'), progress: Math.floor((elapsedDays / totalDays) * 100) },
+      { name: t('contractDetails.end'), progress: 100 }
     ];
   };
 
@@ -341,11 +341,11 @@ export default function ContractDetails() {
         actions: []
       });
       
-      alert("Fatura u ruajt me sukses!");
+      alert(t('contractDetails.invoiceSavedSuccess'));
       closeAddModal();
     } catch (err) {
       console.error("Error saving invoice:", err);
-      alert("Gabim gjatë ruajtjes së faturës!");
+              alert(t('contractDetails.invoiceSaveError'));
     } finally {
       setLoadingStates(prev => ({ ...prev, saveInvoice: false }));
     }
@@ -356,8 +356,8 @@ export default function ContractDetails() {
     const invoice = invoices.find(inv => inv.id === invoiceId);
     
     showConfirmDialog(
-      "Fshi Faturën",
-      `Jeni i sigurt që doni të fshini faturën "${invoice?.invoice_number}"?`,
+      t('contractDetails.deleteInvoice'),
+      t('contractDetails.deleteInvoiceConfirm', { number: invoice?.invoice_number }),
       async () => {
         setLoadingStates(prev => ({ ...prev, deleteInvoice: { ...prev.deleteInvoice, [invoiceId]: true } }));
         
@@ -373,7 +373,7 @@ export default function ContractDetails() {
           );
           setInvoices(invoicesRes.data || []);
         } catch {
-          alert("Gabim gjatë fshirjes së faturës!");
+          alert(t('contractDetails.invoiceDeleteError'));
         } finally {
           setLoadingStates(prev => ({ ...prev, deleteInvoice: { ...prev.deleteInvoice, [invoiceId]: false } }));
         }
@@ -398,7 +398,7 @@ export default function ContractDetails() {
       );
       setInvoices(invoicesRes.data || []);
     } catch {
-      alert("Gabim gjatë ndryshimit të statusit të pagesës!");
+              alert(t('contractDetails.paymentStatusChangeError'));
     } finally {
       setLoadingStates(prev => ({ ...prev, togglePaid: { ...prev.togglePaid, [invoiceId]: false } }));
     }
@@ -411,7 +411,9 @@ export default function ContractDetails() {
     // Kontrollo nëse fatura është dërguar më parë
     if (invoice?.emailed) {
       const confirmResend = window.confirm(
-        `⚠️ Kjo faturë është dërguar më parë me email (${invoice.emailed_at ? new Date(invoice.emailed_at).toLocaleString('sq-AL') : 'pa datë'}).\n\nJeni i sigurt që doni ta dërgoni përsëri?`
+        t('contractDetails.invoiceAlreadyEmailedConfirm', { 
+          date: invoice.emailed_at ? new Date(invoice.emailed_at).toLocaleString('en-GB') : t('contractDetails.noDate')
+        })
       );
       
       if (!confirmResend) {
@@ -429,7 +431,7 @@ export default function ContractDetails() {
       );
       
       if (response.data.success) {
-        alert("✅ Fatura u dërgua me sukses në email!");
+        alert(t('contractDetails.invoiceEmailSentSuccess'));
         
         // Rifresko faturat për të treguar statusin e përditësuar
         const invoicesRes = await axios.get(
@@ -458,7 +460,7 @@ export default function ContractDetails() {
       );
       
       if (response.data.success) {
-        alert("✅ Detajet e kontratës u dërguan me sukses në email!");
+        alert(t('contractDetails.contractDetailsSentSuccess'));
       }
     } catch (error) {
       const errorMessage = error.response?.data?.error || "Gabim gjatë dërgimit të email-it!";
@@ -472,7 +474,7 @@ export default function ContractDetails() {
     const element = document.getElementById("invoice-area");
     const opt = {
       margin: 0,
-      filename: `Fature_${contract.contract_number}.pdf`,
+      filename: `${t('contractDetails.invoice')}_${contract.contract_number}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2, backgroundColor: "#ffffff" },
       jsPDF: { unit: "pt", format: "a4", orientation: "portrait" },
@@ -486,7 +488,7 @@ export default function ContractDetails() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar detajet e kontratës...</h2>
+          <h2 className="text-xl font-semibold text-gray-700">{t('contractDetails.loadingContractDetails')}</h2>
         </div>
       </div>
     );
@@ -496,23 +498,23 @@ export default function ContractDetails() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Kontrata nuk u gjet</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {t('contractDetails.contractNotFound')}</h2>
           <button 
             onClick={() => navigate('/admin/contracts')} 
             className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
           >
-            🔙 Kthehu tek Kontratat
+            🔙 {t('contractDetails.backToContracts')}
           </button>
         </div>
       </div>
     );
   }
 
-  // Funksion për të formatuar datat në format të lexueshëm
+  // Function to format dates in readable format
   function formatDate(dateStr) {
     if (!dateStr) return "";
     const d = new Date(dateStr);
-    return d.toLocaleDateString("sq-AL", { day: "2-digit", month: "2-digit", year: "numeric" });
+    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
   }
 
   const netTotal = newInvoice.items.reduce((acc, i) => acc + (i.amount || 0), 0);
@@ -524,7 +526,7 @@ export default function ContractDetails() {
     const employee = employees.find(emp => emp.id === wh.employee_id);
     const labelType = employee?.labelType || employee?.label_type || 'NI';
     const employeeName = wh.employee_name || `Employee #${wh.employee_id}`;
-    const date = new Date(wh.date).toLocaleDateString('sq-AL');
+    const date = new Date(wh.date).toLocaleDateString('en-GB');
     
     const matchesSearch = workHoursSearch === "" || 
       employeeName.toLowerCase().includes(workHoursSearch.toLowerCase()) ||
@@ -575,13 +577,13 @@ export default function ContractDetails() {
                 onClick={confirmDialog.onCancel}
                 className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
-                Anulo
+                {t('common.cancel')}
               </button>
               <button
                 onClick={confirmDialog.onConfirm}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
-                Konfirmo
+                {t('common.confirm')}
               </button>
             </div>
           </div>
@@ -592,7 +594,7 @@ export default function ContractDetails() {
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar detajet e kontratës...</h2>
+            <h2 className="text-xl font-semibold text-gray-700">{t('contractDetails.loadingContractDetails')}</h2>
           </div>
         </div>
       ) : (
@@ -667,7 +669,7 @@ export default function ContractDetails() {
                           ? 'bg-orange-100 text-orange-700 border border-orange-200' 
                           : 'bg-blue-100 text-blue-700 border border-blue-200'
                       }`}>
-                        {(contract.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
+                        {(contract.contract_type || 'day_work') === 'price_work' ? `🏗️ ${t('contractDetails.priceWork')}` : `👷 ${t('contractDetails.dayWork')}`}
                       </span>
                     </div>
                   </div>
@@ -684,11 +686,11 @@ export default function ContractDetails() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📊 {t('contractDetails.status')}</span>
                       <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold border ${
-                        contract.status === "Mbyllur" || contract.status === "Mbyllur me vonese" ? "bg-red-100 text-red-700 border-red-200" : 
-                        contract.status === "Ne progres" ? "bg-blue-100 text-blue-700 border-blue-200" : 
+                        contract.status === "Closed" || contract.status === "Closed with delay" ? "bg-red-100 text-red-700 border-red-200" : 
+                        contract.status === "In Progress" ? "bg-blue-100 text-blue-700 border-blue-200" : 
                         contract.status === "Draft" ? "bg-gray-100 text-gray-700 border-gray-200" : 
-                        contract.status === "Anulluar" ? "bg-red-100 text-red-700 border-red-200" : 
-                        contract.status === "Pezulluar" ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-green-100 text-green-700 border-green-200"
+                        contract.status === "Cancelled" ? "bg-red-100 text-red-700 border-red-200" : 
+                        contract.status === "Suspended" ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-green-100 text-green-700 border-green-200"
                       }`}>
                         {contract.status}
                       </span>
@@ -705,8 +707,8 @@ export default function ContractDetails() {
             </div>
 
           {/* Chart */}
-          <div className="bg-white/70 p-10 shadow-2xl rounded-3xl border-2 border-purple-200 animate-fade-in">
-            <h3 className="text-2xl font-bold mb-6 text-purple-800 flex items-center gap-2"><span>📈</span> {t('contractDetails.contractProgress')}</h3>
+          <div className="bg-white/70 p-6 sm:p-10 shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-purple-200 animate-fade-in">
+            <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-purple-800 flex items-center gap-2"><span>📈</span> {t('contractDetails.contractProgress')}</h3>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={getProgressChartData()}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -718,9 +720,9 @@ export default function ContractDetails() {
             </ResponsiveContainer>
           </div>
 
-          {/* Dokumente */}
-          <div className="bg-white/70 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
-            <h3 className="text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2">📎 {t('contractDetails.documents')}</h3>
+          {/* Documents */}
+          <div className="bg-white/70 p-6 sm:p-10 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
+            <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-blue-800 flex items-center gap-2">📎 {t('contractDetails.documents')}</h3>
             <input 
               type="file" 
               accept="application/pdf" 
@@ -756,26 +758,26 @@ export default function ContractDetails() {
           </div>
 
 
-          {/* Lista Faturave + Print */}
-          <div className="bg-white/80 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
-            <h3 className="font-bold mb-6 text-2xl text-blue-900 flex items-center gap-3">📋 {t('contractDetails.invoiceList')}</h3>
+          {/* Invoice List + Print */}
+          <div className="bg-white/80 p-6 sm:p-10 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
+            <h3 className="font-bold mb-4 sm:mb-6 text-xl sm:text-2xl text-blue-900 flex items-center gap-3">📋 {t('contractDetails.invoiceList')}</h3>
             
             {/* Search and Filter for Invoices */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="md:col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="sm:col-span-2 lg:col-span-2">
                 <input
                   type="text"
                   placeholder={t('contractDetails.searchInvoiceDescriptionDate')}
                   value={invoicesSearch}
                   onChange={(e) => setInvoicesSearch(e.target.value)}
-                  className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
+                  className="w-full p-2.5 sm:p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm text-sm sm:text-base"
                 />
               </div>
               <div>
                 <select
                   value={invoicesFilter}
                   onChange={(e) => setInvoicesFilter(e.target.value)}
-                  className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
+                  className="w-full p-2.5 sm:p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm text-sm sm:text-base"
                 >
                   <option value="all">{t('contractDetails.allInvoices')}</option>
                   <option value="paid">{t('contractDetails.paid')}</option>
@@ -788,15 +790,15 @@ export default function ContractDetails() {
             
             <div className="overflow-x-auto">
               {filteredInvoices.length > 0 ? (
-                <table className="w-full text-base bg-white shadow rounded-xl">
+                <table className="w-full text-sm sm:text-base bg-white shadow rounded-xl">
                   <thead className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-900">
                     <tr>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('contractDetails.number')}</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('contractDetails.date')}</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('contractDetails.totalAmount')}</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('contractDetails.status')}</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('contractDetails.paidStatus')}</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('contractDetails.actions')}</th>
+                      <th className="py-3 sm:py-4 px-1 sm:px-2 text-center align-middle font-semibold text-xs sm:text-sm">{t('contractDetails.number')}</th>
+                      <th className="py-3 sm:py-4 px-1 sm:px-2 text-center align-middle font-semibold text-xs sm:text-sm">{t('contractDetails.date')}</th>
+                      <th className="py-3 sm:py-4 px-1 sm:px-2 text-center align-middle font-semibold text-xs sm:text-sm">{t('contractDetails.totalAmount')}</th>
+                      <th className="py-3 sm:py-4 px-1 sm:px-2 text-center align-middle font-semibold text-xs sm:text-sm">{t('contractDetails.status')}</th>
+                      <th className="py-3 sm:py-4 px-1 sm:px-2 text-center align-middle font-semibold text-xs sm:text-sm">{t('contractDetails.paidStatus')}</th>
+                      <th className="py-3 sm:py-4 px-1 sm:px-2 text-center align-middle font-semibold text-xs sm:text-sm">{t('contractDetails.actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -815,25 +817,25 @@ export default function ContractDetails() {
                           : t('contractDetails.unpaid');
                         return (
                           <tr key={inv.id} className="text-center hover:bg-purple-50 transition-all">
-                            <td className="py-3 px-2 align-middle font-semibold">{inv.invoice_number}</td>
-                            <td className="py-3 px-2 align-middle">{formatDate(inv.date)}</td>
-                            <td className="py-3 px-2 align-middle font-bold text-purple-700">£{total.toFixed(2)}</td>
-                            <td className="py-3 px-2 align-middle">
-                              <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === t('contractDetails.unpaid') ? "bg-red-100 text-red-600" : status === t('contractDetails.paidOnTime') ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{status}</span>
+                            <td className="py-2 sm:py-3 px-1 sm:px-2 align-middle font-semibold text-xs sm:text-sm">{inv.invoice_number}</td>
+                            <td className="py-2 sm:py-3 px-1 sm:px-2 align-middle text-xs sm:text-sm">{formatDate(inv.date)}</td>
+                            <td className="py-2 sm:py-3 px-1 sm:px-2 align-middle font-bold text-purple-700 text-xs sm:text-sm">£{total.toFixed(2)}</td>
+                            <td className="py-2 sm:py-3 px-1 sm:px-2 align-middle">
+                              <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === t('contractDetails.unpaid') ? "bg-red-100 text-red-600" : status === t('contractDetails.paidOnTime') ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{status}</span>
                             </td>
-                            <td className="py-3 px-2 align-middle">
+                            <td className="py-2 sm:py-3 px-1 sm:px-2 align-middle">
                               <input
                                 type="checkbox"
                                 checked={inv.paid}
                                 onChange={() => handleTogglePaid(inv.id, inv.paid)}
-                                className="w-5 h-5 accent-green-500 cursor-pointer"
+                                className="w-4 h-4 sm:w-5 sm:h-5 accent-green-500 cursor-pointer"
                                 disabled={loadingStates.togglePaid[inv.id]}
                               />
                             </td>
-                            <td className="py-3 px-2 align-middle flex justify-center gap-2">
+                            <td className="py-2 sm:py-3 px-1 sm:px-2 align-middle flex justify-center gap-1 sm:gap-2">
                               <button 
                                 onClick={() => setInvoiceToPrint(inv)} 
-                                className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl"
+                                className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-lg sm:text-xl"
                                 title={t('contractDetails.viewPrint')}
                               >
                                 🖨
@@ -841,13 +843,15 @@ export default function ContractDetails() {
                               <button 
                                 onClick={() => handleSendEmail(inv.id)} 
                                 disabled={loadingStates.sendEmail[inv.id]}
-                                className={`hover:scale-110 transition-all text-xl disabled:opacity-50 ${
+                                className={`hover:scale-110 transition-all text-lg sm:text-xl disabled:opacity-50 ${
                                   inv.emailed 
                                     ? 'text-blue-600 hover:text-blue-800' 
                                     : 'text-green-600 hover:text-green-800'
                                 }`}
                                 title={inv.emailed 
-                                  ? `E dërguar më: ${inv.emailed_at ? new Date(inv.emailed_at).toLocaleString('sq-AL') : 'pa datë'} - Kliko për të dërguar përsëri`
+                                  ? t('contractDetails.invoiceEmailedOn', { 
+                                      date: inv.emailed_at ? new Date(inv.emailed_at).toLocaleString('en-GB') : t('contractDetails.noDate')
+                                    }) + ' - ' + t('contractDetails.clickToResend')
                                   : t('contractDetails.sendEmail')
                                 }
                               >
@@ -867,7 +871,7 @@ export default function ContractDetails() {
                               <button 
                                 onClick={() => handleDeleteInvoice(inv.id)} 
                                 disabled={loadingStates.deleteInvoice[inv.id]}
-                                className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl disabled:opacity-50"
+                                className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-lg sm:text-xl disabled:opacity-50"
                                 title={t('contractDetails.delete')}
                               >
                                 {loadingStates.deleteInvoice[inv.id] ? (
@@ -907,8 +911,8 @@ export default function ContractDetails() {
                   </div>
                   <img src="/albanconstruction.png" alt="Alban Construction Logo" className="h-20 w-auto object-contain" />
                   <div className="text-right text-xs">
-                    <p><strong>Data:</strong> {invoiceToPrint.date}</p>
-                    <p><strong>Kompania:</strong> {contract.company}</p>
+                    <p><strong>{t('contractDetails.date')}:</strong> {invoiceToPrint.date}</p>
+                    <p><strong>{t('contractDetails.companyLabel')}</strong> {contract.company}</p>
                     <p className="text-gray-500 italic">{contract.address}</p>
                   </div>
                 </div>
@@ -971,29 +975,29 @@ export default function ContractDetails() {
               </div>
             </div>
           )}
-            {/* ORËT E PUNËS - LËVIZUR NË FUND SIPAS KËRKESËS */}
+            {/* WORK HOURS - MOVED TO END AS REQUESTED */}
             <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
               <div className="p-4 sm:p-6 lg:p-8">
-                <h3 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
+                <h3 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-4 sm:mb-6 flex items-center gap-2">
                   ⏰ {t('contractDetails.workHours')}
                 </h3>
                 
                 {/* Search and Filter for Work Hours */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="md:col-span-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                  <div className="sm:col-span-2 lg:col-span-2">
                     <input
                       type="text"
                       placeholder={t('contractDetails.searchEmployeeDate')}
                       value={workHoursSearch}
                       onChange={(e) => setWorkHoursSearch(e.target.value)}
-                      className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                      className="w-full p-2.5 sm:p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm text-sm sm:text-base"
                     />
                   </div>
                   <div>
                     <select
                       value={workHoursFilter}
                       onChange={(e) => setWorkHoursFilter(e.target.value)}
-                      className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
+                      className="w-full p-2.5 sm:p-3 border border-emerald-200 rounded-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm text-sm sm:text-base"
                     >
                       <option value="all">{t('contractDetails.allTypes')}</option>
                       <option value="NI">NI</option>
@@ -1005,60 +1009,60 @@ export default function ContractDetails() {
                 {workHours.length > 0 ? (
                   <div className="overflow-x-auto">
                     {filteredWorkHours.length > 0 ? (
-                      <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
+                      <table className="w-full text-xs sm:text-sm bg-white shadow-lg rounded-xl overflow-hidden">
                         <thead className="bg-gradient-to-r from-emerald-100 to-blue-100">
                           <tr>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.date')}</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.employee')}</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.hours')}</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.hourlyRate')}</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.gross')}</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.net')}</th>
+                            <th className="py-2 sm:py-3 px-1 sm:px-2 text-center font-semibold text-emerald-800 text-xs sm:text-sm">{t('contractDetails.date')}</th>
+                            <th className="py-2 sm:py-3 px-1 sm:px-2 text-center font-semibold text-emerald-800 text-xs sm:text-sm">{t('contractDetails.employee')}</th>
+                            <th className="py-2 sm:py-3 px-1 sm:px-2 text-center font-semibold text-emerald-800 text-xs sm:text-sm">{t('contractDetails.hours')}</th>
+                            <th className="py-2 sm:py-3 px-1 sm:px-2 text-center font-semibold text-emerald-800 text-xs sm:text-sm">{t('contractDetails.hourlyRate')}</th>
+                            <th className="py-2 sm:py-3 px-1 sm:px-2 text-center font-semibold text-emerald-800 text-xs sm:text-sm">{t('contractDetails.gross')}</th>
+                            <th className="py-2 sm:py-3 px-1 sm:px-2 text-center font-semibold text-emerald-800 text-xs sm:text-sm">{t('contractDetails.net')}</th>
                           </tr>
                         </thead>
                         <tbody>
                           {filteredWorkHours.map((wh, idx) => {
                             const hours = parseFloat(wh.hours || 0);
                             
-                            // Gjej punonjësin për të marrë labelType dhe hourly_rate
+                            // Find employee to get labelType and hourly_rate
                             const employee = employees.find(emp => emp.id === wh.employee_id);
                             const labelType = employee?.labelType || employee?.label_type || wh.label_type || 'NI';
                             
-                            // Përdor tarifën e punonjësit nga databaza
+                            // Use employee rate from database
                             const rate = parseFloat(wh.hourly_rate || employee?.hourly_rate || 15);
                             const gross = hours * rate;
                             
-                            // Llogarit neto: 0.7 për NI, 0.8 për UTR
+                            // Calculate net: 0.7 for NI, 0.8 for UTR
                             const netRate = labelType === 'NI' ? 0.7 : 0.8;
                             const net = gross * netRate;
                             
                             return (
                               <tr key={idx} className="hover:bg-emerald-50 transition-all border-b border-slate-100">
-                                <td className="py-3 px-2 text-center">{new Date(wh.date).toLocaleDateString('sq-AL')}</td>
-                                <td className="py-3 px-2 text-center font-medium">
+                                <td className="py-2 sm:py-3 px-1 sm:px-2 text-center text-xs sm:text-sm">{new Date(wh.date).toLocaleDateString('en-GB')}</td>
+                                <td className="py-2 sm:py-3 px-1 sm:px-2 text-center font-medium text-xs sm:text-sm">
                                   {wh.employee_name || `Employee #${wh.employee_id}`}
-                                  <span className={`text-xs ml-2 px-2 py-1 rounded-full font-bold ${
+                                  <span className={`text-xs ml-1 sm:ml-2 px-1 sm:px-2 py-1 rounded-full font-bold ${
                                     labelType === 'NI' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
                                   }`}>
                                     {labelType}
                                   </span>
                                 </td>
-                                <td className="py-3 px-2 text-center font-bold text-blue-600">{hours}</td>
-                                <td className="py-3 px-2 text-center font-bold text-purple-600">£{rate.toFixed(2)}</td>
-                                <td className="py-3 px-2 text-center font-bold text-orange-600">£{gross.toFixed(2)}</td>
-                                <td className="py-3 px-2 text-center font-bold text-emerald-600">£{net.toFixed(2)}</td>
+                                <td className="py-2 sm:py-3 px-1 sm:px-2 text-center font-bold text-blue-600 text-xs sm:text-sm">{hours}</td>
+                                <td className="py-2 sm:py-3 px-1 sm:px-2 text-center font-bold text-purple-600 text-xs sm:text-sm">£{rate.toFixed(2)}</td>
+                                <td className="py-2 sm:py-3 px-1 sm:px-2 text-center font-bold text-orange-600 text-xs sm:text-sm">£{gross.toFixed(2)}</td>
+                                <td className="py-2 sm:py-3 px-1 sm:px-2 text-center font-bold text-emerald-600 text-xs sm:text-sm">£{net.toFixed(2)}</td>
                               </tr>
                             );
                           })}
                         </tbody>
                         <tfoot className="bg-emerald-100">
                           <tr>
-                            <td colSpan="2" className="py-4 px-2 text-center font-bold text-emerald-800">{t('contractDetails.totals')}</td>
-                            <td className="py-4 px-2 text-center font-bold text-blue-700">
+                            <td colSpan="2" className="py-3 sm:py-4 px-1 sm:px-2 text-center font-bold text-emerald-800 text-xs sm:text-sm">{t('contractDetails.totals')}</td>
+                            <td className="py-3 sm:py-4 px-1 sm:px-2 text-center font-bold text-blue-700 text-xs sm:text-sm">
                               {filteredWorkHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} {t('contractDetails.hoursLabel')}
                             </td>
-                            <td className="py-4 px-2 text-center">-</td>
-                            <td className="py-4 px-2 text-center font-bold text-orange-700 text-lg">
+                            <td className="py-3 sm:py-4 px-1 sm:px-2 text-center">-</td>
+                            <td className="py-3 sm:py-4 px-1 sm:px-2 text-center font-bold text-orange-700 text-sm sm:text-lg">
                               £{filteredWorkHours.reduce((sum, wh) => {
                                 const hours = parseFloat(wh.hours || 0);
                                 const employee = employees.find(emp => emp.id === wh.employee_id);
@@ -1066,7 +1070,7 @@ export default function ContractDetails() {
                                 return sum + (hours * rate);
                               }, 0).toFixed(2)}
                             </td>
-                            <td className="py-4 px-2 text-center font-bold text-emerald-700 text-lg">
+                            <td className="py-3 sm:py-4 px-1 sm:px-2 text-center font-bold text-emerald-700 text-sm sm:text-lg">
                               £{filteredWorkHours.reduce((sum, wh) => {
                                 const hours = parseFloat(wh.hours || 0);
                                 const employee = employees.find(emp => emp.id === wh.employee_id);
@@ -1096,24 +1100,24 @@ export default function ContractDetails() {
               </div>
             </div>
 
-            {/* KOMENTE - SEKSIONI I FUNDIT SIPAS KËRKESËS */}
+            {/* COMMENTS - FINAL SECTION AS REQUESTED */}
             <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
               <div className="p-4 sm:p-6 lg:p-8">
-                <h3 className="text-xl sm:text-2xl font-bold text-purple-700 mb-6 flex items-center gap-2">
+                <h3 className="text-xl sm:text-2xl font-bold text-purple-700 mb-4 sm:mb-6 flex items-center gap-2">
                   💬 {t('contractDetails.comments')}
                 </h3>
-                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                <div className="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6">
                   <textarea 
                     value={newComment} 
                     onChange={(e) => setNewComment(e.target.value)} 
                     disabled={loadingStates.addComment}
-                    className="flex-1 border-2 border-purple-200 rounded-xl p-3 text-base bg-purple-50/50 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm disabled:opacity-50 min-h-[100px] resize-none" 
+                    className="flex-1 border-2 border-purple-200 rounded-xl p-2.5 sm:p-3 text-sm sm:text-base bg-purple-50/50 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm disabled:opacity-50 min-h-[80px] sm:min-h-[100px] resize-none" 
                     placeholder={t('contractDetails.writeComment')} 
                   />
                   <button 
                     onClick={handleAddComment} 
                     disabled={loadingStates.addComment || !newComment.trim()}
-                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl shadow-lg font-bold transition-all disabled:opacity-50 flex items-center gap-2 justify-center self-start sm:self-stretch hover:shadow-xl hover:scale-105"
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl shadow-lg font-bold transition-all disabled:opacity-50 flex items-center gap-2 justify-center self-start sm:self-stretch hover:shadow-xl hover:scale-105 text-sm sm:text-base"
                   >
                     {loadingStates.addComment ? (
                       <>
@@ -1124,27 +1128,27 @@ export default function ContractDetails() {
                     ) : (
                       <>
                         <span className="text-lg">➕</span>
-                        <span className="hidden sm:inline">Shto</span>
+                        <span className="hidden sm:inline">{t('contractDetails.add')}</span>
                         <span className="sm:hidden">+</span>
                       </>
                     )}
                   </button>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {(contract.comments || []).map((c, i) => (
-                    <div key={i} className="flex items-start gap-3 bg-purple-50/50 rounded-xl px-4 py-3 shadow-sm border border-purple-100">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-sm font-bold text-white shadow-md">
+                    <div key={i} className="flex items-start gap-2 sm:gap-3 bg-purple-50/50 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 shadow-sm border border-purple-100">
+                      <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-xs sm:text-sm font-bold text-white shadow-md">
                         {(c.text[0] || '').toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-slate-800 font-medium break-words">{c.text}</p>
-                        <span className="text-xs text-slate-500 mt-1 block">{new Date(c.date).toLocaleString('sq-AL')}</span>
+                        <p className="text-slate-800 font-medium break-words text-sm sm:text-base">{c.text}</p>
+                        <span className="text-xs text-slate-500 mt-1 block">{new Date(c.date).toLocaleString('en-GB')}</span>
                       </div>
                     </div>
                   ))}
                   {(!contract.comments || contract.comments.length === 0) && (
                     <div className="text-center py-8">
-                      <p className="text-slate-500 italic">Nuk ka komente të shtuar akoma</p>
+                      <p className="text-slate-500 italic">{t('contractDetails.noCommentsAdded')}</p>
                     </div>
                   )}
                 </div>
@@ -1157,27 +1161,27 @@ export default function ContractDetails() {
       {/* MODAL PËR SHTIMIN E FATURËS - ELEGANT DESIGN */}
       {showAddModal && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4"
           onClick={closeAddModal}
         >
           <div 
-            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden"
+            className="bg-white rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl max-w-4xl lg:max-w-5xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* MODAL HEADER */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 sm:px-6 py-3 sm:py-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/20 rounded-lg p-2">
-                    <span className="text-2xl">🧾</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-white/20 rounded-lg p-1.5 sm:p-2">
+                    <span className="text-xl sm:text-2xl">🧾</span>
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-white">
-                    Shto Faturë të Re
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">
+                    {t('contractDetails.addNewInvoice')}
                   </h3>
                 </div>
                 <button
                   onClick={closeAddModal}
-                  className="text-white/80 hover:text-white text-2xl font-bold transition-colors p-1"
+                  className="text-white/80 hover:text-white text-xl sm:text-2xl font-bold transition-colors p-1"
                 >
                   ✕
                 </button>
@@ -1185,64 +1189,64 @@ export default function ContractDetails() {
             </div>
             
             {/* MODAL CONTENT */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-              <div className="space-y-6">
+            <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-80px)] sm:max-h-[calc(90vh-80px)]">
+              <div className="space-y-4 sm:space-y-6">
                 {/* DESCRIPTION SECTION */}
-                <div className="bg-slate-50 rounded-xl p-4">
-                  <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-2 block">
-                    📝 Përshkrimi i Faturës
+                <div className="bg-slate-50 rounded-xl p-3 sm:p-4">
+                  <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide mb-2 block">
+                    📝 {t('contractDetails.invoiceDescription')}
                   </label>
                   <input
-                    placeholder="Shkruaj përshkrimin e faturës..."
-                    className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder={t('contractDetails.writeInvoiceDescription')}
+                    className="w-full p-2.5 sm:p-3 border-2 border-slate-200 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newInvoice.description}
                     onChange={e => setNewInvoice({ ...newInvoice, description: e.target.value })}
                   />
                 </div>
                 
                 {/* INVOICE ITEMS SECTION */}
-                <div className="bg-slate-50 rounded-xl p-4">
-                  <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                    📋 Artikujt e Faturës
+                <div className="bg-slate-50 rounded-xl p-3 sm:p-4">
+                  <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide mb-3 sm:mb-4 block">
+                    📋 {t('contractDetails.invoiceItems')}
                   </label>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {newInvoice.items.map((item, index) => (
-                      <div key={index} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+                      <div key={index} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-3 p-2.5 sm:p-3 lg:p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Përshkrimi</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('contractDetails.description')}</label>
                           <input 
-                            placeholder="Përshkrimi i punës" 
-                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                            placeholder={t('contractDetails.workDescription')} 
+                            className="w-full p-2 border border-slate-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
                             value={item.description} 
                             onChange={(e) => handleItemChange(index, "description", e.target.value)} 
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Shifts</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('contractDetails.shifts')}</label>
                           <input 
                             type="number" 
                             placeholder="0" 
-                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                            className="w-full p-2 border border-slate-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
                             value={item.shifts} 
                             onChange={(e) => handleItemChange(index, "shifts", e.target.value)} 
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Rate (£)</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('contractDetails.rate')}</label>
                           <input 
                             type="number" 
                             placeholder="0.00" 
                             step="0.01"
-                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                            className="w-full p-2 border border-slate-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
                             value={item.rate} 
                             onChange={(e) => handleItemChange(index, "rate", e.target.value)} 
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Totali (£)</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('contractDetails.total')}</label>
                           <input 
                             disabled 
-                            className="w-full p-2.5 border border-slate-200 rounded-lg bg-slate-100 text-sm font-semibold text-slate-700" 
+                            className="w-full p-2 border border-slate-200 rounded-lg bg-slate-100 text-xs sm:text-sm font-semibold text-slate-700" 
                             value={`£${item.amount.toFixed(2)}`} 
                           />
                         </div>
@@ -1251,33 +1255,33 @@ export default function ContractDetails() {
                     
                     <button 
                       onClick={handleAddItem} 
-                      className="w-full bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg p-3 text-blue-600 font-semibold transition-all flex items-center justify-center gap-2"
+                      className="w-full bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg p-2.5 sm:p-3 text-blue-600 font-semibold transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                     >
-                      <span className="text-xl">➕</span> Shto Rresht të Ri
+                      <span className="text-lg sm:text-xl">➕</span> {t('contractDetails.addNewRow')}
                     </button>
                   </div>
                 </div>
                 
                 {/* ADDITIONAL COSTS & TOTAL SECTION */}
-                <div className="bg-slate-50 rounded-xl p-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                <div className="bg-slate-50 rounded-xl p-3 sm:p-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-end">
                     <div>
-                      <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-2 block">
-                        💰 Kosto Shtesë (£)
+                      <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide mb-2 block">
+                        💰 {t('contractDetails.additionalCosts')}
                       </label>
                       <input 
                         type="number" 
                         placeholder="0.00" 
                         step="0.01"
-                        className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        className="w-full p-2.5 sm:p-3 border-2 border-slate-200 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
                         value={newInvoice.other} 
                         onChange={(e) => setNewInvoice({ ...newInvoice, other: e.target.value })} 
                       />
                     </div>
-                    <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg p-4 border-2 border-blue-200">
+                    <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg p-3 sm:p-4 border-2 border-blue-200">
                       <div className="text-center">
-                        <div className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Totali i Faturës</div>
-                        <div className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                        <div className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">{t('contractDetails.invoiceTotal')}</div>
+                        <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                           £{grandTotal.toFixed(2)}
                         </div>
                       </div>
@@ -1286,23 +1290,23 @@ export default function ContractDetails() {
                 </div>
                 
                 {/* ACTION BUTTONS */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 pt-3 sm:pt-4">
                   <button 
                     onClick={handleSaveInvoice} 
-                    className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:scale-105" 
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base shadow-lg transition-all flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:scale-105" 
                     disabled={loadingStates.saveInvoice}
                   >
                     {loadingStates.saveInvoice ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span className="hidden sm:inline">Duke ruajtur...</span>
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span className="hidden sm:inline">{t('contractDetails.saving')}</span>
                         <span className="sm:hidden">...</span>
                       </>
                     ) : (
                       <>
-                        <span className="text-xl">💾</span>
-                        <span className="hidden sm:inline">Ruaj Faturën</span>
-                        <span className="sm:hidden">Ruaj</span>
+                        <span className="text-lg sm:text-xl">💾</span>
+                        <span className="hidden sm:inline">{t('contractDetails.saveInvoice')}</span>
+                        <span className="sm:hidden">{t('common.save')}</span>
                       </>
                     )}
                   </button>
@@ -1310,11 +1314,11 @@ export default function ContractDetails() {
                   <button 
                     type="button"
                     onClick={closeAddModal}
-                    className="flex-1 bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
+                    className="flex-1 bg-slate-500 hover:bg-slate-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
-                    <span className="text-xl">✕</span>
-                    <span className="hidden sm:inline">Anulo</span>
-                    <span className="sm:hidden">Mbyll</span>
+                    <span className="text-lg sm:text-xl">✕</span>
+                    <span className="hidden sm:inline">{t('common.cancel')}</span>
+                    <span className="sm:hidden">{t('common.close')}</span>
                   </button>
                 </div>
               </div>
