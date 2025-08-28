@@ -11,24 +11,75 @@ import { CountStatCard, MoneyStatCard } from "../components/ui/StatCard";
 import { StatusBadge, PaymentBadge } from "../components/ui/Badge";
 import EmptyState, { NoTasksEmpty } from "../components/ui/EmptyState";
 
-// Error Boundary Component
-class ErrorBoundary extends Component {
+// Global Error Boundary Component
+class GlobalErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true };
+    return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('[ERROR] Chart component error:', error, errorInfo);
+    console.error('[CRITICAL ERROR] Global error boundary caught:', error, errorInfo);
+    this.setState({ error, errorInfo });
+    
+    // Try to report the error
+    try {
+      if (window.reportError) {
+        window.reportError(error);
+      }
+    } catch (reportError) {
+      console.error('[ERROR] Failed to report error:', reportError);
+    }
   }
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback || <div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>;
+      return (
+        <div className="text-center text-red-500 py-8">
+          <h3 className="text-xl font-bold mb-4">Gabim kritik në aplikacion</h3>
+          <p className="mb-4">U kap një gabim i papritur: {this.state.error?.message || 'Unknown error'}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Rifresko Faqen
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Chart Error Boundary Component
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('[ERROR] Chart component error:', error, errorInfo);
+    this.setState({ error });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="text-center text-red-500 py-8">
+          <h4>Gabim në ngarkimin e grafikut</h4>
+          <p className="text-sm">{this.state.error?.message || 'Unknown chart error'}</p>
+        </div>
+      );
     }
 
     return this.props.children;
@@ -44,6 +95,17 @@ const STATUS_CHART_COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf
 // Main AdminDashboard Component
 export default function AdminDashboard() {
   console.debug('[DEBUG] AdminDashboard: Component starting to render');
+  
+  // Wrap the entire component in error boundary
+  return (
+    <GlobalErrorBoundary>
+      <AdminDashboardContent />
+    </GlobalErrorBoundary>
+  );
+}
+
+function AdminDashboardContent() {
+  console.debug('[DEBUG] AdminDashboardContent: Component starting to render');
   try {
     // Translation function with fallback (renamed to avoid shadowing)
     const tr = (key, fallback = key) => {
@@ -159,7 +221,7 @@ export default function AdminDashboard() {
     };
 
     // State variables
-    console.debug('[DEBUG] AdminDashboard: Setting up state variables');
+    console.debug('[DEBUG] AdminDashboardContent: Setting up state variables');
     const [dashboardStats, setDashboardStats] = useState({
       totalHoursThisWeek: 0,
       totalPaid: 0
