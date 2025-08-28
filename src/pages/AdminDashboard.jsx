@@ -45,26 +45,20 @@ const STATUS_CHART_COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf
 const VonesaFaturashChart = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   
   useEffect(() => {
     async function fetchInvoices() {
       try {
         setLoading(true);
-        setError(false);
         const res = await api.get("/api/invoices");
         const invoices = res.data || [];
-        
-        if (!Array.isArray(invoices)) {
-          throw new Error('Invalid invoices data structure');
-        }
         
         const result = { "Paguar": 0, "Pa paguar": 0 };
         
         invoices.forEach(inv => {
-          if (inv && typeof inv === 'object' && inv.paid) {
+          if (inv.paid) {
             result["Paguar"]++;
-          } else if (inv && typeof inv === 'object') {
+          } else {
             result["Pa paguar"]++;
           }
         });
@@ -79,7 +73,6 @@ const VonesaFaturashChart = () => {
         setData(chartData);
       } catch (error) {
         console.error('[ERROR] Failed to fetch invoices:', error);
-        setError(true);
         setData([
           { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
           { name: "Pa paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[1] }
@@ -96,12 +89,8 @@ const VonesaFaturashChart = () => {
     return <div className="text-center py-8">Duke ngarkuar...</div>;
   }
 
-  if (error) {
-    return <div className="text-center text-red-500 py-8">Gabim në ngarkimin e të dhënave</div>;
-  }
-
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna</div>;
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e invoice-ve</div>;
   }
 
   return (
@@ -129,14 +118,7 @@ const VonesaFaturashChart = () => {
             fontSize: 16, 
             color: '#78350f' 
           }}
-          formatter={(value, name) => {
-            try {
-              return [value, name];
-            } catch (error) {
-              console.error('[ERROR] Tooltip formatter error:', error);
-              return [value, 'Unknown'];
-            }
-          }}
+          formatter={(value, name) => [value, name]}
         />
       </PieChart>
     </ResponsiveContainer>
@@ -146,26 +128,20 @@ const VonesaFaturashChart = () => {
 const StatusiShpenzimeveChart = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   
   useEffect(() => {
     async function fetchExpensesInvoices() {
       try {
         setLoading(true);
-        setError(false);
         const res = await api.get("/api/expenses");
         const expenses = res.data || [];
-        
-        if (!Array.isArray(expenses)) {
-          throw new Error('Invalid expenses data structure');
-        }
         
         const result = { "Paguar": 0, "Pa paguar": 0 };
         
         expenses.forEach(exp => {
-          if (exp && typeof exp === 'object' && exp.paid) {
+          if (exp.paid) {
             result["Paguar"]++;
-          } else if (exp && typeof exp === 'object') {
+          } else {
             result["Pa paguar"]++;
           }
         });
@@ -180,7 +156,6 @@ const StatusiShpenzimeveChart = () => {
         setData(chartData);
       } catch (error) {
         console.error('[ERROR] Failed to fetch expenses:', error);
-        setError(true);
         setData([
           { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
           { name: "Pa paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[1] }
@@ -197,12 +172,8 @@ const StatusiShpenzimeveChart = () => {
     return <div className="text-center py-8">Duke ngarkuar...</div>;
   }
 
-  if (error) {
-    return <div className="text-center text-red-500 py-8">Gabim në ngarkimin e të dhënave</div>;
-  }
-
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna</div>;
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e faturave të shpenzimeve</div>;
   }
 
   return (
@@ -230,14 +201,7 @@ const StatusiShpenzimeveChart = () => {
             fontSize: 16, 
             color: '#78350f' 
           }}
-          formatter={(value, name) => {
-            try {
-              return [value, name];
-            } catch (error) {
-              console.error('[ERROR] Tooltip formatter error:', error);
-              return [value, 'Unknown'];
-            }
-          }}
+          formatter={(value, name) => [value, name]}
         />
       </PieChart>
     </ResponsiveContainer>
@@ -276,43 +240,45 @@ const ShpenzimePerSiteChart = ({ allExpenses, contracts, structuredWorkHours, al
                   total: 0
                 };
               }
-              expensesBySite[site].expenses += parseFloat(exp.gross || exp.amount || 0);
+              expensesBySite[site].expenses += parseFloat(exp.gross || 0);
             }
           }
         });
         
         workHours.forEach(wh => {
-          if (wh.contract_id) {
-            const contract = contracts.find(c => c.id === wh.contract_id);
-            if (contract) {
-              const site = contract.site_name || contract.siteName || 'Unknown';
-              if (!expensesBySite[site]) {
-                expensesBySite[site] = { 
-                  expenses: 0, 
-                  workHours: 0, 
-                  total: 0
-                };
-              }
-              const hours = parseFloat(wh.hours || 0);
-              const rate = parseFloat(wh.rate || 0);
-              const gross = hours * rate;
-              expensesBySite[site].workHours += gross;
+          if (wh.contract_id && wh.site) {
+            const site = wh.site;
+            if (!expensesBySite[site]) {
+              expensesBySite[site] = { 
+                expenses: 0, 
+                workHours: 0, 
+                total: 0
+              };
             }
+            const hours = parseFloat(wh.hours || 0);
+            const rate = parseFloat(wh.rate || 0);
+            const workHoursCost = hours * rate;
+            expensesBySite[site].workHours += workHoursCost;
           }
         });
         
         Object.keys(expensesBySite).forEach(site => {
-          expensesBySite[site].total = expensesBySite[site].expenses + expensesBySite[site].workHours;
+          expensesBySite[site].total = 
+            expensesBySite[site].expenses + 
+            expensesBySite[site].workHours;
         });
         
-        const chartData = Object.entries(expensesBySite).map(([site, data]) => ({
-          site,
-          expenses: parseFloat(data.expenses.toFixed(2)),
-          workHours: parseFloat(data.workHours.toFixed(2)),
-          total: parseFloat(data.total.toFixed(2))
-        })).sort((a, b) => b.total - a.total);
+        const chartData = Object.entries(expensesBySite)
+          .map(([site, data]) => ({
+            site,
+            expenses: parseFloat(data.expenses),
+            workHours: parseFloat(data.workHours),
+            total: parseFloat(data.total)
+          }))
+          .sort((a, b) => b.total - a.total);
         
         setData(chartData);
+        
       } catch (error) {
         console.error('[ERROR] Failed to fetch expenses data:', error);
         setData([]);
@@ -323,29 +289,41 @@ const ShpenzimePerSiteChart = ({ allExpenses, contracts, structuredWorkHours, al
     
     fetchAllExpensesData();
   }, [allExpenses, contracts, structuredWorkHours, allPayments]);
-
+  
   if (loading) {
     return <div className="text-center py-8">Duke ngarkuar...</div>;
   }
-
+  
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna</div>;
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
   }
-
+  
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <BarChart data={data} layout="vertical" margin={{ left: 50 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis type="number" label={{ value: 'Hours', position: "insideBottomRight", offset: -5 }} />
-        <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
-        <Tooltip formatter={(v, name) => [v, name]} />
-        <Bar dataKey="total" radius={[0, 6, 6, 0]} barSize={32}>
-          {data.map((_, i) => (
-            <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div>
+      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <h4 className="font-semibold text-blue-800 mb-2">📊 Shpjegim i llogaritjes:</h4>
+        <div className="text-sm text-blue-700 space-y-1">
+          <p><strong>Shpenzime:</strong> Shpenzimet nga tabela expenses_invoice - kolona [gross] sipas site-ve</p>
+          <p><strong>Orët e Punës:</strong> Orët e punuara × rate nga tabela work_hours - kolona [hours] × kolona [rate]</p>
+          <p><strong>Totali:</strong> Shpenzime + Orët e Punës</p>
+        </div>
+      </div>
+      
+      <ResponsiveContainer width="100%" height={450}>
+        <BarChart data={data} layout="vertical" margin={{ left: 50, right: 50, top: 20, bottom: 20 }} barCategoryGap={18}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis type="number" label={{ value: "Shuma totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
+          <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0284c7' }} />
+          <Tooltip 
+            contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} 
+            formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} 
+          />
+          <Legend />
+          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name="Shpenzime (expenses_invoice.gross)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[1]} name="Orët e Punës (work_hours.hours × rate)" radius={[0, 0, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
@@ -376,16 +354,16 @@ const StatusiKontrataveChart = ({ contracts }) => {
     });
     
     const chartData = Object.entries(statusCount).map(([status, count]) => ({
-      name: status === 'active' ? 'Aktiv' : 
-            status === 'suspended' ? 'I pezulluar' :
-            status === 'completed' ? 'I përfunduar' :
-            status === 'cancelled' ? 'I anulluar' :
+      name: status === 'active' ? 'Aktive' : 
+            status === 'suspended' ? 'Të pezulluara' :
+            status === 'completed' ? 'Të mbyllura' :
+            status === 'cancelled' ? 'Të anuluara' :
             status === 'pending' ? 'Në pritje' :
             status === 'ne progres' ? 'Në progres' :
-            status === 'pezulluar' ? 'I pezulluar' :
-            status === 'mbyllur me vonese' ? 'I mbyllur me vonesë' :
-            status === 'anulluar' ? 'I anulluar' :
-            status === 'mbyllur' ? 'I mbyllur' : status,
+            status === 'pezulluar' ? 'Të pezulluara' :
+            status === 'mbyllur me vonese' ? 'Mbyllur me vonesë' :
+            status === 'anulluar' ? 'Të anuluara' :
+            status === 'mbyllur' ? 'Të mbyllura' : status,
       value: count,
       color: statusColors[status] || '#6b7280'
     }));
@@ -394,7 +372,7 @@ const StatusiKontrataveChart = ({ contracts }) => {
   }, [contracts]);
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna të kontratave</div>;
+    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e kontratave</div>;
   }
 
   return (
@@ -422,14 +400,7 @@ const StatusiKontrataveChart = ({ contracts }) => {
             fontSize: 16, 
             color: '#78350f' 
           }}
-          formatter={(value, name) => {
-            try {
-              return [value, name];
-            } catch (error) {
-              console.error('[ERROR] Tooltip formatter error:', error);
-              return [value, 'Unknown'];
-            }
-          }}
+          formatter={(value, name) => [value, name]}
         />
       </PieChart>
     </ResponsiveContainer>
