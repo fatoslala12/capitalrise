@@ -732,20 +732,20 @@ export default function AdminDashboard() {
         </div>
         {filteredTasks.length > 0 ? (
           <ul className="space-y-3">
-            {filteredTasks.map((t, idx) => (
-              <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-3 md:p-4 shadow border border-blue-100">
-                <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
+            {filteredTasks.map((task, idx) => (
+              <li key={task.id || idx} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-3 md:p-4 shadow border border-blue-100">
+                <StatusBadge status={task.status === 'completed' ? 'completed' : 'ongoing'} />
                 <span className="font-semibold flex-1 text-sm md:text-lg">
-                  {t.description || t.title || ''}
+                  {task.description || task.title || ''}
                 </span>
                 <span className="text-sm md:text-lg text-blue-700 font-bold">
-                  {t.site_name || t.siteName || ''}
+                  {task.site_name || task.siteName || ''}
                 </span>
                 <span className="text-sm md:text-lg text-purple-700 font-bold">
-                  {t('adminDashboard.deadline') || 'Afati'} {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'N/A'}
+                  {t('adminDashboard.deadline') || 'Afati'} {task.due_date || task.dueDate ? new Date(task.due_date || task.dueDate).toLocaleDateString() : 'N/A'}
                 </span>
                 <span className="text-xs text-gray-500">
-                  {t('adminDashboard.by') || 'Nga'} {t.assigned_by || t.assignedBy || ''}
+                  {t('adminDashboard.by') || 'Nga'} {task.assigned_by || task.assignedBy || ''}
                 </span>
               </li>
             ))}
