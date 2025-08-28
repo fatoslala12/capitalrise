@@ -666,8 +666,8 @@ export default function WorkHours() {
         {loading ? (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-            <h4 className="text-lg font-semibold text-blue-800 mb-2">Duke ngarkuar të dhënat...</h4>
-            <p className="text-blue-700">Ju lutem prisni ndërsa po ngarkojmë orët e punës.</p>
+            <h4 className="text-lg font-semibold text-blue-800 mb-2">{t('workHours.loadingData')}</h4>
+            <p className="text-blue-700">{t('workHours.pleaseWait')}</p>
           </div>
         ) : Array.isArray(employees) && employees.length > 0 ? (
           viewMode === 'all' ? (
@@ -686,10 +686,10 @@ export default function WorkHours() {
               <div key={site} className="mt-6 bg-white/80 rounded-2xl shadow-xl border border-blue-200">
                 <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-2xl">
                   <h3 className="font-bold text-blue-800 text-lg flex items-center gap-2">
-                    🏗️ Site: <span className="text-purple-700">{site}</span>
+                    🏗️ {t('workHours.siteLabel')}: <span className="text-purple-700">{site}</span>
                   </h3>
                   <div className="text-sm text-blue-600 font-medium">
-                    {list.length} punonjës
+                    {list.length} {t('workHours.employeesCount')}
                   </div>
                 </div>
                 <div className="p-4">
@@ -711,14 +711,14 @@ export default function WorkHours() {
           )
         ) : (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-            <h4 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Nuk ka punonjës për të shfaqur</h4>
+            <h4 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ {t('workHours.noEmployeesToShow')}</h4>
             <p className="text-yellow-700 mb-4">
-              Nuk u gjetën punonjës për këtë javë. Kjo mund të ndodhë nëse:
+              {t('workHours.noEmployeesDescription')}
             </p>
             <ul className="text-yellow-700 list-disc list-inside space-y-2">
-              <li>Nuk ka punonjës të caktuar për rolin tuaj</li>
-              <li>Punonjësit nuk kanë orë të punës për këtë javë</li>
-              <li>Ka problem me të dhënat e databazës</li>
+              <li>{t('workHours.noEmployeesReason1')}</li>
+              <li>{t('workHours.noEmployeesReason2')}</li>
+              <li>{t('workHours.noEmployeesReason3')}</li>
             </ul>
           </div>
         )}
@@ -733,7 +733,7 @@ export default function WorkHours() {
                 </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-700 to-gray-900">
-                Javët e Kaluara
+                {t('workHours.pastWeeks')}
               </h3>
             </div>
             {(() => {

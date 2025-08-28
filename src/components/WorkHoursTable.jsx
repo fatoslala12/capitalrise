@@ -89,16 +89,16 @@ export default function WorkHoursTable({
       let statusBg = '';
       if (paid) {
         if (today <= weekEndDate) {
-          statusText = 'Paguar';
+          statusText = t('workHours.paid');
           statusClass = 'text-green-700';
           statusBg = 'bg-green-100 border-green-200';
         } else {
-          statusText = 'Paguar me vonesë';
+          statusText = t('workHours.paidLate');
           statusClass = 'text-yellow-700';
           statusBg = 'bg-yellow-100 border-yellow-200';
         }
       } else {
-        statusText = 'Pa paguar';
+        statusText = t('workHours.unpaid');
         statusClass = 'text-red-700';
         statusBg = 'bg-red-100 border-red-200';
       }
@@ -247,7 +247,7 @@ export default function WorkHoursTable({
     <div className="bg-white/70 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-blue-100 p-3 sm:p-6 mb-6 sm:mb-8 overflow-hidden animate-fade-in">
       <h3 className="text-lg sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-4 sm:mb-6 text-center flex items-center gap-2 justify-center">
         <span className="text-xl sm:text-3xl">🕒</span> 
-        <span className="hidden sm:inline">Java: </span>
+                        <span className="hidden sm:inline">{t('workHours.week')}: </span>
         <span className="text-base sm:text-2xl">{weekLabel}</span>
       </h3>
       
@@ -274,19 +274,19 @@ export default function WorkHoursTable({
         <div className="space-y-3 sm:space-y-4">
           {/* Headers për kolonat - vetëm për desktop */}
           <div className="hidden lg:grid grid-cols-9 gap-2 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900 text-sm">
-            <div className="col-span-2 text-center">👤 Punonjësi</div>
-            <div className="text-center">💰 Rate</div>
-            <div className="text-center">⏰ Orë</div>
-            <div className="text-center">💷 Bruto</div>
-            <div className="text-center">📋 TVSH</div>
-            <div className="text-center">💰 Neto</div>
-            <div className="text-center">💸 Veprime</div>
-            <div className="text-center">✅ Statusi</div>
+            <div className="col-span-2 text-center">👤 {t('workHours.employee')}</div>
+            <div className="text-center">💰 {t('workHours.rate')}</div>
+            <div className="text-center">⏰ {t('workHours.hours')}</div>
+            <div className="text-center">💷 {t('workHours.gross')}</div>
+            <div className="text-center">📋 {t('workHours.vat')}</div>
+            <div className="text-center">💰 {t('workHours.net')}</div>
+            <div className="text-center">💸 {t('workHours.actions')}</div>
+            <div className="text-center">✅ {t('workHours.status')}</div>
           </div>
           
           {/* Mobile header */}
           <div className="lg:hidden text-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl p-3 font-bold text-blue-900">
-            <span className="text-sm">👥 Lista e Punonjësve - {weekLabel}</span>
+            <span className="text-sm">👥 {t('workHours.employee')} {t('workHours.list')} - {weekLabel}</span>
           </div>
           
           {employeeCalculations.map((calc) => (
@@ -358,7 +358,7 @@ export default function WorkHoursTable({
                       onClick={() => handlePaymentToggle(calc.emp.id)}
                       className="px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 whitespace-nowrap"
                     >
-                      {calc.paid ? '❌ Fshi pagesen' : '✅ Paguaj'}
+                      {calc.paid ? `❌ ${t('workHours.deletePayment')}` : `✅ ${t('workHours.pay')}`}
                     </button>
                   )}
                 </div>
@@ -552,7 +552,7 @@ export default function WorkHoursTable({
                       onChange={e => onChange(calc.emp.id, day, "site", e.target.value)}
                       disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly}
                     >
-                      <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? "Zgjidh vendin" : "Pushim"}</option>
+                                              <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? t('workHours.selectSite') : t('workHours.rest')}</option>
                       {calc.empSites.map(site => (
                         <option key={site} value={site}>{site}</option>
                       ))}
@@ -647,7 +647,7 @@ export default function WorkHoursTable({
                 {expandedRows.has(calc.emp.id) && (
                   <div className="p-4 bg-gray-50">
                     {/* Days grid */}
-                    <h5 className="font-semibold text-blue-800 mb-3 text-sm">Detajet e ditëve:</h5>
+                    <h5 className="font-semibold text-blue-800 mb-3 text-sm">{t('workHours.dailyDetails')}</h5>
                     <div className="grid grid-cols-2 gap-3 mb-4">
                       {days.map((day) => (
                         <div key={day} className="bg-white rounded-lg p-3">
@@ -673,7 +673,7 @@ export default function WorkHoursTable({
                             onChange={e => onChange(calc.emp.id, day, "site", e.target.value)}
                             disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly}
                           >
-                            <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? "Zgjidh vendin" : "Pushim"}</option>
+                            <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? t('workHours.selectSite') : t('workHours.rest')}</option>
                             {calc.empSites.map(site => (
                               <option key={site} value={site}>{site}</option>
                             ))}
