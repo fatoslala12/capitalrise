@@ -23,7 +23,19 @@ export default function Payments() {
   }, [token]);
 
   const filteredContracts = contracts.filter((c) => {
-    return filterStatus === "All" || c.status === filterStatus;
+    if (filterStatus === "All") return true;
+    
+    // Handle both old Albanian and new English status values
+    const statusMapping = {
+      'Draft': ['Draft'],
+      'Cancelled': ['Cancelled', 'Anulluar'],
+      'In Progress': ['In Progress', 'Ne progres'],
+      'Suspended': ['Suspended', 'Pezulluar'],
+      'Closed': ['Closed', 'Mbyllur'],
+      'Closed with delay': ['Closed with delay', 'Mbyllur me vonese']
+    };
+    
+    return statusMapping[filterStatus]?.includes(c.status) || c.status === filterStatus;
   });
 
   if (loading) {
@@ -53,11 +65,11 @@ export default function Payments() {
           >
             <option value="All">{t('payments.allContracts')}</option>
             <option value="Draft">{t('payments.draft')}</option>
-            <option value="Anulluar">{t('payments.cancelled')}</option>
-            <option value="Ne progres">{t('payments.inProgress')}</option>
-            <option value="Pezulluar">{t('payments.suspended')}</option>
-            <option value="Mbyllur">{t('payments.closed')}</option>
-            <option value="Mbyllur me vonese">{t('payments.closedWithDelay')}</option>
+            <option value="Cancelled">{t('payments.cancelled')}</option>
+            <option value="In Progress">{t('payments.inProgress')}</option>
+            <option value="Suspended">{t('payments.suspended')}</option>
+            <option value="Closed">{t('payments.closed')}</option>
+            <option value="Closed with delay">{t('payments.closedWithDelay')}</option>
           </select>
         </div>
         {/* Lista e pagesave/kontratave */}
@@ -78,15 +90,20 @@ export default function Payments() {
                   </p>
                 </div>
                 <span className={`text-xs md:text-sm lg:text-base font-bold px-2 md:px-4 py-1 md:py-2 rounded-full shadow-md border
-                  ${c.status === 'Ne progres' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                  ${c.status === 'Ne progres' || c.status === 'In Progress' ? 'bg-blue-100 text-blue-700 border-blue-200' :
                     c.status === 'Draft' ? 'bg-gray-100 text-gray-700 border-gray-200' :
-                    c.status === 'Anulluar' ? 'bg-red-100 text-red-700 border-red-200' :
-                    c.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                    c.status === 'Mbyllur' ? 'bg-green-100 text-green-700 border-green-200' :
-                    c.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                    c.status === 'Anulluar' || c.status === 'Cancelled' ? 'bg-red-100 text-red-700 border-red-200' :
+                    c.status === 'Pezulluar' || c.status === 'Suspended' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                    c.status === 'Mbyllur' || c.status === 'Closed' ? 'bg-green-100 text-green-700 border-green-200' :
+                    c.status === 'Mbyllur me vonese' || c.status === 'Closed with delay' ? 'bg-orange-100 text-orange-700 border-orange-200' :
                     'bg-gray-200 text-gray-700 border-gray-300'}
                 `}>
-                  {c.status}
+                  {c.status === 'Ne progres' ? t('payments.inProgress') :
+                   c.status === 'Anulluar' ? t('payments.cancelled') :
+                   c.status === 'Pezulluar' ? t('payments.suspended') :
+                   c.status === 'Mbyllur' ? t('payments.closed') :
+                   c.status === 'Mbyllur me vonese' ? t('payments.closedWithDelay') :
+                   c.status}
                 </span>
               </div>
               <div className="space-y-2 text-blue-900 text-sm md:text-base lg:text-lg">
