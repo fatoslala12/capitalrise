@@ -262,13 +262,13 @@ function AdminDashboardContent() {
             workHoursResponse,
             paymentsResponse
           ] = await Promise.all([
-            api.get('/sites'),
-            api.get('/employees'),
-            api.get('/tasks'),
-            api.get('/expenses'),
-            api.get('/contracts'),
-            api.get('/work-hours'),
-            api.get('/payments')
+            api.get('/api/sites'),
+            api.get('/api/employees'),
+            api.get('/api/tasks'),
+            api.get('/api/expenses'),
+            api.get('/api/contracts'),
+            api.get('/api/work-hours'),
+            api.get('/api/payments')
           ]);
           console.debug('[DEBUG] fetchData: API calls completed');
 
