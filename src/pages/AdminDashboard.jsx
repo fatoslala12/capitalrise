@@ -992,7 +992,7 @@ export default function AdminDashboard() {
   );
 }
 
-function VonesaFaturashChart() {
+const VonesaFaturashChart = () => {
   // Simple translation function for this component
   const t = (key, fallback = key) => {
     const translations = {
@@ -1109,9 +1109,9 @@ function VonesaFaturashChart() {
       </PieChart>
     </ResponsiveContainer>
   );
-}
+};
 
-function StatusiShpenzimeveChart() {
+const StatusiShpenzimeveChart = () => {
   // Simple translation function for this component
   const t = (key, fallback = key) => {
     const translations = {
@@ -1231,7 +1231,7 @@ function StatusiShpenzimeveChart() {
   );
 }
 
-function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, allPayments }) {
+const ShpenzimePerSiteChart = ({ allExpenses, contracts, structuredWorkHours, allPayments }) => {
   // Simple translation function for this component
   const t = (key, fallback = key) => {
     const translations = {
@@ -1398,7 +1398,7 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
   );
 }
 
-function StatusiKontrataveChart({ contracts }) {
+const StatusiKontrataveChart = ({ contracts }) => {
   // Simple translation function for this component
   const t = (key, fallback = key) => {
     const translations = {
@@ -1512,5 +1512,303 @@ function StatusiKontrataveChart({ contracts }) {
         />
       </PieChart>
     </ResponsiveContainer>
+  );
+};
+
+// Main AdminDashboard Component
+
+
+  // State variables
+  const [dashboardStats, setDashboardStats] = useState({
+    totalHoursThisWeek: 0,
+    totalPaid: 0
+  });
+  const [activeSites, setActiveSites] = useState([]);
+  const [activeEmployees, setActiveEmployees] = useState([]);
+  const [allTasks, setAllTasks] = useState([]);
+  const [taskFilter, setTaskFilter] = useState('ongoing');
+  const [allExpenses, setAllExpenses] = useState([]);
+  const [contracts, setContracts] = useState([]);
+  const [structuredWorkHours, setStructuredWorkHours] = useState({});
+  const [allPayments, setAllPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Filtered tasks
+  const filteredTasks = allTasks.filter(t => {
+    if (!t || typeof t !== 'object') return false;
+    if (taskFilter === 'all') return true;
+    return t.status === taskFilter;
+  });
+
+  // Fetch data effect
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch all data in parallel
+        const [
+          sitesResponse,
+          employeesResponse,
+          tasksResponse,
+          expensesResponse,
+          contractsResponse,
+          workHoursResponse,
+          paymentsResponse
+        ] = await Promise.all([
+          api.get('/sites'),
+          api.get('/employees'),
+          api.get('/tasks'),
+          api.get('/expenses'),
+          api.get('/contracts'),
+          api.get('/work-hours'),
+          api.get('/payments')
+        ]);
+
+        // Process sites
+        const sites = sitesResponse.data || [];
+        setActiveSites(sites.filter(site => site.status === 'active'));
+
+        // Process employees
+        const employees = employeesResponse.data || [];
+        setActiveEmployees(employees.filter(emp => emp.status === 'active'));
+
+        // Process tasks
+        setAllTasks(tasksResponse.data || []);
+
+        // Process expenses
+        setAllExpenses(expensesResponse.data || []);
+
+        // Process contracts
+        setContracts(contractsResponse.data || []);
+
+        // Process work hours
+        const workHours = workHoursResponse.data || [];
+        const structured = {};
+        let totalHoursThisWeek = 0;
+        
+        workHours.forEach(wh => {
+          if (wh.site_id && wh.hours) {
+            if (!structured[wh.site_id]) {
+              structured[wh.site_id] = { hours: 0, rate: wh.rate || 0 };
+            }
+            structured[wh.site_id].hours += parseFloat(wh.hours) || 0;
+            totalHoursThisWeek += parseFloat(wh.hours) || 0;
+          }
+        });
+        
+        setStructuredWorkHours(structured);
+        setDashboardStats(prev => ({ ...prev, totalHoursThisWeek }));
+
+        // Process payments
+        const payments = paymentsResponse.data || [];
+        const totalPaid = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+        setAllPayments(payments);
+        setDashboardStats(prev => ({ ...prev, totalPaid }));
+
+        setLoading(false);
+      } catch (error) {
+        console.error('[ERROR] Failed to fetch admin dashboard data:', error);
+        setError(error.message || 'Failed to load dashboard data');
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  // Error handling
+  if (error) {
+    return (
+      <div className="text-center text-red-500 py-8">
+        <h3 className="text-xl font-bold mb-4">Gabim në ngarkimin e dashboard</h3>
+        <p className="mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Provoni Përsëri
+        </button>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-8 lg:py-10 space-y-4 md:space-y-8 lg:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+      {/* HEADER MODERN */}
+      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-4 md:px-10 py-4 md:py-6 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
+        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 md:p-3 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-8 h-8 md:w-12 md:h-12">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
+          </svg>
+        </div>
+        <div className="text-center md:text-left flex-1">
+          <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">
+            {t('adminDashboard.title') || 'Admin Dashboard'}
+          </div>
+          <div className="text-sm md:text-lg font-medium text-purple-700">
+            {t('adminDashboard.subtitle') || 'Menaxhimi i sistemit'}
+          </div>
+        </div>
+        
+        {/* Language Switcher */}
+        <div className="flex-shrink-0">
+          <select 
+            value={localStorage.getItem('language') || 'sq'} 
+            onChange={(e) => {
+              localStorage.setItem('language', e.target.value);
+              window.location.reload(); // Reload to apply language change
+            }}
+            className="bg-white border border-blue-300 rounded-lg px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="sq">🇦🇱 Shqip</option>
+            <option value="en">🇬🇧 English</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Statistika kryesore */}
+      <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="md" className="mb-6 md:mb-12">
+        <CountStatCard
+          title="Site aktive"
+          count={activeSites.length}
+          icon="📍"
+          color="blue"
+        />
+        <CountStatCard
+          title="Punonjës aktivë"
+          count={activeEmployees.length}
+          icon="👷"
+          color="green"
+        />
+        <CountStatCard
+          title="Orë të punuara këtë javë"
+          value={dashboardStats.totalHoursThisWeek || 0}
+          icon="⏰"
+          color="purple"
+        />
+        <MoneyStatCard
+          title="Pagesa për punëtorët këtë javë"
+          value={`£${dashboardStats.totalPaid || 0}`}
+          icon="💰"
+          color="yellow"
+        />
+      </Grid>
+
+      {/* Detyrat - më të dukshme */}
+      <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-xl col-span-full border border-yellow-200">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+          📋 {t('adminDashboard.tasksTitle') || 'Detyrat'}
+        </h3>
+        <div className="mb-4 flex flex-col sm:flex-row gap-2 md:gap-4 items-start sm:items-center">
+          <label className="font-medium text-sm md:text-base">
+            {t('adminDashboard.filter') || 'Filtro'}
+          </label>
+          <select 
+            value={taskFilter} 
+            onChange={(event) => setTaskFilter(event.target.value)} 
+            className="border p-2 rounded text-sm md:text-base"
+          >
+            <option value="ongoing">{t('adminDashboard.onlyActive') || 'Vetëm aktive'}</option>
+            <option value="completed">{t('adminDashboard.onlyCompleted') || 'Vetëm të përfunduara'}</option>
+            <option value="all">{t('adminDashboard.all') || 'Të gjitha'}</option>
+          </select>
+        </div>
+        <div className="mb-4 flex flex-col sm:flex-row flex-wrap gap-2 md:gap-6">
+          <div className="bg-blue-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">
+            {t('adminDashboard.total') || 'Total'}: {allTasks.length}
+          </div>
+          <div className="bg-green-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">
+            ✅ {t('adminDashboard.completed') || 'Përfunduar'}: {allTasks.filter(t => t && t.status === 'completed').length}
+          </div>
+          <div className="bg-yellow-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">
+            🕒 {t('adminDashboard.ongoing') || 'Në progres'}: {allTasks.filter(t => t && t.status === 'ongoing').length}
+          </div>
+        </div>
+        {filteredTasks.length > 0 ? (
+          <ul className="space-y-3">
+            {filteredTasks.map((t, idx) => (
+              <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-3 md:p-4 shadow border border-blue-100">
+                <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
+                <span className="font-semibold flex-1 text-sm md:text-lg">
+                  {t.description || t.title || ''}
+                </span>
+                <span className="text-sm md:text-lg text-blue-700 font-bold">
+                  {t.site_name || t.siteName || ''}
+                </span>
+                <span className="text-sm md:text-lg text-purple-700 font-bold">
+                  {t('adminDashboard.deadline') || 'Afati'} {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : 'N/A'}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {t('adminDashboard.by') || 'Nga'} {t.assigned_by || t.assignedBy || ''}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <NoTasksEmpty />
+        )}
+      </div>
+
+      {/* Grafik për site */}
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+          📊 {t('adminDashboard.hoursBySiteThisWeek') || 'Orët sipas site-ve këtë javë'}
+        </h3>
+        <div className="h-80">
+          <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+            <ShpenzimePerSiteChart 
+              allExpenses={allExpenses}
+              contracts={contracts}
+              structuredWorkHours={structuredWorkHours}
+              allPayments={allPayments}
+            />
+          </ErrorBoundary>
+        </div>
+      </div>
+
+      {/* Grafik për kontratat */}
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+          📋 {t('adminDashboard.contractsProgressTitle') || 'Progresi i kontratave'}
+        </h3>
+        <div className="h-80">
+          <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+            <StatusiKontrataveChart contracts={contracts} />
+          </ErrorBoundary>
+        </div>
+      </div>
+
+      {/* Grafik për shpenzimet */}
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+          💰 Statusi i Shpenzimeve
+        </h3>
+        <div className="h-80">
+          <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+            <StatusiShpenzimeveChart />
+          </ErrorBoundary>
+        </div>
+      </div>
+
+      {/* Grafik për faturat */}
+      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
+          📄 Statusi i Faturave
+        </h3>
+        <div className="h-80">
+          <ErrorBoundary fallback={<div className="text-center text-red-500 py-8">Gabim në ngarkimin e grafikut</div>}>
+            <VonesaFaturashChart />
+          </ErrorBoundary>
+        </div>
+      </div>
+    </div>
   );
 }
