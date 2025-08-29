@@ -89,16 +89,16 @@ export default function WorkHoursTable({
       let statusBg = '';
       if (paid) {
         if (today <= weekEndDate) {
-          statusText = 'Paguar';
+          statusText = t('workHours.paid');
           statusClass = 'text-green-700';
           statusBg = 'bg-green-100 border-green-200';
         } else {
-          statusText = 'Paguar me vonesë';
+          statusText = t('workHours.paidLate');
           statusClass = 'text-yellow-700';
           statusBg = 'bg-yellow-100 border-yellow-200';
         }
       } else {
-        statusText = 'Pa paguar';
+        statusText = t('workHours.unpaid');
         statusClass = 'text-red-700';
         statusBg = 'bg-red-100 border-red-200';
       }
@@ -125,7 +125,7 @@ export default function WorkHoursTable({
       
       return result;
     });
-  }, [employees, weekLabel, data, paidStatus, siteOptions, siteScope]);
+  }, [employees, weekLabel, data, paidStatus, siteOptions, siteScope, t]);
 
   // Optimized totals calculation with error handling
   const weekTotals = useMemo(() => {
@@ -212,11 +212,11 @@ export default function WorkHoursTable({
       
       // Toast notification për sukses
       if (typeof window !== 'undefined' && window.showToast) {
-        window.showToast(`Pagesa u ${newPaidStatus ? 'shënua si të paguar' : 'shënua si pa paguar'} me sukses!`, 'success');
+        window.showToast(`${t('workHours.payment')} ${newPaidStatus ? t('workHours.markedAsPaid') : t('workHours.markedAsUnpaid')} ${t('workHours.successfully')}!`, 'success');
       }
     } catch (err) {
-      console.error("Gabim në ruajtjen e statusit të pagesës", err);
-      // Revert nëse ka gabim
+      console.error("Error saving payment status", err);
+      // Revert if error occurs
       setPaidStatus(prev => ({
         ...prev,
         [key]: !newPaidStatus
@@ -274,19 +274,19 @@ export default function WorkHoursTable({
         <div className="space-y-3 sm:space-y-4">
           {/* Headers për kolonat - vetëm për desktop */}
           <div className="hidden lg:grid grid-cols-9 gap-2 p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl font-bold text-blue-900 text-sm">
-            <div className="col-span-2 text-center">👤 Punonjësi</div>
-            <div className="text-center">💰 Rate</div>
-            <div className="text-center">⏰ Orë</div>
-            <div className="text-center">💷 Bruto</div>
-            <div className="text-center">📋 TVSH</div>
-            <div className="text-center">💰 Neto</div>
-            <div className="text-center">💸 Veprime</div>
-            <div className="text-center">✅ Statusi</div>
+            <div className="col-span-2 text-center">👤 {t('workHours.employeeHeader')}</div>
+            <div className="text-center">💰 {t('workHours.rateHeader')}</div>
+            <div className="text-center">⏰ {t('workHours.hoursHeader')}</div>
+            <div className="text-center">💷 {t('workHours.grossHeader')}</div>
+            <div className="text-center">📋 {t('workHours.vatHeader')}</div>
+            <div className="text-center">💰 {t('workHours.netHeader')}</div>
+            <div className="text-center">💸 {t('workHours.actionsHeader')}</div>
+            <div className="text-center">✅ {t('workHours.statusHeader')}</div>
           </div>
           
           {/* Mobile header */}
           <div className="lg:hidden text-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl p-3 font-bold text-blue-900">
-            <span className="text-sm">👥 Lista e Punonjësve - {weekLabel}</span>
+            <span className="text-sm">👥 {t('workHours.employeeList')} - {weekLabel}</span>
           </div>
           
           {employeeCalculations.map((calc) => (
@@ -358,7 +358,7 @@ export default function WorkHoursTable({
                       onClick={() => handlePaymentToggle(calc.emp.id)}
                       className="px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 whitespace-nowrap"
                     >
-                      {calc.paid ? '❌ Fshi pagesen' : '✅ Paguaj'}
+                      {calc.paid ? `❌ ${t('workHours.deletePayment')}` : `✅ ${t('workHours.paidStatus')}`}
                     </button>
                   )}
                 </div>
@@ -401,11 +401,11 @@ export default function WorkHoursTable({
                 {/* Stats grid */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-600 mb-1">Rate</div>
+                    <div className="text-xs text-gray-600 mb-1">{t('workHours.rateHeader')}</div>
                     <div className="font-bold text-blue-900">£{calc.rate && !isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-600 mb-1">Orë</div>
+                    <div className="text-xs text-gray-600 mb-1">{t('workHours.hoursHeader')}</div>
                     <div className="font-bold text-gray-900">{calc.total && !isNaN(calc.total) ? Number(calc.total).toFixed(2) : '0.00'}</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 text-center">
@@ -552,7 +552,7 @@ export default function WorkHoursTable({
                       onChange={e => onChange(calc.emp.id, day, "site", e.target.value)}
                       disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly}
                     >
-                      <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? "Zgjidh vendin" : "Pushim"}</option>
+                                                  <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? t('workHours.selectSite') : t('workHours.rest')}</option>
                       {calc.empSites.map(site => (
                         <option key={site} value={site}>{site}</option>
                       ))}
@@ -673,7 +673,7 @@ export default function WorkHoursTable({
                             onChange={e => onChange(calc.emp.id, day, "site", e.target.value)}
                             disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : readOnly}
                           >
-                            <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? "Zgjidh vendin" : "Pushim"}</option>
+                            <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? t('workHours.selectSite') : t('workHours.rest')}</option>
                             {calc.empSites.map(site => (
                               <option key={site} value={site}>{site}</option>
                             ))}
@@ -685,19 +685,19 @@ export default function WorkHoursTable({
                     {/* Detailed stats */}
                     <div className="grid grid-cols-2 gap-3 mb-4">
                       <div className="bg-white rounded-lg p-3 text-center">
-                        <div className="text-xs text-gray-600 mb-1">Rate</div>
+                        <div className="text-xs text-gray-600 mb-1">{t('workHours.rateHeader')}</div>
                         <div className="font-bold text-blue-900">£{calc.rate && !isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}</div>
                       </div>
                       <div className="bg-white rounded-lg p-3 text-center">
-                        <div className="text-xs text-gray-600 mb-1">Bruto</div>
+                        <div className="text-xs text-gray-600 mb-1">{t('workHours.grossHeader')}</div>
                         <div className="font-bold text-green-700">£{calc.bruto && !isNaN(calc.bruto) ? Number(calc.bruto).toFixed(2) : '0.00'}</div>
                       </div>
                       <div className="bg-white rounded-lg p-3 text-center">
-                        <div className="text-xs text-gray-600 mb-1">TVSH</div>
+                        <div className="text-xs text-gray-600 mb-1">{t('workHours.vatHeader')}</div>
                         <div className="font-bold text-yellow-700">£{calc.tvsh && !isNaN(calc.tvsh) ? Number(calc.tvsh).toFixed(2) : '0.00'}</div>
                       </div>
                       <div className="bg-white rounded-lg p-3 text-center">
-                        <div className="text-xs text-gray-600 mb-1">Neto</div>
+                        <div className="text-xs text-gray-600 mb-1">{t('workHours.netHeader')}</div>
                         <div className="font-bold text-blue-700">£{calc.neto && !isNaN(calc.neto) ? Number(calc.neto).toFixed(2) : '0.00'}</div>
                       </div>
                     </div>
@@ -709,7 +709,7 @@ export default function WorkHoursTable({
                           onClick={() => handlePaymentToggle(calc.emp.id)}
                           className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-sm font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
                         >
-                          {calc.paid ? '❌ Fshi pagesen' : '✅ Paguaj'}
+                          {calc.paid ? `❌ ${t('workHours.deletePayment')}` : `✅ ${t('workHours.paidStatus')}`}
                         </button>
                         <span className={`px-3 py-1 rounded-full text-xs font-bold border ${calc.statusBg} ${calc.statusClass}`}>
                           {calc.statusText}
@@ -723,22 +723,22 @@ export default function WorkHoursTable({
             
             {/* Mobile totals */}
             <div className="bg-gradient-to-r from-gray-100 to-blue-100 rounded-2xl p-4">
-              <h4 className="font-bold text-gray-800 mb-3 text-center">📊 Totali i Javës</h4>
+              <h4 className="font-bold text-gray-800 mb-3 text-center">📊 {t('workHours.weekTotal')}</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white rounded-lg p-3 text-center">
-                  <div className="text-xs text-gray-600 mb-1">Total Orë</div>
+                  <div className="text-xs text-gray-600 mb-1">{t('workHours.totalHours')}</div>
                   <div className="font-bold text-gray-900">{weekTotals.totalHours && !isNaN(weekTotals.totalHours) ? Number(weekTotals.totalHours).toFixed(2) : '0.00'}</div>
                 </div>
                 <div className="bg-white rounded-lg p-3 text-center">
-                  <div className="text-xs text-gray-600 mb-1">Total Bruto</div>
+                  <div className="text-xs text-gray-600 mb-1">{t('workHours.totalGross')}</div>
                   <div className="font-bold text-green-700">£{weekTotals.totalBruto && !isNaN(weekTotals.totalBruto) ? Number(weekTotals.totalBruto).toFixed(2) : '0.00'}</div>
                 </div>
                 <div className="bg-white rounded-lg p-3 text-center">
-                  <div className="text-xs text-gray-600 mb-1">Total TVSH</div>
+                  <div className="text-xs text-gray-600 mb-1">{t('workHours.totalVat')}</div>
                   <div className="font-bold text-yellow-700">£{weekTotals.totalTVSH && !isNaN(weekTotals.totalTVSH) ? Number(weekTotals.totalTVSH).toFixed(2) : '0.00'}</div>
                 </div>
                 <div className="bg-white rounded-lg p-3 text-center">
-                  <div className="text-xs text-gray-600 mb-1">Total Neto</div>
+                  <div className="text-xs text-gray-600 mb-1">{t('workHours.totalNet')}</div>
                   <div className="font-bold text-blue-700">£{weekTotals.totalNeto && !isNaN(weekTotals.totalNeto) ? Number(weekTotals.totalNeto).toFixed(2) : '0.00'}</div>
                 </div>
               </div>

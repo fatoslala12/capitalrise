@@ -134,7 +134,19 @@
     "dailyDetails": "Detajet e ditëve:",
     "rest": "Pushim",
     "selectSite": "Zgjidh vendin",
-    "total": "Totali"
+    "total": "Totali",
+    "employeeList": "Lista e Punonjësve",
+    "weekTotal": "Totali i Javës",
+    "totalGross": "Total Bruto",
+    "totalVat": "Total TVSH",
+    "totalNet": "Total Neto",
+    "paid": "Paguar",
+    "paidLate": "Paguar me vonesë",
+    "unpaid": "Pa paguar",
+    "payment": "Pagesa",
+    "markedAsPaid": "u shënua si e paguar",
+    "markedAsUnpaid": "u shënua si e pa paguar",
+    "successfully": "me sukses"
   },
   "tasks": {
     "title": "Menaxhimi i Detyrave",

@@ -144,7 +144,19 @@
     "dailyDetails": "Daily Details",
     "rest": "Rest",
     "selectSite": "Select Site",
-    "total": "Total"
+    "total": "Total",
+    "employeeList": "Employee List",
+    "weekTotal": "Week Total",
+    "totalGross": "Total Gross",
+    "totalVat": "Total VAT",
+    "totalNet": "Total Net",
+    "paid": "Paid",
+    "paidLate": "Paid Late",
+    "unpaid": "Unpaid",
+    "payment": "Payment",
+    "markedAsPaid": "marked as paid",
+    "markedAsUnpaid": "marked as unpaid",
+    "successfully": "successfully"
   },
   "tasks": {
     "title": "Task Management",
