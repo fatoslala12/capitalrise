@@ -673,18 +673,51 @@ export default function Contracts() {
     }
   };
 
-  // Workflow statuses and transitions - using translation keys
-  // CONTRACT_STATUSES is already defined at the top of the file
+  // Function to map old status values to new translation keys
+  const getStatusTranslationKey = (status) => {
+    const statusMap = {
+      // New status keys
+      'draft': 'draft',
+      'cancelled': 'cancelled',
+      'inProgress': 'inProgress',
+      'suspended': 'suspended',
+      'closed': 'closed',
+      'closedWithDelay': 'closedWithDelay',
+      // Legacy status mappings
+      'Draft': 'draft',
+      'Anulluar': 'cancelled',
+      'Ne progres': 'inProgress',
+      'Pezulluar': 'suspended',
+      'Mbyllur': 'closed',
+      'Mbyllur me vonese': 'closedWithDelay',
+      'Mbyllur me vonesë': 'closedWithDelay',
+      'Aktive': 'inProgress',
+      'Active': 'inProgress',
+      'Closed': 'closed',
+      'Closed Late': 'closedWithDelay'
+    };
+    return statusMap[status] || 'draft';
+  };
 
-  // Remove broken STATUS_TRANSITIONS - not needed for now
-  // const STATUS_TRANSITIONS = {
-  //   [CONTRACT_STATUSES.DRAFT]: [CONTRACT_STATUSES.ACTIVE, CONTRACT_STATUSES.CANCELLED],
-  //   [CONTRACT_STATUSES.ACTIVE]: [CONTRACT_STATUSES.IN_PROGRESS, CONTRACT_STATUSES.ON_HOLD, CONTRACT_STATUSES.CANCELLED],
-  //   [CONTRACT_STATUSES.IN_PROGRESS]: [CONTRACT_STATUSES.COMPLETED, CONTRACT_STATUSES.ON_HOLD],
-  //   [CONTRACT_STATUSES.ON_HOLD]: [CONTRACT_STATUSES.ACTIVE, CONTRACT_STATUSES.IN_PROGRESS, CONTRACT_STATUSES.CANCELLED],
-  //   [CONTRACT_STATUSES.COMPLETED]: [],
-  //   [CONTRACT_STATUSES.CANCELLED]: []
-  // };
+  // Function to get status display text
+  const getStatusDisplayText = (status) => {
+    const translationKey = getStatusTranslationKey(status);
+    return t(`contracts.statuses.${translationKey}`);
+  };
+
+  // Function to get status color and icon
+  const getStatusStyle = (status) => {
+    const translationKey = getStatusTranslationKey(status);
+    const statusConfig = {
+      'draft': { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200', icon: '📝' },
+      'cancelled': { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-200', icon: '❌' },
+      'inProgress': { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200', icon: '🔄' },
+      'suspended': { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200', icon: '⏸️' },
+      'closed': { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200', icon: '✅' },
+      'closedWithDelay': { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-200', icon: '⚠️' }
+    };
+    return statusConfig[translationKey] || statusConfig['draft'];
+  };
 
   const getStatusColor = (status) => {
     const colors = {
@@ -850,7 +883,7 @@ export default function Contracts() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-12" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-12" style={{ maxWidth: '100%', minWidth: '100%', width: '100%' }}>
       {/* Toast Notification */}
       {showToast.show && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -916,7 +949,7 @@ export default function Contracts() {
       </div>
 
       {/* CONTRACTS LIST */}
-      <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 rounded-xl sm:rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full" style={{ maxWidth: '100%' }}>
+      <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 rounded-xl sm:rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full" style={{ maxWidth: '100%', minWidth: '100%' }}>
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
           <h3 className="text-xl sm:text-2xl font-bold text-blue-900 flex items-center gap-2">
             📋 {t('contracts.contractsList')}
@@ -1072,7 +1105,7 @@ export default function Contracts() {
         </div>
 
         {/* Responsive Table Container */}
-        <div className="overflow-x-auto rounded-lg shadow-lg w-full" style={{ maxWidth: '100%' }}>
+        <div className="overflow-x-auto rounded-lg shadow-lg w-full" style={{ maxWidth: '100%', minWidth: '100%' }}>
           <div className="min-w-full bg-white">
             {/* Desktop Table */}
             <table className="hidden lg:table min-w-full">
@@ -1136,26 +1169,15 @@ export default function Contracts() {
                     </td>
                     <td className="py-4 px-4 align-middle">
                       <div className="flex items-center gap-2 justify-center">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${
-                          c.status === 'draft' ? 'bg-gray-100 text-gray-800 border-gray-200' :
-                          c.status === 'cancelled' ? 'bg-red-100 text-red-800 border-red-200' :
-                          c.status === 'inProgress' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-                          c.status === 'suspended' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                          c.status === 'closed' ? 'bg-green-100 text-green-800 border-green-200' :
-                          c.status === 'closedWithDelay' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                          'bg-gray-100 text-gray-800 border-gray-200'
-                        }`}>
-                          <span className="mr-1">{
-                            c.status === 'draft' ? '📝' :
-                            c.status === 'cancelled' ? '❌' :
-                            c.status === 'inProgress' ? '🔄' :
-                            c.status === 'suspended' ? '⏸️' :
-                            c.status === 'closed' ? '✅' :
-                            c.status === 'closedWithDelay' ? '⚠️' :
-                            '❓'
-                          }</span>
-                          {t(`contracts.statuses.${c.status}`)}
-                        </span>
+                        {(() => {
+                          const statusStyle = getStatusStyle(c.status);
+                          return (
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
+                              <span className="mr-1">{statusStyle.icon}</span>
+                              {getStatusDisplayText(c.status)}
+                            </span>
+                          );
+                        })()}
                         <select
                           value={c.status}
                           onChange={e => handleStatusChange(c.id, e.target.value)}
@@ -1252,26 +1274,15 @@ export default function Contracts() {
                         <span className="text-sm text-gray-600">{c.company}</span>
                       </div>
                     </div>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
-                      c.status === 'draft' ? 'bg-gray-100 text-gray-800 border-gray-200' :
-                      c.status === 'cancelled' ? 'bg-red-100 text-red-800 border-red-200' :
-                      c.status === 'inProgress' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-                      c.status === 'suspended' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                      c.status === 'closed' ? 'bg-green-100 text-green-800 border-green-200' :
-                      c.status === 'closedWithDelay' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                      'bg-gray-100 text-gray-800 border-gray-200'
-                    }`}>
-                      <span className="mr-1">{
-                        c.status === 'draft' ? '📝' :
-                        c.status === 'cancelled' ? '❌' :
-                        c.status === 'inProgress' ? '🔄' :
-                        c.status === 'suspended' ? '⏸️' :
-                        c.status === 'closed' ? '✅' :
-                        c.status === 'closedWithDelay' ? '⚠️' :
-                        '❓'
-                      }</span>
-                      {t(`contracts.statuses.${c.status}`)}
-                    </span>
+                    {(() => {
+                      const statusStyle = getStatusStyle(c.status);
+                      return (
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
+                          <span className="mr-1">{statusStyle.icon}</span>
+                          {getStatusDisplayText(c.status)}
+                        </span>
+                      );
+                    })()}
                   </div>
                   
                   {/* Contract Type */}
