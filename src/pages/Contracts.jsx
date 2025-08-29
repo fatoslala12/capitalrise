@@ -11,14 +11,14 @@ import NotificationService from '../utils/notifications';
 import { StatusBadge } from "../components/ui/Badge";
 import { useTranslation } from "react-i18next";
 
-// Konstante për statuset e kontratave
+// Contract statuses - will be translated in the component
 const CONTRACT_STATUSES = [
-  "Draft",
-  "Anulluar", 
-  "Ne progres",
-  "Pezulluar",
-  "Mbyllur",
-  "Mbyllur me vonese"
+  "draft",
+  "cancelled", 
+  "inProgress",
+  "suspended",
+  "closed",
+  "closedWithDelay"
 ];
 
 export default function Contracts() {
@@ -43,7 +43,7 @@ export default function Contracts() {
     address: "",
     company_email: "", // Company email field
     contract_type: "day_work", // Added contract_type field
-    status: "Ne progres",
+    status: "inProgress",
     closed_manually: false,
     closed_date: null,
     documents: []
@@ -233,7 +233,7 @@ export default function Contracts() {
     e.preventDefault();
     
     if (!validateForm()) {
-      showToastMessage("Ju lutem plotësoni të gjitha fushat e detyrueshme", "error");
+      showToastMessage(t('contracts.messages.fillAllRequiredFields'), "error");
       return;
     }
 
@@ -270,22 +270,22 @@ export default function Contracts() {
         address: "",
         company_email: "", // Reset company_email
         contract_type: "day_work", // Reset contract_type to default
-        status: "Ne progres",
+        status: "inProgress",
         closed_manually: false,
         closed_date: null,
         documents: []
       });
       
-      showToastMessage("Kontrata u shtua me sukses!");
-      toast.success("Kontrata u krijua me sukses!");
+      showToastMessage(t('contracts.messages.contractAddedSuccess'));
+      toast.success(t('contracts.messages.contractCreatedSuccess'));
       
       // Clear cache to refresh data
       refetchContracts();
       closeAddModal();
     } catch (err) {
       console.error("Error creating contract:", err);
-      showToastMessage(err.response?.data?.error || "Gabim gjatë shtimit të kontratës!", "error");
-      toast.error("Gabim gjatë krijimit të kontratës!");
+      showToastMessage(err.response?.data?.error || t('contracts.messages.contractAddError'), "error");
+      toast.error(t('contracts.messages.contractAddError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -308,9 +308,9 @@ export default function Contracts() {
     contract.closed_date = today.toISOString();
 
     if (contract.closed_manually) {
-              contract.status = today > finishDate ? t('contracts.closedWithDelay') : t('contracts.closed');
+      contract.status = today > finishDate ? 'closedWithDelay' : 'closed';
     } else {
-      contract.status = "Ne progres";
+      contract.status = "inProgress";
       contract.closed_date = null;
     }
 
@@ -318,10 +318,10 @@ export default function Contracts() {
       const res = await api.put(`/api/contracts/${contract.id}`, contract);
       updated[contractIndex] = res.data;
       setContracts(updated);
-              showToastMessage(t('contracts.statusChangedSuccess'));
+      showToastMessage(t('contracts.messages.statusChangedSuccess'));
     } catch (err) {
       console.error("Error updating contract status:", err);
-              showToastMessage(t('contracts.statusChangeError'), "error");
+      showToastMessage(t('contracts.messages.statusChangeError'), "error");
     } finally {
       // Clear loading state
       setLoadingStates(prev => ({ ...prev, toggleStatus: { ...prev.toggleStatus, [contract_number]: false } }));
@@ -332,13 +332,13 @@ export default function Contracts() {
   const handleDelete = useCallback(async (contract_number) => {
     const contract = contracts.find(c => c.contract_number === contract_number);
     if (!contract) {
-      showToastMessage("Kontrata nuk u gjet!", "error");
+      showToastMessage(t('contracts.messages.contractNotFound'), "error");
       return;
     }
     
     showConfirmDialog(
-      "Fshi Kontratën",
-      `Jeni i sigurt që doni të fshini kontratën "${contract.company}" (${contract.site_name})? Kjo veprim nuk mund të kthehet mbrapsht.`,
+      t('contracts.actions.delete'),
+      `${t('contracts.messages.deleteContractConfirm')} "${contract.company}" (${contract.site_name})? ${t('contracts.messages.actionCannotBeUndone')}`,
       async () => {
         // Set loading state
         setLoadingStates(prev => ({ ...prev, delete: { ...prev.delete, [contract_number]: true } }));
@@ -346,10 +346,10 @@ export default function Contracts() {
         try {
           await api.delete(`/api/contracts/${contract.id}`);
           setContracts(prev => prev.filter((c) => c.contract_number !== contract_number));
-          showToastMessage("Kontrata u fshi me sukses!");
+          showToastMessage(t('contracts.messages.contractDeleteSuccess'));
         } catch (err) {
           console.error("Error deleting contract:", err);
-          showToastMessage("Gabim gjatë fshirjes!", "error");
+          showToastMessage(t('contracts.messages.contractDeleteError'), "error");
         } finally {
           // Clear loading state
           setLoadingStates(prev => ({ ...prev, delete: { ...prev.delete, [contract_number]: false } }));
@@ -510,21 +510,21 @@ export default function Contracts() {
       .join(', ');
     
     showConfirmDialog(
-      "Fshi Kontratat e Zgjedhura",
-      `Jeni të sigurt që dëshironi të fshini ${selectedContracts.length} kontrata?\n\n${selectedContractNames}\n\nKy veprim nuk mund të kthehet mbrapsht.`,
+      t('contracts.actions.delete'),
+      `${t('contracts.messages.bulkDeleteConfirm')}\n\n${selectedContractNames}\n\n${t('contracts.messages.actionCannotBeUndone')}`,
       async () => {
         // Set loading state
         setLoadingStates(prev => ({ ...prev, bulkDelete: true }));
         
         try {
           await Promise.all(selectedContracts.map(id => api.delete(`/api/contracts/${id}`)));
-          toast.success(`${selectedContracts.length} kontrata u fshinë me sukses!`);
+          toast.success(t('contracts.messages.bulkDeleteSuccess'));
           setSelectedContracts([]);
           setSelectAll(false);
           // Refresh data
           refetchContracts();
         } catch (err) {
-          toast.error('Gabim gjatë fshirjes së kontratave!');
+          toast.error(t('contracts.messages.contractDeleteError'));
         } finally {
           // Clear loading state
           setLoadingStates(prev => ({ ...prev, bulkDelete: false }));
@@ -534,7 +534,7 @@ export default function Contracts() {
   };
 
   // Export functions
-  const exportToExcel = (data, filename = 'kontratat') => {
+  const exportToExcel = (data, filename = t('contracts.contracts').toLowerCase()) => {
     const ws = XLSX.utils.json_to_sheet(data.map(contract => {
       // Llogarit shpenzimet për këtë kontratë
       const workHoursSpent = (Array.isArray(workHoursData) && workHoursData.length > 0)
@@ -552,43 +552,43 @@ export default function Contracts() {
       
       return {
         'ID': contract.id,
-        'Emri i Kontratës': contract.company,
+        [t('contracts.company')]: contract.company,
         [t('contracts.exportHeaders.location')]: contract.site_name,
         [t('contracts.exportHeaders.value')]: contract.contract_value,
         [t('contracts.exportHeaders.startDate')]: contract.start_date,
         [t('contracts.exportHeaders.endDate')]: contract.finish_date,
         [t('contracts.statusHeader')]: contract.status,
-        'Adresa': contract.address,
+        [t('contracts.detailedAddress')]: contract.address,
         [t('contracts.exportHeaders.spent')]: totalSpent.toFixed(2),
         [t('contracts.exportHeaders.profit')]: profit.toFixed(2)
       };
     }));
     
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Kontratat');
+    XLSX.utils.book_append_sheet(wb, ws, t('contracts.contractsList'));
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const dataBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     saveAs(dataBlob, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
-  const exportToPDF = (data, filename = 'kontratat') => {
+  const exportToPDF = (data, filename = t('contracts.contracts').toLowerCase()) => {
     // Simple PDF export using html2pdf
     const element = document.createElement('div');
     element.innerHTML = `
-      <h2>Lista e Kontratave</h2>
+      <h2>{t('contracts.contractsList')}</h2>
       <table border="1" style="width:100%; border-collapse: collapse;">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Emri i Kompanisë</th>
-            <th>Vendodhja</th>
-            <th>Vlera (£)</th>
-            <th>Data e Fillimit</th>
-            <th>Data e Mbarimit</th>
+            <th>{t('contracts.company')}</th>
+            <th>{t('contracts.locationHeader')}</th>
+            <th>{t('contracts.value')} (£)</th>
+            <th>{t('contracts.startDate')}</th>
+            <th>{t('contracts.endDate')}</th>
             <th>{t('contracts.statusHeader')}</th>
-            <th>Adresa</th>
-            <th>Shpenzuar (£)</th>
-            <th>Fitimi (£)</th>
+            <th>{t('contracts.detailedAddress')}</th>
+            <th>{t('contracts.spent')} (£)</th>
+            <th>{t('contracts.profit')} (£)</th>
           </tr>
         </thead>
         <tbody>
@@ -640,7 +640,7 @@ export default function Contracts() {
       : filteredAndSortedContracts;
       
     if (dataToExport.length === 0) {
-      toast.error('Nuk ka të dhëna për eksport!');
+      toast.error(t('contracts.messages.noContractsFound'));
       return;
     }
     
@@ -650,28 +650,21 @@ export default function Contracts() {
     try {
       if (type === 'excel') {
         exportToExcel(dataToExport);
-        toast.success('Eksporti në Excel u krye me sukses!');
+        toast.success(t('contracts.messages.exportSuccess'));
       } else if (type === 'pdf') {
         exportToPDF(dataToExport);
-        toast.success('Eksporti në PDF u krye me sukses!');
+        toast.success(t('contracts.messages.exportSuccess'));
       }
     } catch (err) {
-      toast.error('Gabim gjatë eksportit!');
+      toast.error(t('contracts.messages.exportError'));
     } finally {
       // Clear loading state
       setLoadingStates(prev => ({ ...prev, export: false }));
     }
   };
 
-  // Workflow statuses and transitions
-  const CONTRACT_STATUSES = [
-    "Draft",
-    "Anulluar",
-    "Ne progres",
-    "Pezulluar",
-    "Mbyllur",
-    "Mbyllur me vonese"
-  ];
+  // Workflow statuses and transitions - using translation keys
+  // CONTRACT_STATUSES is already defined at the top of the file
 
   // Remove broken STATUS_TRANSITIONS - not needed for now
   // const STATUS_TRANSITIONS = {
@@ -685,12 +678,12 @@ export default function Contracts() {
 
   const getStatusColor = (status) => {
     const colors = {
-      'Draft': 'bg-gray-100 text-gray-800',
-      'Anulluar': 'bg-red-100 text-red-800',
-      'Ne progres': 'bg-blue-100 text-blue-800',
-      'Pezulluar': 'bg-yellow-100 text-yellow-800',
-      'Mbyllur': 'bg-green-100 text-green-800',
-              [t('contracts.closedWithDelay')]: 'bg-orange-100 text-orange-800'
+      'draft': 'bg-gray-100 text-gray-800',
+      'cancelled': 'bg-red-100 text-red-800',
+      'inProgress': 'bg-blue-100 text-blue-800',
+      'suspended': 'bg-yellow-100 text-yellow-800',
+      'closed': 'bg-green-100 text-green-800',
+      'closedWithDelay': 'bg-orange-100 text-orange-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
@@ -702,18 +695,18 @@ export default function Contracts() {
     const finishDate = new Date(contract.finish_date);
     
     if (contract.closed_manually) {
-              return contract.closed_date ? t('contracts.closed') : t('contracts.closedWithDelay');
+      return contract.closed_date ? 'closed' : 'closedWithDelay';
     }
     
     if (today < startDate) {
-      return "Draft";
+      return "draft";
     } else if (today >= startDate && today <= finishDate) {
-      return "Ne progres";
+      return "inProgress";
     } else if (today > finishDate) {
-              return t('contracts.closedWithDelay');
+      return 'closedWithDelay';
     }
     
-    return "Ne progres"; // default
+    return "inProgress"; // default
   };
 
   // Përditëso handleStatusChange për të përfshirë notifikimet
@@ -730,16 +723,16 @@ export default function Contracts() {
         await NotificationService.notifyContractStatusChange(contract, newStatus, contract.id);
         
         // Special notification for completion
-        if (newStatus === "Mbyllur") {
+        if (newStatus === "closed") {
           await NotificationService.notifyContractCompletion(contract, contract.id);
         }
       }
       
-              toast.success(t('contracts.statusChangedSuccess'));
+              toast.success(t('contracts.messages.statusChangedSuccess'));
       refetchContracts();
     } catch (err) {
       console.error('❌ Error updating status:', err);
-              toast.error(t('contracts.statusChangeError'));
+              toast.error(t('contracts.messages.statusChangeError'));
     } finally {
       // Clear loading state
       setLoadingStates(prev => ({ ...prev, statusChange: { ...prev.statusChange, [contractId]: false } }));
@@ -824,7 +817,7 @@ export default function Contracts() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar kontratat...</h2>
+          <h2 className="text-xl font-semibold text-gray-700">{t('contracts.messages.loadingContracts')}</h2>
         </div>
       </div>
     );
@@ -834,12 +827,12 @@ export default function Contracts() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Gabim në ngarkimin e kontratave</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {t('contracts.messages.errorLoadingContracts')}</h2>
           <button 
             onClick={refetchContracts}
             className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
           >
-            🔄 Provoni përsëri
+            🔄 {t('contracts.messages.tryAgain')}
           </button>
         </div>
       </div>
@@ -847,7 +840,7 @@ export default function Contracts() {
   }
 
   return (
-    <div className="max-w-full xl:max-w-[90vw] mx-auto px-4 py-8 space-y-12 bg-gradient-to-br from-blue-100 via-white to-purple-100 min-h-screen">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-12">
       {/* Toast Notification */}
       {showToast.show && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -881,7 +874,7 @@ export default function Contracts() {
                 onClick={confirmDialog.onConfirm}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
-                Konfirmo
+                {t('contracts.actions.confirm')}
               </button>
             </div>
           </div>
@@ -889,37 +882,38 @@ export default function Contracts() {
       )}
 
       {/* HEADER MODERN */}
-      <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50 to-purple-100 rounded-2xl shadow-lg px-8 py-4 mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
-        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-3 shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-10 h-10">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 bg-gradient-to-r from-blue-50 to-purple-100 rounded-xl sm:rounded-2xl shadow-lg px-4 sm:px-6 lg:px-8 py-4 sm:py-4 mb-6 sm:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
+        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 sm:p-3 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-8 h-8 sm:w-10 sm:h-10">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
           </svg>
         </div>
-        <div>
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('contracts.title')}</h2>
-          <div className="text-lg font-medium text-purple-700">{t('contracts.subtitle')}</div>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('contracts.title')}</h2>
+          <div className="text-sm sm:text-base lg:text-lg font-medium text-purple-700">{t('contracts.subtitle')}</div>
         </div>
       </div>
 
-      {/* Butoni për shtim kontrate */}
-      <div className="flex justify-end mb-6">
+      {/* Add Contract Button */}
+      <div className="flex justify-center sm:justify-end mb-6">
         <button
           onClick={openAddModal}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
+          className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2"
         >
-          <span className="text-xl">➕</span> {t('contracts.addNewContract')}
+          <span className="text-lg sm:text-xl">➕</span> 
+          <span className="text-sm sm:text-base">{t('contracts.addNewContract')}</span>
         </button>
       </div>
 
-      {/* LISTA E KONTRAVE */}
-      <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 px-8 py-6 rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-bold text-blue-900 flex items-center gap-2">
+      {/* CONTRACTS LIST */}
+      <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 rounded-xl sm:rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
+          <h3 className="text-xl sm:text-2xl font-bold text-blue-900 flex items-center gap-2">
             📋 {t('contracts.contractsList')}
-            <span className="text-lg text-gray-600">({filteredAndSortedContracts.length} kontrata)</span>
+            <span className="text-sm sm:text-lg text-gray-600">({filteredAndSortedContracts.length} {t('contracts.contracts')})</span>
           </h3>
           
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full lg:w-auto">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -934,45 +928,45 @@ export default function Contracts() {
                 <button
                   onClick={handleBulkDelete}
                   disabled={loadingStates.bulkDelete}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
+                  className="w-full sm:w-auto bg-red-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   {loadingStates.bulkDelete ? (
                     <>
                       <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
-                      Duke fshirë...
+                      {t('contracts.actions.deleting')}
                     </>
                   ) : (
                     <>
-                      🗑️ Fshi të zgjedhurat ({selectedContracts.length})
+                      🗑️ {t('contracts.actions.delete')} ({selectedContracts.length})
                     </>
                   )}
                 </button>
                 <button
                   onClick={() => handleExport('excel')}
                   disabled={loadingStates.export}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
+                  className="w-full sm:w-auto bg-green-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   {loadingStates.export ? (
                     <>
                       <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
-                      Duke eksportuar...
+                      {t('contracts.actions.exporting')}
                     </>
                   ) : (
-                    '📊 Eksporto Excel'
+                    `📊 ${t('contracts.actions.export')} Excel`
                   )}
                 </button>
                 <button
                   onClick={() => handleExport('pdf')}
                   disabled={loadingStates.export}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
+                  className="w-full sm:w-auto bg-blue-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   {loadingStates.export ? (
                     <>
                       <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
-                      Duke eksportuar...
+                      {t('contracts.actions.exporting')}
                     </>
                   ) : (
-                    '📄 Eksporto PDF'
+                    `📄 ${t('contracts.actions.export')} PDF`
                   )}
                 </button>
               </>
@@ -980,15 +974,15 @@ export default function Contracts() {
           </div>
         </div>
 
-        {/* Search and Filter */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="md:col-span-2">
+                {/* Search and Filter */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <div className="sm:col-span-2">
             <input
               type="text"
               placeholder={t('contracts.searchContracts')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
+              className="w-full p-2 sm:p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm text-sm sm:text-base"
             />
           </div>
           
@@ -996,15 +990,15 @@ export default function Contracts() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 shadow-sm"
+              className="w-full p-2 sm:p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 shadow-sm text-sm sm:text-base"
             >
-                              <option value="all">{t('contracts.allStatuses')}</option>
-              <option value="Draft">Draft</option>
-              <option value="Anulluar">Anulluar</option>
-              <option value="Ne progres">Ne progres</option>
-              <option value="Pezulluar">Pezulluar</option>
-              <option value="Mbyllur">Mbyllur</option>
-              <option value="Mbyllur me vonese">{t('contracts.closedWithDelay')}</option>
+              <option value="all">{t('contracts.filters.allStatuses')}</option>
+              <option value="draft">{t('contracts.statuses.draft')}</option>
+              <option value="cancelled">{t('contracts.statuses.cancelled')}</option>
+              <option value="inProgress">{t('contracts.statuses.inProgress')}</option>
+              <option value="suspended">{t('contracts.statuses.suspended')}</option>
+              <option value="closed">{t('contracts.statuses.closed')}</option>
+              <option value="closedWithDelay">{t('contracts.statuses.closedWithDelay')}</option>
             </select>
           </div>
 
@@ -1012,15 +1006,15 @@ export default function Contracts() {
             <select
               value={filterContractType}
               onChange={(e) => setFilterContractType(e.target.value)}
-              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
+              className="w-full p-2 sm:p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm text-sm sm:text-base"
             >
-                              <option value="all">{t('contracts.allTypes')}</option>
-              <option value="day_work">Day Work</option>
-              <option value="price_work">Price Work</option>
+              <option value="all">{t('contracts.filters.allTypes')}</option>
+              <option value="day_work">{t('contracts.contractTypes.dayWork')}</option>
+              <option value="price_work">{t('contracts.contractTypes.priceWork')}</option>
             </select>
           </div>
           
-          <div>
+          <div className="sm:col-span-2 lg:col-span-1">
             <select
               value={`${sortBy}-${sortOrder}`}
               onChange={(e) => {
@@ -1028,9 +1022,9 @@ export default function Contracts() {
                 setSortBy(field);
                 setSortOrder(order);
               }}
-              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
+              className="w-full p-2 sm:p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm text-sm sm:text-base"
             >
-                              <option value="start_date-desc">{t('contracts.startDateNewest')}</option>
+              <option value="start_date-desc">{t('contracts.startDateNewest')}</option>
                 <option value="start_date-asc">{t('contracts.startDateOldest')}</option>
                 <option value="contract_value-desc">{t('contracts.valueHighest')}</option>
                 <option value="contract_value-asc">{t('contracts.valueLowest')}</option>
@@ -1041,8 +1035,8 @@ export default function Contracts() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-gray-600">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
+          <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
             {t('contracts.showing')} {((currentPage - 1) * 10) + 1} - {Math.min(currentPage * 10, filteredAndSortedContracts.length)} {t('contracts.of')} {filteredAndSortedContracts.length} {t('contracts.contracts')}
           </div>
           
@@ -1050,40 +1044,43 @@ export default function Contracts() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50"
+              className="px-2 sm:px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50 text-sm"
             >
-                              ← {t('contracts.previous')}
+              ← {t('contracts.previous')}
             </button>
-            <span className="px-3 py-1 bg-blue-500 text-white rounded">
+            <span className="px-2 sm:px-3 py-1 bg-blue-500 text-white rounded text-sm">
               {currentPage}
             </span>
             <button
               onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredAndSortedContracts.length / 10), prev + 1))}
               disabled={currentPage >= Math.ceil(filteredAndSortedContracts.length / 10)}
-              className="px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50"
+              className="px-2 sm:px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50 text-sm"
             >
-                              {t('contracts.next')} →
+              {t('contracts.next')} →
             </button>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white rounded-lg shadow-lg overflow-hidden">
-            <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-base font-bold">
-              <tr>
-                                    <th className="py-4 px-4 text-center">{t('contracts.select')}</th>
-                    <th className="py-4 px-4 text-center">{t('contracts.contractNumberHeader')}</th>
-                    <th className="py-4 px-4 text-center">{t('contracts.type')}</th>
-                    <th className="py-4 px-4 text-center">{t('contracts.locationHeader')}</th>
-                    <th className="py-4 px-4 text-center">{t('contracts.company')}</th>
-                    <th className="py-4 px-4 text-center">{t('contracts.value')}</th>
-                    <th className="py-4 px-4 text-center">{t('contracts.spent')}</th>
-                    <th className="py-4 px-4 text-center">{t('contracts.profit')}</th>
-                <th className="py-4 px-4 text-center">{t('contracts.statusHeader')}</th>
-                <th className="py-4 px-4 text-center">{t('contracts.progressHeader')}</th>
-                <th className="py-4 px-4 text-center">{t('contracts.actionsHeader')}</th>
-              </tr>
-            </thead>
+        {/* Responsive Table Container */}
+        <div className="overflow-x-auto rounded-lg shadow-lg">
+          <div className="min-w-full bg-white">
+            {/* Desktop Table */}
+            <table className="hidden lg:table min-w-full">
+              <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-sm sm:text-base font-bold">
+                <tr>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.select')}</th>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.contractNumberHeader')}</th>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.type')}</th>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.locationHeader')}</th>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.company')}</th>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.value')}</th>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.spent')}</th>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.profit')}</th>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.statusHeader')}</th>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.progressHeader')}</th>
+                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.actionsHeader')}</th>
+                </tr>
+              </thead>
             <tbody>
               {paginatedContracts.map((c, index) => {
                 const vlera = parseFloat(c.contract_value) || 0;
@@ -1111,7 +1108,7 @@ export default function Contracts() {
                             ? 'bg-orange-100 text-orange-700 border border-orange-200' 
                             : 'bg-blue-100 text-blue-700 border border-blue-200'
                         }`}>
-                          {(c.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
+                          {(c.contract_type || 'day_work') === 'price_work' ? `🏗️ ${t('contracts.contractTypes.priceWork')}` : `👷 ${t('contracts.contractTypes.dayWork')}`}
                         </span>
                       </div>
                     </td>
@@ -1137,7 +1134,7 @@ export default function Contracts() {
                           className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white disabled:opacity-50"
                         >
                           {CONTRACT_STATUSES.map(status => (
-                            <option key={status} value={status}>{status}</option>
+                            <option key={status} value={status}>{t(`contracts.statuses.${status}`)}</option>
                           ))}
                         </select>
                         {loadingStates.statusChange[c.id] && (
@@ -1198,6 +1195,138 @@ export default function Contracts() {
               })}
             </tbody>
           </table>
+          
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-4">
+            {paginatedContracts.map((c, index) => {
+              const vlera = parseFloat(c.contract_value) || 0;
+              const shpenzuar = calculateTotalSpent(c);
+              const fitimi = vlera - shpenzuar;
+              const profitMargin = vlera > 0 ? (fitimi / vlera) * 100 : 0;
+              const progres = calculateProgress(c.start_date, c.finish_date);
+              
+              return (
+                <div key={c.id || index} className="bg-white rounded-xl shadow-lg border border-blue-200 p-4 space-y-3">
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedContracts.includes(c.id)}
+                        onChange={() => handleSelectContract(c.id)}
+                        className="w-4 h-4"
+                      />
+                      <div className="flex flex-col">
+                        <Link to={`/admin/contracts/${c.contract_number}`} className="text-lg font-bold text-blue-900 hover:text-purple-700 transition-colors">
+                          #{c.contract_number}
+                        </Link>
+                        <span className="text-sm text-gray-600">{c.company}</span>
+                      </div>
+                    </div>
+                    <StatusBadge status={c.status} />
+                  </div>
+                  
+                  {/* Contract Type */}
+                  <div className="flex items-center justify-center">
+                                         <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                       (c.contract_type || 'day_work') === 'price_work' 
+                         ? 'bg-orange-100 text-orange-700 border border-orange-200' 
+                         : 'bg-blue-100 text-blue-700 border border-blue-200'
+                     }`}>
+                       {(c.contract_type || 'day_work') === 'price_work' ? `🏗️ ${t('contracts.contractTypes.priceWork')}` : `👷 ${t('contracts.contractTypes.dayWork')}`}
+                     </span>
+                  </div>
+                  
+                  {/* Location */}
+                  <div className="text-center">
+                    <Link to={`/admin/contracts/${c.contract_number}`} className="text-blue-700 hover:text-blue-900 transition-colors font-medium">
+                      📍 {c.site_name}
+                    </Link>
+                  </div>
+                  
+                  {/* Financial Summary */}
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-blue-50 rounded-lg p-2">
+                      <div className="text-xs text-gray-600">{t('contracts.value')}</div>
+                      <div className="font-bold text-blue-900">£{vlera.toFixed(2)}</div>
+                    </div>
+                    <div className="bg-purple-50 rounded-lg p-2">
+                      <div className="text-xs text-gray-600">{t('contracts.spent')}</div>
+                      <div className="font-bold text-purple-700">£{shpenzuar.toFixed(2)}</div>
+                    </div>
+                    <div className={`rounded-lg p-2 ${getProfitColor(fitimi).replace('text-', 'bg-').replace('bg-', 'bg-')}`}>
+                      <div className="text-xs text-gray-600">{t('contracts.profit')}</div>
+                      <div className={`font-bold ${getProfitColor(fitimi)}`}>£{fitimi.toFixed(2)}</div>
+                      <div className="text-xs opacity-75">{profitMargin.toFixed(1)}%</div>
+                    </div>
+                  </div>
+                  
+                  {/* Progress */}
+                  <div className="text-center">
+                    <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min(100, Math.max(0, progres))}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs text-gray-600">{progres.toFixed(0)}% {t('contracts.progressHeader')}</span>
+                  </div>
+                  
+                  {/* Status Change */}
+                  <div className="flex items-center justify-center gap-2">
+                    <select
+                      value={c.status}
+                      onChange={e => handleStatusChange(c.id, e.target.value)}
+                      disabled={loadingStates.statusChange[c.id]}
+                      className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white disabled:opacity-50"
+                    >
+                      {CONTRACT_STATUSES.map(status => (
+                        <option key={status} value={status}>{t(`contracts.statuses.${status}`)}</option>
+                      ))}
+                    </select>
+                    {loadingStates.statusChange[c.id] && (
+                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    )}
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex gap-2 justify-center">
+                    <button
+                      onClick={() => navigate(`/admin/contracts/${c.contract_number}`)}
+                      className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl p-2"
+                      title={t('contracts.actions.view')}
+                    >
+                      👁️
+                    </button>
+                    <button
+                      onClick={() => handleToggleStatus(c.contract_number)}
+                      disabled={loadingStates.toggleStatus[c.contract_number]}
+                      className="text-purple-600 hover:text-purple-800 hover:scale-110 transition-all text-xl disabled:opacity-50 flex items-center gap-1 p-2"
+                      title="Toggle"
+                    >
+                      {loadingStates.toggleStatus[c.contract_number] ? (
+                        <div className="w-3 h-3 border border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        '🔄'
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(c.contract_number)}
+                      disabled={loadingStates.delete[c.contract_number]}
+                      className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl disabled:opacity-50 flex items-center gap-1 p-2"
+                      title={t('contracts.actions.delete')}
+                    >
+                      {loadingStates.delete[c.contract_number] ? (
+                        <div className="w-3 h-3 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        '🗑️'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -1216,7 +1345,7 @@ export default function Contracts() {
                 <h3 className="text-lg sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
                   <span className="text-xl sm:text-3xl">➕</span> 
                   <span className="hidden sm:inline">{t('contracts.addNewContract')}</span>
-                  <span className="sm:hidden">Kontratë e Re</span>
+                  <span className="sm:hidden">{t('contracts.addNewContract')}</span>
                 </h3>
                 <button
                   onClick={closeAddModal}
@@ -1245,8 +1374,8 @@ export default function Contracts() {
                         onChange={handleChange} 
                         className="w-full p-3 border-2 border-purple-200 rounded-lg text-base focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all shadow-sm bg-white"
                       >
-                        <option value="day_work">👷 Day Work</option>
-                        <option value="price_work">🏗️ Price Work</option>
+                        <option value="day_work">👷 {t('contracts.contractTypes.dayWork')}</option>
+                        <option value="price_work">🏗️ {t('contracts.contractTypes.priceWork')}</option>
                       </select>
                     </div>
                   </div>
@@ -1342,12 +1471,12 @@ export default function Contracts() {
                         onChange={handleChange} 
                         className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-green-200 focus:border-green-400 transition-all shadow-sm bg-white"
                       >
-                        <option value="Draft">📝 Draft</option>
-                        <option value="Anulluar">❌ Anulluar</option>
-                        <option value="Ne progres">🟡 Ne progres</option>
-                        <option value="Pezulluar">⏸️ Pezulluar</option>
-                        <option value="Mbyllur">✅ Mbyllur</option>
-                        <option value="Mbyllur me vonese">⏰ {t('contracts.closedWithDelay')}</option>
+                        <option value="draft">📝 {t('contracts.statuses.draft')}</option>
+                        <option value="cancelled">❌ {t('contracts.statuses.cancelled')}</option>
+                        <option value="inProgress">🟡 {t('contracts.statuses.inProgress')}</option>
+                        <option value="suspended">⏸️ {t('contracts.statuses.suspended')}</option>
+                        <option value="closed">✅ {t('contracts.statuses.closed')}</option>
+                        <option value="closedWithDelay">⏰ {t('contracts.statuses.closedWithDelay')}</option>
                       </select>
                     </div>
                   </div>
@@ -1399,14 +1528,14 @@ export default function Contracts() {
                     {isSubmitting ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span className="hidden sm:inline">Duke shtuar...</span>
-                        <span className="sm:hidden">Shton...</span>
+                        <span className="hidden sm:inline">{t('contracts.actions.adding')}</span>
+                        <span className="sm:hidden">{t('contracts.actions.adding')}</span>
                       </>
                     ) : (
                       <>
                         <span className="text-xl">💾</span> 
                         <span className="hidden sm:inline">{t('contracts.addContract')}</span>
-                        <span className="sm:hidden">Shto</span>
+                        <span className="sm:hidden">{t('contracts.actions.add')}</span>
                       </>
                     )}
                   </button>
@@ -1417,8 +1546,8 @@ export default function Contracts() {
                     className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 justify-center"
                   >
                     <span className="text-xl">✕</span> 
-                    <span className="hidden sm:inline">{t('contracts.cancel')}</span>
-                    <span className="sm:hidden">Mbyll</span>
+                                            <span className="hidden sm:inline">{t('contracts.cancel')}</span>
+                        <span className="sm:hidden">{t('contracts.actions.close')}</span>
                   </button>
                 </div>
               </form>

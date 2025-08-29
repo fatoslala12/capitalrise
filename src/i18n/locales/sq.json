@@ -326,12 +326,62 @@
       "profit": "Fitimi (£)"
     },
     "validation": {
-      "companyRequired": "Emri i kompanisë është i detyrueshëm",
+      "companyRequired": "Emri i kompanisë është e detyrueshme",
       "valuePositive": "Vlera e kontratës duhet të jetë një numër pozitiv",
       "locationRequired": "Vendodhja është e detyrueshme",
       "startDateRequired": "Data e fillimit është e detyrueshme",
       "endDateRequired": "Data e mbarimit është e detyrueshme",
       "endDateAfterStart": "Data e mbarimit duhet të jetë pas datës së fillimit"
+    },
+    "statuses": {
+      "draft": "Draft",
+      "cancelled": "Anulluar",
+      "inProgress": "Ne progres",
+      "suspended": "Pezulluar",
+      "closed": "Mbyllur",
+      "closedWithDelay": "Mbyllur me vonese"
+    },
+    "contractTypes": {
+      "dayWork": "Punë ditore",
+      "priceWork": "Punë me çmim"
+    },
+    "actions": {
+      "view": "Shiko",
+      "edit": "Edito",
+      "delete": "Fshi",
+      "export": "Eksporto",
+      "confirm": "Konfirmo",
+      "close": "Mbyll",
+      "add": "Shto",
+      "save": "Ruaj",
+      "loading": "Duke ngarkuar...",
+      "deleting": "Duke fshirë...",
+      "exporting": "Duke eksportuar...",
+      "adding": "Duke shtuar..."
+    },
+    "messages": {
+      "contractAddedSuccess": "Kontrata u shtua me sukses!",
+      "contractCreatedSuccess": "Kontrata u krijua me sukses!",
+      "contractDeleteError": "Gabim gjatë fshirjes së kontratës!",
+      "contractAddError": "Gabim gjatë shtimit të kontratës!",
+      "bulkDeleteConfirm": "A jeni të sigurt që dëshironi të fshini kontratat e zgjedhura?",
+      "bulkDeleteSuccess": "Kontratat e zgjedhura u fshinë me sukses!",
+      "exportSuccess": "Eksportimi u përfundua me sukses!",
+      "exportError": "Gabim gjatë eksportimit!",
+      "noContractsFound": "Nuk u gjetën kontrata",
+      "loadingContracts": "Duke ngarkuar kontratat...",
+      "errorLoadingContracts": "Gabim në ngarkimin e kontratave",
+      "tryAgain": "Provoni përsëri",
+      "fillAllRequiredFields": "Ju lutem plotësoni të gjitha fushat e detyrueshme",
+      "actionCannotBeUndone": "Ky veprim nuk mund të kthehet mbrapsht.",
+      "deleteContractConfirm": "A jeni të sigurt që dëshironi të fshini kontratën",
+      "contractDeleteSuccess": "Kontrata u fshi me sukses!",
+      "contractNotFound": "Kontrata nuk u gjet!"
+    },
+    "filters": {
+      "allStatuses": "Të gjitha statuset",
+      "allTypes": "Të gjitha tipet",
+      "all": "Të gjitha"
     }
   },
   "payments": {

@@ -343,6 +343,56 @@
       "startDateRequired": "Start date is required",
       "endDateRequired": "End date is required",
       "endDateAfterStart": "End date must be after start date"
+    },
+    "statuses": {
+      "draft": "Draft",
+      "cancelled": "Cancelled",
+      "inProgress": "In Progress",
+      "suspended": "Suspended",
+      "closed": "Closed",
+      "closedWithDelay": "Closed with Delay"
+    },
+    "contractTypes": {
+      "dayWork": "Day Work",
+      "priceWork": "Price Work"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "export": "Export",
+      "confirm": "Confirm",
+      "close": "Close",
+      "add": "Add",
+      "save": "Save",
+      "loading": "Loading...",
+      "deleting": "Deleting...",
+      "exporting": "Exporting...",
+      "adding": "Adding..."
+    },
+    "messages": {
+      "contractAddedSuccess": "Contract added successfully!",
+      "contractCreatedSuccess": "Contract created successfully!",
+      "contractDeleteError": "Error deleting contract!",
+      "contractAddError": "Error adding contract!",
+      "bulkDeleteConfirm": "Are you sure you want to delete the selected contracts?",
+      "bulkDeleteSuccess": "Selected contracts deleted successfully!",
+      "exportSuccess": "Export completed successfully!",
+      "exportError": "Error during export!",
+      "noContractsFound": "No contracts found",
+      "loadingContracts": "Loading contracts...",
+      "errorLoadingContracts": "Error loading contracts",
+      "tryAgain": "Try again",
+      "fillAllRequiredFields": "Please fill all required fields",
+      "actionCannotBeUndone": "This action cannot be undone.",
+      "deleteContractConfirm": "Are you sure you want to delete the contract",
+      "contractDeleteSuccess": "Contract deleted successfully!",
+      "contractNotFound": "Contract not found!"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "allTypes": "All types",
+      "all": "All"
     }
   },
   "payments": {
