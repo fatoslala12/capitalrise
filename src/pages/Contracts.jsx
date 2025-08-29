@@ -7,6 +7,7 @@ import api from "../api";
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import html2pdf from 'html2pdf.js';
 import NotificationService from '../utils/notifications';
 import { StatusBadge } from "../components/ui/Badge";
 import { useTranslation } from "react-i18next";
@@ -626,11 +627,20 @@ export default function Contracts() {
       </table>
     `;
     
-    // Use html2pdf if available
-    if (window.html2pdf) {
-      window.html2pdf().from(element).save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
-    } else {
-      toast.error('PDF export nuk është i disponueshëm!');
+    // Use html2pdf to generate PDF
+    try {
+      const opt = {
+        margin: 1,
+        filename: `${filename}_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+      };
+      
+      html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('PDF export error:', error);
+      toast.error(t('contracts.messages.exportError'));
     }
   };
 
@@ -840,7 +850,7 @@ export default function Contracts() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-12">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-12" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
       {/* Toast Notification */}
       {showToast.show && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -906,7 +916,7 @@ export default function Contracts() {
       </div>
 
       {/* CONTRACTS LIST */}
-      <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 rounded-xl sm:rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full">
+      <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 rounded-xl sm:rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full" style={{ maxWidth: '100%' }}>
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
           <h3 className="text-xl sm:text-2xl font-bold text-blue-900 flex items-center gap-2">
             📋 {t('contracts.contractsList')}
@@ -1062,7 +1072,7 @@ export default function Contracts() {
         </div>
 
         {/* Responsive Table Container */}
-        <div className="overflow-x-auto rounded-lg shadow-lg">
+        <div className="overflow-x-auto rounded-lg shadow-lg w-full" style={{ maxWidth: '100%' }}>
           <div className="min-w-full bg-white">
             {/* Desktop Table */}
             <table className="hidden lg:table min-w-full">
@@ -1126,7 +1136,26 @@ export default function Contracts() {
                     </td>
                     <td className="py-4 px-4 align-middle">
                       <div className="flex items-center gap-2 justify-center">
-                        <StatusBadge status={c.status} />
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${
+                          c.status === 'draft' ? 'bg-gray-100 text-gray-800 border-gray-200' :
+                          c.status === 'cancelled' ? 'bg-red-100 text-red-800 border-red-200' :
+                          c.status === 'inProgress' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                          c.status === 'suspended' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                          c.status === 'closed' ? 'bg-green-100 text-green-800 border-green-200' :
+                          c.status === 'closedWithDelay' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                          'bg-gray-100 text-gray-800 border-gray-200'
+                        }`}>
+                          <span className="mr-1">{
+                            c.status === 'draft' ? '📝' :
+                            c.status === 'cancelled' ? '❌' :
+                            c.status === 'inProgress' ? '🔄' :
+                            c.status === 'suspended' ? '⏸️' :
+                            c.status === 'closed' ? '✅' :
+                            c.status === 'closedWithDelay' ? '⚠️' :
+                            '❓'
+                          }</span>
+                          {t(`contracts.statuses.${c.status}`)}
+                        </span>
                         <select
                           value={c.status}
                           onChange={e => handleStatusChange(c.id, e.target.value)}
@@ -1223,7 +1252,26 @@ export default function Contracts() {
                         <span className="text-sm text-gray-600">{c.company}</span>
                       </div>
                     </div>
-                    <StatusBadge status={c.status} />
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
+                      c.status === 'draft' ? 'bg-gray-100 text-gray-800 border-gray-200' :
+                      c.status === 'cancelled' ? 'bg-red-100 text-red-800 border-red-200' :
+                      c.status === 'inProgress' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                      c.status === 'suspended' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                      c.status === 'closed' ? 'bg-green-100 text-green-800 border-green-200' :
+                      c.status === 'closedWithDelay' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                      'bg-gray-100 text-gray-800 border-gray-200'
+                    }`}>
+                      <span className="mr-1">{
+                        c.status === 'draft' ? '📝' :
+                        c.status === 'cancelled' ? '❌' :
+                        c.status === 'inProgress' ? '🔄' :
+                        c.status === 'suspended' ? '⏸️' :
+                        c.status === 'closed' ? '✅' :
+                        c.status === 'closedWithDelay' ? '⚠️' :
+                        '❓'
+                      }</span>
+                      {t(`contracts.statuses.${c.status}`)}
+                    </span>
                   </div>
                   
                   {/* Contract Type */}
