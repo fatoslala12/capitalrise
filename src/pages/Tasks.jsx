@@ -6,25 +6,41 @@ import toast from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
 
 export default function Tasks() {
+  console.log('🔍 Tasks component: Starting to render...');
+  
   const translation = useTranslation();
+  console.log('🔍 Tasks component: useTranslation result:', {
+    t: typeof translation.t,
+    ready: translation.ready,
+    i18n: translation.i18n,
+    language: translation.language
+  });
+  
   const { user } = useAuth();
+  console.log('🔍 Tasks component: Auth user:', user);
   
   // Safe translation function with fallback
   const t = (key, fallback = key) => {
+    console.log(`🔍 Translation attempt for key: "${key}"`);
     try {
       if (translation.t && typeof translation.t === 'function') {
+        console.log(`🔍 Calling translation.t("${key}")`);
         const result = translation.t(key);
+        console.log(`🔍 Translation result for "${key}":`, result);
         return result && result !== key ? result : fallback;
+      } else {
+        console.warn(`🔍 Translation.t is not available:`, translation.t);
+        return fallback;
       }
-      return fallback;
     } catch (error) {
-      console.warn('Translation error for key:', key, error);
+      console.error(`🔍 Translation error for key "${key}":`, error);
       return fallback;
     }
   };
   
   // Fallback translations in case i18n fails completely
   const fallbackT = (key) => {
+    console.log(`🔍 Using fallback translation for: "${key}"`);
     const fallbacks = {
       'tasks.title': 'Task Management',
       'tasks.subtitle': 'Assign, view and manage tasks',
@@ -44,12 +60,22 @@ export default function Tasks() {
   
   // Use fallback if main translation fails
   const safeT = (key) => {
+    console.log(`🔍 safeT called with key: "${key}"`);
     const result = t(key);
+    console.log(`🔍 safeT result for "${key}":`, result);
     return result === key ? fallbackT(key) : result;
   };
   
+  // Debug: Check if we're in a safe state to render
+  console.log('🔍 Tasks component: Translation state check:', {
+    translationReady: translation.ready,
+    hasTranslationFunction: !!translation.t,
+    translationFunctionType: typeof translation.t
+  });
+  
   // Don't render until translations are ready
   if (!translation.ready) {
+    console.log('🔍 Tasks component: Translations not ready, showing loading...');
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -59,6 +85,8 @@ export default function Tasks() {
       </div>
     );
   }
+  
+  console.log('🔍 Tasks component: Translations ready, proceeding with render...');
   const [employees, setEmployees] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -90,12 +118,20 @@ export default function Tasks() {
 
   // Retry function for API calls
   const retryApiCall = async (apiCall, maxRetries = 3, delay = 1000) => {
+    console.log(`🔍 API: Starting retry mechanism, max retries: ${maxRetries}`);
     for (let i = 0; i < maxRetries; i++) {
       try {
-        return await apiCall();
+        console.log(`🔍 API: Attempt ${i + 1}/${maxRetries}`);
+        const result = await apiCall();
+        console.log(`🔍 API: Success on attempt ${i + 1}`);
+        return result;
       } catch (error) {
-        if (i === maxRetries - 1) throw error;
-        console.log(`Retry ${i + 1}/${maxRetries} failed, retrying in ${delay}ms...`);
+        console.error(`🔍 API: Attempt ${i + 1} failed:`, error.message);
+        if (i === maxRetries - 1) {
+          console.error(`🔍 API: All retries exhausted, throwing error`);
+          throw error;
+        }
+        console.log(`🔍 API: Retry ${i + 1}/${maxRetries} failed, retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         delay *= 2; // Exponential backoff
       }
@@ -104,8 +140,10 @@ export default function Tasks() {
 
   // Merr të dhënat nga backend
   useEffect(() => {
+    console.log('🔍 useEffect: Starting data fetch...');
     const fetchData = async () => {
       try {
+        console.log('🔍 useEffect: Setting loading state...');
         setLoading(true);
         
         const axiosConfig = {
@@ -113,18 +151,20 @@ export default function Tasks() {
           timeout: 30000, // 30 second timeout
         };
         
+        console.log('🔍 useEffect: Making API calls...');
         const [employeesRes, contractsRes, tasksRes] = await Promise.all([
           retryApiCall(() => axios.get("https://capitalrise-cwcq.onrender.com/api/employees", axiosConfig)),
           retryApiCall(() => axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", axiosConfig)),
           retryApiCall(() => axios.get("https://capitalrise-cwcq.onrender.com/api/tasks", axiosConfig))
         ]);
 
+        console.log('🔍 useEffect: API calls successful, setting state...');
         setEmployees(employeesRes.data || []);
         setContracts(contractsRes.data || []);
         setTasks(tasksRes.data || []);
         
       } catch (error) {
-        console.error("Error fetching tasks data:", error);
+        console.error("🔍 useEffect: Error fetching tasks data:", error);
         
         // Better error handling with specific messages
         let errorMessage = 'tasks.validation.dataLoadError';
@@ -136,11 +176,17 @@ export default function Tasks() {
           errorMessage = 'Server error - please try again later';
         }
         
-        toast.error(safeT(errorMessage));
+        console.log(`🔍 useEffect: Using error message: "${errorMessage}"`);
+        console.log(`🔍 useEffect: Calling safeT with key: "${errorMessage}"`);
+        const errorDisplay = safeT(errorMessage);
+        console.log(`🔍 useEffect: safeT result: "${errorDisplay}"`);
+        
+        toast.error(errorDisplay);
         setEmployees([]);
         setContracts([]);
         setTasks([]);
       } finally {
+        console.log('🔍 useEffect: Setting loading to false...');
         setLoading(false);
       }
     };
@@ -371,10 +417,10 @@ export default function Tasks() {
         // Refresh stats
         handleGetOverdueStats();
       }
-    } catch (error) {
-      console.error('Error checking overdue tasks:', error);
-              toast.error(t('tasks.validation.overdueCheckError'));
-    } finally {
+          } catch (error) {
+        console.error('Error checking overdue tasks:', error);
+              toast.error(safeT('tasks.validation.overdueCheckError'));
+      } finally {
       setIsCheckingDeadlines(false);
     }
   };
@@ -395,10 +441,10 @@ export default function Tasks() {
         // Refresh stats
         handleGetOverdueStats();
       }
-    } catch (error) {
-      console.error('Error checking upcoming deadlines:', error);
-              toast.error(t('tasks.validation.nearDeadlineCheckError'));
-    } finally {
+          } catch (error) {
+        console.error('Error checking upcoming deadlines:', error);
+              toast.error(safeT('tasks.validation.nearDeadlineCheckError'));
+      } finally {
       setIsCheckingDeadlines(false);
     }
   };
@@ -419,10 +465,10 @@ export default function Tasks() {
         // Refresh stats
         handleGetOverdueStats();
       }
-    } catch (error) {
-      console.error('Error running daily check:', error);
-              toast.error(t('tasks.validation.dailyCheckError'));
-    } finally {
+          } catch (error) {
+        console.error('Error running daily check:', error);
+              toast.error(safeT('tasks.validation.dailyCheckError'));
+      } finally {
       setIsCheckingDeadlines(false);
     }
   };
@@ -444,15 +490,21 @@ export default function Tasks() {
   };
 
   if (loading) {
+    console.log('🔍 Render: Showing loading state...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-600">{t('tasks.validation.dataLoadError')}</h2>
+          <h2 className="text-xl font-semibold text-gray-600">{safeT('tasks.validation.dataLoadError')}</h2>
         </div>
       </div>
     );
   }
+  
+  console.log('🔍 Render: Starting main render...');
+  
+  // Wrap the entire render in a try-catch for debugging
+  try {
 
   return (
     <div className="max-w-full xl:max-w-[90vw] mx-auto px-4 py-8 space-y-8 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
@@ -1073,4 +1125,30 @@ export default function Tasks() {
       </div>
     </div>
   );
+  
+  } catch (error) {
+    console.error('🔍 Render: Error during render:', error);
+    console.error('🔍 Render: Error stack:', error.stack);
+    
+    // Fallback render in case of error
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-50">
+        <div className="text-center p-8">
+          <div className="text-6xl mb-4">🚨</div>
+          <h1 className="text-2xl font-bold text-red-800 mb-4">Render Error</h1>
+          <p className="text-red-600 mb-4">Something went wrong while rendering the Tasks page.</p>
+          <div className="bg-gray-100 p-4 rounded-lg text-left text-sm">
+            <p className="font-semibold">Error Details:</p>
+            <p className="font-mono">{error.message}</p>
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 }
