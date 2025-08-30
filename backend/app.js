@@ -165,8 +165,8 @@ app.use('/api/audit-trail', auditTrailRoutes);
 const taskDeadlineRoutes = require('./routes/taskDeadlines');
 app.use('/api/task-deadlines', taskDeadlineRoutes);
 
-const translationRoutes = require('./routes/translations');
-app.use('/api/translations', translationRoutes);
+
+
 
 // ----------------------------------------------------------------------------
 // Error handling (në fund)
