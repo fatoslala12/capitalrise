@@ -1165,5 +1165,57 @@
     "messages": {
       "dataLoadError": "Gabim gjatë ngarkimit të të dhënave"
     }
+  },
+  "notifications": {
+    "title": "Njoftimet",
+    "subtitle": "Menaxhoni të gjitha njoftimet e sistemit",
+    "loading": "Duke ngarkuar njoftimet...",
+    "searchPlaceholder": "Kërko njoftime...",
+    "allTypes": "Të gjitha tipet",
+    "all": "Të gjitha",
+    "read": "E lexuara",
+    "unread": "E palexuara",
+    "selectAll": "Zgjidh të gjitha",
+    "markAllAsRead": "Shëno të gjitha si të lexuara",
+    "noNotifications": "Nuk ka njoftime për të shfaqur",
+    "deleteSelected": "Fshi të zgjedhurat",
+    "exportCSV": "Eksporto CSV",
+    "exportPDF": "Eksporto PDF",
+    "testEmail": "Test Email",
+    "markAsRead": "Shëno si të lexuar",
+    "delete": "Fshi",
+    "notifications": "Njoftimet",
+    "category": "Kategoria",
+    "timeAgo": {
+      "now": "Tani",
+      "minutesAgo": "m më parë",
+      "hoursAgo": "h më parë",
+      "daysAgo": "d më parë"
+    },
+    "types": {
+      "info": "Informacion",
+      "success": "Sukses",
+      "warning": "Paralajmërim",
+      "error": "Gabim",
+      "payment": "Pagesë",
+      "task": "Detyrë",
+      "contract": "Kontratë",
+      "employee": "Punonjës",
+      "system": "Sistem"
+    },
+    "status": {
+      "read": "E lexuar",
+      "unread": "E palexuar"
+    },
+    "export": {
+      "csvHeaders": ["ID", "Titulli", "Mesazhi", "Tipi", "Kategoria", "E lexuar", "Data e krijimit"],
+      "pdfTitle": "Raporti i Njoftimeve",
+      "pdfHeaders": ["ID", "Titulli", "Mesazhi", "Tipi", "Kategoria", "Statusi", "Data"]
+    },
+    "messages": {
+      "deleteSelectedError": "Gabim në fshirjen e njoftimeve të zgjedhura",
+      "testEmailSuccess": "Njoftimi test u dërgua me sukses!",
+      "testEmailError": "Gabim në dërgimin e njoftimit test"
+    }
   }
 }

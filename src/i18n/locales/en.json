@@ -1219,5 +1219,57 @@
     "messages": {
       "dataLoadError": "Error loading data"
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Manage all system notifications",
+    "loading": "Loading notifications...",
+    "searchPlaceholder": "Search notifications...",
+    "allTypes": "All types",
+    "all": "All",
+    "read": "Read",
+    "unread": "Unread",
+    "selectAll": "Select all",
+    "markAllAsRead": "Mark all as read",
+    "noNotifications": "No notifications to display",
+    "deleteSelected": "Delete selected",
+    "exportCSV": "Export CSV",
+    "exportPDF": "Export PDF",
+    "testEmail": "Test Email",
+    "markAsRead": "Mark as read",
+    "delete": "Delete",
+    "notifications": "Notifications",
+    "category": "Category",
+    "timeAgo": {
+      "now": "Now",
+      "minutesAgo": "m ago",
+      "hoursAgo": "h ago",
+      "daysAgo": "d ago"
+    },
+    "types": {
+      "info": "Information",
+      "success": "Success",
+      "warning": "Warning",
+      "error": "Error",
+      "payment": "Payment",
+      "task": "Task",
+      "contract": "Contract",
+      "employee": "Employee",
+      "system": "System"
+    },
+    "status": {
+      "read": "Read",
+      "unread": "Unread"
+    },
+    "export": {
+      "csvHeaders": ["ID", "Title", "Message", "Type", "Category", "Read", "Created Date"],
+      "pdfTitle": "Notifications Report",
+      "pdfHeaders": ["ID", "Title", "Message", "Type", "Category", "Status", "Date"]
+    },
+    "messages": {
+      "deleteSelectedError": "Error deleting selected notifications",
+      "testEmailSuccess": "Test notification sent successfully!",
+      "testEmailError": "Error sending test notification"
+    }
   }
 }

@@ -8,6 +8,17 @@ import { useTranslation } from 'react-i18next';
 const NotificationsPage = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  
+  // Safe translation function with fallback
+  const safeT = (key, fallback = key) => {
+    try {
+      const result = t(key);
+      return result && result !== key ? result : fallback;
+    } catch (error) {
+      console.error(`Translation error for key "${key}":`, error);
+      return fallback;
+    }
+  };
   const { notifications, loading, markAsRead, markAllAsRead, deleteNotification, fetchNotifications } = useNotifications();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -22,7 +33,7 @@ const NotificationsPage = () => {
       setSelectedNotifications([]);
       setSelectAll(false);
     } catch (error) {
-      console.error('Gabim në fshirjen e njoftimeve të zgjedhura:', error);
+      console.error(safeT('notifications.messages.deleteSelectedError', 'Gabim në fshirjen e njoftimeve të zgjedhura:'), error);
     }
   };
 
@@ -32,7 +43,7 @@ const NotificationsPage = () => {
       ? notifications.filter(n => selectedNotifications.includes(n.id))
       : filteredNotifications;
 
-    const headers = ['ID', 'Titulli', 'Mesazhi', 'Tipi', 'Kategoria', 'E lexuar', 'Data e krijimit'];
+    const headers = safeT('notifications.export.csvHeaders', ['ID', 'Titulli', 'Mesazhi', 'Tipi', 'Kategoria', 'E lexuar', 'Data e krijimit']);
     const csvContent = [
       headers.join(','),
       ...notificationsToExport.map(n => [
@@ -41,7 +52,7 @@ const NotificationsPage = () => {
         `"${n.message.replace(/"/g, '""')}"`,
         n.type,
         n.category || 'system',
-        n.isRead ? 'Po' : 'Jo',
+        n.isRead ? safeT('notifications.status.read', 'Po') : safeT('notifications.status.unread', 'Jo'),
         new Date(n.createdAt).toLocaleString('sq-AL')
       ].join(','))
     ].join('\n');
@@ -80,17 +91,17 @@ const NotificationsPage = () => {
             </style>
           </head>
           <body>
-            <h1>Raporti i Njoftimeve</h1>
+            <h1>{safeT('notifications.export.pdfTitle', 'Raporti i Njoftimeve')}</h1>
             <table>
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Titulli</th>
-                  <th>Mesazhi</th>
-                  <th>Tipi</th>
-                  <th>Kategoria</th>
-                  <th>Statusi</th>
-                  <th>Data</th>
+                  <th>{safeT('notifications.export.pdfHeaders.0', 'ID')}</th>
+                  <th>{safeT('notifications.export.pdfHeaders.1', 'Titulli')}</th>
+                  <th>{safeT('notifications.export.pdfHeaders.2', 'Mesazhi')}</th>
+                  <th>{safeT('notifications.export.pdfHeaders.3', 'Tipi')}</th>
+                  <th>{safeT('notifications.export.pdfHeaders.4', 'Kategoria')}</th>
+                  <th>{safeT('notifications.export.pdfHeaders.5', 'Statusi')}</th>
+                  <th>{safeT('notifications.export.pdfHeaders.6', 'Data')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -101,7 +112,7 @@ const NotificationsPage = () => {
                     <td>${n.message}</td>
                     <td>${n.type}</td>
                     <td>${n.category || 'system'}</td>
-                    <td><span class="status ${n.isRead ? 'read' : 'unread'}">${n.isRead ? 'E lexuar' : 'E palexuar'}</span></td>
+                    <td><span class="status ${n.isRead ? 'read' : 'unread'}">${n.isRead ? safeT('notifications.status.read', 'E lexuar') : safeT('notifications.status.unread', 'E palexuar')}</span></td>
                     <td>${new Date(n.createdAt).toLocaleString('sq-AL')}</td>
                   </tr>
                 `).join('')}
@@ -143,7 +154,7 @@ const NotificationsPage = () => {
       document.body.removeChild(element);
     } catch (error) {
       console.error('Error testing email notification:', error);
-      alert('❌ Gabim në dërgimin e njoftimit test');
+      alert(`❌ ${safeT('notifications.messages.testEmailError', 'Gabim në dërgimin e njoftimit test')}`);
     }
   };
 
@@ -155,10 +166,10 @@ const NotificationsPage = () => {
         title: 'Test Njoftim',
         message: 'Ky është një njoftim test për të verifikuar funksionimin e sistemit.'
       });
-      alert('✅ Njoftimi test u dërgua me sukses!');
+      alert(`✅ ${safeT('notifications.messages.testEmailSuccess', 'Njoftimi test u dërgua me sukses!')}`);
     } catch (error) {
       console.error('Error testing email notification:', error);
-      alert('❌ Gabim në dërgimin e njoftimit test');
+      alert(`❌ ${safeT('notifications.messages.testEmailError', 'Gabim në dërgimin e njoftimit test')}`);
     }
   };
 
@@ -202,10 +213,10 @@ const NotificationsPage = () => {
     const date = new Date(dateString);
     const diffInSeconds = Math.floor((now - date) / 1000);
     
-    if (diffInSeconds < 60) return 'Tani';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m më parë`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h më parë`;
-    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d më parë`;
+    if (diffInSeconds < 60) return safeT('notifications.timeAgo.now', 'Tani');
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}${safeT('notifications.timeAgo.minutesAgo', 'm më parë')}`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}${safeT('notifications.timeAgo.hoursAgo', 'h më parë')}`;
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}${safeT('notifications.timeAgo.daysAgo', 'd më parë')}`;
     return date.toLocaleDateString('sq-AL');
   };
 
@@ -227,22 +238,25 @@ const NotificationsPage = () => {
   // Get notification type label
   const getNotificationTypeLabel = (type) => {
     switch (type) {
-      case 'info': return 'Informacion';
-      case 'success': return 'Sukses';
-      case 'warning': return 'Paralajmërim';
-      case 'error': return 'Gabim';
-      case 'payment': return 'Pagesë';
-      case 'task': return 'Detyrë';
-      case 'contract': return 'Kontratë';
-      case 'employee': return 'Punonjës';
-      default: return 'Sistem';
+      case 'info': return safeT('notifications.types.info', 'Informacion');
+      case 'success': return safeT('notifications.types.success', 'Sukses');
+      case 'warning': return safeT('notifications.types.warning', 'Paralajmërim');
+      case 'error': return safeT('notifications.types.error', 'Gabim');
+      case 'payment': return safeT('notifications.types.payment', 'Pagesë');
+      case 'task': return safeT('notifications.types.task', 'Detyrë');
+      case 'contract': return safeT('notifications.types.contract', 'Kontratë');
+      case 'employee': return safeT('notifications.types.employee', 'Punonjës');
+      default: return safeT('notifications.types.system', 'Sistem');
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-gray-600">{safeT('notifications.loading', 'Duke ngarkuar njoftimet...')}</p>
+        </div>
       </div>
     );
   }
@@ -251,10 +265,10 @@ const NotificationsPage = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          🔔 Njoftimet
+          🔔 {safeT('notifications.title', 'Njoftimet')}
         </h1>
         <p className="text-gray-600">
-          Menaxhoni të gjitha njoftimet e sistemit
+          {safeT('notifications.subtitle', 'Menaxhoni të gjitha njoftimet e sistemit')}
         </p>
       </div>
 
@@ -267,7 +281,7 @@ const NotificationsPage = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Kërko njoftime..."
+                placeholder={safeT('notifications.searchPlaceholder', 'Kërko njoftime...')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -282,15 +296,15 @@ const NotificationsPage = () => {
               onChange={(e) => setFilterType(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">Të gjitha tipet</option>
-              <option value="info">Informacion</option>
-              <option value="success">Sukses</option>
-              <option value="warning">Paralajmërim</option>
-              <option value="error">Gabim</option>
-              <option value="payment">Pagesë</option>
-              <option value="task">Detyrë</option>
-              <option value="contract">Kontratë</option>
-              <option value="employee">Punonjës</option>
+              <option value="all">{safeT('notifications.allTypes', 'Të gjitha tipet')}</option>
+              <option value="info">{safeT('notifications.types.info', 'Informacion')}</option>
+              <option value="success">{safeT('notifications.types.success', 'Sukses')}</option>
+              <option value="warning">{safeT('notifications.types.warning', 'Paralajmërim')}</option>
+              <option value="error">{safeT('notifications.types.error', 'Gabim')}</option>
+              <option value="payment">{safeT('notifications.types.payment', 'Pagesë')}</option>
+              <option value="task">{safeT('notifications.types.task', 'Detyrë')}</option>
+              <option value="contract">{safeT('notifications.types.contract', 'Kontratë')}</option>
+              <option value="employee">{safeT('notifications.types.employee', 'Punonjës')}</option>
             </select>
 
             <select
@@ -298,9 +312,9 @@ const NotificationsPage = () => {
               onChange={(e) => setFilterRead(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">Të gjitha</option>
-              <option value="read">E lexuara</option>
-              <option value="unread">E palexuara</option>
+              <option value="all">{safeT('notifications.all', 'Të gjitha')}</option>
+              <option value="read">{safeT('notifications.read', 'E lexuara')}</option>
+              <option value="unread">{safeT('notifications.unread', 'E palexuara')}</option>
             </select>
           </div>
 
@@ -313,14 +327,14 @@ const NotificationsPage = () => {
                   className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
                   <Trash2 size={16} />
-                  Fshi të zgjedhurat ({selectedNotifications.length})
+                  {safeT('notifications.deleteSelected', 'Fshi të zgjedhurat')} ({selectedNotifications.length})
                 </button>
                 <button
                   onClick={exportToCSV}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
                   <Download size={16} />
-                  Eksporto CSV
+                  {safeT('notifications.exportCSV', 'Eksporto CSV')}
                 </button>
               </>
             )}
@@ -329,14 +343,14 @@ const NotificationsPage = () => {
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <FileText size={16} />
-              Eksporto PDF
+                                {safeT('notifications.exportPDF', 'Eksporto PDF')}
             </button>
             <button
               onClick={testEmailNotification}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
             >
               <Bell size={16} />
-              Test Email
+                                {safeT('notifications.testEmail', 'Test Email')}
             </button>
           </div>
         </div>
@@ -347,7 +361,7 @@ const NotificationsPage = () => {
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">
-              Njoftimet ({filteredNotifications.length})
+              {safeT('notifications.notifications', 'Njoftimet')} ({filteredNotifications.length})
             </h2>
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2">
@@ -357,14 +371,14 @@ const NotificationsPage = () => {
                   onChange={handleSelectAll}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-600">Zgjidh të gjitha</span>
+                <span className="text-sm text-gray-600">{safeT('notifications.selectAll', 'Zgjidh të gjitha')}</span>
               </label>
               <button
                 onClick={markAllAsRead}
                 className="flex items-center gap-2 px-3 py-1 text-sm bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors"
               >
                 <CheckCheck size={16} />
-                Shëno të gjitha si të lexuara
+                                  {safeT('notifications.markAllAsRead', 'Shëno të gjitha si të lexuara')}
               </button>
             </div>
           </div>
@@ -374,7 +388,7 @@ const NotificationsPage = () => {
           {filteredNotifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="mx-auto text-gray-400 mb-4" size={48} />
-              <p className="text-gray-500">Nuk ka njoftime për të shfaqur</p>
+              <p className="text-gray-500">{safeT('notifications.noNotifications', 'Nuk ka njoftime për të shfaqur')}</p>
             </div>
           ) : (
             filteredNotifications.map((notification) => (
@@ -401,7 +415,7 @@ const NotificationsPage = () => {
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
                         }`}>
-                          {notification.isRead ? 'E lexuar' : 'E palexuar'}
+                          {notification.isRead ? safeT('notifications.status.read', 'E lexuar') : safeT('notifications.status.unread', 'E palexuar')}
                         </span>
                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                           {getNotificationTypeLabel(notification.type)}
@@ -411,7 +425,7 @@ const NotificationsPage = () => {
                       <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span>{formatTimeAgo(notification.createdAt)}</span>
                         {notification.category && (
-                          <span>Kategoria: {notification.category}</span>
+                          <span>{safeT('notifications.category', 'Kategoria')}: {notification.category}</span>
                         )}
                       </div>
                     </div>
@@ -423,7 +437,7 @@ const NotificationsPage = () => {
                         className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors"
                       >
                         <Check size={16} />
-                        Shëno si të lexuar
+                        {safeT('notifications.markAsRead', 'Shëno si të lexuar')}
                       </button>
                     )}
                     <button
@@ -431,7 +445,7 @@ const NotificationsPage = () => {
                       className="flex items-center gap-1 px-3 py-1 text-sm bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors"
                     >
                       <Trash2 size={16} />
-                      Fshi
+                      {safeT('notifications.delete', 'Fshi')}
                     </button>
                   </div>
                 </div>
