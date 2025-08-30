@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { 
   BarChart3, 
@@ -39,6 +40,18 @@ const CHART_COLORS = [
 
 const NotificationAnalytics = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
+  
+  // Safe translation function with fallback
+  const safeT = (key, fallback = key) => {
+    try {
+      const result = t(key);
+      return result && result !== key ? result : fallback;
+    } catch (error) {
+      console.error(`Translation error for key "${key}":`, error);
+      return fallback;
+    }
+  };
   const [analytics, setAnalytics] = useState({
     totalNotifications: 0,
     unreadNotifications: 0,
@@ -69,11 +82,11 @@ const NotificationAnalytics = () => {
       if (response.data.success) {
         setAnalytics(response.data.data);
       } else {
-        throw new Error(response.data.error || 'Gabim në marrjen e të dhënave');
+        throw new Error(response.data.error || safeT('analytics.messages.dataLoadError', 'Gabim në marrjen e të dhënave'));
       }
     } catch (error) {
       console.error('Gabim në marrjen e analytics:', error);
-      setError(error.message || 'Gabim në marrjen e analytics');
+      setError(error.message || safeT('analytics.messages.dataLoadError', 'Gabim në marrjen e analytics'));
     } finally {
       setLoading(false);
     }
@@ -106,14 +119,14 @@ const NotificationAnalytics = () => {
   // Get notification type label
   const getNotificationTypeLabel = (type) => {
     const labels = {
-      'contract': 'Kontratat',
-      'payment': 'Pagesat',
-      'task': 'Detyrat',
-      'work_hours': 'Orët e punës',
-      'system': 'Sistemi',
-      'reminder': 'Kujtues',
-      'alert': 'Alarm',
-      'info': 'Informacion'
+      'contract': safeT('analytics.notificationTypes.contracts', 'Kontratat'),
+      'payment': safeT('analytics.notificationTypes.payments', 'Pagesat'),
+      'task': safeT('analytics.notificationTypes.tasks', 'Detyrat'),
+      'work_hours': safeT('analytics.notificationTypes.workHours', 'Orët e punës'),
+      'system': safeT('analytics.notificationTypes.system', 'Sistemi'),
+      'reminder': safeT('analytics.notificationTypes.reminder', 'Kujtues'),
+      'alert': safeT('analytics.notificationTypes.alert', 'Alarm'),
+      'info': safeT('analytics.notificationTypes.info', 'Informacion')
     };
     return labels[type] || type;
   };
@@ -148,7 +161,7 @@ const NotificationAnalytics = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar analytics..." />
+        <LoadingSpinner fullScreen={true} size="xl" text={safeT('analytics.loading', 'Duke ngarkuar analytics...')} />
       </div>
     );
   }
@@ -158,11 +171,11 @@ const NotificationAnalytics = () => {
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Gabim</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">{safeT('analytics.error', 'Gabim')}</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <Button onClick={refreshData} className="bg-red-600 hover:bg-red-700">
             <RefreshCw className="w-4 h-4 mr-2" />
-            Provoni përsëri
+            {safeT('analytics.tryAgain', 'Provoni përsëri')}
           </Button>
         </div>
       </div>
@@ -183,10 +196,10 @@ const NotificationAnalytics = () => {
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
-                  Analytics i Njoftimeve
+                  {safeT('analytics.title', 'Analytics i Njoftimeve')}
                 </h1>
                 <p className="text-gray-600 text-sm md:text-base">
-                  Statistikat dhe insights për sistemin e njoftimeve
+                  {safeT('analytics.subtitle', 'Statistikat dhe insights për sistemin e njoftimeve')}
                 </p>
               </div>
             </div>
@@ -199,7 +212,7 @@ const NotificationAnalytics = () => {
                   size="sm"
                 >
                   {showUnreadOnly ? <EyeOff size={16} /> : <Eye size={16} />}
-                  {showUnreadOnly ? 'Të gjitha' : 'Vetëm të palexuara'}
+                  {showUnreadOnly ? safeT('analytics.all', 'Të gjitha') : safeT('analytics.unreadOnly', 'Vetëm të palexuara')}
                 </Button>
               </div>
               
@@ -208,10 +221,10 @@ const NotificationAnalytics = () => {
                 onChange={(e) => setDateRange(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="1d">1 Ditë</option>
-                <option value="7d">7 Ditë</option>
-                <option value="30d">30 Ditë</option>
-                <option value="90d">90 Ditë</option>
+                <option value="1d">{safeT('analytics.dateRanges.1d', '1 Ditë')}</option>
+                <option value="7d">{safeT('analytics.dateRanges.7d', '7 Ditë')}</option>
+                <option value="30d">{safeT('analytics.dateRanges.30d', '30 Ditë')}</option>
+                <option value="90d">{safeT('analytics.dateRanges.90d', '90 Ditë')}</option>
               </select>
               
               <Button onClick={refreshData} variant="outline" size="sm">
@@ -227,9 +240,9 @@ const NotificationAnalytics = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600 mb-1">Total Njoftime</p>
+                  <p className="text-sm font-medium text-blue-600 mb-1">{safeT('analytics.metrics.totalNotifications', 'Total Njoftime')}</p>
                   <p className="text-3xl font-bold text-blue-900">{analytics.totalNotifications}</p>
-                  <p className="text-xs text-blue-600 mt-1">Gjithsej</p>
+                  <p className="text-xs text-blue-600 mt-1">{safeT('analytics.metrics.total', 'Gjithsej')}</p>
                 </div>
                 <div className="p-3 bg-blue-200 rounded-full">
                   <Bell className="w-6 h-6 text-blue-700" />
@@ -242,9 +255,9 @@ const NotificationAnalytics = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600 mb-1">Të Lexuara</p>
+                  <p className="text-sm font-medium text-green-600 mb-1">{safeT('analytics.metrics.read', 'Të Lexuara')}</p>
                   <p className="text-3xl font-bold text-green-900">{analytics.readNotifications}</p>
-                  <p className="text-xs text-green-600 mt-1">Sukses</p>
+                  <p className="text-xs text-green-600 mt-1">{safeT('analytics.metrics.success', 'Sukses')}</p>
                 </div>
                 <div className="p-3 bg-green-200 rounded-full">
                   <CheckCircle className="w-6 h-6 text-green-700" />
@@ -257,9 +270,9 @@ const NotificationAnalytics = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-yellow-600 mb-1">Të Palexuara</p>
+                  <p className="text-sm font-medium text-yellow-600 mb-1">{safeT('analytics.metrics.unread', 'Të Palexuara')}</p>
                   <p className="text-3xl font-bold text-yellow-900">{analytics.unreadNotifications}</p>
-                  <p className="text-xs text-yellow-600 mt-1">Kërkojnë vëmendje</p>
+                  <p className="text-xs text-yellow-600 mt-1">{safeT('analytics.metrics.needAttention', 'Kërkojnë vëmendje')}</p>
                 </div>
                 <div className="p-3 bg-yellow-200 rounded-full">
                   <EyeOff className="w-6 h-6 text-yellow-700" />
@@ -272,9 +285,9 @@ const NotificationAnalytics = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600 mb-1">Engagement</p>
+                  <p className="text-sm font-medium text-purple-600 mb-1">{safeT('analytics.metrics.engagement', 'Engagement')}</p>
                   <p className="text-3xl font-bold text-purple-900">{analytics.engagementRate}%</p>
-                  <p className="text-xs text-purple-600 mt-1">Rate</p>
+                  <p className="text-xs text-purple-600 mt-1">{safeT('analytics.metrics.rate', 'Rate')}</p>
                 </div>
                 <div className="p-3 bg-purple-200 rounded-full">
                   <TrendingUp className="w-6 h-6 text-purple-700" />
@@ -291,7 +304,7 @@ const NotificationAnalytics = () => {
             <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
               <CardTitle className="flex items-center gap-2 text-blue-800">
                 <TrendingUp className="w-5 h-5" />
-                Aktiviteti Ditor
+                {safeT('analytics.charts.dailyActivity', 'Aktiviteti Ditor')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -307,8 +320,8 @@ const NotificationAnalytics = () => {
                       borderRadius: '8px'
                     }}
                   />
-                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Total" />
-                  <Bar dataKey="unread" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Të palexuara" />
+                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} name={safeT('analytics.chartLabels.total', 'Total')} />
+                  <Bar dataKey="unread" fill="#f59e0b" radius={[4, 4, 0, 0]} name={safeT('analytics.chartLabels.unread', 'Të palexuara')} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -319,7 +332,7 @@ const NotificationAnalytics = () => {
             <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
               <CardTitle className="flex items-center gap-2 text-green-800">
                 <PieChart className="w-5 h-5" />
-                Shpërndarja sipas Llojit
+                {safeT('analytics.charts.typeDistribution', 'Shpërndarja sipas Llojit')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -356,7 +369,7 @@ const NotificationAnalytics = () => {
           <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100">
             <CardTitle className="flex items-center gap-2 text-purple-800">
               <BarChart3 className="w-5 h-5" />
-              Llojet më të Popullarizuara
+              {safeT('analytics.charts.popularTypes', 'Llojet më të Popullarizuara')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
@@ -378,7 +391,7 @@ const NotificationAnalytics = () => {
                         {getNotificationTypeLabel(type.name)}
                       </div>
                       <div className="text-xs text-blue-600 mt-1">
-                        {type.percentage}% e totalit
+                        {type.percentage}% {safeT('analytics.chartLabels.percentageOfTotal', 'e totalit')}
                       </div>
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -396,7 +409,7 @@ const NotificationAnalytics = () => {
             <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100">
               <CardTitle className="flex items-center gap-2 text-indigo-800">
                 <Activity className="w-5 h-5" />
-                Aktiviteti i Fundit
+                {safeT('analytics.charts.recentActivity', 'Aktiviteti i Fundit')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -425,25 +438,25 @@ const NotificationAnalytics = () => {
             <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100">
               <CardTitle className="flex items-center gap-2 text-orange-800">
                 <Settings className="w-5 h-5" />
-                Performanca & Insights
+                {safeT('analytics.charts.performance', 'Performanca & Insights')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6">
                 {/* Email Performance */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-800">Performanca e Email-ve</h3>
+                  <h3 className="font-semibold text-gray-800">{safeT('analytics.performance.emailPerformance', 'Performanca e Email-ve')}</h3>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Email të dërguar</span>
-                      <span className="font-semibold text-green-600">{analytics.emailSent}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Email të dështuar</span>
-                      <span className="font-semibold text-red-600">{analytics.emailFailed}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Suksesi</span>
+                                              <span className="text-gray-600">{safeT('analytics.performance.emailsSent', 'Email të dërguar')}</span>
+                        <span className="font-semibold text-green-600">{analytics.emailSent}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">{safeT('analytics.performance.emailsFailed', 'Email të dështuar')}</span>
+                        <span className="font-semibold text-red-600">{analytics.emailFailed}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">{safeT('analytics.performance.success', 'Suksesi')}</span>
                       <span className="font-semibold text-green-600">
                         {analytics.emailSent > 0 ? ((analytics.emailSent / (analytics.emailSent + analytics.emailFailed)) * 100).toFixed(1) : 0}%
                       </span>
@@ -453,37 +466,37 @@ const NotificationAnalytics = () => {
 
                 {/* Response Time */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-800">Koha e Përgjigjes</h3>
+                  <h3 className="font-semibold text-gray-800">{safeT('analytics.performance.responseTime', 'Koha e Përgjigjes')}</h3>
                   <div className="flex items-center gap-2">
                     <Clock className="w-5 h-5 text-blue-600" />
                     <span className="text-2xl font-bold text-blue-600">{analytics.averageResponseTime}</span>
-                    <span className="text-gray-600">min mesatarisht</span>
+                    <span className="text-gray-600">{safeT('analytics.performance.averageMinutes', 'min mesatarisht')}</span>
                   </div>
                 </div>
 
                 {/* Insights */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-800">Insights</h3>
+                  <h3 className="font-semibold text-gray-800">{safeT('analytics.performance.insights', 'Insights')}</h3>
                   <div className="space-y-2">
                     <div className="p-3 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-blue-800">
-                        <strong>💡</strong> {analytics.topNotificationTypes[0]?.name ? 
-                          `${getNotificationTypeLabel(analytics.topNotificationTypes[0].name)} është lloji më i popullarizuar` : 
-                          'Sistemi po funksionon mirë'}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-green-50 rounded-lg">
-                      <p className="text-sm text-green-800">
-                        <strong>✅</strong> Engagement rate është {analytics.engagementRate}%
-                      </p>
-                    </div>
-                    {analytics.unreadNotifications > 0 && (
-                      <div className="p-3 bg-orange-50 rounded-lg">
-                        <p className="text-sm text-orange-800">
-                          <strong>⚠️</strong> {analytics.unreadNotifications} njoftime janë ende të palexuara
+                                              <p className="text-sm text-blue-800">
+                          <strong>💡</strong> {analytics.topNotificationTypes[0]?.name ? 
+                            `${getNotificationTypeLabel(analytics.topNotificationTypes[0].name)} ${safeT('analytics.insights.mostPopular', 'është lloji më i popullarizuar')}` : 
+                            safeT('analytics.insights.systemWorkingWell', 'Sistemi po funksionon mirë')}
                         </p>
                       </div>
-                    )}
+                      <div className="p-3 bg-green-50 rounded-lg">
+                        <p className="text-sm text-green-800">
+                          <strong>✅</strong> {safeT('analytics.insights.engagementRate', 'Engagement rate është')} {analytics.engagementRate}%
+                        </p>
+                      </div>
+                      {analytics.unreadNotifications > 0 && (
+                        <div className="p-3 bg-orange-50 rounded-lg">
+                          <p className="text-sm text-orange-800">
+                            <strong>⚠️</strong> {analytics.unreadNotifications} {safeT('analytics.insights.notificationsUnread', 'njoftime janë ende të palexuara')}
+                          </p>
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>

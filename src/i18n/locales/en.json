@@ -89,6 +89,7 @@
     "reports": "Reports",
     "tasks": "Tasks",
     "notifications": "Notifications",
+    "analytics": "Analytics",
     "settings": "Settings",
     "logout": "Logout"
   },
@@ -1270,6 +1271,68 @@
       "deleteSelectedError": "Error deleting selected notifications",
       "testEmailSuccess": "Test notification sent successfully!",
       "testEmailError": "Error sending test notification"
+    }
+  },
+  "analytics": {
+    "title": "Notification Analytics",
+    "subtitle": "Statistics and insights for the notification system",
+    "loading": "Loading analytics...",
+    "error": "Error",
+    "tryAgain": "Try Again",
+    "all": "All",
+    "unreadOnly": "Unread Only",
+    "dateRanges": {
+      "1d": "1 Day",
+      "7d": "7 Days",
+      "30d": "30 Days",
+      "90d": "90 Days"
+    },
+    "metrics": {
+      "totalNotifications": "Total Notifications",
+      "total": "Total",
+      "read": "Read",
+      "success": "Success",
+      "unread": "Unread",
+      "needAttention": "Need Attention",
+      "engagement": "Engagement",
+      "rate": "Rate"
+    },
+    "charts": {
+      "dailyActivity": "Daily Activity",
+      "typeDistribution": "Distribution by Type",
+      "popularTypes": "Most Popular Types",
+      "recentActivity": "Recent Activity",
+      "performance": "Performance & Insights"
+    },
+    "chartLabels": {
+      "total": "Total",
+      "unread": "Unread",
+      "percentageOfTotal": "% of total"
+    },
+    "notificationTypes": {
+      "contracts": "Contracts",
+      "payments": "Payments",
+      "tasks": "Tasks",
+      "workHours": "Work Hours",
+      "system": "System",
+      "reminder": "Reminder",
+      "alert": "Alert",
+      "info": "Information"
+    },
+    "performance": {
+      "emailPerformance": "Email Performance",
+      "emailsSent": "Emails sent",
+      "emailsFailed": "Emails failed",
+      "success": "Success",
+      "responseTime": "Response Time",
+      "averageMinutes": "min average",
+      "insights": "Insights"
+    },
+    "insights": {
+      "mostPopular": "is the most popular type",
+      "systemWorkingWell": "System is working well",
+      "engagementRate": "Engagement rate is",
+      "notificationsUnread": "notifications are still unread"
     }
   }
 }

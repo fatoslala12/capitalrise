@@ -79,6 +79,7 @@
     "reports": "Raportet",
     "tasks": "Detyrat",
     "notifications": "Njoftimet",
+    "analytics": "Analytics",
     "settings": "Cilësimet",
     "logout": "Dil"
   },
@@ -1216,6 +1217,68 @@
       "deleteSelectedError": "Gabim në fshirjen e njoftimeve të zgjedhura",
       "testEmailSuccess": "Njoftimi test u dërgua me sukses!",
       "testEmailError": "Gabim në dërgimin e njoftimit test"
+    }
+  },
+  "analytics": {
+    "title": "Analytics i Njoftimeve",
+    "subtitle": "Statistikat dhe insights për sistemin e njoftimeve",
+    "loading": "Duke ngarkuar analytics...",
+    "error": "Gabim",
+    "tryAgain": "Provoni përsëri",
+    "all": "Të gjitha",
+    "unreadOnly": "Vetëm të palexuara",
+    "dateRanges": {
+      "1d": "1 Ditë",
+      "7d": "7 Ditë",
+      "30d": "30 Ditë",
+      "90d": "90 Ditë"
+    },
+    "metrics": {
+      "totalNotifications": "Total Njoftime",
+      "total": "Gjithsej",
+      "read": "Të Lexuara",
+      "success": "Sukses",
+      "unread": "Të Palexuara",
+      "needAttention": "Kërkojnë vëmendje",
+      "engagement": "Engagement",
+      "rate": "Rate"
+    },
+    "charts": {
+      "dailyActivity": "Aktiviteti Ditor",
+      "typeDistribution": "Shpërndarja sipas Llojit",
+      "popularTypes": "Llojet më të Popullarizuara",
+      "recentActivity": "Aktiviteti i Fundit",
+      "performance": "Performanca & Insights"
+    },
+    "chartLabels": {
+      "total": "Total",
+      "unread": "Të palexuara",
+      "percentageOfTotal": "% e totalit"
+    },
+    "notificationTypes": {
+      "contracts": "Kontratat",
+      "payments": "Pagesat",
+      "tasks": "Detyrat",
+      "workHours": "Orët e punës",
+      "system": "Sistemi",
+      "reminder": "Kujtues",
+      "alert": "Alarm",
+      "info": "Informacion"
+    },
+    "performance": {
+      "emailPerformance": "Performanca e Email-ve",
+      "emailsSent": "Email të dërguar",
+      "emailsFailed": "Email të dështuar",
+      "success": "Suksesi",
+      "responseTime": "Koha e Përgjigjes",
+      "averageMinutes": "min mesatarisht",
+      "insights": "Insights"
+    },
+    "insights": {
+      "mostPopular": "është lloji më i popullarizuar",
+      "systemWorkingWell": "Sistemi po funksionon mirë",
+      "engagementRate": "Engagement rate është",
+      "notificationsUnread": "njoftime janë ende të palexuara"
     }
   }
 }

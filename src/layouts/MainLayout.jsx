@@ -64,6 +64,7 @@ export default function MainLayout() {
     if (path.includes('/tasks')) return t('navigation.tasks');
     if (path.includes('/reports')) return t('navigation.reports');
     if (path.includes('/notifications')) return t('navigation.notifications');
+    if (path.includes('/analytics')) return t('navigation.analytics');
     // Fallback to original provided text if no key found
     return fallbackText;
   };
