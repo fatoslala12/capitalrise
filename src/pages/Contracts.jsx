@@ -31,20 +31,243 @@ export default function Contracts() {
     const style = document.createElement('style');
     style.textContent = `
       .contracts-container {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 100vw !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
         overflow-x: auto !important;
       }
       .contracts-table {
         width: 100% !important;
         min-width: 100% !important;
       }
-      @media (max-width: 768px) {
+      .contracts-table-container {
+        overflow-x: auto;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .contracts-table table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+      }
+      .contracts-table th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+        backdrop-filter: blur(10px);
+      }
+      .contracts-table th:first-child {
+        border-top-left-radius: 1rem;
+      }
+      .contracts-table th:last-child {
+        border-top-right-radius: 1rem;
+      }
+      .contracts-table tr:last-child td:first-child {
+        border-bottom-left-radius: 1rem;
+      }
+      .contracts-table tr:last-child td:last-child {
+        border-bottom-right-radius: 1rem;
+      }
+      .contracts-table td {
+        border-bottom: 1px solid #e5e7eb;
+        transition: all 0.2s ease;
+      }
+      .contracts-table tr:hover td {
+        background-color: #f8fafc;
+        transform: translateY(-1px);
+      }
+      .contracts-table tr:last-child td {
+        border-bottom: none;
+      }
+      
+      /* Enhanced responsive breakpoints */
+      @media (min-width: 640px) {
         .contracts-container {
-          padding-left: 0.5rem !important;
-          padding-right: 0.5rem !important;
+          padding-left: 1rem !important;
+          padding-right: 1rem !important;
         }
+      }
+      @media (min-width: 768px) {
+        .contracts-container {
+          padding-left: 1.5rem !important;
+          padding-right: 1.5rem !important;
+        }
+      }
+      @media (min-width: 1024px) {
+        .contracts-container {
+          padding-left: 2rem !important;
+          padding-right: 2rem !important;
+        }
+      }
+      @media (min-width: 1280px) {
+        .contracts-container {
+          padding-left: 3rem !important;
+          padding-right: 3rem !important;
+        }
+      }
+      @media (min-width: 1536px) {
+        .contracts-container {
+          padding-left: 4rem !important;
+          padding-right: 4rem !important;
+        }
+      }
+      
+      /* Smooth animations */
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      /* Enhanced card shadows */
+      .enhanced-shadow {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: box-shadow 0.3s ease;
+      }
+      .enhanced-shadow:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      
+      /* Gradient backgrounds */
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .gradient-bg-blue {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      }
+      .gradient-bg-green {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      }
+      .gradient-bg-purple {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      }
+      
+      /* Enhanced buttons */
+      .btn-modern {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      .btn-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+      }
+      .btn-modern:active {
+        transform: translateY(0);
+      }
+      
+      /* Enhanced form inputs */
+      .input-modern {
+        padding: 0.875rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        background: white;
+      }
+      .input-modern:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        transform: translateY(-1px);
+      }
+      
+      /* Status badges */
+      .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+      }
+      .status-badge:hover {
+        transform: scale(1.05);
+      }
+      
+      /* Progress bars */
+      .progress-bar {
+        width: 100%;
+        height: 0.5rem;
+        background: #e5e7eb;
+        border-radius: 9999px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+        border-radius: 9999px;
+        transition: width 0.3s ease;
+      }
+      
+      /* Enhanced table */
+      .table-modern {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .table-modern th {
+        padding: 1.25rem 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #1e40af;
+        border-bottom: 2px solid #e5e7eb;
+      }
+      .table-modern td {
+        padding: 1.25rem 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f3f4f6;
+      }
+      .table-modern tr:hover {
+        background: #f8fafc;
+      }
+      
+      /* Responsive grid */
+      .responsive-grid {
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+      
+      /* Enhanced modal */
+      .modal-modern {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+      }
+      .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+      }
+      .modal-body {
+        padding: 2rem;
+      }
+      
+      /* Loading states */
+      .loading-shimmer {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
       }
     `;
     document.head.appendChild(style);
@@ -912,245 +1135,316 @@ export default function Contracts() {
   }
 
   return (
-    <div className="contracts-container w-full min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-12">
+    <div className="contracts-container w-full min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-6 lg:py-8 xl:py-12 space-y-8 lg:space-y-12">
       {/* Toast Notification */}
       {showToast.show && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
-          showToast.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+        <div className={`fixed top-6 right-6 z-50 p-4 rounded-xl shadow-2xl animate-fade-in ${
+          showToast.type === "success" ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white" : "bg-gradient-to-r from-red-500 to-rose-600 text-white"
         }`}>
-          {showToast.message}
+          <div className="flex items-center gap-3">
+            <span className="text-xl">{showToast.type === "success" ? "✅" : "❌"}</span>
+            <span className="font-medium">{showToast.message}</span>
+          </div>
         </div>
       )}
 
       {/* Confirmation Dialog */}
       {confirmDialog.show && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl animate-fade-in">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="modal-modern max-w-md w-full animate-fade-in">
+            <div className="modal-header">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold">{confirmDialog.title}</h3>
               </div>
-              <h3 className="text-xl font-bold text-gray-900">{confirmDialog.title}</h3>
             </div>
-            <p className="text-gray-600 mb-6 whitespace-pre-line">{confirmDialog.message}</p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={confirmDialog.onCancel}
-                className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                {t('contracts.cancel')}
-              </button>
-              <button
-                onClick={confirmDialog.onConfirm}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                {t('contracts.actions.confirm')}
-              </button>
+            <div className="modal-body">
+              <p className="text-gray-600 mb-6 whitespace-pre-line">{confirmDialog.message}</p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={confirmDialog.onCancel}
+                  className="btn-modern bg-gray-100 text-gray-700 hover:bg-gray-200"
+                >
+                  {t('contracts.cancel')}
+                </button>
+                <button
+                  onClick={confirmDialog.onConfirm}
+                  className="btn-modern gradient-bg text-white"
+                >
+                  {t('contracts.actions.confirm')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* HEADER MODERN */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 bg-gradient-to-r from-blue-50 to-purple-100 rounded-xl sm:rounded-2xl shadow-lg px-4 sm:px-6 lg:px-8 py-4 sm:py-4 mb-6 sm:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
-        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 sm:p-3 shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-8 h-8 sm:w-10 sm:h-10">
+      {/* ENHANCED HEADER */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-8 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl lg:rounded-3xl enhanced-shadow px-6 lg:px-8 xl:px-12 py-8 lg:py-12 border border-blue-200/20 animate-fade-in w-full">
+        <div className="flex-shrink-0 bg-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="w-10 h-10 lg:w-12 lg:h-12">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
           </svg>
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('contracts.title')}</h2>
-          <div className="text-sm sm:text-base lg:text-lg font-medium text-purple-700">{t('contracts.subtitle')}</div>
+          <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-white tracking-tight mb-3 drop-shadow-lg">
+            {t('contracts.title')}
+          </h1>
+          <p className="text-lg lg:text-xl xl:text-2xl font-medium text-blue-100 leading-relaxed">
+            {t('contracts.subtitle')}
+          </p>
+        </div>
+        <div className="flex-shrink-0">
+          <button
+            onClick={openAddModal}
+            className="btn-modern gradient-bg-green text-white text-lg px-8 py-4 rounded-2xl shadow-2xl hover:shadow-3xl"
+          >
+            <span className="text-2xl">➕</span> 
+            <span className="hidden lg:inline">{t('contracts.addNewContract')}</span>
+            <span className="lg:hidden">{t('contracts.addNewContract')}</span>
+          </button>
         </div>
       </div>
 
-      {/* Add Contract Button */}
-      <div className="flex justify-center sm:justify-end mb-6">
-        <button
-          onClick={openAddModal}
-          className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2"
-        >
-          <span className="text-lg sm:text-xl">➕</span> 
-          <span className="text-sm sm:text-base">{t('contracts.addNewContract')}</span>
-        </button>
-      </div>
 
-      {/* CONTRACTS LIST */}
-      <div className="contracts-container bg-gradient-to-br from-white via-blue-50 to-purple-50 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 rounded-xl sm:rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
-          <h3 className="text-xl sm:text-2xl font-bold text-blue-900 flex items-center gap-2">
-            📋 {t('contracts.contractsList')}
-            <span className="text-sm sm:text-lg text-gray-600">({filteredAndSortedContracts.length} {t('contracts.contracts')})</span>
-          </h3>
-          
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full lg:w-auto">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={selectAll}
-                onChange={handleSelectAll}
-                className="w-4 h-4"
-              />
-              {t('contracts.selectAll')}
-            </label>
-            {selectedContracts.length > 0 && (
-              <>
-                <button
-                  onClick={handleBulkDelete}
-                  disabled={loadingStates.bulkDelete}
-                  className="w-full sm:w-auto bg-red-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
-                >
-                  {loadingStates.bulkDelete ? (
-                    <>
-                      <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
-                      {t('contracts.actions.deleting')}
-                    </>
-                  ) : (
-                    <>
-                      🗑️ {t('contracts.actions.delete')} ({selectedContracts.length})
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={() => handleExport('excel')}
-                  disabled={loadingStates.export}
-                  className="w-full sm:w-auto bg-green-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
-                >
-                  {loadingStates.export ? (
-                    <>
-                      <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
-                      {t('contracts.actions.exporting')}
-                    </>
-                  ) : (
-                    `📊 ${t('contracts.actions.export')} Excel`
-                  )}
-                </button>
-                <button
-                  onClick={() => handleExport('pdf')}
-                  disabled={loadingStates.export}
-                  className="w-full sm:w-auto bg-blue-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
-                >
-                  {loadingStates.export ? (
-                    <>
-                      <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
-                      {t('contracts.actions.exporting')}
-                    </>
-                  ) : (
-                    `📄 ${t('contracts.actions.export')} PDF`
-                  )}
-                </button>
-              </>
-            )}
+
+      {/* ENHANCED CONTRACTS LIST */}
+      <div className="bg-white rounded-3xl enhanced-shadow border border-gray-100 animate-fade-in w-full overflow-hidden">
+        {/* Header Section */}
+        <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 lg:px-8 py-6 lg:py-8 border-b border-gray-200">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-2xl shadow-lg">
+                <span className="text-2xl lg:text-3xl">📋</span>
+              </div>
+              <div>
+                <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 mb-2">
+                  {t('contracts.contractsList')}
+                </h2>
+                <p className="text-lg text-gray-600">
+                  {filteredAndSortedContracts.length} {t('contracts.contracts')} found
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+              <label className="flex items-center gap-3 bg-white px-4 py-3 rounded-xl border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAll}
+                  className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <span className="font-medium text-gray-700">{t('contracts.selectAll')}</span>
+              </label>
+              
+              {selectedContracts.length > 0 && (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={handleBulkDelete}
+                    disabled={loadingStates.bulkDelete}
+                    className="btn-modern bg-red-500 hover:bg-red-600 text-white disabled:opacity-50"
+                  >
+                    {loadingStates.bulkDelete ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        {t('contracts.actions.deleting')}
+                      </>
+                    ) : (
+                      <>
+                        🗑️ {t('contracts.actions.delete')} ({selectedContracts.length})
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleExport('excel')}
+                    disabled={loadingStates.export}
+                    className="btn-modern bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
+                  >
+                    {loadingStates.export ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        {t('contracts.actions.exporting')}
+                      </>
+                    ) : (
+                      <>
+                        📊 {t('contracts.actions.export')} Excel
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleExport('pdf')}
+                    disabled={loadingStates.export}
+                    className="btn-modern bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
+                  >
+                    {loadingStates.export ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        {t('contracts.actions.exporting')}
+                      </>
+                    ) : (
+                      <>
+                        📄 {t('contracts.actions.export')} PDF
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-                {/* Search and Filter */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <div className="sm:col-span-2">
-            <input
-              type="text"
-              placeholder={t('contracts.searchContracts')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 sm:p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm text-sm sm:text-base"
-            />
-          </div>
-          
-          <div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full p-2 sm:p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 shadow-sm text-sm sm:text-base"
-            >
-              <option value="all">{t('contracts.filters.allStatuses')}</option>
-              <option value="draft">{t('contracts.statuses.draft')}</option>
-              <option value="cancelled">{t('contracts.statuses.cancelled')}</option>
-              <option value="inProgress">{t('contracts.statuses.inProgress')}</option>
-              <option value="suspended">{t('contracts.statuses.suspended')}</option>
-              <option value="closed">{t('contracts.statuses.closed')}</option>
-              <option value="closedWithDelay">{t('contracts.statuses.closedWithDelay')}</option>
-            </select>
-          </div>
+        {/* Enhanced Search and Filter Section */}
+        <div className="px-6 lg:px-8 py-6 bg-white border-b border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 lg:gap-6">
+            {/* Search Input */}
+            <div className="md:col-span-2 xl:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🔍 {t('contracts.searchContracts')}
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={t('contracts.searchContracts')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="input-modern w-full pl-12 pr-4 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400"
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            {/* Status Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                📊 {t('contracts.filters.allStatuses')}
+              </label>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="input-modern w-full bg-gray-50 border-gray-200 focus:bg-white focus:border-purple-400"
+              >
+                <option value="all">{t('contracts.filters.allStatuses')}</option>
+                <option value="draft">{t('contracts.statuses.draft')}</option>
+                <option value="cancelled">{t('contracts.statuses.cancelled')}</option>
+                <option value="inProgress">{t('contracts.statuses.inProgress')}</option>
+                <option value="suspended">{t('contracts.statuses.suspended')}</option>
+                <option value="closed">{t('contracts.statuses.closed')}</option>
+                <option value="closedWithDelay">{t('contracts.statuses.closedWithDelay')}</option>
+              </select>
+            </div>
 
-          <div>
-            <select
-              value={filterContractType}
-              onChange={(e) => setFilterContractType(e.target.value)}
-              className="w-full p-2 sm:p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm text-sm sm:text-base"
-            >
-              <option value="all">{t('contracts.filters.allTypes')}</option>
-              <option value="day_work">{t('contracts.contractTypes.dayWork')}</option>
-              <option value="price_work">{t('contracts.contractTypes.priceWork')}</option>
-            </select>
-          </div>
-          
-          <div className="sm:col-span-2 lg:col-span-1">
-            <select
-              value={`${sortBy}-${sortOrder}`}
-              onChange={(e) => {
-                const [field, order] = e.target.value.split('-');
-                setSortBy(field);
-                setSortOrder(order);
-              }}
-              className="w-full p-2 sm:p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm text-sm sm:text-base"
-            >
-              <option value="start_date-desc">{t('contracts.startDateNewest')}</option>
+            {/* Contract Type Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🏗️ {t('contracts.filters.allTypes')}
+              </label>
+              <select
+                value={filterContractType}
+                onChange={(e) => setFilterContractType(e.target.value)}
+                className="input-modern w-full bg-gray-50 border-gray-200 focus:bg-white focus:border-green-400"
+              >
+                <option value="all">{t('contracts.filters.allTypes')}</option>
+                <option value="day_work">{t('contracts.contractTypes.dayWork')}</option>
+                <option value="price_work">{t('contracts.contractTypes.priceWork')}</option>
+              </select>
+            </div>
+            
+            {/* Sort Options */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🔄 {t('contracts.sortBy')}
+              </label>
+              <select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-');
+                  setSortBy(field);
+                  setSortOrder(order);
+                }}
+                className="input-modern w-full bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400"
+              >
+                <option value="start_date-desc">{t('contracts.startDateNewest')}</option>
                 <option value="start_date-asc">{t('contracts.startDateOldest')}</option>
                 <option value="contract_value-desc">{t('contracts.valueHighest')}</option>
                 <option value="contract_value-asc">{t('contracts.valueLowest')}</option>
                 <option value="company-asc">{t('contracts.companyAZ')}</option>
                 <option value="company-desc">{t('contracts.companyZA')}</option>
-            </select>
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Pagination */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
-          <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
-            {t('contracts.showing')} {((currentPage - 1) * 10) + 1} - {Math.min(currentPage * 10, filteredAndSortedContracts.length)} {t('contracts.of')} {filteredAndSortedContracts.length} {t('contracts.contracts')}
-          </div>
-          
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="px-2 sm:px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50 text-sm"
-            >
-              ← {t('contracts.previous')}
-            </button>
-            <span className="px-2 sm:px-3 py-1 bg-blue-500 text-white rounded text-sm">
-              {currentPage}
-            </span>
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredAndSortedContracts.length / 10), prev + 1))}
-              disabled={currentPage >= Math.ceil(filteredAndSortedContracts.length / 10)}
-              className="px-2 sm:px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50 text-sm"
-            >
-              {t('contracts.next')} →
-            </button>
+        {/* Enhanced Pagination */}
+        <div className="px-6 lg:px-8 py-4 bg-gray-50 border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-gray-600 text-center sm:text-left">
+              <span className="font-medium">
+                {t('contracts.showing')} {((currentPage - 1) * 10) + 1} - {Math.min(currentPage * 10, filteredAndSortedContracts.length)} {t('contracts.of')} {filteredAndSortedContracts.length} {t('contracts.contracts')}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="btn-modern bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                {t('contracts.previous')}
+              </button>
+              
+              <div className="flex items-center gap-1">
+                <span className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium text-sm">
+                  {currentPage}
+                </span>
+                <span className="text-gray-500 text-sm">
+                  / {Math.ceil(filteredAndSortedContracts.length / 10)}
+                </span>
+              </div>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredAndSortedContracts.length / 10), prev + 1))}
+                disabled={currentPage >= Math.ceil(filteredAndSortedContracts.length / 10)}
+                className="btn-modern bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t('contracts.next')}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Responsive Table Container */}
-        <div className="contracts-table overflow-x-auto rounded-lg shadow-lg w-full">
-          <div className="min-w-full bg-white">
+        {/* Enhanced Table Container */}
+        <div className="contracts-table-container w-full">
+          <div className="min-w-full">
             {/* Desktop Table */}
-            <table className="hidden lg:table min-w-full">
-              <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-sm sm:text-base font-bold">
+            <table className="hidden lg:table min-w-full table-modern">
+              <thead>
                 <tr>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.select')}</th>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.contractNumberHeader')}</th>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.type')}</th>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.locationHeader')}</th>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.company')}</th>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.value')}</th>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.spent')}</th>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.profit')}</th>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.statusHeader')}</th>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.progressHeader')}</th>
-                  <th className="py-3 sm:py-4 px-2 sm:px-4 text-center">{t('contracts.actionsHeader')}</th>
+                  <th className="text-center">{t('contracts.select')}</th>
+                  <th className="text-center">{t('contracts.contractNumberHeader')}</th>
+                  <th className="text-center">{t('contracts.type')}</th>
+                  <th className="text-center">{t('contracts.locationHeader')}</th>
+                  <th className="text-center">{t('contracts.company')}</th>
+                  <th className="text-center">{t('contracts.value')}</th>
+                  <th className="text-center">{t('contracts.spent')}</th>
+                  <th className="text-center">{t('contracts.profit')}</th>
+                  <th className="text-center">{t('contracts.statusHeader')}</th>
+                  <th className="text-center">{t('contracts.progressHeader')}</th>
+                  <th className="text-center">{t('contracts.actionsHeader')}</th>
                 </tr>
               </thead>
             <tbody>
@@ -1161,21 +1455,23 @@ export default function Contracts() {
                 const profitMargin = vlera > 0 ? (fitimi / vlera) * 100 : 0;
                 const progres = calculateProgress(c.start_date, c.finish_date);
                 return (
-                  <tr key={c.id || index} className="text-center hover:bg-purple-50 transition-all duration-200 transform hover:scale-[1.01]">
-                    <td className="py-4 px-4 align-middle">
+                  <tr key={c.id || index} className="text-center hover:bg-blue-50 transition-all duration-300">
+                    <td className="align-middle">
                       <input
                         type="checkbox"
                         checked={selectedContracts.includes(c.id)}
                         onChange={() => handleSelectContract(c.id)}
-                        className="w-4 h-4"
+                        className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                       />
                     </td>
-                    <td className="py-4 px-4 align-middle font-bold text-blue-900">
-                      <Link to={`/admin/contracts/${c.contract_number}`} className="underline hover:text-purple-700 transition-colors">{c.contract_number}</Link>
+                    <td className="align-middle">
+                      <Link to={`/admin/contracts/${c.contract_number}`} className="font-bold text-blue-900 hover:text-purple-700 transition-colors underline decoration-2 underline-offset-2">
+                        #{c.contract_number}
+                      </Link>
                     </td>
-                    <td className="py-4 px-4 align-middle">
-                      <div className="flex items-center justify-center gap-1">
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    <td className="align-middle">
+                      <div className="flex items-center justify-center">
+                        <span className={`status-badge ${
                           (c.contract_type || 'day_work') === 'price_work' 
                             ? 'bg-orange-100 text-orange-700 border border-orange-200' 
                             : 'bg-blue-100 text-blue-700 border border-blue-200'
@@ -1184,25 +1480,29 @@ export default function Contracts() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-4 align-middle font-semibold text-blue-700 underline cursor-pointer hover:text-blue-900 transition">
-                      <Link to={`/admin/contracts/${c.contract_number}`}>{c.site_name}</Link>
+                    <td className="align-middle">
+                      <Link to={`/admin/contracts/${c.contract_number}`} className="font-semibold text-blue-700 hover:text-blue-900 transition-colors underline decoration-2 underline-offset-2">
+                        📍 {c.site_name}
+                      </Link>
                     </td>
-                    <td className="py-4 px-4 align-middle font-semibold text-gray-800">{c.company}</td>
-                    <td className="py-4 px-4 align-middle font-bold text-blue-900">£{vlera.toFixed(2)}</td>
-                    <td className="py-4 px-4 align-middle font-bold text-purple-700">£{shpenzuar.toFixed(2)}</td>
-                    <td className={`py-4 px-4 align-middle font-bold ${getProfitColor(fitimi)}`}> 
+                    <td className="align-middle font-semibold text-gray-800">{c.company}</td>
+                    <td className="align-middle font-bold text-blue-900 text-lg">£{vlera.toFixed(2)}</td>
+                    <td className="align-middle font-bold text-purple-700 text-lg">£{shpenzuar.toFixed(2)}</td>
+                    <td className={`align-middle font-bold ${getProfitColor(fitimi)}`}> 
                       <div className="text-center">
                         <div className="text-lg">£{fitimi.toFixed(2)}</div>
-                        <div className="text-xs opacity-75">{profitMargin.toFixed(1)}%</div>
+                        <div className="text-xs opacity-75 bg-gray-100 px-2 py-1 rounded-full mt-1">
+                          {profitMargin.toFixed(1)}%
+                        </div>
                       </div>
                     </td>
-                    <td className="py-4 px-4 align-middle">
-                      <div className="flex items-center gap-2 justify-center">
+                    <td className="align-middle">
+                      <div className="flex flex-col items-center gap-3">
                         {(() => {
                           const statusStyle = getStatusStyle(c.status);
                           return (
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
-                              <span className="mr-1">{statusStyle.icon}</span>
+                            <span className={`status-badge ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
+                              <span>{statusStyle.icon}</span>
                               {getStatusDisplayText(c.status)}
                             </span>
                           );
@@ -1211,45 +1511,45 @@ export default function Contracts() {
                           value={getStatusTranslationKey(c.status)}
                           onChange={e => handleStatusChange(c.id, e.target.value)}
                           disabled={loadingStates.statusChange[c.id]}
-                          className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white disabled:opacity-50"
+                          className="input-modern text-sm px-3 py-2 disabled:opacity-50"
                         >
                           {CONTRACT_STATUSES.map(status => (
                             <option key={status} value={status}>{t(`contracts.statuses.${status}`)}</option>
                           ))}
                         </select>
                         {loadingStates.statusChange[c.id] && (
-                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                          <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                         )}
                       </div>
                     </td>
-                    <td className="py-4 px-4 align-middle">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${Math.min(100, Math.max(0, progres))}%` }}
-                        ></div>
+                    <td className="align-middle">
+                      <div className="space-y-2">
+                        <div className="progress-bar">
+                          <div 
+                            className="progress-fill"
+                            style={{ width: `${Math.min(100, Math.max(0, progres))}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">{progres.toFixed(0)}%</span>
                       </div>
-                      <span className="text-xs text-gray-600 mt-1">{progres.toFixed(0)}%</span>
                     </td>
-                    <td className="py-4 px-4 align-middle">
-                      <div className="flex gap-2 justify-center">
+                    <td className="align-middle">
+                      <div className="flex gap-3 justify-center">
                         <button
                           onClick={() => navigate(`/admin/contracts/${c.contract_number}`)}
-                          className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl"
-                          title="Shiko"
+                          className="btn-modern bg-blue-100 text-blue-700 hover:bg-blue-200 p-2"
+                          title={t('contracts.actions.view')}
                         >
                           👁️
                         </button>
                         <button
                           onClick={() => handleToggleStatus(c.contract_number)}
                           disabled={loadingStates.toggleStatus[c.contract_number]}
-                          className="text-purple-600 hover:text-purple-800 hover:scale-110 transition-all text-xl disabled:opacity-50 flex items-center gap-1"
+                          className="btn-modern bg-purple-100 text-purple-700 hover:bg-purple-200 p-2 disabled:opacity-50"
                           title="Toggle"
                         >
                           {loadingStates.toggleStatus[c.contract_number] ? (
-                            <>
-                              <div className="w-3 h-3 border border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                            </>
+                            <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
                           ) : (
                             '🔄'
                           )}
@@ -1257,13 +1557,11 @@ export default function Contracts() {
                         <button
                           onClick={() => handleDelete(c.contract_number)}
                           disabled={loadingStates.delete[c.contract_number]}
-                          className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl disabled:opacity-50 flex items-center gap-1"
-                          title="Fshi"
+                          className="btn-modern bg-red-100 text-red-700 hover:bg-red-200 p-2 disabled:opacity-50"
+                          title={t('contracts.actions.delete')}
                         >
                           {loadingStates.delete[c.contract_number] ? (
-                            <>
-                              <div className="w-3 h-3 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                            </>
+                            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
                           ) : (
                             '🗑️'
                           )}
@@ -1276,8 +1574,8 @@ export default function Contracts() {
             </tbody>
           </table>
           
-          {/* Mobile Card View */}
-          <div className="lg:hidden space-y-4">
+          {/* Enhanced Mobile Card View */}
+          <div className="lg:hidden space-y-6 p-6">
             {paginatedContracts.map((c, index) => {
               const vlera = parseFloat(c.contract_value) || 0;
               const shpenzuar = calculateTotalSpent(c);
@@ -1286,28 +1584,28 @@ export default function Contracts() {
               const progres = calculateProgress(c.start_date, c.finish_date);
               
               return (
-                <div key={c.id || index} className="bg-white rounded-xl shadow-lg border border-blue-200 p-4 space-y-3">
+                <div key={c.id || index} className="bg-white rounded-2xl enhanced-shadow border border-gray-200 p-6 space-y-4 hover:shadow-xl transition-all duration-300">
                   {/* Header */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <input
                         type="checkbox"
                         checked={selectedContracts.includes(c.id)}
                         onChange={() => handleSelectContract(c.id)}
-                        className="w-4 h-4"
+                        className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                       />
                       <div className="flex flex-col">
-                        <Link to={`/admin/contracts/${c.contract_number}`} className="text-lg font-bold text-blue-900 hover:text-purple-700 transition-colors">
+                        <Link to={`/admin/contracts/${c.contract_number}`} className="text-xl font-bold text-blue-900 hover:text-purple-700 transition-colors">
                           #{c.contract_number}
                         </Link>
-                        <span className="text-sm text-gray-600">{c.company}</span>
+                        <span className="text-base text-gray-600">{c.company}</span>
                       </div>
                     </div>
                     {(() => {
                       const statusStyle = getStatusStyle(c.status);
                       return (
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
-                          <span className="mr-1">{statusStyle.icon}</span>
+                        <span className={`status-badge ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
+                          <span>{statusStyle.icon}</span>
                           {getStatusDisplayText(c.status)}
                         </span>
                       );
@@ -1316,72 +1614,74 @@ export default function Contracts() {
                   
                   {/* Contract Type */}
                   <div className="flex items-center justify-center">
-                                         <span className={`text-xs px-3 py-1 rounded-full font-medium ${
-                       (c.contract_type || 'day_work') === 'price_work' 
-                         ? 'bg-orange-100 text-orange-700 border border-orange-200' 
-                         : 'bg-blue-100 text-blue-700 border border-blue-200'
-                     }`}>
-                       {(c.contract_type || 'day_work') === 'price_work' ? `🏗️ ${t('contracts.contractTypes.priceWork')}` : `👷 ${t('contracts.contractTypes.dayWork')}`}
-                     </span>
+                    <span className={`status-badge ${
+                      (c.contract_type || 'day_work') === 'price_work' 
+                        ? 'bg-orange-100 text-orange-700 border border-orange-200' 
+                        : 'bg-blue-100 text-blue-700 border border-blue-200'
+                    }`}>
+                      {(c.contract_type || 'day_work') === 'price_work' ? `🏗️ ${t('contracts.contractTypes.priceWork')}` : `👷 ${t('contracts.contractTypes.dayWork')}`}
+                    </span>
                   </div>
                   
                   {/* Location */}
                   <div className="text-center">
-                    <Link to={`/admin/contracts/${c.contract_number}`} className="text-blue-700 hover:text-blue-900 transition-colors font-medium">
+                    <Link to={`/admin/contracts/${c.contract_number}`} className="text-blue-700 hover:text-blue-900 transition-colors font-medium text-lg">
                       📍 {c.site_name}
                     </Link>
                   </div>
                   
                   {/* Financial Summary */}
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-blue-50 rounded-lg p-2">
-                      <div className="text-xs text-gray-600">{t('contracts.value')}</div>
-                      <div className="font-bold text-blue-900">£{vlera.toFixed(2)}</div>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                      <div className="text-sm text-gray-600 mb-1">{t('contracts.value')}</div>
+                      <div className="font-bold text-blue-900 text-lg">£{vlera.toFixed(2)}</div>
                     </div>
-                    <div className="bg-purple-50 rounded-lg p-2">
-                      <div className="text-xs text-gray-600">{t('contracts.spent')}</div>
-                      <div className="font-bold text-purple-700">£{shpenzuar.toFixed(2)}</div>
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+                      <div className="text-sm text-gray-600 mb-1">{t('contracts.spent')}</div>
+                      <div className="font-bold text-purple-700 text-lg">£{shpenzuar.toFixed(2)}</div>
                     </div>
-                    <div className={`rounded-lg p-2 ${getProfitColor(fitimi).replace('text-', 'bg-').replace('bg-', 'bg-')}`}>
-                      <div className="text-xs text-gray-600">{t('contracts.profit')}</div>
-                      <div className={`font-bold ${getProfitColor(fitimi)}`}>£{fitimi.toFixed(2)}</div>
-                      <div className="text-xs opacity-75">{profitMargin.toFixed(1)}%</div>
+                    <div className={`rounded-xl p-4 border ${getProfitColor(fitimi).includes('green') ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-200' : getProfitColor(fitimi).includes('red') ? 'bg-gradient-to-br from-red-50 to-red-100 border-red-200' : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'}`}>
+                      <div className="text-sm text-gray-600 mb-1">{t('contracts.profit')}</div>
+                      <div className={`font-bold text-lg ${getProfitColor(fitimi)}`}>£{fitimi.toFixed(2)}</div>
+                      <div className="text-xs opacity-75 bg-white px-2 py-1 rounded-full mt-1">
+                        {profitMargin.toFixed(1)}%
+                      </div>
                     </div>
                   </div>
                   
                   {/* Progress */}
-                  <div className="text-center">
-                    <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+                  <div className="text-center space-y-2">
+                    <div className="progress-bar">
                       <div 
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                        className="progress-fill"
                         style={{ width: `${Math.min(100, Math.max(0, progres))}%` }}
                       ></div>
                     </div>
-                    <span className="text-xs text-gray-600">{progres.toFixed(0)}% {t('contracts.progressHeader')}</span>
+                    <span className="text-sm font-medium text-gray-700">{progres.toFixed(0)}% {t('contracts.progressHeader')}</span>
                   </div>
                   
                   {/* Status Change */}
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-3">
                     <select
                       value={getStatusTranslationKey(c.status)}
                       onChange={e => handleStatusChange(c.id, e.target.value)}
                       disabled={loadingStates.statusChange[c.id]}
-                      className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white disabled:opacity-50"
+                      className="input-modern text-sm px-4 py-2 disabled:opacity-50"
                     >
                       {CONTRACT_STATUSES.map(status => (
                         <option key={status} value={status}>{t(`contracts.statuses.${status}`)}</option>
                       ))}
                     </select>
                     {loadingStates.statusChange[c.id] && (
-                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                     )}
                   </div>
                   
                   {/* Actions */}
-                  <div className="flex gap-2 justify-center">
+                  <div className="flex gap-3 justify-center">
                     <button
                       onClick={() => navigate(`/admin/contracts/${c.contract_number}`)}
-                      className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl p-2"
+                      className="btn-modern bg-blue-100 text-blue-700 hover:bg-blue-200 p-3"
                       title={t('contracts.actions.view')}
                     >
                       👁️
@@ -1389,11 +1689,11 @@ export default function Contracts() {
                     <button
                       onClick={() => handleToggleStatus(c.contract_number)}
                       disabled={loadingStates.toggleStatus[c.contract_number]}
-                      className="text-purple-600 hover:text-purple-800 hover:scale-110 transition-all text-xl disabled:opacity-50 flex items-center gap-1 p-2"
+                      className="btn-modern bg-purple-100 text-purple-700 hover:bg-purple-200 p-3 disabled:opacity-50"
                       title="Toggle"
                     >
                       {loadingStates.toggleStatus[c.contract_number] ? (
-                        <div className="w-3 h-3 border border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
                       ) : (
                         '🔄'
                       )}
@@ -1401,11 +1701,11 @@ export default function Contracts() {
                     <button
                       onClick={() => handleDelete(c.contract_number)}
                       disabled={loadingStates.delete[c.contract_number]}
-                      className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl disabled:opacity-50 flex items-center gap-1 p-2"
+                      className="btn-modern bg-red-100 text-red-700 hover:bg-red-200 p-3 disabled:opacity-50"
                       title={t('contracts.actions.delete')}
                     >
                       {loadingStates.delete[c.contract_number] ? (
-                        <div className="w-3 h-3 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
                       ) : (
                         '🗑️'
                       )}
