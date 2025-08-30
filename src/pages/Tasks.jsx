@@ -6,8 +6,20 @@ import toast from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
 
 export default function Tasks() {
-  const { t } = useTranslation();
+  const { t, ready } = useTranslation();
   const { user } = useAuth();
+  
+  // Don't render until translations are ready
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading translations...</p>
+        </div>
+      </div>
+    );
+  }
   const [employees, setEmployees] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [tasks, setTasks] = useState([]);
