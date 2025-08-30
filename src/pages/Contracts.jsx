@@ -24,6 +24,35 @@ const CONTRACT_STATUSES = [
 
 export default function Contracts() {
   const { t } = useTranslation();
+  
+  // Add CSS for responsive design
+  useEffect(() => {
+    // Add custom CSS for full-width responsive design
+    const style = document.createElement('style');
+    style.textContent = `
+      .contracts-container {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        overflow-x: auto !important;
+      }
+      .contracts-table {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+      @media (max-width: 768px) {
+        .contracts-container {
+          padding-left: 0.5rem !important;
+          padding-right: 0.5rem !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -883,7 +912,7 @@ export default function Contracts() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-12" style={{ maxWidth: '100%', minWidth: '100%', width: '100%' }}>
+    <div className="contracts-container w-full min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-12">
       {/* Toast Notification */}
       {showToast.show && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -949,7 +978,7 @@ export default function Contracts() {
       </div>
 
       {/* CONTRACTS LIST */}
-      <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 rounded-xl sm:rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full" style={{ maxWidth: '100%', minWidth: '100%' }}>
+      <div className="contracts-container bg-gradient-to-br from-white via-blue-50 to-purple-50 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 rounded-xl sm:rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
           <h3 className="text-xl sm:text-2xl font-bold text-blue-900 flex items-center gap-2">
             📋 {t('contracts.contractsList')}
@@ -1105,7 +1134,7 @@ export default function Contracts() {
         </div>
 
         {/* Responsive Table Container */}
-        <div className="overflow-x-auto rounded-lg shadow-lg w-full" style={{ maxWidth: '100%', minWidth: '100%' }}>
+        <div className="contracts-table overflow-x-auto rounded-lg shadow-lg w-full">
           <div className="min-w-full bg-white">
             {/* Desktop Table */}
             <table className="hidden lg:table min-w-full">
@@ -1179,7 +1208,7 @@ export default function Contracts() {
                           );
                         })()}
                         <select
-                          value={c.status}
+                          value={getStatusTranslationKey(c.status)}
                           onChange={e => handleStatusChange(c.id, e.target.value)}
                           disabled={loadingStates.statusChange[c.id]}
                           className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white disabled:opacity-50"
@@ -1334,7 +1363,7 @@ export default function Contracts() {
                   {/* Status Change */}
                   <div className="flex items-center justify-center gap-2">
                     <select
-                      value={c.status}
+                      value={getStatusTranslationKey(c.status)}
                       onChange={e => handleStatusChange(c.id, e.target.value)}
                       disabled={loadingStates.statusChange[c.id]}
                       className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white disabled:opacity-50"
