@@ -6,11 +6,50 @@ import toast from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
 
 export default function Tasks() {
-  const { t, ready } = useTranslation();
+  const translation = useTranslation();
   const { user } = useAuth();
   
+  // Safe translation function with fallback
+  const t = (key, fallback = key) => {
+    try {
+      if (translation.t && typeof translation.t === 'function') {
+        const result = translation.t(key);
+        return result && result !== key ? result : fallback;
+      }
+      return fallback;
+    } catch (error) {
+      console.warn('Translation error for key:', key, error);
+      return fallback;
+    }
+  };
+  
+  // Fallback translations in case i18n fails completely
+  const fallbackT = (key) => {
+    const fallbacks = {
+      'tasks.title': 'Task Management',
+      'tasks.subtitle': 'Assign, view and manage tasks',
+      'tasks.totalTasks': 'Total Tasks',
+      'tasks.completed': 'Completed',
+      'tasks.inProgress': 'In Progress',
+      'tasks.overdue': 'Overdue',
+      'tasks.highPriority': 'High Priority',
+      'tasks.addTask': 'Add Task',
+      'tasks.close': 'Close',
+      'tasks.noTasksFound': 'No tasks found',
+      'tasks.validation.dataLoadError': 'Error loading data!',
+      'tasks.validation.fillDescriptionAndAssignee': 'Fill description and select assignee!'
+    };
+    return fallbacks[key] || key;
+  };
+  
+  // Use fallback if main translation fails
+  const safeT = (key) => {
+    const result = t(key);
+    return result === key ? fallbackT(key) : result;
+  };
+  
   // Don't render until translations are ready
-  if (!ready) {
+  if (!translation.ready) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -49,22 +88,35 @@ export default function Tasks() {
   
   const token = localStorage.getItem("token");
 
+  // Retry function for API calls
+  const retryApiCall = async (apiCall, maxRetries = 3, delay = 1000) => {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await apiCall();
+      } catch (error) {
+        if (i === maxRetries - 1) throw error;
+        console.log(`Retry ${i + 1}/${maxRetries} failed, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2; // Exponential backoff
+      }
+    }
+  };
+
   // Merr të dhënat nga backend
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         
+        const axiosConfig = {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 30000, // 30 second timeout
+        };
+        
         const [employeesRes, contractsRes, tasksRes] = await Promise.all([
-          axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get("https://capitalrise-cwcq.onrender.com/api/tasks", {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          retryApiCall(() => axios.get("https://capitalrise-cwcq.onrender.com/api/employees", axiosConfig)),
+          retryApiCall(() => axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", axiosConfig)),
+          retryApiCall(() => axios.get("https://capitalrise-cwcq.onrender.com/api/tasks", axiosConfig))
         ]);
 
         setEmployees(employeesRes.data || []);
@@ -73,7 +125,18 @@ export default function Tasks() {
         
       } catch (error) {
         console.error("Error fetching tasks data:", error);
-        toast.error(t('tasks.validation.dataLoadError'));
+        
+        // Better error handling with specific messages
+        let errorMessage = 'tasks.validation.dataLoadError';
+        if (error.code === 'ECONNABORTED') {
+          errorMessage = 'Request timeout - please try again';
+        } else if (error.message?.includes('connection lost')) {
+          errorMessage = 'Database connection lost - please refresh the page';
+        } else if (error.response?.status === 500) {
+          errorMessage = 'Server error - please try again later';
+        }
+        
+        toast.error(safeT(errorMessage));
         setEmployees([]);
         setContracts([]);
         setTasks([]);
@@ -130,7 +193,7 @@ export default function Tasks() {
     }
 
     if (!newTask.description.trim() || receivers.length === 0) {
-              toast.error(t('tasks.validation.fillDescriptionAndAssignee'));
+              toast.error(safeT('tasks.validation.fillDescriptionAndAssignee'));
       return;
     }
 
