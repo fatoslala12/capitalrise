@@ -12,10 +12,23 @@ import {
 } from "recharts";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function ContractDetails() {
   const { contract_number } = useParams();
   const navigate = useNavigate();
+  const { t, ready } = useTranslation();
+
+  // Safe translation function with fallback
+  const safeT = useCallback((key, fallback) => {
+    if (!ready) return fallback;
+    try {
+      return t(key) || fallback;
+    } catch (error) {
+      console.warn(`Translation error for key: ${key}`, error);
+      return fallback;
+    }
+  }, [t, ready]);
 
   const [contract, setContract] = useState(null);
   const [invoices, setInvoices] = useState([]);
@@ -250,9 +263,9 @@ export default function ContractDetails() {
     const elapsedDays = Math.max(0, Math.min((today - start) / (1000 * 60 * 60 * 24), totalDays));
 
     return [
-      { name: "Fillimi", progress: 0 },
-      { name: "Tani", progress: Math.floor((elapsedDays / totalDays) * 100) },
-      { name: "Përfundimi", progress: 100 }
+      { name: safeT('contracts.details.startDate', 'Start'), progress: 0 },
+      { name: safeT('common.progress', 'Progress'), progress: Math.floor((elapsedDays / totalDays) * 100) },
+      { name: safeT('contracts.details.endDate', 'End'), progress: 100 }
     ];
   };
 
@@ -484,7 +497,7 @@ export default function ContractDetails() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar detajet e kontratës...</h2>
+          <h2 className="text-xl font-semibold text-gray-700">{safeT('contracts.details.loading', 'Loading contract details...')}</h2>
         </div>
       </div>
     );
@@ -494,12 +507,12 @@ export default function ContractDetails() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Kontrata nuk u gjet</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {safeT('contracts.details.notFound', 'Contract not found')}</h2>
           <button 
             onClick={() => navigate('/admin/contracts')} 
             className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
           >
-            🔙 Kthehu tek Kontratat
+            🔙 {safeT('contracts.details.backToContracts', 'Back to Contracts')}
           </button>
         </div>
       </div>
@@ -554,7 +567,59 @@ export default function ContractDetails() {
   });
 
   return (
-    <div className="max-w-full xl:max-w-[90vw] mx-auto px-4 py-8 space-y-12 bg-gradient-to-br from-blue-100 via-white to-purple-100 min-h-screen">
+    <div className="max-w-full xl:max-w-[95vw] mx-auto px-4 py-8 space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: none; }
+        }
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: none; }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+          50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.6); }
+        }
+        .animate-fade-in { animation: fade-in 0.7s cubic-bezier(.4,0,.2,1) both; }
+        .animate-slide-up { animation: slide-up 0.5s cubic-bezier(.4,0,.2,1) both; }
+        .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        .glass-effect { 
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .enhanced-shadow {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+        .gradient-border {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          padding: 2px;
+          border-radius: 1rem;
+        }
+        .gradient-border > div {
+          background: white;
+          border-radius: calc(1rem - 2px);
+        }
+        .hover-lift {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hover-lift:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .responsive-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 1.5rem;
+        }
+        @media (max-width: 640px) {
+          .responsive-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+          }
+        }
+      `}</style>
       {/* Confirmation Dialog */}
       {confirmDialog.show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -595,9 +660,9 @@ export default function ContractDetails() {
         </div>
       ) : (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 animate-fade-in">
             {/* HEADER SECTION - MOBILE RESPONSIVE */}
-            <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+            <div className="glass-effect enhanced-shadow rounded-2xl sm:rounded-3xl overflow-hidden hover-lift">
               <div className="p-4 sm:p-6 lg:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                   <div className="flex items-center gap-3 sm:gap-4">
@@ -608,7 +673,7 @@ export default function ContractDetails() {
                     </div>
                     <div>
                       <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1">
-                        Detajet e Kontratës
+                        {safeT('contracts.details.title', 'Contract Details')}
                       </h1>
                       <div className="text-base sm:text-lg font-semibold text-slate-600">
                         {contract?.site_name || "N/A"}
@@ -626,13 +691,13 @@ export default function ContractDetails() {
                     {loadingStates.sendContractEmail ? (
                       <>
                         <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span className="hidden sm:inline">Duke dërguar...</span>
+                        <span className="hidden sm:inline">{safeT('contracts.details.sending', 'Sending...')}</span>
                         <span className="sm:hidden">...</span>
                       </>
                     ) : (
                       <>
                         <span className="text-lg sm:text-xl">📧</span>
-                        <span className="hidden sm:inline">Dërgo në Email</span>
+                        <span className="hidden sm:inline">{safeT('contracts.details.sendEmail', 'Send to Email')}</span>
                         <span className="sm:hidden">Email</span>
                       </>
                     )}
@@ -642,45 +707,45 @@ export default function ContractDetails() {
             </div>
 
             {/* CONTRACT INFO SECTION - MOBILE RESPONSIVE */}
-            <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+            <div className="glass-effect enhanced-shadow rounded-2xl sm:rounded-3xl overflow-hidden hover-lift animate-slide-up">
               <div className="p-4 sm:p-6 lg:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                   <div className="space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏢 Kompania</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏢 {safeT('contracts.details.company', 'Company')}</span>
                       <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.company}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📍 Vendodhja</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📍 {safeT('contracts.details.location', 'Location')}</span>
                       <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.site_name}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📬 Adresa</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📬 {safeT('contracts.details.address', 'Address')}</span>
                       <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.address || "N/A"}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📋 Tipi</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📋 {safeT('contracts.details.type', 'Type')}</span>
                       <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold ${
                         (contract.contract_type || 'day_work') === 'price_work' 
                           ? 'bg-orange-100 text-orange-700 border border-orange-200' 
                           : 'bg-blue-100 text-blue-700 border border-blue-200'
                       }`}>
-                        {(contract.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
+                        {(contract.contract_type || 'day_work') === 'price_work' ? `🏗️ ${safeT('contracts.contractTypes.priceWork', 'Price Work')}` : `👷 ${safeT('contracts.contractTypes.dayWork', 'Day Work')}`}
                       </span>
                     </div>
                   </div>
                   
                   <div className="space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 Fillimi</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 {safeT('contracts.details.startDate', 'Start Date')}</span>
                       <span className="text-base sm:text-lg font-semibold text-slate-800">{formatDate(contract.start_date)}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 Mbarimi</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 {safeT('contracts.details.endDate', 'End Date')}</span>
                       <span className="text-base sm:text-lg font-semibold text-slate-800">{formatDate(contract.finish_date)}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📊 Statusi</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📊 {safeT('contracts.details.status', 'Status')}</span>
                       <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold border ${
                         contract.status === "Mbyllur" || contract.status === "Mbyllur me vonese" ? "bg-red-100 text-red-700 border-red-200" : 
                         contract.status === "Ne progres" ? "bg-blue-100 text-blue-700 border-blue-200" : 
@@ -693,7 +758,7 @@ export default function ContractDetails() {
                     </div>
                     {contract.closed_date && (
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🔒 Mbyllur</span>
+                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🔒 {safeT('contracts.details.closedDate', 'Closed Date')}</span>
                         <span className="text-base sm:text-lg font-semibold text-slate-800">{formatDate(contract.closed_date)}</span>
                       </div>
                     )}
@@ -703,8 +768,8 @@ export default function ContractDetails() {
             </div>
 
           {/* Chart */}
-          <div className="bg-white/70 p-10 shadow-2xl rounded-3xl border-2 border-purple-200 animate-fade-in">
-            <h3 className="text-2xl font-bold mb-6 text-purple-800 flex items-center gap-2"><span>📈</span> Progresi i Kontratës</h3>
+          <div className="glass-effect enhanced-shadow p-6 sm:p-8 lg:p-10 rounded-3xl border-2 border-purple-200 animate-slide-up hover-lift">
+            <h3 className="text-2xl font-bold mb-6 text-purple-800 flex items-center gap-2"><span>📈</span> {safeT('contracts.details.contractProgress', 'Contract Progress')}</h3>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={getProgressChartData()}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -716,9 +781,9 @@ export default function ContractDetails() {
             </ResponsiveContainer>
           </div>
 
-          {/* Dokumente */}
-          <div className="bg-white/70 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
-            <h3 className="text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2">📎 Dokumentet</h3>
+          {/* Documents */}
+          <div className="glass-effect enhanced-shadow p-6 sm:p-8 lg:p-10 rounded-3xl border-2 border-blue-200 animate-slide-up hover-lift">
+            <h3 className="text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2">📎 {safeT('contracts.details.documents', 'Documents')}</h3>
             <input 
               type="file" 
               accept="application/pdf" 
@@ -743,27 +808,27 @@ export default function ContractDetails() {
             </ul>
           </div>
 
-          {/* Butoni për shtim fature */}
-          <div className="flex justify-end mb-6">
+          {/* Add Invoice Button */}
+          <div className="flex justify-end mb-6 animate-slide-up">
             <button
               onClick={openAddModal}
-              className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
+              className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 hover-lift"
             >
-              <span className="text-xl">🧾</span> Shto Faturë
+              <span className="text-xl">🧾</span> {safeT('contracts.details.addInvoice', 'Add Invoice')}
             </button>
           </div>
 
 
-          {/* Lista Faturave + Print */}
-          <div className="bg-white/80 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
-            <h3 className="font-bold mb-6 text-2xl text-blue-900 flex items-center gap-3">📋 Lista e Faturave</h3>
+          {/* Invoices List + Print */}
+          <div className="glass-effect enhanced-shadow p-6 sm:p-8 lg:p-10 rounded-3xl border-2 border-blue-200 animate-slide-up hover-lift">
+            <h3 className="font-bold mb-6 text-2xl text-blue-900 flex items-center gap-3">📋 {safeT('contracts.details.invoicesList', 'Invoices List')}</h3>
             
             {/* Search and Filter for Invoices */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="md:col-span-2">
                 <input
                   type="text"
-                  placeholder="🔍 Kërko faturë, përshkrim ose datë..."
+                  placeholder={`🔍 ${safeT('contracts.details.searchInvoice', 'Search invoice, description or date...')}`}
                   value={invoicesSearch}
                   onChange={(e) => setInvoicesSearch(e.target.value)}
                   className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
@@ -775,11 +840,11 @@ export default function ContractDetails() {
                   onChange={(e) => setInvoicesFilter(e.target.value)}
                   className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
                 >
-                  <option value="all">Të gjitha faturat</option>
-                  <option value="paid">Paguar</option>
-                  <option value="unpaid">Pa paguar</option>
-                  <option value="emailed">Të dërguara me email</option>
-                  <option value="not_emailed">Pa u dërguar me email</option>
+                  <option value="all">{safeT('contracts.details.allInvoices', 'All invoices')}</option>
+                  <option value="paid">{safeT('contracts.details.paid', 'Paid')}</option>
+                  <option value="unpaid">{safeT('contracts.details.unpaid', 'Unpaid')}</option>
+                  <option value="emailed">{safeT('contracts.details.emailed', 'Sent by email')}</option>
+                  <option value="not_emailed">{safeT('contracts.details.notEmailed', 'Not sent by email')}</option>
                 </select>
               </div>
             </div>
@@ -789,12 +854,12 @@ export default function ContractDetails() {
                 <table className="w-full text-base bg-white shadow rounded-xl">
                   <thead className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-900">
                     <tr>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Nr</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Data</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Total</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Status</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Paguar</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Veprime</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{safeT('contracts.details.invoiceNumber', 'Number')}</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{safeT('contracts.details.date', 'Date')}</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{safeT('contracts.details.total', 'Total')}</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{safeT('contracts.details.status', 'Status')}</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{safeT('contracts.details.paid', 'Paid')}</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{safeT('contracts.details.actions', 'Actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -808,16 +873,16 @@ export default function ContractDetails() {
                         const oneMonth = 30 * 24 * 60 * 60 * 1000;
                         const status = inv.paid
                           ? paidDate - invoiceDate <= oneMonth
-                            ? "Paguar në kohë"
-                            : "Paguar me vonesë"
-                          : "Pa paguar";
+                            ? safeT('contracts.details.paidOnTime', 'Paid on time')
+                            : safeT('contracts.details.paidLate', 'Paid late')
+                          : safeT('contracts.details.unpaid', 'Unpaid');
                         return (
                           <tr key={inv.id} className="text-center hover:bg-purple-50 transition-all">
                             <td className="py-3 px-2 align-middle font-semibold">{inv.invoice_number}</td>
                             <td className="py-3 px-2 align-middle">{formatDate(inv.date)}</td>
                             <td className="py-3 px-2 align-middle font-bold text-purple-700">£{total.toFixed(2)}</td>
                             <td className="py-3 px-2 align-middle">
-                              <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === "Pa paguar" ? "bg-red-100 text-red-600" : status === "Paguar në kohë" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{status}</span>
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === safeT('contracts.details.unpaid', 'Unpaid') ? "bg-red-100 text-red-600" : status === safeT('contracts.details.paidOnTime', 'Paid on time') ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{status}</span>
                             </td>
                             <td className="py-3 px-2 align-middle">
                               <input
@@ -832,7 +897,7 @@ export default function ContractDetails() {
                               <button 
                                 onClick={() => setInvoiceToPrint(inv)} 
                                 className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl"
-                                title="Shiko / Printo"
+                                title={safeT('contracts.details.viewPrint', 'View / Print')}
                               >
                                 🖨
                               </button>
@@ -846,7 +911,7 @@ export default function ContractDetails() {
                                 }`}
                                 title={inv.emailed 
                                   ? `E dërguar më: ${inv.emailed_at ? new Date(inv.emailed_at).toLocaleString('sq-AL') : 'pa datë'} - Kliko për të dërguar përsëri`
-                                  : "Dërgo në Email"
+                                  : safeT('contracts.details.sendEmail', 'Send by Email')
                                 }
                               >
                                 {loadingStates.sendEmail[inv.id] ? (
@@ -866,7 +931,7 @@ export default function ContractDetails() {
                                 onClick={() => handleDeleteInvoice(inv.id)} 
                                 disabled={loadingStates.deleteInvoice[inv.id]}
                                 className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl disabled:opacity-50"
-                                title="Fshi"
+                                title={safeT('contracts.details.delete', 'Delete')}
                               >
                                 {loadingStates.deleteInvoice[inv.id] ? (
                                   <div className="w-4 h-4 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
@@ -884,8 +949,8 @@ export default function ContractDetails() {
                 <div className="text-center py-8">
                   <p className="text-gray-500 italic">
                     {invoices.length === 0 
-                      ? "Nuk ka faturat për këtë kontratë akoma" 
-                      : "Nuk u gjetën faturat që përputhen me kërkimin tuaj"}
+                      ? safeT('contracts.details.noInvoices', 'No invoices for this contract yet') 
+                      : safeT('contracts.details.noInvoicesFound', 'No invoices found matching your search')}
                   </p>
                 </div>
               )}
@@ -969,11 +1034,11 @@ export default function ContractDetails() {
               </div>
             </div>
           )}
-            {/* ORËT E PUNËS - LËVIZUR NË FUND SIPAS KËRKESËS */}
-            <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+            {/* WORK HOURS SECTION */}
+            <div className="glass-effect enhanced-shadow rounded-2xl sm:rounded-3xl overflow-hidden hover-lift animate-slide-up">
               <div className="p-4 sm:p-6 lg:p-8">
                 <h3 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-                  ⏰ Orët e Punës
+                  ⏰ {safeT('contracts.details.workHours', 'Work Hours')}
                 </h3>
                 
                 {/* Search and Filter for Work Hours */}
@@ -981,7 +1046,7 @@ export default function ContractDetails() {
                   <div className="md:col-span-2">
                     <input
                       type="text"
-                      placeholder="🔍 Kërko punonjës ose datë..."
+                      placeholder={`🔍 ${safeT('contracts.details.searchWorkHours', 'Search employee or date...')}`}
                       value={workHoursSearch}
                       onChange={(e) => setWorkHoursSearch(e.target.value)}
                       className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
@@ -993,7 +1058,7 @@ export default function ContractDetails() {
                       onChange={(e) => setWorkHoursFilter(e.target.value)}
                       className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
                     >
-                      <option value="all">Të gjitha llojet</option>
+                      <option value="all">{safeT('contracts.details.allTypes', 'All types')}</option>
                       <option value="NI">NI</option>
                       <option value="UTR">UTR</option>
                     </select>
@@ -1006,12 +1071,12 @@ export default function ContractDetails() {
                       <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
                         <thead className="bg-gradient-to-r from-emerald-100 to-blue-100">
                           <tr>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Data</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Punonjësi</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Orë</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Tarifa/orë</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Bruto (£)</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Neto (£)</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{safeT('contracts.details.date', 'Date')}</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Employee</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{safeT('contracts.details.hours', 'Hours')}</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{safeT('contracts.details.hourlyRate', 'Hourly Rate')}</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{safeT('contracts.details.gross', 'Gross (£)')}</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{safeT('contracts.details.net', 'Net (£)')}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1051,9 +1116,9 @@ export default function ContractDetails() {
                         </tbody>
                         <tfoot className="bg-emerald-100">
                           <tr>
-                            <td colSpan="2" className="py-4 px-2 text-center font-bold text-emerald-800">TOTALET:</td>
+                            <td colSpan="2" className="py-4 px-2 text-center font-bold text-emerald-800">{safeT('contracts.details.totals', 'TOTALS:')}</td>
                             <td className="py-4 px-2 text-center font-bold text-blue-700">
-                              {filteredWorkHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} orë
+                              {filteredWorkHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} {safeT('contracts.details.hoursTotal', 'hours')}
                             </td>
                             <td className="py-4 px-2 text-center">-</td>
                             <td className="py-4 px-2 text-center font-bold text-orange-700 text-lg">
@@ -1081,52 +1146,52 @@ export default function ContractDetails() {
                     ) : (
                       <div className="text-center py-8">
                         <p className="text-slate-500 italic">
-                          Nuk u gjetën orë pune që përputhen me kërkimin tuaj
+                          {safeT('contracts.details.noWorkHoursFound', 'No work hours found matching your search')}
                         </p>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-slate-500 italic">Nuk ka orë pune të regjistruara për këtë kontratë akoma</p>
+                    <p className="text-slate-500 italic">{safeT('contracts.details.noWorkHours', 'No work hours recorded for this contract yet')}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* KOMENTE - SEKSIONI I FUNDIT SIPAS KËRKESËS */}
-            <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+            {/* COMMENTS SECTION */}
+            <div className="glass-effect enhanced-shadow rounded-2xl sm:rounded-3xl overflow-hidden hover-lift animate-slide-up">
               <div className="p-4 sm:p-6 lg:p-8">
                 <h3 className="text-xl sm:text-2xl font-bold text-purple-700 mb-6 flex items-center gap-2">
-                  💬 Komente
+                  💬 {safeT('contracts.details.comments', 'Comments')}
                 </h3>
                 <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                  <textarea 
-                    value={newComment} 
-                    onChange={(e) => setNewComment(e.target.value)} 
-                    disabled={loadingStates.addComment}
-                    className="flex-1 border-2 border-purple-200 rounded-xl p-3 text-base bg-purple-50/50 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm disabled:opacity-50 min-h-[100px] resize-none" 
-                    placeholder="Shkruaj një koment..." 
-                  />
-                  <button 
-                    onClick={handleAddComment} 
-                    disabled={loadingStates.addComment || !newComment.trim()}
-                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl shadow-lg font-bold transition-all disabled:opacity-50 flex items-center gap-2 justify-center self-start sm:self-stretch hover:shadow-xl hover:scale-105"
-                  >
-                    {loadingStates.addComment ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span className="hidden sm:inline">Duke shtuar...</span>
-                        <span className="sm:hidden">...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-lg">➕</span>
-                        <span className="hidden sm:inline">Shto</span>
-                        <span className="sm:hidden">+</span>
-                      </>
-                    )}
-                  </button>
+                                      <textarea 
+                      value={newComment} 
+                      onChange={(e) => setNewComment(e.target.value)} 
+                      disabled={loadingStates.addComment}
+                      className="flex-1 border-2 border-purple-200 rounded-xl p-3 text-base bg-purple-50/50 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm disabled:opacity-50 min-h-[100px] resize-none" 
+                      placeholder={safeT('contracts.details.writeComment', 'Write a comment...')} 
+                    />
+                    <button 
+                      onClick={handleAddComment} 
+                      disabled={loadingStates.addComment || !newComment.trim()}
+                      className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl shadow-lg font-bold transition-all disabled:opacity-50 flex items-center gap-2 justify-center self-start sm:self-stretch hover:shadow-xl hover:scale-105"
+                    >
+                      {loadingStates.addComment ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span className="hidden sm:inline">{safeT('contracts.details.adding', 'Adding...')}</span>
+                          <span className="sm:hidden">...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-lg">➕</span>
+                          <span className="hidden sm:inline">{safeT('contracts.details.add', 'Add')}</span>
+                          <span className="sm:hidden">+</span>
+                        </>
+                      )}
+                    </button>
                 </div>
                 <div className="space-y-4">
                   {(contract.comments || []).map((c, i) => (
@@ -1142,7 +1207,7 @@ export default function ContractDetails() {
                   ))}
                   {(!contract.comments || contract.comments.length === 0) && (
                     <div className="text-center py-8">
-                      <p className="text-slate-500 italic">Nuk ka komente të shtuar akoma</p>
+                      <p className="text-slate-500 italic">{safeT('contracts.details.noComments', 'No comments added yet')}</p>
                     </div>
                   )}
                 </div>
@@ -1159,7 +1224,7 @@ export default function ContractDetails() {
           onClick={closeAddModal}
         >
           <div 
-            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden"
+            className="glass-effect enhanced-shadow rounded-2xl sm:rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden hover-lift"
             onClick={(e) => e.stopPropagation()}
           >
             {/* MODAL HEADER */}
@@ -1170,7 +1235,7 @@ export default function ContractDetails() {
                     <span className="text-2xl">🧾</span>
                   </div>
                   <h3 className="text-xl sm:text-2xl font-bold text-white">
-                    Shto Faturë të Re
+                    {safeT('contracts.details.addInvoice', 'Add New Invoice')}
                   </h3>
                 </div>
                 <button
@@ -1188,10 +1253,10 @@ export default function ContractDetails() {
                 {/* DESCRIPTION SECTION */}
                 <div className="bg-slate-50 rounded-xl p-4">
                   <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-2 block">
-                    📝 Përshkrimi i Faturës
+                    📝 {safeT('contracts.details.description', 'Invoice Description')}
                   </label>
                   <input
-                    placeholder="Shkruaj përshkrimin e faturës..."
+                    placeholder={safeT('contracts.details.writeComment', 'Write invoice description...')}
                     className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newInvoice.description}
                     onChange={e => setNewInvoice({ ...newInvoice, description: e.target.value })}
@@ -1201,22 +1266,22 @@ export default function ContractDetails() {
                 {/* INVOICE ITEMS SECTION */}
                 <div className="bg-slate-50 rounded-xl p-4">
                   <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                    📋 Artikujt e Faturës
+                    📋 {safeT('contracts.details.invoice', 'Invoice Items')}
                   </label>
                   <div className="space-y-4">
                     {newInvoice.items.map((item, index) => (
                       <div key={index} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Përshkrimi</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{safeT('contracts.details.description', 'Description')}</label>
                           <input 
-                            placeholder="Përshkrimi i punës" 
+                            placeholder={safeT('contracts.details.writeComment', 'Work description')} 
                             className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
                             value={item.description} 
                             onChange={(e) => handleItemChange(index, "description", e.target.value)} 
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Shifts</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{safeT('contracts.details.shifts', 'Shifts')}</label>
                           <input 
                             type="number" 
                             placeholder="0" 
@@ -1226,7 +1291,7 @@ export default function ContractDetails() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Rate (£)</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{safeT('contracts.details.rate', 'Rate (£)')}</label>
                           <input 
                             type="number" 
                             placeholder="0.00" 
@@ -1237,7 +1302,7 @@ export default function ContractDetails() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Totali (£)</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{safeT('contracts.details.amount', 'Amount (£)')}</label>
                           <input 
                             disabled 
                             className="w-full p-2.5 border border-slate-200 rounded-lg bg-slate-100 text-sm font-semibold text-slate-700" 
@@ -1251,7 +1316,7 @@ export default function ContractDetails() {
                       onClick={handleAddItem} 
                       className="w-full bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg p-3 text-blue-600 font-semibold transition-all flex items-center justify-center gap-2"
                     >
-                      <span className="text-xl">➕</span> Shto Rresht të Ri
+                      <span className="text-xl">➕</span> {safeT('contracts.details.addNewRow', 'Add New Row')}
                     </button>
                   </div>
                 </div>
@@ -1261,7 +1326,7 @@ export default function ContractDetails() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                     <div>
                       <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-2 block">
-                        💰 Kosto Shtesë (£)
+                        💰 {safeT('contracts.details.additionalCosts', 'Additional Costs (£)')}
                       </label>
                       <input 
                         type="number" 
@@ -1274,7 +1339,7 @@ export default function ContractDetails() {
                     </div>
                     <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg p-4 border-2 border-blue-200">
                       <div className="text-center">
-                        <div className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Totali i Faturës</div>
+                        <div className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">{safeT('contracts.details.invoiceTotal', 'Invoice Total')}</div>
                         <div className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                           £{grandTotal.toFixed(2)}
                         </div>
@@ -1293,14 +1358,14 @@ export default function ContractDetails() {
                     {loadingStates.saveInvoice ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span className="hidden sm:inline">Duke ruajtur...</span>
+                        <span className="hidden sm:inline">{safeT('contracts.details.saving', 'Saving...')}</span>
                         <span className="sm:hidden">...</span>
                       </>
                     ) : (
                       <>
                         <span className="text-xl">💾</span>
-                        <span className="hidden sm:inline">Ruaj Faturën</span>
-                        <span className="sm:hidden">Ruaj</span>
+                        <span className="hidden sm:inline">{safeT('common.save', 'Save Invoice')}</span>
+                        <span className="sm:hidden">Save</span>
                       </>
                     )}
                   </button>
@@ -1311,8 +1376,8 @@ export default function ContractDetails() {
                     className="flex-1 bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
                     <span className="text-xl">✕</span>
-                    <span className="hidden sm:inline">Anulo</span>
-                    <span className="sm:hidden">Mbyll</span>
+                    <span className="hidden sm:inline">{safeT('common.cancel', 'Cancel')}</span>
+                    <span className="sm:hidden">Close</span>
                   </button>
                 </div>
               </div>
