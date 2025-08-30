@@ -269,6 +269,23 @@ export default function Contracts() {
         0% { background-position: -200% 0; }
         100% { background-position: 200% 0; }
       }
+      
+      /* Flag emoji support */
+      .flag-emoji {
+        font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI Symbol", sans-serif;
+        font-size: 1.5rem;
+        line-height: 1;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      
+      /* Table column widths */
+      .table-modern th.w-16 { width: 4rem; }
+      .table-modern th.w-24 { width: 6rem; }
+      .table-modern th.w-32 { width: 8rem; }
+      .table-modern th.w-48 { width: 12rem; }
+      .table-modern th.w-64 { width: 16rem; }
+      .table-modern th.w-80 { width: 20rem; }
     `;
     document.head.appendChild(style);
     
@@ -1434,17 +1451,17 @@ export default function Contracts() {
             <table className="hidden lg:table min-w-full table-modern">
               <thead>
                 <tr>
-                  <th className="text-center">{t('contracts.select')}</th>
-                  <th className="text-center">{t('contracts.contractNumberHeader')}</th>
-                  <th className="text-center">{t('contracts.type')}</th>
-                  <th className="text-center">{t('contracts.locationHeader')}</th>
-                  <th className="text-center">{t('contracts.company')}</th>
-                  <th className="text-center">{t('contracts.value')}</th>
-                  <th className="text-center">{t('contracts.spent')}</th>
-                  <th className="text-center">{t('contracts.profit')}</th>
-                  <th className="text-center">{t('contracts.statusHeader')}</th>
-                  <th className="text-center">{t('contracts.progressHeader')}</th>
-                  <th className="text-center">{t('contracts.actionsHeader')}</th>
+                  <th className="text-center w-16">{t('contracts.select')}</th>
+                  <th className="text-center w-24">{t('contracts.contractNumberHeader')}</th>
+                  <th className="text-center w-48">{t('contracts.type')}</th>
+                  <th className="text-center w-64">{t('contracts.locationHeader')}</th>
+                  <th className="text-center w-80">{t('contracts.company')}</th>
+                  <th className="text-center w-32">{t('contracts.value')}</th>
+                  <th className="text-center w-32">{t('contracts.spent')}</th>
+                  <th className="text-center w-32">{t('contracts.profit')}</th>
+                  <th className="text-center w-48">{t('contracts.statusHeader')}</th>
+                  <th className="text-center w-32">{t('contracts.progressHeader')}</th>
+                  <th className="text-center w-32">{t('contracts.actionsHeader')}</th>
                 </tr>
               </thead>
             <tbody>

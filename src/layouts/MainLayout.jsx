@@ -173,12 +173,10 @@ export default function MainLayout() {
             <NotificationBell />
             <button
               onClick={logout}
-              className="px-2 sm:px-4 py-1 sm:py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+              className="px-4 sm:px-6 py-2 sm:py-3 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors flex items-center gap-2 text-sm sm:text-base mx-auto"
             >
-              <span className="hidden sm:inline">🚪</span>
-              <span className="sm:hidden">🚪</span>
-              <span className="hidden sm:inline">{t('navigation.logout')}</span>
-              <span className="sm:hidden">{t('navigation.logout')}</span>
+              <span className="text-lg">🚪</span>
+              <span>{t('navigation.logout')}</span>
             </button>
           </div>
         </header>
