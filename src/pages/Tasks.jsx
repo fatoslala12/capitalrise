@@ -295,10 +295,10 @@ export default function Tasks() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: newStatus } : t));
-              toast.success(`${t('tasks.validation.statusChangeSuccess')} "${newStatus === 'completed' ? t('tasks.completedStatus') : t('tasks.ongoing')}"`);
-    } catch (error) {
+              toast.success(`${safeT('tasks.validation.statusChangeSuccess')} "${newStatus === 'completed' ? safeT('tasks.completedStatus') : safeT('tasks.ongoing')}"`);
+        } catch (error) {
       console.error('Error updating task status:', error);
-              toast.error(t('tasks.validation.statusChangeError'));
+                toast.error(safeT('tasks.validation.statusChangeError'));
     }
   };
 
@@ -517,8 +517,8 @@ export default function Tasks() {
           </svg>
         </div>
         <div>
-                          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('tasks.title')}</h2>
-                <div className="text-lg font-medium text-purple-700">{t('tasks.subtitle')}</div>
+                          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{safeT('tasks.title')}</h2>
+                <div className="text-lg font-medium text-purple-700">{safeT('tasks.subtitle')}</div>
         </div>
       </div>
 
@@ -527,7 +527,7 @@ export default function Tasks() {
         <div className="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 p-4 sm:p-6 rounded-xl shadow-sm border border-blue-200">
           <div className="flex items-center justify-between">
             <div>
-                              <p className="text-blue-700 text-xs sm:text-sm font-medium">{t('tasks.totalTasks')}</p>
+                              <p className="text-blue-700 text-xs sm:text-sm font-medium">{safeT('tasks.totalTasks')}</p>
               <p className="text-2xl sm:text-3xl font-bold">{stats.total}</p>
             </div>
             <div className="text-2xl sm:text-4xl">📋</div>
@@ -537,7 +537,7 @@ export default function Tasks() {
         <div className="bg-gradient-to-br from-green-100 to-green-200 text-green-800 p-4 sm:p-6 rounded-xl shadow-sm border border-green-200">
           <div className="flex items-center justify-between">
             <div>
-                              <p className="text-green-700 text-xs sm:text-sm font-medium">{t('tasks.completed')}</p>
+                              <p className="text-green-700 text-xs sm:text-sm font-medium">{safeT('tasks.completed')}</p>
               <p className="text-2xl sm:text-3xl font-bold">{stats.completed}</p>
             </div>
             <div className="text-2xl sm:text-4xl">✅</div>
@@ -547,7 +547,7 @@ export default function Tasks() {
         <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 text-yellow-800 p-4 sm:p-6 rounded-xl shadow-sm border border-yellow-200">
           <div className="flex items-center justify-between">
             <div>
-                              <p className="text-yellow-700 text-xs sm:text-sm font-medium">{t('tasks.inProgress')}</p>
+                              <p className="text-yellow-700 text-xs sm:text-sm font-medium">{safeT('tasks.inProgress')}</p>
               <p className="text-2xl sm:text-3xl font-bold">{stats.ongoing}</p>
             </div>
             <div className="text-2xl sm:text-4xl">🕒</div>
@@ -557,7 +557,7 @@ export default function Tasks() {
         <div className="bg-gradient-to-br from-red-100 to-red-200 text-red-800 p-4 sm:p-6 rounded-xl shadow-sm border border-red-200">
           <div className="flex items-center justify-between">
             <div>
-                              <p className="text-red-700 text-xs sm:text-sm font-medium">{t('tasks.overdue')}</p>
+                              <p className="text-red-700 text-xs sm:text-sm font-medium">{safeT('tasks.overdue')}</p>
               <p className="text-2xl sm:text-3xl font-bold">{stats.overdue}</p>
             </div>
             <div className="text-2xl sm:text-4xl">⚠️</div>
@@ -567,7 +567,7 @@ export default function Tasks() {
         <div className="bg-gradient-to-br from-purple-100 to-purple-200 text-purple-800 p-4 sm:p-6 rounded-xl shadow-sm border border-purple-200">
           <div className="flex items-center justify-between">
             <div>
-                              <p className="text-purple-700 text-xs sm:text-sm font-medium">{t('tasks.highPriority')}</p>
+                              <p className="text-purple-700 text-xs sm:text-sm font-medium">{safeT('tasks.highPriority')}</p>
               <p className="text-2xl sm:text-3xl font-bold">{stats.highPriority}</p>
             </div>
             <div className="text-2xl sm:text-4xl">🔴</div>
@@ -578,7 +578,7 @@ export default function Tasks() {
       {/* KONTROLLET E KRYESORE */}
       <div className="bg-white/60 rounded-xl shadow-sm border border-blue-100 p-4 sm:p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-                          <h3 className="text-xl sm:text-2xl font-bold text-blue-800">🎯 {t('tasks.taskControl')}</h3>
+                          <h3 className="text-xl sm:text-2xl font-bold text-blue-800">🎯 {safeT('tasks.taskControl')}</h3>
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             {/* View Mode Toggle */}
@@ -591,7 +591,7 @@ export default function Tasks() {
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                📊 {t('tasks.table')}
+                📊 {safeT('tasks.table')}
               </button>
               <button
                 onClick={() => setViewMode("kanban")}
@@ -601,7 +601,7 @@ export default function Tasks() {
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                🎯 {t('tasks.kanban')}
+                🎯 {safeT('tasks.kanban')}
               </button>
             </div>
             
@@ -610,7 +610,7 @@ export default function Tasks() {
               onClick={() => setShowForm(!showForm)}
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 text-sm sm:text-base"
             >
-              {showForm ? `❌ ${t('tasks.close')}` : `➕ ${t('tasks.addTask')}`}
+              {showForm ? `❌ ${safeT('tasks.close')}` : `➕ ${safeT('tasks.addTask')}`}
             </button>
           </div>
         </div>
@@ -618,7 +618,7 @@ export default function Tasks() {
         {/* DEADLINE NOTIFICATION CONTROLS */}
         <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl shadow-sm border border-amber-200 p-4 mb-6">
           <h4 className="text-lg font-semibold text-amber-800 mb-4 flex items-center gap-2">
-            ⏰ {t('tasks.deadlineControl')}
+                            ⏰ {safeT('tasks.deadlineControl')}
           </h4>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -626,28 +626,28 @@ export default function Tasks() {
               onClick={handleCheckOverdueTasks}
               className="bg-gradient-to-r from-red-400 to-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-red-500 hover:to-red-600 transition-all shadow-sm"
             >
-                              🔍 {t('tasks.checkOverdue')}
+                              🔍 {safeT('tasks.checkOverdue')}
             </button>
             
             <button
               onClick={handleCheckUpcomingDeadlines}
               className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-yellow-500 hover:to-yellow-600 transition-all shadow-sm"
             >
-                              ⏰ {t('tasks.checkNearDeadlines')}
+                              ⏰ {safeT('tasks.checkNearDeadlines')}
             </button>
             
             <button
               onClick={handleRunDailyCheck}
               className="bg-gradient-to-r from-blue-400 to-blue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-blue-500 hover:to-blue-600 transition-all shadow-sm"
             >
-                              📅 {t('tasks.dailyControl')}
+                              📅 {safeT('tasks.dailyControl')}
             </button>
             
             <button
               onClick={handleGetOverdueStats}
               className="bg-gradient-to-r from-purple-400 to-purple-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-purple-500 hover:to-purple-600 transition-all shadow-sm"
             >
-                              📊 {t('tasks.statistics')}
+                              📊 {safeT('tasks.statistics')}
             </button>
           </div>
           
@@ -656,19 +656,19 @@ export default function Tasks() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                 <div className="text-center">
                   <div className="text-lg font-bold text-red-600">{overdueStats.overdue?.total_overdue || 0}</div>
-                  <div className="text-red-700">{t('tasks.overdueCount')}</div>
+                  <div className="text-red-700">{safeT('tasks.overdueCount')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-yellow-600">{overdueStats.upcoming?.total_upcoming || 0}</div>
-                  <div className="text-yellow-700">{t('tasks.dueTomorrow')}</div>
+                  <div className="text-yellow-700">{safeT('tasks.dueTomorrow')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-blue-600">{overdueStats.overdue?.notifications_sent || 0}</div>
-                  <div className="text-blue-700">{t('tasks.notificationsSent')}</div>
+                  <div className="text-blue-700">{safeT('tasks.notificationsSent')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-bold text-purple-600">{overdueStats.overdue?.notifications_pending || 0}</div>
-                  <div className="text-purple-700">{t('tasks.notificationsPending')}</div>
+                  <div className="text-purple-700">{safeT('tasks.notificationsPending')}</div>
                 </div>
               </div>
             </div>
@@ -678,15 +678,15 @@ export default function Tasks() {
         {/* FORMA E SHTIMIT */}
         {showForm && (
           <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-xl shadow-sm border border-blue-200 p-4 sm:p-6 mb-6">
-                            <h4 className="text-xl font-bold text-blue-900 mb-4">➕ {t('tasks.createNewTask')}</h4>
+                            <h4 className="text-xl font-bold text-blue-900 mb-4">➕ {safeT('tasks.createNewTask')}</h4>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-blue-800 mb-2">📝 {t('tasks.taskDescription')}</label>
+                  <label className="block text-sm font-semibold text-blue-800 mb-2">📝 {safeT('tasks.taskDescription')}</label>
                   <textarea
                     name="description"
-                                          placeholder={t('tasks.writeDescription')}
+                                          placeholder={safeT('tasks.writeDescription')}
                     value={newTask.description}
                     onChange={handleChange}
                     rows={3}
@@ -696,14 +696,14 @@ export default function Tasks() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-blue-800 mb-2">👤 {t('tasks.selectEmployee')}</label>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">👤 {safeT('tasks.selectEmployee')}</label>
                     <select
                       name="assignedTo"
                       value={newTask.assignedTo}
                       onChange={handleChange}
                       className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
                     >
-                                              <option value="">{t('tasks.selectEmployeePlaceholder')}</option>
+                                              <option value="">{safeT('tasks.selectEmployeePlaceholder')}</option>
                       {employees.map((e) => (
                         <option key={e.id} value={e.id}>
                           {e.first_name} {e.last_name} ({e.email})
@@ -713,14 +713,14 @@ export default function Tasks() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-blue-800 mb-2">🏗 {t('tasks.orSelectSite')}</label>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">🏗 {safeT('tasks.orSelectSite')}</label>
                     <select
                       name="siteName"
                       value={newTask.siteName}
                       onChange={handleChange}
                       className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
                     >
-                                              <option value="">{t('tasks.selectSitePlaceholder')}</option>
+                                              <option value="">{safeT('tasks.selectSitePlaceholder')}</option>
                       {filteredSites.map((site) => (
                         <option key={site} value={site}>{site}</option>
                       ))}
@@ -732,7 +732,7 @@ export default function Tasks() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-blue-800 mb-2">📅 {t('tasks.dueDateLabel')}</label>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">📅 {safeT('tasks.dueDateLabel')}</label>
                     <input
                       type="date"
                       name="dueDate"
@@ -743,29 +743,29 @@ export default function Tasks() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-blue-800 mb-2">🔴 {t('tasks.priorityLabel')}</label>
+                    <label className="block text-sm font-semibold text-blue-800 mb-2">🔴 {safeT('tasks.priorityLabel')}</label>
                     <select
                       name="priority"
                       value={newTask.priority}
                       onChange={handleChange}
                       className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
                     >
-                      <option value="low">🟢 {t('tasks.low')}</option>
-                      <option value="medium">🟡 {t('tasks.medium')}</option>
-                      <option value="high">🔴 {t('tasks.high')}</option>
+                      <option value="low">🟢 {safeT('tasks.low')}</option>
+                      <option value="medium">🟡 {safeT('tasks.medium')}</option>
+                      <option value="high">🔴 {safeT('tasks.high')}</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-blue-800 mb-2">📂 {t('tasks.category')}</label>
+                  <label className="block text-sm font-semibold text-blue-800 mb-2">📂 {safeT('tasks.category')}</label>
                   <select
                     name="category"
                     value={newTask.category}
                     onChange={handleChange}
                     className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-300 transition-all"
                   >
-                    <option value="general">📋 {t('tasks.general')}</option>
+                    <option value="general">📋 {safeT('tasks.general')}</option>
                     <option value="construction">🏗️ Ndërtim</option>
                     <option value="maintenance">🔧 Mirëmbajtje</option>
                     <option value="cleaning">🧹 Pastrim</option>
@@ -785,7 +785,7 @@ export default function Tasks() {
                       Duke shtuar...
                     </div>
                   ) : (
-                    `📤 ${t('tasks.assignTask')}`
+                    `📤 ${safeT('tasks.assignTask')}`
                   )}
                 </button>
               </div>
@@ -795,12 +795,12 @@ export default function Tasks() {
 
         {/* FILTRAT DHE KËRKIMI */}
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 sm:p-6 mb-6">
-          <h4 className="text-base sm:text-lg font-semibold text-purple-800 mb-4">🔍 {t('tasks.filtersAndSearch')}</h4>
+                      <h4 className="text-base sm:text-lg font-semibold text-purple-800 mb-4">🔍 {safeT('tasks.filtersAndSearch')}</h4>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
             <input
               type="text"
-              placeholder={t('tasks.searchInTasks')}
+                              placeholder={safeT('tasks.searchInTasks')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="p-2 sm:p-3 border border-purple-200 rounded-lg focus:ring-1 focus:ring-purple-300 transition-all text-sm"
@@ -811,9 +811,9 @@ export default function Tasks() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="p-2 sm:p-3 border border-blue-200 rounded-lg focus:ring-1 focus:ring-blue-300 transition-all text-sm"
             >
-              <option value="all">📊 {t('tasks.allStatuses')}</option>
-              <option value="ongoing">🕒 {t('tasks.ongoing')}</option>
-              <option value="completed">✅ {t('tasks.completedStatus')}</option>
+                              <option value="all">📊 {safeT('tasks.allStatuses')}</option>
+                <option value="ongoing">🕒 {safeT('tasks.ongoing')}</option>
+                <option value="completed">✅ {safeT('tasks.completedStatus')}</option>
             </select>
             
             <select
@@ -821,10 +821,10 @@ export default function Tasks() {
               onChange={(e) => setPriorityFilter(e.target.value)}
               className="p-2 sm:p-3 border border-yellow-200 rounded-lg focus:ring-1 focus:ring-yellow-300 transition-all text-sm"
             >
-              <option value="all">🔴 {t('tasks.allPriorities')}</option>
-              <option value="high">🔴 {t('tasks.high')}</option>
-              <option value="medium">🟡 {t('tasks.medium')}</option>
-              <option value="low">🟢 {t('tasks.low')}</option>
+                              <option value="all">🔴 {safeT('tasks.allPriorities')}</option>
+                <option value="high">🔴 {safeT('tasks.high')}</option>
+                <option value="medium">🟡 {safeT('tasks.medium')}</option>
+                <option value="low">🟢 {safeT('tasks.low')}</option>
             </select>
             
             <select
@@ -832,7 +832,7 @@ export default function Tasks() {
               onChange={(e) => setSiteFilter(e.target.value)}
               className="p-2 sm:p-3 border border-green-200 rounded-lg focus:ring-1 focus:ring-green-300 transition-all text-sm"
             >
-              <option value="all">🏗️ {t('tasks.allSites')}</option>
+                              <option value="all">🏗️ {safeT('tasks.allSites')}</option>
               {uniqueSites.map((site) => (
                 <option key={site} value={site}>{site}</option>
               ))}
@@ -845,7 +845,7 @@ export default function Tasks() {
               onChange={(e) => setAssignedFilter(e.target.value)}
               className="p-2 sm:p-3 border border-indigo-200 rounded-lg focus:ring-1 focus:ring-indigo-300 transition-all text-sm"
             >
-              <option value="all">👤 {t('tasks.allEmployees')}</option>
+                              <option value="all">👤 {safeT('tasks.allEmployees')}</option>
               {employees.map((emp) => (
                 <option key={emp.id} value={emp.id}>
                   {emp.first_name} {emp.last_name}
@@ -862,14 +862,14 @@ export default function Tasks() {
               }}
               className="p-2 sm:p-3 border border-orange-200 rounded-lg focus:ring-1 focus:ring-orange-300 transition-all text-sm"
             >
-              <option value="created_at-desc">📅 {t('tasks.date')} ({t('tasks.newest')})</option>
-              <option value="created_at-asc">📅 {t('tasks.date')} ({t('tasks.oldest')})</option>
-              <option value="due_date-asc">⏰ {t('tasks.deadline')} ({t('tasks.nearest')})</option>
-              <option value="due_date-desc">⏰ {t('tasks.deadline')} ({t('tasks.farthest')})</option>
+                              <option value="created_at-desc">📅 {safeT('tasks.date')} ({safeT('tasks.newest')})</option>
+                <option value="created_at-asc">📅 {safeT('tasks.date')} ({safeT('tasks.oldest')})</option>
+                <option value="due_date-asc">⏰ {safeT('tasks.deadline')} ({safeT('tasks.nearest')})</option>
+                <option value="due_date-desc">⏰ {safeT('tasks.deadline')} ({safeT('tasks.farthest')})</option>
             </select>
             
             <div className="text-xs sm:text-sm text-gray-600 flex items-center justify-center p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200">
-                              📊 {filteredAndSortedTasks.length} {t('tasks.tasksFound')}
+                              📊 {filteredAndSortedTasks.length} {safeT('tasks.tasksFound')}
             </div>
           </div>
         </div>
@@ -878,14 +878,14 @@ export default function Tasks() {
       {/* LISTA E DETYRAVE */}
       <div className="bg-white/60 rounded-xl shadow-sm border border-blue-100 p-4 sm:p-6">
         <h3 className="text-xl sm:text-2xl font-bold text-blue-800 mb-4 sm:mb-6 flex items-center gap-2">
-                      📋 {t('tasks.tasksList')}
+                      📋 {safeT('tasks.tasksList')}
           <span className="text-sm sm:text-lg text-gray-600">({filteredAndSortedTasks.length} detyra)</span>
         </h3>
         
         {filteredAndSortedTasks.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
             <div className="text-4xl sm:text-6xl mb-4">📝</div>
-                            <p className="text-lg sm:text-xl text-gray-600 mb-2">{t('tasks.noTasksFound')}</p>
+                            <p className="text-lg sm:text-xl text-gray-600 mb-2">{safeT('tasks.noTasksFound')}</p>
             <p className="text-sm sm:text-base text-gray-500">Provoni të ndryshoni filtra ose shtoni detyra të reja</p>
           </div>
         ) : viewMode === "table" ? (
@@ -894,15 +894,15 @@ export default function Tasks() {
             <table className="w-full text-xs sm:text-sm">
               <thead className="bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 text-blue-800 text-sm sm:text-base font-bold">
                 <tr>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{t('tasks.status')}</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-left">{t('tasks.description')}</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden sm:table-cell">{t('tasks.assignedTo')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{safeT('tasks.status')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-left">{safeT('tasks.description')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden sm:table-cell">{safeT('tasks.assignedTo')}</th>
                   <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden lg:table-cell">Site</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{t('tasks.priority')}</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{t('tasks.dueDate')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{safeT('tasks.priority')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{safeT('tasks.dueDate')}</th>
                   <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden lg:table-cell">Nga</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden md:table-cell">{t('tasks.dateCreated')}</th>
-                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{t('tasks.actions')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center hidden md:table-cell">{safeT('tasks.dateCreated')}</th>
+                  <th className="py-2 sm:py-4 px-2 sm:px-4 text-center">{safeT('tasks.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -917,14 +917,14 @@ export default function Tasks() {
                               ? "bg-yellow-100 text-yellow-700 border border-yellow-200" 
                               : "bg-green-100 text-green-700 border border-green-200"
                           }`}>
-                            {t.status === "ongoing" ? `🕒 ${t('tasks.ongoing')}` : `✅ ${t('tasks.completedStatus')}`}
+                            {t.status === "ongoing" ? `🕒 ${safeT('tasks.ongoing')}` : `✅ ${safeT('tasks.completedStatus')}`}
                           </span>
                           {t.status === "ongoing" && (
                             <button
                               onClick={() => handleStatusChange(t.id, "completed")}
                               className="px-2 sm:px-3 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all transform hover:scale-105"
                             >
-                              ✅ {t('tasks.finish')}
+                              ✅ {safeT('tasks.finish')}
                             </button>
                           )}
                         </div>
@@ -947,7 +947,7 @@ export default function Tasks() {
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle">
                         <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(t.priority)}`}>
-                          {getPriorityIcon(t.priority)} {t.priority === 'high' ? t('tasks.high') : t.priority === 'medium' ? t('tasks.medium') : t('tasks.low')}
+                          {getPriorityIcon(t.priority)} {t.priority === 'high' ? safeT('tasks.high') : t.priority === 'medium' ? safeT('tasks.medium') : safeT('tasks.low')}
                         </span>
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle">
@@ -958,7 +958,7 @@ export default function Tasks() {
                               : "bg-green-100 text-green-700 border border-green-200"
                           }`}>
                             {format(new Date(t.due_date), "dd/MM/yyyy")}
-                            {isOverdue && <div className="text-xs">⚠️ {t('tasks.overdueWarningShort')}</div>}
+                            {isOverdue && <div className="text-xs">⚠️ {safeT('tasks.overdueWarningShort')}</div>}
                           </div>
                         ) : (
                           <span className="text-gray-500">-</span>
