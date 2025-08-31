@@ -675,11 +675,15 @@ export default function WorkHours() {
               employees={employees}
               weekLabel={currentWeekLabel}
               data={hourData}
-              onChange={handleChange}
-              readOnly={(empId) => isUser || (isManager && paidStatus[`${currentWeekLabel}_${empId}`])}
-              showPaymentControl={isAdmin}
               paidStatus={paidStatus}
-              setPaidStatus={setPaidStatus}
+              siteOptions={siteOptions}
+              showPaymentControl={isAdmin}
+              onPaymentToggle={(key, newStatus) => {
+                setPaidStatus(prev => ({
+                  ...prev,
+                  [key]: newStatus
+                }));
+              }}
             />
           ) : (
             Object.entries(employeesBySite).sort(([a],[b])=>a.localeCompare(b)).map(([site, list]) => (
@@ -697,13 +701,16 @@ export default function WorkHours() {
                     employees={list}
                     weekLabel={currentWeekLabel}
                     data={hourData}
-                    onChange={handleChange}
-                    readOnly={(empId) => isUser || (isManager && paidStatus[`${currentWeekLabel}_${empId}`])}
-                    showPaymentControl={isAdmin}
                     paidStatus={paidStatus}
-                    setPaidStatus={setPaidStatus}
-                    siteScope={site === '(Pa site)' ? '' : site}
                     siteOptions={[site]}
+                    siteScope={site === '(Pa site)' ? '' : site}
+                    showPaymentControl={isAdmin}
+                    onPaymentToggle={(key, newStatus) => {
+                      setPaidStatus(prev => ({
+                        ...prev,
+                        [key]: newStatus
+                      }));
+                    }}
                   />
                 </div>
               </div>
