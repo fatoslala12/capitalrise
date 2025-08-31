@@ -1098,7 +1098,17 @@
     "paidStatus": "Paid",
     "dailyDetails": "Daily Details:",
     "rest": "Rest",
-    "selectSite": "Select site"
+    "selectSite": "Select site",
+    "weekTotal": "Week Total",
+    "totalHours": "Total Hours",
+    "totalGross": "Total Gross",
+    "totalVat": "Total VAT",
+    "totalNet": "Total Net",
+    "markAsPaid": "Mark as Paid",
+    "markAsUnpaid": "Mark as Unpaid",
+    "successfully": "successfully",
+    "payment": "Payment",
+    "employeeList": "Employee List"
   },
   "payments": {
     "title": "Payments & Contracts",
