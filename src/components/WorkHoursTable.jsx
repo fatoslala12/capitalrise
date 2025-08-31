@@ -32,8 +32,39 @@ export default function WorkHoursTable({
   showPaymentControl = false,
   onPaymentToggle 
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [expandedRows, setExpandedRows] = useState(new Set());
+
+  // Debug: Check translation function and data
+  console.log('[DEBUG] WorkHoursTable render:', {
+    employees: employees?.length,
+    weekLabel,
+    dataKeys: Object.keys(data || {}),
+    paidStatusKeys: Object.keys(paidStatus || {}),
+    siteOptions,
+    siteScope,
+    showPaymentControl,
+    tFunction: typeof t,
+    i18nLanguage: i18n.language,
+    i18nReady: i18n.isInitialized
+  });
+
+  // Test translation function
+  console.log('[DEBUG] Translation test:', {
+    viewAll: t('workHours.viewAll'),
+    viewBySite: t('workHours.viewBySite'),
+    employeeHeader: t('workHours.employeeHeader'),
+    rateHeader: t('workHours.rateHeader'),
+    hoursHeader: t('workHours.hoursHeader'),
+    grossHeader: t('workHours.grossHeader'),
+    vatHeader: t('workHours.vatHeader'),
+    netHeader: t('workHours.netHeader'),
+    actionsHeader: t('workHours.actionsHeader'),
+    statusHeader: t('workHours.statusHeader'),
+    employeeList: t('workHours.employeeList'),
+    deletePayment: t('workHours.deletePayment'),
+    paidLate: t('workHours.paidLate')
+  });
 
   // Memoize day translations to avoid re-renders
   const dayLabels = useMemo(() => {
@@ -55,14 +86,32 @@ export default function WorkHoursTable({
   // Stabilize calculations by removing t function dependency from core calculation logic
   const calculations = useMemo(() => {
     if (!Array.isArray(employees) || employees.length === 0) {
+      console.log('[DEBUG] No employees provided to calculations');
       return [];
     }
+
+    console.log('[DEBUG] Starting calculations with:', {
+      employeesCount: employees.length,
+      weekLabel,
+      dataKeys: Object.keys(data || {}),
+      dataSample: Object.entries(data || {}).slice(0, 2)
+    });
 
     return employees.map(emp => {
       const firstName = emp.first_name || emp.firstName || '';
       const lastName = emp.last_name || emp.lastName || '';
       const employeeRate = Number(emp.hourlyRate || emp.hourly_rate || 0);
       const labelType = emp.labelType || emp.label_type || "UTR";
+      
+      // Debug the data structure for this employee
+      console.log(`[DEBUG] Employee ${emp.id} (${firstName} ${lastName}) data:`, {
+        empId: emp.id,
+        empIdType: typeof emp.id,
+        dataKeys: Object.keys(data || {}),
+        empData: data[emp.id],
+        weekData: data[emp.id]?.[weekLabel],
+        rawHours: data[emp.id]?.[weekLabel] || {}
+      });
       
       const rawHours = data[emp.id]?.[weekLabel] || {};
       
@@ -79,7 +128,9 @@ export default function WorkHoursTable({
         labelType,
         hours,
         siteScope,
-        empData: data[emp.id]
+        empData: data[emp.id],
+        rawHoursKeys: Object.keys(rawHours),
+        hoursKeys: Object.keys(hours)
       });
       
       // Fix TypeError by ensuring proper number conversion and handling null values
@@ -133,7 +184,10 @@ export default function WorkHoursTable({
         today
       };
       
-      console.log(`[DEBUG] Employee ${emp.id} calculation result:`, result);
+      console.log(`[DEBUG] Employee ${emp.id} calculation result:`, {
+        ...result,
+        hoursSummary: Object.entries(hours).map(([day, data]) => ({ day, hours: data?.hours, site: data?.site }))
+      });
       
       return result;
     });
@@ -146,20 +200,36 @@ export default function WorkHoursTable({
     let statusBg = '';
     
     if (calc.statusKey === 'paid') {
-      statusText = t('workHours.paid');
+      statusText = t('workHours.paid') || 'Paid';
       statusClass = 'text-green-700';
       statusBg = 'bg-green-100 border-green-200';
     } else if (calc.statusKey === 'paidLate') {
-      statusText = t('workHours.paidLate');
+      statusText = t('workHours.paidLate') || 'Paid Late';
       statusClass = 'text-yellow-700';
       statusBg = 'bg-yellow-100 border-yellow-200';
     } else {
-      statusText = t('workHours.unpaid');
+      statusText = t('workHours.unpaid') || 'Unpaid';
       statusClass = 'text-red-700';
       statusBg = 'bg-red-100 border-red-200';
     }
     
     return { statusText, statusClass, statusBg };
+  }, [t]);
+
+  // Fallback translation function
+  const safeT = useCallback((key, fallback) => {
+    try {
+      const translation = t(key);
+      // If translation returns the key itself, use fallback
+      if (translation === key) {
+        console.warn(`[WARNING] Translation key not found: ${key}, using fallback: ${fallback}`);
+        return fallback;
+      }
+      return translation;
+    } catch (error) {
+      console.error(`[ERROR] Translation error for key ${key}:`, error);
+      return fallback;
+    }
   }, [t]);
 
   // Optimized totals calculation with error handling
@@ -283,19 +353,19 @@ export default function WorkHoursTable({
       <div className="hidden lg:block">
         {/* Table Header */}
         <div className="grid grid-cols-9 gap-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-xl font-bold text-sm">
-          <div className="col-span-2 text-center">👤 {t('workHours.employeeHeader')}</div>
-          <div className="text-center">💰 {t('workHours.rateHeader')}</div>
-          <div className="text-center">⏰ {t('workHours.hoursHeader')}</div>
-          <div className="text-center">💷 {t('workHours.grossHeader')}</div>
-          <div className="text-center">📋 {t('workHours.vatHeader')}</div>
-          <div className="text-center">💰 {t('workHours.netHeader')}</div>
-          <div className="text-center">💸 {t('workHours.actionsHeader')}</div>
-          <div className="text-center">✅ {t('workHours.statusHeader')}</div>
+          <div className="col-span-2 text-center">👤 {safeT('workHours.employeeHeader', 'Employee')}</div>
+          <div className="text-center">💰 {safeT('workHours.rateHeader', 'Rate')}</div>
+          <div className="text-center">⏰ {safeT('workHours.hoursHeader', 'Hours')}</div>
+          <div className="text-center">💷 {safeT('workHours.grossHeader', 'Gross')}</div>
+          <div className="text-center">📋 {safeT('workHours.vatHeader', 'VAT')}</div>
+          <div className="text-center">💰 {safeT('workHours.netHeader', 'Net')}</div>
+          <div className="text-center">💸 {safeT('workHours.actionsHeader', 'Actions')}</div>
+          <div className="text-center">✅ {safeT('workHours.statusHeader', 'Status')}</div>
         </div>
 
         {/* Employee List Header */}
         <div className="bg-gray-100 p-3 border-b border-gray-200">
-          <span className="text-sm">👥 {t('workHours.employeeList')} - {weekLabel}</span>
+          <span className="text-sm">👥 {safeT('workHours.employeeList', 'Employee List')} - {weekLabel}</span>
         </div>
 
         {/* Table Body */}
@@ -371,7 +441,7 @@ export default function WorkHoursTable({
                       onClick={() => handlePaymentToggle(calc.emp.id)}
                       className="px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 whitespace-nowrap"
                     >
-                      {calc.paid ? `❌ ${t('workHours.deletePayment')}` : `✅ ${t('workHours.paidStatus')}`}
+                      {calc.paid ? `❌ ${safeT('workHours.deletePayment', 'Delete Payment')}` : `✅ ${safeT('workHours.paidStatus', 'Paid Status')}`}
                     </button>
                   )}
                 </div>
@@ -438,7 +508,7 @@ export default function WorkHoursTable({
                       onClick={() => handlePaymentToggle(calc.emp.id)}
                       className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
                     >
-                      {calc.paid ? `❌ ${t('workHours.deletePayment')}` : `✅ ${t('workHours.paidStatus')}`}
+                      {calc.paid ? `❌ ${safeT('workHours.deletePayment', 'Delete Payment')}` : `✅ ${safeT('workHours.paidStatus', 'Paid Status')}`}
                     </button>
                   )}
                   <span className={`px-3 py-1 rounded-full text-xs font-bold border ${statusBg} ${statusClass}`}>
@@ -574,7 +644,7 @@ export default function WorkHoursTable({
                     onClick={() => handlePaymentToggle(calc.emp.id)}
                     className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-sm font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
                   >
-                    {calc.paid ? `❌ ${t('workHours.deletePayment')}` : `✅ ${t('workHours.paidStatus')}`}
+                    {calc.paid ? `❌ ${safeT('workHours.deletePayment', 'Delete Payment')}` : `✅ ${safeT('workHours.paidStatus', 'Paid Status')}`}
                   </button>
                 </div>
               )}
