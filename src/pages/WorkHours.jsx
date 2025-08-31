@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import WorkHoursTable from "../components/WorkHoursTable";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
@@ -56,11 +57,15 @@ const formatDateRange = (startDate) => {
 
 export default function WorkHours() {
   const { t } = useTranslation();
+  const { currentLanguage, isAlbanian } = useLanguage();
   const { user, setUser } = useAuth();
   const isManager = user?.role === "manager";
   const isAdmin = user?.role === "admin";
   const isUser = user?.role === "user";
   const token = localStorage.getItem("token");
+
+  // Debug language context
+  console.log('[DEBUG] WorkHours language context:', { currentLanguage, isAlbanian });
 
   const [employees, setEmployees] = useState([]);
   const [hourData, setHourData] = useState({});
@@ -265,7 +270,32 @@ export default function WorkHours() {
         console.log('[DEBUG] WorkHours API data keys:', Object.keys(res.data || {}));
         
         const data = res.data || {};
-        setHourData(data);
+        
+        // Debug: Check the actual structure of the data
+        if (Array.isArray(data)) {
+          console.log('[DEBUG] API returned array, converting to expected structure');
+          // If API returns array, convert to expected object structure
+          const convertedData = {};
+          data.forEach(item => {
+            if (item.employeeId && item.week && item.day) {
+              if (!convertedData[item.employeeId]) {
+                convertedData[item.employeeId] = {};
+              }
+              if (!convertedData[item.employeeId][item.week]) {
+                convertedData[item.employeeId][item.week] = {};
+              }
+              convertedData[item.employeeId][item.week][item.day] = {
+                hours: item.hours,
+                site: item.site
+              };
+            }
+          });
+          console.log('[DEBUG] Converted data structure:', convertedData);
+          setHourData(convertedData);
+        } else {
+          console.log('[DEBUG] API returned object, using as is');
+          setHourData(data);
+        }
         
         // Debug: shfaq disa shembuj të të dhënave
         Object.entries(data).forEach(([empId, empData]) => {

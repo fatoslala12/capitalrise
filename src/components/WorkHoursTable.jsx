@@ -46,11 +46,12 @@ export default function WorkHoursTable({
     showPaymentControl,
     tFunction: typeof t,
     i18nLanguage: i18n.language,
-    i18nReady: i18n.isInitialized
+    i18nReady: i18n.isInitialized,
+    currentLanguage: i18n.language
   });
 
-  // Test translation function
-  console.log('[DEBUG] Translation test:', {
+  // Test translation function with current language
+  const translationTest = {
     viewAll: t('workHours.viewAll'),
     viewBySite: t('workHours.viewBySite'),
     employeeHeader: t('workHours.employeeHeader'),
@@ -64,12 +65,15 @@ export default function WorkHoursTable({
     employeeList: t('workHours.employeeList'),
     deletePayment: t('workHours.deletePayment'),
     paidLate: t('workHours.paidLate')
-  });
+  };
+
+  console.log('[DEBUG] Translation test:', translationTest);
+  console.log('[DEBUG] Current language:', i18n.language);
 
   // Memoize day translations to avoid re-renders
   const dayLabels = useMemo(() => {
     return days.map(day => t(dayTranslations[day]));
-  }, [t]);
+  }, [t, i18n.language]); // Add language dependency
 
   const toggleRowExpansion = useCallback((empId) => {
     setExpandedRows(prev => {
@@ -94,7 +98,8 @@ export default function WorkHoursTable({
       employeesCount: employees.length,
       weekLabel,
       dataKeys: Object.keys(data || {}),
-      dataSample: Object.entries(data || {}).slice(0, 2)
+      dataSample: Object.entries(data || {}).slice(0, 2),
+      employeesSample: employees.slice(0, 2).map(emp => ({ id: emp.id, name: `${emp.first_name || emp.firstName} ${emp.last_name || emp.lastName}` }))
     });
 
     return employees.map(emp => {
@@ -113,7 +118,24 @@ export default function WorkHoursTable({
         rawHours: data[emp.id]?.[weekLabel] || {}
       });
       
-      const rawHours = data[emp.id]?.[weekLabel] || {};
+      // Try different ways to find employee data
+      let rawHours = data[emp.id]?.[weekLabel] || {};
+      
+      // If not found by emp.id, try by string conversion
+      if (Object.keys(rawHours).length === 0) {
+        const empIdStr = String(emp.id);
+        rawHours = data[empIdStr]?.[weekLabel] || {};
+        console.log(`[DEBUG] Trying string ID ${empIdStr}:`, rawHours);
+      }
+      
+      // If still not found, try by numeric conversion
+      if (Object.keys(rawHours).length === 0) {
+        const empIdNum = parseInt(emp.id);
+        if (!isNaN(empIdNum)) {
+          rawHours = data[empIdNum]?.[weekLabel] || {};
+          console.log(`[DEBUG] Trying numeric ID ${empIdNum}:`, rawHours);
+        }
+      }
       
       // Filter hours by site scope if specified
       const hours = siteScope
@@ -130,7 +152,8 @@ export default function WorkHoursTable({
         siteScope,
         empData: data[emp.id],
         rawHoursKeys: Object.keys(rawHours),
-        hoursKeys: Object.keys(hours)
+        hoursKeys: Object.keys(hours),
+        hoursData: Object.entries(hours).map(([day, data]) => ({ day, hours: data?.hours, site: data?.site }))
       });
       
       // Fix TypeError by ensuring proper number conversion and handling null values
