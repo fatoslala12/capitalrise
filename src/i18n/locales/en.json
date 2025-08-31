@@ -101,7 +101,22 @@
     "passwordChangeSuccess": "Password changed successfully.",
     "profileUpdateSuccess": "Profile updated successfully.",
     "loginSuccess": "Login successful!",
-    "logoutSuccess": "Logout successful!"
+    "logoutSuccess": "Logout successful!",
+    "loginCredentials": "Enter your credentials to access the system",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "loginButton": "Login to System",
+    "loggingIn": "Logging in...",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Email is not valid",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Password must have at least 6 characters",
+    "fillFieldsCorrectly": "Please fill all fields correctly",
+    "welcomeBack": "Welcome back! Redirecting to dashboard...",
+    "loginFailed": "Login failed. Please check your credentials.",
+    "accountBlocked": "Your account is blocked. Contact administrator.",
+    "serverError": "Server error. Please try again later.",
+    "networkError": "Connection issues. Check your internet."
   },
   "dashboard": {
     "title": "Dashboard",

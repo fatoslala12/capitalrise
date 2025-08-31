@@ -4,24 +4,6 @@ import { preloadCriticalLibraries } from '../utils/lazyImports';
 const PerformanceOptimizer = () => {
   const preloadedRef = useRef(false);
   const observerRef = useRef(null);
-  const performanceMetricsRef = useRef({});
-
-  // Performance monitoring
-  const measurePerformance = useCallback(() => {
-    if ('performance' in window) {
-      const navigation = performance.getEntriesByType('navigation')[0];
-      if (navigation) {
-        performanceMetricsRef.current = {
-          loadTime: navigation.loadEventEnd - navigation.loadEventStart,
-          domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
-          firstPaint: performance.getEntriesByName('first-paint')[0]?.startTime || 0,
-          firstContentfulPaint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0,
-        };
-        
-        console.log('Performance Metrics:', performanceMetricsRef.current);
-      }
-    }
-  }, []);
 
   // Enhanced preloading with priority
   const preloadResources = useCallback(async () => {
@@ -32,30 +14,6 @@ const PerformanceOptimizer = () => {
       
       // Preload critical libraries
       await preloadCriticalLibraries();
-      
-      // Preload critical images with different priorities
-      const criticalImages = [
-        { url: '/Capital%20Rise%20logo.png', priority: 'high' },
-        { url: '/src/assets/logo.png', priority: 'medium' },
-        { url: '/src/assets/avatar.png', priority: 'low' }
-      ];
-      
-      criticalImages.forEach(({ url, priority }) => {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.as = 'image';
-        link.href = url;
-        link.fetchPriority = priority;
-        document.head.appendChild(link);
-      });
-      
-      // Preload fonts
-      const fontLink = document.createElement('link');
-      fontLink.rel = 'preload';
-      fontLink.as = 'font';
-      fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap';
-      fontLink.crossOrigin = 'anonymous';
-      document.head.appendChild(fontLink);
       
     } catch (error) {
       console.error('Resource preloading failed:', error);
@@ -115,18 +73,6 @@ const PerformanceOptimizer = () => {
     }
   }, []);
 
-  // Service Worker registration for PWA capabilities
-  const registerServiceWorker = useCallback(async () => {
-    if ('serviceWorker' in navigator) {
-      try {
-        const registration = await navigator.serviceWorker.register('/sw.js');
-        console.log('Service Worker registered:', registration);
-      } catch (error) {
-        console.log('Service Worker registration failed:', error);
-      }
-    }
-  }, []);
-
   // Enhanced error boundary and monitoring
   const setupErrorMonitoring = useCallback(() => {
     window.addEventListener('error', (event) => {
@@ -140,28 +86,6 @@ const PerformanceOptimizer = () => {
     });
   }, []);
 
-  // Memory usage monitoring
-  const monitorMemory = useCallback(() => {
-    if ('memory' in performance) {
-      const memory = performance.memory;
-      console.log('Memory usage:', {
-        used: Math.round(memory.usedJSHeapSize / 1048576) + ' MB',
-        total: Math.round(memory.totalJSHeapSize / 1048576) + ' MB',
-        limit: Math.round(memory.jsHeapSizeLimit / 1048576) + ' MB'
-      });
-    }
-  }, []);
-
-  // Setup performance monitoring
-  useEffect(() => {
-    measurePerformance();
-    
-    // Monitor performance after page load
-    const timer = setTimeout(measurePerformance, 2000);
-    
-    return () => clearTimeout(timer);
-  }, [measurePerformance]);
-
   // Setup resource preloading
   useEffect(() => {
     preloadResources();
@@ -174,21 +98,10 @@ const PerformanceOptimizer = () => {
     return cleanup;
   }, [setupIntersectionObserver, cleanup]);
 
-  // Setup service worker
-  useEffect(() => {
-    registerServiceWorker();
-  }, [registerServiceWorker]);
-
   // Setup error monitoring
   useEffect(() => {
     setupErrorMonitoring();
   }, [setupErrorMonitoring]);
-
-  // Memory monitoring (every 30 seconds)
-  useEffect(() => {
-    const interval = setInterval(monitorMemory, 30000);
-    return () => clearInterval(interval);
-  }, [monitorMemory]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -199,13 +112,6 @@ const PerformanceOptimizer = () => {
 
   // Performance optimization tips
   useEffect(() => {
-    // Disable console logs in production
-    if (process.env.NODE_ENV === 'production') {
-      console.log = () => {};
-      console.warn = () => {};
-      console.info = () => {};
-    }
-    
     // Optimize scroll performance
     let ticking = false;
     const optimizeScroll = () => {

@@ -10,7 +10,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [tokenExpiry, setTokenExpiry] = useState(null);
   const navigate = useNavigate();
 
   // Enhanced token management with role-based storage
@@ -31,12 +30,6 @@ export function AuthProvider({ children }) {
       const parts = token.split('.');
       if (parts.length !== 3) return false;
       
-      // Check if token is expired (if expiry is stored)
-      const storedExpiry = localStorage.getItem('tokenExpiry');
-      if (storedExpiry && new Date(storedExpiry) < new Date()) {
-        return false;
-      }
-      
       return true;
     } catch (error) {
       console.error('Token validation error:', error);
@@ -54,7 +47,7 @@ export function AuthProvider({ children }) {
         password,
       });
 
-      const { token, user: userData, expiresIn } = response.data;
+      const { token, user: userData } = response.data;
       
       if (!token || !userData || !userData.role) {
         throw new Error('Invalid response from server');
@@ -64,22 +57,18 @@ export function AuthProvider({ children }) {
       const roleTokenKey = getRoleBasedTokenKey(userData.role);
       const roleUserKey = getRoleBasedUserKey(userData.role);
       
-      // Calculate token expiry
-      const expiryDate = expiresIn ? new Date(Date.now() + expiresIn * 1000) : new Date(Date.now() + 24 * 60 * 60 * 1000); // Default 24 hours
-      
       // Store authentication data
       localStorage.setItem(roleTokenKey, token);
       localStorage.setItem(roleUserKey, JSON.stringify(userData));
-      localStorage.setItem('tokenExpiry', expiryDate.toISOString());
       localStorage.setItem('currentRole', userData.role);
       
       // Set global token for API calls
       localStorage.setItem("token", token);
+      localStorage.setItem("authUser", JSON.stringify(userData));
       
       // Update state
       setUser(userData);
       setIsAuthenticated(true);
-      setTokenExpiry(expiryDate);
       
       // Set API default authorization header
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -111,7 +100,6 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("authUser");
     localStorage.removeItem("user");
     localStorage.removeItem("currentRole");
-    localStorage.removeItem("tokenExpiry");
     
     // Clear API headers
     delete api.defaults.headers.common['Authorization'];
@@ -119,7 +107,6 @@ export function AuthProvider({ children }) {
     // Reset state
     setUser(null);
     setIsAuthenticated(false);
-    setTokenExpiry(null);
     
     // Navigate to login
     navigate("/");
@@ -129,45 +116,41 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const currentRole = localStorage.getItem('currentRole');
-        if (!currentRole) {
-          setLoading(false);
-          return;
-        }
-
-        const roleTokenKey = getRoleBasedTokenKey(currentRole);
-        const roleUserKey = getRoleBasedUserKey(currentRole);
-        
-        const token = localStorage.getItem(roleTokenKey);
-        const storedUser = localStorage.getItem(roleUserKey);
+        // Check for existing authentication
+        const token = localStorage.getItem("token");
+        const storedUser = localStorage.getItem("authUser");
         
         if (token && storedUser && isTokenValid(token)) {
           try {
             const userData = JSON.parse(storedUser);
             
-            // Verify token with backend
+            // Set API header
             api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            const response = await api.get('/api/auth/verify');
             
-            if (response.data.valid) {
-              setUser(userData);
-              setIsAuthenticated(true);
-              setTokenExpiry(new Date(localStorage.getItem('tokenExpiry')));
-            } else {
-              // Token invalid, clear everything
-              logout();
+            // Set user state
+            setUser(userData);
+            setIsAuthenticated(true);
+            
+            // Store role-specific data for compatibility
+            if (userData.role) {
+              const roleTokenKey = getRoleBasedTokenKey(userData.role);
+              const roleUserKey = getRoleBasedUserKey(userData.role);
+              localStorage.setItem(roleTokenKey, token);
+              localStorage.setItem(roleUserKey, storedUser);
+              localStorage.setItem('currentRole', userData.role);
             }
+            
           } catch (error) {
-            console.error('Token verification failed:', error);
+            console.error('User data parsing failed:', error);
             logout();
           }
         } else {
-          // Invalid or expired token
-          logout();
+          // No valid authentication found
+          setLoading(false);
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        logout();
+        setLoading(false);
       } finally {
         setLoading(false);
       }
@@ -175,21 +158,6 @@ export function AuthProvider({ children }) {
 
     checkAuthStatus();
   }, [getRoleBasedTokenKey, getRoleBasedUserKey, isTokenValid, logout]);
-
-  // Auto-logout on token expiry
-  useEffect(() => {
-    if (!tokenExpiry) return;
-
-    const checkExpiry = () => {
-      if (new Date() >= tokenExpiry) {
-        console.log('Token expired, logging out...');
-        logout();
-      }
-    };
-
-    const interval = setInterval(checkExpiry, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, [tokenExpiry, logout]);
 
   // Memoized context value
   const contextValue = useMemo(() => ({
@@ -199,7 +167,6 @@ export function AuthProvider({ children }) {
     logout,
     loading,
     isAuthenticated,
-    tokenExpiry,
     hasRole: (role) => user?.role === role,
     hasAnyRole: (roles) => roles.includes(user?.role),
     hasPermission: (permission) => {
@@ -212,7 +179,7 @@ export function AuthProvider({ children }) {
       };
       return permissions[userRole]?.includes(permission) || false;
     }
-  }), [user, login, logout, loading, isAuthenticated, tokenExpiry]);
+  }), [user, login, logout, loading, isAuthenticated]);
 
   return (
     <AuthContext.Provider value={contextValue}>
