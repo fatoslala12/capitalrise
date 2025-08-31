@@ -274,26 +274,55 @@ export default function WorkHours() {
         // Debug: Check the actual structure of the data
         if (Array.isArray(data)) {
           console.log('[DEBUG] API returned array, converting to expected structure');
+          console.log('[DEBUG] First few array items:', data.slice(0, 3));
+          
           // If API returns array, convert to expected object structure
           const convertedData = {};
-          data.forEach(item => {
-            if (item.employeeId && item.week && item.day) {
-              if (!convertedData[item.employeeId]) {
-                convertedData[item.employeeId] = {};
+          data.forEach((item, index) => {
+            console.log(`[DEBUG] Processing item ${index}:`, item);
+            console.log(`[DEBUG] Item keys:`, Object.keys(item));
+            
+            // Try different possible field names for employee ID
+            const empId = item.employeeId || item.employee_id || item.empId || item.emp_id || item.id;
+            const week = item.week || item.weekLabel || item.week_label || item.weekLabel || currentWeekLabel;
+            const day = item.day || item.dayOfWeek || item.day_of_week || item.dayName;
+            const hours = item.hours || item.hour || item.hourCount || item.hour_count || 0;
+            const site = item.site || item.siteName || item.site_name || item.workplace || '';
+            
+            console.log(`[DEBUG] Extracted values:`, { empId, week, day, hours, site });
+            
+            if (empId && week && day !== undefined) {
+              if (!convertedData[empId]) {
+                convertedData[empId] = {};
               }
-              if (!convertedData[item.employeeId][item.week]) {
-                convertedData[item.employeeId][item.week] = {};
+              if (!convertedData[empId][week]) {
+                convertedData[empId][week] = {};
               }
-              convertedData[item.employeeId][item.week][item.day] = {
-                hours: item.hours,
-                site: item.site
+              convertedData[empId][week][day] = {
+                hours: parseFloat(hours) || 0,
+                site: site
               };
+              console.log(`[DEBUG] Added to convertedData[${empId}][${week}][${day}]:`, convertedData[empId][week][day]);
+            } else {
+              console.warn(`[WARNING] Skipping item ${index} - missing required fields:`, { empId, week, day, hours, site });
             }
           });
-          console.log('[DEBUG] Converted data structure:', convertedData);
+          
+          console.log('[DEBUG] Final converted data structure:', convertedData);
+          console.log('[DEBUG] Converted data keys:', Object.keys(convertedData));
+          
+          // Debug: show sample of converted data
+          Object.entries(convertedData).forEach(([empId, empData]) => {
+            console.log(`[DEBUG] Employee ${empId} converted data:`, empData);
+            Object.entries(empData).forEach(([week, weekData]) => {
+              console.log(`[DEBUG] Employee ${empId} week ${week}:`, weekData);
+            });
+          });
+          
           setHourData(convertedData);
         } else {
           console.log('[DEBUG] API returned object, using as is');
+          console.log('[DEBUG] Object data structure:', data);
           setHourData(data);
         }
         
