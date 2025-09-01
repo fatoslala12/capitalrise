@@ -34,8 +34,20 @@ export default function WorkHoursTable({
   onChange,
   readOnly
 }) {
-  const { t, i18n } = useTranslation();
+  const { t, i18n, ready } = useTranslation();
   const [expandedRows, setExpandedRows] = useState(new Set());
+
+  // Safe translation function with fallback
+  const safeT = useCallback((key, fallback = key) => {
+    if (!ready || !t) return fallback;
+    try {
+      const translation = t(key);
+      return translation === key ? fallback : translation;
+    } catch (error) {
+      console.warn(`Translation error for key "${key}":`, error);
+      return fallback;
+    }
+  }, [t, ready]);
 
   // Debug: Check translation function and data
   console.log('[DEBUG] WorkHoursTable render:', {
@@ -49,24 +61,37 @@ export default function WorkHoursTable({
     tFunction: typeof t,
     i18nLanguage: i18n.language,
     i18nReady: i18n.isInitialized,
-    currentLanguage: i18n.language
+    currentLanguage: i18n.language,
+    ready
   });
+
+  // Don't render if translations aren't ready
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading translations...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Test translation function with current language
   const translationTest = {
-    viewAll: t('workHours.viewAll'),
-    viewBySite: t('workHours.viewBySite'),
-    employeeHeader: t('workHours.employeeHeader'),
-    rateHeader: t('workHours.rateHeader'),
-    hoursHeader: t('workHours.hoursHeader'),
-    grossHeader: t('workHours.grossHeader'),
-    vatHeader: t('workHours.vatHeader'),
-    netHeader: t('workHours.netHeader'),
-    actionsHeader: t('workHours.actionsHeader'),
-    statusHeader: t('workHours.statusHeader'),
-    employeeList: t('workHours.employeeList'),
-    deletePayment: t('workHours.deletePayment'),
-    paidLate: t('workHours.paidLate')
+    viewAll: safeT('workHours.viewAll', 'View All'),
+    viewBySite: safeT('workHours.viewBySite', 'View by Site'),
+    employeeHeader: safeT('workHours.employeeHeader', 'Employee'),
+    rateHeader: safeT('workHours.rateHeader', 'Rate'),
+    hoursHeader: safeT('workHours.hoursHeader', 'Hours'),
+    grossHeader: safeT('workHours.grossHeader', 'Gross'),
+    vatHeader: safeT('workHours.vatHeader', 'VAT'),
+    netHeader: safeT('workHours.netHeader', 'Net'),
+    actionsHeader: safeT('workHours.actionsHeader', 'Actions'),
+    statusHeader: safeT('workHours.statusHeader', 'Status'),
+    employeeList: safeT('workHours.employeeList', 'Employee List'),
+    deletePayment: safeT('workHours.deletePayment', 'Delete Payment'),
+    paidLate: safeT('workHours.paidLate', 'Paid Late')
   };
 
   console.log('[DEBUG] Translation test:', translationTest);
@@ -74,8 +99,8 @@ export default function WorkHoursTable({
 
   // Memoize day translations to avoid re-renders
   const dayLabels = useMemo(() => {
-    return days.map(day => t(dayTranslations[day]));
-  }, [t, i18n.language]); // Add language dependency
+    return days.map(day => safeT(dayTranslations[day], day));
+  }, [safeT, i18n.language]); // Add language dependency
 
   const toggleRowExpansion = useCallback((empId) => {
     setExpandedRows(prev => {
@@ -243,37 +268,23 @@ export default function WorkHoursTable({
     let statusBg = '';
     
     if (calc.statusKey === 'paid') {
-      statusText = t('workHours.paid') || 'Paid';
+      statusText = safeT('workHours.paid', 'Paid');
       statusClass = 'text-green-700';
       statusBg = 'bg-green-100 border-green-200';
     } else if (calc.statusKey === 'paidLate') {
-      statusText = t('workHours.paidLate') || 'Paid Late';
+      statusText = safeT('workHours.paidLate', 'Paid Late');
       statusClass = 'text-yellow-700';
       statusBg = 'bg-yellow-100 border-yellow-200';
     } else {
-      statusText = t('workHours.unpaid') || 'Unpaid';
+      statusText = safeT('workHours.unpaid', 'Unpaid');
       statusClass = 'text-red-700';
       statusBg = 'bg-red-100 border-red-200';
     }
     
     return { statusText, statusClass, statusBg };
-  }, [t]);
+  }, [safeT]);
 
-  // Fallback translation function
-  const safeT = useCallback((key, fallback) => {
-    try {
-      const translation = t(key);
-      // If translation returns the key itself, use fallback
-      if (translation === key) {
-        console.warn(`[WARNING] Translation key not found: ${key}, using fallback: ${fallback}`);
-        return fallback;
-      }
-      return translation;
-    } catch (error) {
-      console.error(`[ERROR] Translation error for key ${key}:`, error);
-      return fallback;
-    }
-  }, [t]);
+
 
   // Optimized totals calculation with error handling
   const weekTotals = useMemo(() => {
@@ -366,7 +377,7 @@ export default function WorkHoursTable({
         
         // Show success message
         if (window.showToast) {
-          window.showToast(`${t('workHours.payment')} ${newPaidStatus ? t('workHours.markedAsPaid') : t('workHours.markedAsUnpaid')} ${t('workHours.successfully')}!`, 'success');
+          window.showToast(`${safeT('workHours.payment', 'Payment')} ${newPaidStatus ? safeT('workHours.markedAsPaid', 'marked as paid') : safeT('workHours.markedAsUnpaid', 'marked as unpaid')} ${safeT('workHours.successfully', 'successfully')}!`, 'success');
         }
       } else {
         console.error("Failed to toggle payment status");
@@ -527,19 +538,19 @@ export default function WorkHoursTable({
                 {/* Stats grid */}
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-600 mb-1">{t('workHours.rateHeader')}</div>
+                    <div className="text-xs text-gray-600 mb-1">{safeT('workHours.rateHeader', 'Rate')}</div>
                     <div className="font-bold text-blue-900">£{calc.rate && !isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-600 mb-1">{t('workHours.hoursHeader')}</div>
+                    <div className="text-xs text-gray-600 mb-1">{safeT('workHours.hoursHeader', 'Hours')}</div>
                     <div className="font-bold text-gray-900">{calc.total && !isNaN(calc.total) ? Number(calc.total).toFixed(2) : '0.00'}</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-600 mb-1">{t('workHours.grossHeader')}</div>
+                    <div className="text-xs text-gray-600 mb-1">{safeT('workHours.grossHeader', 'Gross')}</div>
                     <div className="font-bold text-green-700">£{calc.bruto && !isNaN(calc.bruto) ? Number(calc.bruto).toFixed(2) : '0.00'}</div>
                   </div>
                   <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-xs text-gray-600 mb-1">{t('workHours.netHeader')}</div>
+                    <div className="text-xs text-gray-600 mb-1">{safeT('workHours.netHeader', 'Net')}</div>
                     <div className="font-bold text-blue-700">£{calc.neto && !isNaN(calc.neto) ? Number(calc.neto).toFixed(2) : '0.00'}</div>
                   </div>
                 </div>
@@ -563,7 +574,7 @@ export default function WorkHoursTable({
               {/* Detajet e zgjeruara */}
               {expandedRows.has(calc.emp.id) && (
                 <div className="border-t border-blue-200 bg-gray-50 p-4">
-                  <h4 className="font-semibold text-blue-800 mb-3">{t('workHours.dailyDetails')}</h4>
+                  <h4 className="font-semibold text-blue-800 mb-3">{safeT('workHours.dailyDetails', 'Daily Details')}</h4>
                   <div className="grid grid-cols-7 gap-2">
                     {dayLabels.map((dayLabel, dayIndex) => {
                       const day = days[dayIndex];
@@ -602,7 +613,7 @@ export default function WorkHoursTable({
                               }}
                               disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : false}
                             >
-                              <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? t('workHours.selectSite') : t('workHours.rest')}</option>
+                              <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? safeT('workHours.selectSite', 'Select Site') : safeT('workHours.rest', 'Rest')}</option>
                               {(Array.isArray(calc.empSites) && calc.empSites.length ? calc.empSites : siteOptions).map(site => (
                                 <option key={site} value={site}>{site}</option>
                               ))}
@@ -654,25 +665,25 @@ export default function WorkHoursTable({
               {/* Summary grid */}
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="text-center">
-                  <div className="text-xs text-gray-600 mb-1">{t('workHours.rateHeader')}</div>
+                  <div className="text-xs text-gray-600 mb-1">{safeT('workHours.rateHeader', 'Rate')}</div>
                   <div className="font-semibold text-blue-900 bg-blue-100 rounded px-2 py-1">
                     £{calc.rate && !isNaN(calc.rate) ? Number(calc.rate).toFixed(2) : '0.00'}
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xs text-gray-600 mb-1">{t('workHours.hoursHeader')}</div>
+                  <div className="text-xs text-gray-600 mb-1">{safeT('workHours.hoursHeader', 'Hours')}</div>
                   <div className="font-semibold text-gray-900 bg-gray-100 rounded px-2 py-1">
                     {calc.total && !isNaN(calc.total) ? Number(calc.total).toFixed(2) : '0.00'}
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xs text-gray-600 mb-1">{t('workHours.grossHeader')}</div>
+                  <div className="text-xs text-gray-600 mb-1">{safeT('workHours.grossHeader', 'Gross')}</div>
                   <div className="font-semibold text-green-700 bg-green-100 rounded px-2 py-1">
                     £{calc.bruto && !isNaN(calc.bruto) ? Number(calc.bruto).toFixed(2) : '0.00'}
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xs text-gray-600 mb-1">{t('workHours.netHeader')}</div>
+                  <div className="text-xs text-gray-600 mb-1">{safeT('workHours.netHeader', 'Net')}</div>
                   <div className="font-semibold text-blue-700 bg-blue-100 rounded px-2 py-1">
                     £{calc.neto && !isNaN(calc.neto) ? Number(calc.neto).toFixed(2) : '0.00'}
                   </div>
@@ -701,7 +712,7 @@ export default function WorkHoursTable({
               {/* Expanded content for mobile */}
               {expandedRows.has(calc.emp.id) && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <h4 className="font-bold text-gray-800 mb-3 text-center">📊 {t('workHours.weekTotal')}</h4>
+                  <h4 className="font-bold text-gray-800 mb-3 text-center">📊 {safeT('workHours.weekTotal', 'Week Total')}</h4>
                   
                   {/* Daily breakdown (editable on mobile) */}
                   <div className="grid grid-cols-7 gap-1 mb-4">
@@ -743,7 +754,7 @@ export default function WorkHoursTable({
                               }}
                               disabled={isDisabled}
                             >
-                              <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? t('workHours.selectSite') : t('workHours.rest')}</option>
+                              <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? safeT('workHours.selectSite', 'Select Site') : safeT('workHours.rest', 'Rest')}</option>
                               {(Array.isArray(calc.empSites) && calc.empSites.length ? calc.empSites : siteOptions).map(site => (
                                 <option key={site} value={site}>{site}</option>
                               ))}
@@ -757,19 +768,19 @@ export default function WorkHoursTable({
                   {/* Week totals */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
-                      <div className="text-xs text-gray-600 mb-1">{t('workHours.totalHours')}</div>
+                      <div className="text-xs text-gray-600 mb-1">{safeT('workHours.totalHours', 'Total Hours')}</div>
                       <div className="text-lg font-bold text-gray-900">{calc.total.toFixed(1)}</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xs text-gray-600 mb-1">{t('workHours.totalGross')}</div>
+                      <div className="text-xs text-gray-600 mb-1">{safeT('workHours.totalGross', 'Total Gross')}</div>
                       <div className="text-lg font-bold text-green-700">£{calc.bruto.toFixed(2)}</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xs text-gray-600 mb-1">{t('workHours.totalVat')}</div>
+                      <div className="text-xs text-gray-600 mb-1">{safeT('workHours.totalVat', 'Total VAT')}</div>
                       <div className="text-lg font-bold text-yellow-700">£{calc.tvsh.toFixed(2)}</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xs text-gray-600 mb-1">{t('workHours.totalNet')}</div>
+                      <div className="text-xs text-gray-600 mb-1">{safeT('workHours.totalNet', 'Total Net')}</div>
                       <div className="text-lg font-bold text-blue-700">£{calc.neto.toFixed(2)}</div>
                     </div>
                   </div>
@@ -783,22 +794,22 @@ export default function WorkHoursTable({
       {/* Week Totals Summary */}
       {calculations.length > 0 && (
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-200">
-          <h3 className="text-xl font-bold text-center text-gray-800 mb-4">📊 {t('workHours.weekTotal')}</h3>
+          <h3 className="text-xl font-bold text-center text-gray-800 mb-4">📊 {safeT('workHours.weekTotal', 'Week Total')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-xs text-gray-600 mb-1">{t('workHours.totalHours')}</div>
+              <div className="text-xs text-gray-600 mb-1">{safeT('workHours.totalHours', 'Total Hours')}</div>
               <div className="text-2xl font-bold text-gray-900">{weekTotals.totalHours.toFixed(1)}</div>
             </div>
             <div className="text-center">
-              <div className="text-xs text-gray-600 mb-1">{t('workHours.totalGross')}</div>
+              <div className="text-xs text-gray-600 mb-1">{safeT('workHours.totalGross', 'Total Gross')}</div>
               <div className="text-2xl font-bold text-green-700">£{weekTotals.totalBruto.toFixed(2)}</div>
             </div>
             <div className="text-center">
-              <div className="text-xs text-gray-600 mb-1">{t('workHours.totalVat')}</div>
+              <div className="text-xs text-gray-600 mb-1">{safeT('workHours.totalVat', 'Total VAT')}</div>
               <div className="text-2xl font-bold text-yellow-700">£{weekTotals.totalTVSH.toFixed(2)}</div>
             </div>
             <div className="text-center">
-              <div className="text-xs text-gray-600 mb-1">{t('workHours.totalNet')}</div>
+              <div className="text-xs text-gray-600 mb-1">{safeT('workHours.totalNet', 'Total Net')}</div>
               <div className="text-2xl font-bold text-blue-700">£{weekTotals.totalNeto.toFixed(2)}</div>
             </div>
           </div>
