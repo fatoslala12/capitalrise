@@ -703,26 +703,48 @@ export default function WorkHoursTable({
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <h4 className="font-bold text-gray-800 mb-3 text-center">📊 {t('workHours.weekTotal')}</h4>
                   
-                  {/* Daily breakdown */}
+                  {/* Daily breakdown (editable on mobile) */}
                   <div className="grid grid-cols-7 gap-1 mb-4">
                     {dayLabels.map((dayLabel, dayIndex) => {
                       const day = days[dayIndex];
                       const dayData = calc.hours[day];
                       const hasHours = dayData?.hours && parseFloat(dayData.hours) > 0;
+                      const isDisabled = typeof readOnly === 'function' ? readOnly(calc.emp.id) : false;
                       
                       return (
                         <div key={day} className="text-center">
                           <div className="text-xs text-gray-600 mb-1">{dayLabel}</div>
-                          <div className="text-sm font-bold text-gray-900 bg-white rounded px-1 py-1 border">
-                            {hasHours ? parseFloat(dayData.hours).toFixed(1) : '0.0'}
-                          </div>
+                          <input
+                            type="number"
+                            min="0"
+                            max="24"
+                            step="0.25"
+                            value={dayData?.hours || ""}
+                            onChange={e => {
+                              const newHours = parseFloat(e.target.value) || 0;
+                              if (typeof onChange === 'function') {
+                                const albDay = englishToAlbanianDay[day] || day;
+                                onChange(calc.emp.id, albDay, 'hours', newHours);
+                              }
+                            }}
+                            className="w-full text-sm font-bold text-gray-900 bg-white rounded px-1 py-1 border"
+                            disabled={isDisabled}
+                            placeholder="0"
+                          />
                           {hasHours && (
                             <select 
                               className="w-full text-xs mt-1 border rounded px-1 py-1"
-                              defaultValue={dayData.site || ""}
+                              value={dayData?.site || ""}
+                              onChange={e => {
+                                if (typeof onChange === 'function') {
+                                  const albDay = englishToAlbanianDay[day] || day;
+                                  onChange(calc.emp.id, albDay, 'site', e.target.value);
+                                }
+                              }}
+                              disabled={isDisabled}
                             >
                               <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? t('workHours.selectSite') : t('workHours.rest')}</option>
-                              {siteOptions.map(site => (
+                              {(Array.isArray(calc.empSites) && calc.empSites.length ? calc.empSites : siteOptions).map(site => (
                                 <option key={site} value={site}>{site}</option>
                               ))}
                             </select>
