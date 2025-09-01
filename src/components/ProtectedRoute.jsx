@@ -11,15 +11,27 @@ const ProtectedRoute = ({
 }) => {
   const { user, isAuthenticated, loading, hasRole, hasPermission } = useAuth();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, ready } = useTranslation();
 
-  // Show loading spinner while checking authentication
-  if (loading) {
+  // Safe translation function with fallback
+  const safeT = (key, fallback = key) => {
+    if (!ready || !t) return fallback;
+    try {
+      const translation = t(key);
+      return translation === key ? fallback : translation;
+    } catch (error) {
+      console.warn(`Translation error for key "${key}":`, error);
+      return fallback;
+    }
+  };
+
+  // Show loading spinner while checking authentication or translations
+  if (loading || !ready) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">{t('common.loading')}</p>
+          <p className="text-gray-600 font-medium">{safeT('common.loading', 'Loading...')}</p>
         </div>
       </div>
     );
@@ -38,24 +50,24 @@ const ProtectedRoute = ({
           <div className="text-center max-w-md mx-auto p-8">
             <div className="text-6xl mb-4">🚫</div>
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              {t('auth.accessDenied')}
+              {safeT('auth.accessDenied', 'Access Denied')}
             </h1>
             <p className="text-gray-600 mb-6">
-              {t('auth.insufficientPermissions')}
+              {safeT('auth.insufficientPermissions', 'Insufficient permissions')}
             </p>
             <div className="space-y-3">
               <p className="text-sm text-gray-500">
-                {t('auth.currentRole')}: <span className="font-semibold">{user.role}</span>
+                {safeT('auth.currentRole', 'Current Role')}: <span className="font-semibold">{user.role}</span>
               </p>
               <p className="text-sm text-gray-500">
-                {t('auth.requiredRoles')}: <span className="font-semibold">{allowedRoles.join(', ')}</span>
+                {safeT('auth.requiredRoles', 'Required Roles')}: <span className="font-semibold">{allowedRoles.join(', ')}</span>
               </p>
             </div>
             <button
               onClick={() => window.history.back()}
               className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
-              {t('common.goBack')}
+              {safeT('common.goBack', 'Go Back')}
             </button>
           </div>
         </div>
@@ -77,24 +89,24 @@ const ProtectedRoute = ({
             <div className="text-center max-w-md mx-auto p-8">
               <div className="text-6xl mb-4">🔒</div>
               <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                {t('auth.permissionDenied')}
+                {safeT('auth.permissionDenied', 'Permission Denied')}
               </h1>
               <p className="text-gray-600 mb-6">
-                {t('auth.insufficientPermissions')}
+                {safeT('auth.insufficientPermissions', 'Insufficient permissions')}
               </p>
               <div className="space-y-3">
                 <p className="text-sm text-gray-500">
-                  {t('auth.currentRole')}: <span className="font-semibold">{user.role}</span>
+                  {safeT('auth.currentRole', 'Current Role')}: <span className="font-semibold">{user.role}</span>
                 </p>
                 <p className="text-sm text-gray-500">
-                  {t('auth.requiredPermissions')}: <span className="font-semibold">{requiredPermissions.join(', ')}</span>
+                  {safeT('auth.requiredPermissions', 'Required Permissions')}: <span className="font-semibold">{requiredPermissions.join(', ')}</span>
                 </p>
               </div>
               <button
                 onClick={() => window.history.back()}
                 className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
-                {t('common.goBack')}
+                {safeT('common.goBack', 'Go Back')}
               </button>
             </div>
           </div>
