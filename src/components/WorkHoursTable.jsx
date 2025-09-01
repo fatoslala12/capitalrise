@@ -30,7 +30,9 @@ export default function WorkHoursTable({
   siteOptions, 
   siteScope,
   showPaymentControl = false,
-  onPaymentToggle 
+  onPaymentToggle,
+  onChange,
+  readOnly
 }) {
   const { t, i18n } = useTranslation();
   const [expandedRows, setExpandedRows] = useState(new Set());
@@ -87,6 +89,17 @@ export default function WorkHoursTable({
     });
   }, []);
 
+  // Map english day keys to backend Albanian day names
+  const englishToAlbanianDay = useMemo(() => ({
+    monday: 'E hënë',
+    tuesday: 'E martë',
+    wednesday: 'E mërkurë',
+    thursday: 'E enjte',
+    friday: 'E premte',
+    saturday: 'E shtunë',
+    sunday: 'E diel'
+  }), []);
+
   // Stabilize calculations by removing t function dependency from core calculation logic
   const calculations = useMemo(() => {
     if (!Array.isArray(employees) || employees.length === 0) {
@@ -137,13 +150,20 @@ export default function WorkHoursTable({
         }
       }
       
+      // Normalize raw hours (which come keyed in Albanian day names) to english keys used by UI
+      const normalizedHours = days.reduce((acc, engKey) => {
+        const albKey = englishToAlbanianDay[engKey];
+        acc[engKey] = rawHours[albKey] || rawHours[engKey] || {};
+        return acc;
+      }, {});
+
       // Filter hours by site scope if specified
       const hours = siteScope
-        ? Object.fromEntries(Object.entries(rawHours).map(([day, v]) => {
+        ? Object.fromEntries(Object.entries(normalizedHours).map(([day, v]) => {
             // nëse dita s'është në site-in e zgjedhur, zero orët që të mos numërohen
             return [day, (v && v.site === siteScope) ? v : { ...(v||{}), hours: 0 }];
           }))
-        : rawHours;
+        : normalizedHours;
       
       console.log(`[DEBUG] Employee ${emp.id} (${firstName} ${lastName}):`, {
         employeeRate,
@@ -327,14 +347,14 @@ export default function WorkHoursTable({
     const newPaidStatus = !paidStatus[key];
     
     try {
-      const response = await fetch("https://capitalrise-cwcq.onrender.com/api/work-hours/toggle-paid-status", {
+      const response = await fetch("https://capitalrise-cwcq.onrender.com/api/work-hours/paid-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         body: JSON.stringify({
-          weekLabel,
+          week: weekLabel,
           employeeId: empId,
           paid: newPaidStatus
         })
@@ -561,15 +581,13 @@ export default function WorkHoursTable({
                             value={dayData?.hours || ""}
                             onChange={e => {
                               const newHours = parseFloat(e.target.value) || 0;
-                              // Only update if hours are greater than 0 or if it's the rest option
-                              if (newHours > 0 || (dayData?.hours === "" && newHours === 0)) {
-                                // This part of the original code was not in the new_code,
-                                // so we'll keep it as is, assuming it's handled elsewhere or will be added.
-                                // For now, we'll just update the value.
+                              if (typeof onChange === 'function') {
+                                const albDay = englishToAlbanianDay[day] || day;
+                                onChange(calc.emp.id, albDay, 'hours', newHours);
                               }
                             }}
                             className="w-full p-2 border-2 border-blue-200 rounded-lg text-center focus:ring-2 focus:ring-blue-400 bg-white shadow-sm text-sm mb-2"
-                            disabled={true} // Read-only in expanded view
+                            disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : false}
                             placeholder="0"
                           />
                           {hasHours && (
@@ -577,14 +595,15 @@ export default function WorkHoursTable({
                               className="w-full border-2 border-blue-200 rounded-lg text-xs bg-white shadow-sm p-1"
                               value={dayData?.site || ""}
                               onChange={e => {
-                                // This part of the original code was not in the new_code,
-                                // so we'll keep it as is, assuming it's handled elsewhere or will be added.
-                                // For now, we'll just update the value.
+                                if (typeof onChange === 'function') {
+                                  const albDay = englishToAlbanianDay[day] || day;
+                                  onChange(calc.emp.id, albDay, 'site', e.target.value);
+                                }
                               }}
-                              disabled={true} // Read-only in expanded view
+                              disabled={typeof readOnly === 'function' ? readOnly(calc.emp.id) : false}
                             >
                               <option value="">{(calc.hours[day]?.hours && parseFloat(calc.hours[day].hours) > 0) ? t('workHours.selectSite') : t('workHours.rest')}</option>
-                              {siteOptions.map(site => (
+                              {(Array.isArray(calc.empSites) && calc.empSites.length ? calc.empSites : siteOptions).map(site => (
                                 <option key={site} value={site}>{site}</option>
                               ))}
                             </select>
