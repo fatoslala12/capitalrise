@@ -484,7 +484,7 @@ export default function WorkHoursTable({
                       onClick={() => handlePaymentToggle(calc.emp.id)}
                       className="px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 whitespace-nowrap"
                     >
-                      {calc.paid ? `❌ ${safeT('workHours.deletePayment', 'Delete Payment')}` : `✅ ${safeT('workHours.paidStatus', 'Paid Status')}`}
+                      {calc.paid ? `❌ ${safeT('workHours.markAsUnpaid', 'Mark as Unpaid')}` : `✅ ${safeT('workHours.markAsPaid', 'Mark as Paid')}`}
                     </button>
                   )}
                 </div>
@@ -551,7 +551,7 @@ export default function WorkHoursTable({
                       onClick={() => handlePaymentToggle(calc.emp.id)}
                       className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
                     >
-                      {calc.paid ? `❌ ${safeT('workHours.deletePayment', 'Delete Payment')}` : `✅ ${safeT('workHours.paidStatus', 'Paid Status')}`}
+                      {calc.paid ? `❌ ${safeT('workHours.markAsUnpaid', 'Mark as Unpaid')}` : `✅ ${safeT('workHours.markAsPaid', 'Mark as Paid')}`}
                     </button>
                   )}
                   <span className={`px-3 py-1 rounded-full text-xs font-bold border ${statusBg} ${statusClass}`}>
@@ -686,7 +686,7 @@ export default function WorkHoursTable({
                     onClick={() => handlePaymentToggle(calc.emp.id)}
                     className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-sm font-bold hover:from-blue-600 hover:to-purple-600 transition-all duration-300"
                   >
-                    {calc.paid ? `❌ ${safeT('workHours.deletePayment', 'Delete Payment')}` : `✅ ${safeT('workHours.paidStatus', 'Paid Status')}`}
+                    {calc.paid ? `❌ ${safeT('workHours.markAsUnpaid', 'Mark as Unpaid')}` : `✅ ${safeT('workHours.markAsPaid', 'Mark as Paid')}`}
                   </button>
                 </div>
               )}

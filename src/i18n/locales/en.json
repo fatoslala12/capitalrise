@@ -1108,7 +1108,17 @@
     "markAsUnpaid": "Mark as Unpaid",
     "successfully": "successfully",
     "payment": "Payment",
-    "employeeList": "Employee List"
+    "employeeList": "Employee List",
+    "saveWorkHours": "Save Work Hours",
+    "saved": "Saved!",
+    "info": "Information",
+    "userReadOnlyInfo": "This page shows only your work hours. For changes, contact your manager.",
+    "managerInfo": "Manager Information",
+    "noEmployeesForSites": "No employees found for your sites. This may happen for the reasons below:",
+    "contactAdmin": "Contact the administrator to resolve this issue.",
+    "noEmployeesToShow": "No employees to display",
+    "noEmployeesThisWeek": "No employees found for this week. This may happen if:",
+    "pastWeeks": "Past Weeks"
   },
   "payments": {
     "title": "Payments & Contracts",

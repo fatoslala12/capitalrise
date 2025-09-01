@@ -231,7 +231,17 @@
     "markAsPaid": "Shëno si të Paguar",
     "markAsUnpaid": "Shëno si të Papaguar",
     "successfully": "me sukses",
-    "payment": "Pagesa"
+    "payment": "Pagesa",
+    "saveWorkHours": "Ruaj Orët e Punës",
+    "saved": "U ruajt!",
+    "info": "Informacion",
+    "userReadOnlyInfo": "Kjo faqe shfaq vetëm orët tuaja të punës. Për ndryshime, kontaktoni menaxherin tuaj.",
+    "managerInfo": "Informacion për Menaxherin",
+    "noEmployeesForSites": "Nuk u gjetën punonjës për site-t tuaja. Kjo mund të ndodhë për arsyet e mëposhtme:",
+    "contactAdmin": "Kontaktoni administratorin për të rregulluar këtë problem.",
+    "noEmployeesToShow": "Nuk ka punonjës për të shfaqur",
+    "noEmployeesThisWeek": "Nuk u gjetën punonjës për këtë javë. Kjo mund të ndodhë nëse:",
+    "pastWeeks": "Javët e Kaluara"
   },
   "tasks": {
     "title": "Menaxhimi i Detyrave",

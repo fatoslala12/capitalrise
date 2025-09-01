@@ -622,7 +622,7 @@ export default function WorkHours() {
                 </svg>
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-blue-700">
-                Ruaj Orët e Punës
+                {t('workHours.saveWorkHours')}
               </h2>
             </div>
             <div className="flex justify-center sm:justify-start">
@@ -636,14 +636,14 @@ export default function WorkHours() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    U ruajt!
+                    {t('workHours.saved')}
                   </>
                 ) : (
                   <>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 0V4a2 2 0 00-2-2H8a2 2 0 00-2 2v3m2 0h4m-4 0v1m4-1v1m-4 3h4" />
                     </svg>
-                    Ruaj Orët e Punës
+                    {t('workHours.saveWorkHours')}
                   </>
                 )}
               </button>
@@ -660,10 +660,10 @@ export default function WorkHours() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-blue-800">Informacion</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-800">{t('workHours.info')}</h2>
             </div>
             <p className="text-sm sm:text-base text-blue-700">
-              Kjo faqe shfaq vetëm orët tuaja të punës. Për ndryshime, kontaktoni menaxherin tuaj.
+              {t('workHours.userReadOnlyInfo')}
             </p>
           </div>
         )}
@@ -677,10 +677,10 @@ export default function WorkHours() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.882 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-yellow-800">Informacion për Menaxherin</h2>
+              <h2 className="text-base sm:text-lg font-bold text-yellow-800">{t('workHours.managerInfo')}</h2>
             </div>
             <p className="text-sm sm:text-base text-yellow-700 mb-4">
-              Nuk u gjetën punonjës për site-t tuaja. Kjo mund të ndodhë për arsyet e mëposhtme:
+              {t('workHours.noEmployeesForSites')}
             </p>
             <ul className="text-sm sm:text-base text-yellow-700 list-disc list-inside space-y-2">
               <li>Nuk jeni caktuar në asnjë site</li>
@@ -688,7 +688,7 @@ export default function WorkHours() {
               <li>Ka problem me të dhënat e databazës</li>
             </ul>
             <p className="text-sm sm:text-base text-yellow-700 mt-4">
-              Kontaktoni administratorin për të rregulluar këtë problem.
+              {t('workHours.contactAdmin')}
             </p>
           </div>
         )}
@@ -790,9 +790,9 @@ export default function WorkHours() {
           )
         ) : (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-            <h4 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Nuk ka punonjës për të shfaqur</h4>
+            <h4 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ {t('workHours.noEmployeesToShow')}</h4>
             <p className="text-yellow-700 mb-4">
-              Nuk u gjetën punonjës për këtë javë. Kjo mund të ndodhë nëse:
+              {t('workHours.noEmployeesThisWeek')}
             </p>
             <ul className="text-yellow-700 list-disc list-inside space-y-2">
               <li>Nuk ka punonjës të caktuar për rolin tuaj</li>
@@ -812,7 +812,7 @@ export default function WorkHours() {
                 </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-700 to-gray-900">
-                Javët e Kaluara
+                {t('workHours.pastWeeks')}
               </h3>
             </div>
             {(() => {
