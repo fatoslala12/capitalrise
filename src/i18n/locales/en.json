@@ -580,6 +580,13 @@
   "notifications": {
     "title": "Notifications",
     "markAsRead": "Mark as Read",
+    "markAll": "Mark all",
+    "empty": "No notifications",
+    "willNotify": "You will be notified when there is something new",
+    "now": "Now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
     "markAllAsRead": "Mark All as Read",
     "unread": "Unread",
     "read": "Read",

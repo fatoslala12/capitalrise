@@ -4,11 +4,13 @@ import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { Bell, X, Check, Trash2 } from 'lucide-react';
 import pushNotificationService from '../utils/pushNotifications';
+import { useTranslation } from 'react-i18next';
 
 const NotificationBell = () => {
   const { user } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, loading } = useNotifications();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [showNewNotification, setShowNewNotification] = useState(false);
@@ -113,7 +115,7 @@ const NotificationBell = () => {
   };
 
   const formatTimeAgo = (dateString) => {
-    if (!dateString) return 'Tani';
+    if (!dateString) return t('notifications.now', 'Now');
     
     console.log('[DEBUG] formatTimeAgo input:', dateString);
     
@@ -125,23 +127,22 @@ const NotificationBell = () => {
     
     // Kontrollo nëse data është e vlefshme
     if (isNaN(date.getTime())) {
-      console.log('[DEBUG] Invalid date, returning "Tani"');
-      return 'Tani';
+      return t('notifications.now', 'Now');
     }
     
     const diffInMinutes = Math.floor((now - date) / (1000 * 60));
     console.log('[DEBUG] Diff in minutes:', diffInMinutes);
     
-    if (diffInMinutes < 1) return 'Tani';
-    if (diffInMinutes < 60) return `${diffInMinutes}m më parë`;
+    if (diffInMinutes < 1) return t('notifications.now', 'Now');
+    if (diffInMinutes < 60) return t('notifications.minutesAgo', '{{count}}m ago').replace('{{count}}', diffInMinutes);
     
     const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h më parë`;
+    if (diffInHours < 24) return t('notifications.hoursAgo', '{{count}}h ago').replace('{{count}}', diffInHours);
     
     const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays}d më parë`;
+    if (diffInDays < 7) return t('notifications.daysAgo', '{{count}}d ago').replace('{{count}}', diffInDays);
     
-    return date.toLocaleDateString('sq-AL');
+    return date.toLocaleDateString(i18n.language === 'sq' ? 'sq-AL' : 'en-GB');
   };
 
   const getNotificationIcon = (type) => {
@@ -193,7 +194,7 @@ const NotificationBell = () => {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="relative p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 group"
-          title="Njoftimet"
+          title={t('notifications.title')}
         >
           <Bell size={20} className="group-hover:scale-110 transition-transform duration-200" />
           {unreadCount > 0 && (
@@ -210,7 +211,7 @@ const NotificationBell = () => {
             <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
               <div className="flex items-center gap-2">
                 <Bell size={18} className="text-blue-600" />
-                <h3 className="font-semibold text-gray-900">Njoftimet</h3>
+                <h3 className="font-semibold text-gray-900">{t('notifications.title')}</h3>
                 {unreadCount > 0 && (
                   <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
                     {unreadCount}
@@ -223,7 +224,7 @@ const NotificationBell = () => {
                     onClick={markAllAsRead}
                     className="text-xs text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-100 px-2 py-1 rounded transition-colors"
                   >
-                    Shëno të gjitha
+                    {t('notifications.markAll', 'Mark all')}
                   </button>
                 )}
                 <button
@@ -240,13 +241,13 @@ const NotificationBell = () => {
               {loading ? (
                 <div className="p-6 text-center">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                  <p className="text-sm text-gray-500">Duke ngarkuar...</p>
+                  <p className="text-sm text-gray-500">{t('common.loading', 'Loading...')}</p>
                 </div>
               ) : notifications.length === 0 ? (
                 <div className="p-6 text-center">
                   <Bell size={32} className="text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500 font-medium">Nuk ka njoftime</p>
-                  <p className="text-xs text-gray-400 mt-1">Ju do të njoftoheni kur të ketë diçka të re</p>
+                  <p className="text-sm text-gray-500 font-medium">{t('notifications.empty', 'No notifications')}</p>
+                  <p className="text-xs text-gray-400 mt-1">{t('notifications.willNotify', 'You will be notified when there is something new')}</p>
                 </div>
               ) : (
                 notifications.slice(0, 5).map((notification) => (
@@ -287,7 +288,7 @@ const NotificationBell = () => {
                               markAsRead(notification.id);
                             }}
                             className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
-                            title="Shëno si të lexuar"
+                            title={t('notifications.markAsRead')}
                           >
                             <Check size={14} />
                           </button>
@@ -298,7 +299,7 @@ const NotificationBell = () => {
                             deleteNotification(notification.id);
                           }}
                           className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                          title="Fshi njoftimin"
+                          title="Delete"
                         >
                           <Trash2 size={14} />
                         </button>
