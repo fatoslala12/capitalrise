@@ -47,13 +47,12 @@ function getTop5Employees(employees, hourData) {
     .slice(0, 5);
 }
 
-function EmployeeBarChart({ employees, hourData }) {
-  const { t } = useTranslation();
+function EmployeeBarChart({ employees, hourData, safeT }) {
   const top5 = getTop5Employees(employees, hourData);
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
       <h3 className="text-xl font-bold mb-6 text-blue-800 flex items-center gap-2">
-        <span>🏆</span> {t('dashboard.topEmployees')}
+        <span>🏆</span> {safeT('dashboard.topEmployees', 'Top 5 Employees by Hours')}
       </h3>
       <ResponsiveContainer width="100%" height={320}>
         <BarChart
@@ -110,7 +109,7 @@ function EmployeeBarChart({ employees, hourData }) {
             )}
           />
           <Tooltip
-            formatter={(value) => [`${value} ${t('workHours.hours')}`, t('workHours.totalHours')]}
+            formatter={(value) => [`${value} ${safeT('workHours.hours', 'hours')}`, safeT('workHours.totalHours', 'Total Hours')]}
             cursor={{ fill: "#f3f4f6" }}
           />
           <Bar dataKey="totalHours" radius={[8, 8, 8, 8]}>
@@ -124,8 +123,7 @@ function EmployeeBarChart({ employees, hourData }) {
   );
 }
 
-function TopContractsBarChart({ contracts }) {
-  const { t } = useTranslation();
+function TopContractsBarChart({ contracts, safeT }) {
   const topContracts = [...contracts]
     .filter(c => c.contract_value && !isNaN(Number(c.contract_value)))
     .sort((a, b) => Number(b.contract_value) - Number(a.contract_value))
@@ -137,7 +135,7 @@ function TopContractsBarChart({ contracts }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 mb-10">
       <h3 className="text-xl font-bold mb-6 text-purple-800 flex items-center gap-2">
-        <span>💼</span> {t('dashboard.topContracts')}
+        <span>💼</span> {safeT('dashboard.topContracts', 'Top Contracts by Value')}
       </h3>
       <ResponsiveContainer width="100%" height={320}>
         <BarChart
@@ -153,7 +151,7 @@ function TopContractsBarChart({ contracts }) {
             tick={{ fontSize: 16, fill: "#6d28d9" }}
             width={180}
           />
-          <Tooltip formatter={v => [`£${v.toLocaleString()}`, t('dashboard.value')]} cursor={{ fill: "#f3f4f6" }} />
+          <Tooltip formatter={v => [`£${v.toLocaleString()}`, safeT('dashboard.value', 'Value')]} cursor={{ fill: "#f3f4f6" }} />
           <Bar dataKey="value" radius={[8, 8, 8, 8]}>
             {topContracts.map((entry, index) => (
               <Cell key={entry.name} fill={barColors[index % barColors.length]} />
@@ -167,6 +165,7 @@ function TopContractsBarChart({ contracts }) {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { t, ready } = useTranslation();
   const [employees, setEmployees] = useState([]);
   const [hourData, setHourData] = useState({});
   const [contracts, setContracts] = useState([]);
@@ -184,6 +183,18 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
+
+  // Safe translation function with fallback
+  const safeT = (key, fallback = key) => {
+    if (!ready || !t) return fallback;
+    try {
+      const translation = t(key);
+      return translation === key ? fallback : translation;
+    } catch (error) {
+      console.warn(`Translation error for key "${key}":`, error);
+      return fallback;
+    }
+  };
 
   const currentWeekLabel = formatDateRange(getStartOfWeek());
   const previousWeeks = [
@@ -306,7 +317,7 @@ export default function Dashboard() {
     );
   };
 
-  if (loading) {
+  if (loading || !ready) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -372,7 +383,7 @@ export default function Dashboard() {
             <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-4 md:p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-xs md:text-sm">{t('dashboard.tasks')}</p>
+                  <p className="text-green-100 text-xs md:text-sm">{safeT('dashboard.tasks', 'Tasks')}</p>
                   <p className="text-xl md:text-2xl lg:text-3xl font-bold">
                     {tasks.filter(t => t.assignedTo === user.email && t.status === "ongoing").length}
                   </p>
@@ -409,7 +420,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <span className="text-blue-600">📌</span>
-                {t('dashboard.tasks')}
+                {safeT('dashboard.tasks', 'Tasks')}
               </h3>
               <Link
                 to={`/${user.role}/my-tasks`}
@@ -521,8 +532,8 @@ export default function Dashboard() {
                     />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip 
-                      formatter={(value) => [`${value} ${t('dashboard.hours')}`, t('dashboard.totalHours')]}
-                      labelFormatter={(label) => `${t('dashboard.week')}: ${new Date(label).toLocaleDateString('sq-AL')}`}
+                      formatter={(value) => [`${value} ${safeT('dashboard.hours', 'hours')}`, safeT('dashboard.totalHours', 'Total Hours')]}
+                      labelFormatter={(label) => `${safeT('dashboard.week', 'Week')}: ${new Date(label).toLocaleDateString('sq-AL')}`}
                     />
                     <Bar dataKey="hours" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -535,7 +546,7 @@ export default function Dashboard() {
           <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
               <span className="text-emerald-600">💰</span>
-              {t('dashboard.recentPayments')}
+              {safeT('dashboard.recentPayments', 'Recent Payments')}
             </h3>
             {(() => {
               // Simuloj pagesat e fundit bazuar në orët e punës
@@ -558,7 +569,7 @@ export default function Dashboard() {
                 return (
                   <div className="text-center py-8">
                     <div className="text-4xl mb-4">💳</div>
-                    <p className="text-gray-500">{t('dashboard.noPaymentsRecorded')}</p>
+                    <p className="text-gray-500">{safeT('dashboard.noPaymentsRecorded', 'No payments recorded')}</p>
                   </div>
                 );
               }
@@ -573,10 +584,10 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <p className="font-semibold text-gray-800">
-                            {t('dashboard.week')}: {new Date(payment.date).toLocaleDateString('sq-AL')}
+                            {safeT('dashboard.week', 'Week')}: {new Date(payment.date).toLocaleDateString('sq-AL')}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {payment.hours} {t('dashboard.hoursWorked')}
+                            {payment.hours} {safeT('dashboard.hoursWorked', 'hours worked')}
                           </p>
                         </div>
                       </div>
@@ -585,7 +596,7 @@ export default function Dashboard() {
                           £{payment.amount.toFixed(2)}
                         </p>
                         <p className="text-xs text-gray-500">
-                          £{hourlyRate}{t('dashboard.perHour')}
+                          £{hourlyRate}{safeT('dashboard.perHour', '/hour')}
                         </p>
                       </div>
                     </div>
@@ -599,7 +610,7 @@ export default function Dashboard() {
           <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
               <span className="text-purple-600">🔐</span>
-              {t('dashboard.accountSecurity')}
+              {safeT('dashboard.accountSecurity', 'Account Security')}
             </h3>
             <ChangePassword />
           </section>
@@ -608,7 +619,7 @@ export default function Dashboard() {
           <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
               <span className="text-cyan-600">⚡</span>
-              {t('dashboard.quickAccess')}
+              {safeT('dashboard.quickAccess', 'Quick Access')}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Link
@@ -616,7 +627,7 @@ export default function Dashboard() {
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:from-blue-100 hover:to-blue-200 transition-all duration-200 group"
               >
                 <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">🕒</div>
-                <span className="text-sm font-semibold text-blue-800 text-center">{t('dashboard.workHours')}</span>
+                <span className="text-sm font-semibold text-blue-800 text-center">{safeT('dashboard.workHours', 'Work Hours')}</span>
               </Link>
               
               <Link
@@ -624,7 +635,7 @@ export default function Dashboard() {
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 hover:from-green-100 hover:to-green-200 transition-all duration-200 group"
               >
                 <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">📋</div>
-                <span className="text-sm font-semibold text-green-800 text-center">{t('dashboard.tasks')}</span>
+                <span className="text-sm font-semibold text-green-800 text-center">{safeT('dashboard.tasks', 'Tasks')}</span>
               </Link>
               
               <Link
@@ -632,7 +643,7 @@ export default function Dashboard() {
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:from-purple-100 hover:to-purple-200 transition-all duration-200 group"
               >
                 <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">👤</div>
-                <span className="text-sm font-semibold text-purple-800 text-center">{t('dashboard.profile')}</span>
+                <span className="text-sm font-semibold text-purple-800 text-center">{safeT('dashboard.profile', 'Profile')}</span>
               </Link>
               
               <Link
@@ -674,9 +685,9 @@ export default function Dashboard() {
             </div>
           </div>
           {/* Top 5 punonjësit më produktivë */}
-          <EmployeeBarChart employees={employees} hourData={hourData} />
+          <EmployeeBarChart employees={employees} hourData={hourData} safeT={safeT} />
           {/* Kontratat më të mëdha sipas vlerës */}
-          <TopContractsBarChart contracts={contracts} />
+          <TopContractsBarChart contracts={contracts} safeT={safeT} />
         </div>
       )}
 
@@ -801,7 +812,7 @@ export default function Dashboard() {
               to={`/${user.role}/my-tasks`}
               className="inline-block mt-3 bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 text-blue-700 text-sm font-medium px-4 py-2 rounded-lg transition-all duration-300 border border-blue-200"
             >
-                              ➕ {t('dashboard.tasks')}
+                              ➕ {safeT('dashboard.tasks', 'Tasks')}
             </Link>
           </section>
 
@@ -835,7 +846,7 @@ export default function Dashboard() {
                 className="bg-gradient-to-br from-indigo-100 to-indigo-200 border border-indigo-300 text-indigo-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-indigo-200 hover:to-indigo-300 transition-all duration-300 text-center group"
               >
                 <div className="text-2xl mb-2 text-indigo-600 group-hover:scale-110 transition-transform">👤</div>
-                <div className="font-semibold">{t('dashboard.profile')}</div>
+                <div className="font-semibold">{safeT('dashboard.profile', 'Profile')}</div>
                 <div className="text-sm opacity-80">Shiko dhe edito profilin tuaj</div>
               </Link>
 

@@ -63,7 +63,6 @@ const tr = (key, fallback = key) => {
     'adminDashboard.status': 'Status',
     'adminDashboard.inProgress': 'In Progress',
     'adminDashboard.suspended': 'Suspended',
-    'adminDashboard.completed': 'Completed',
     'adminDashboard.cancelled': 'Cancelled',
     'adminDashboard.pending': 'Pending',
     'adminDashboard.closedWithDelay': 'Closed with Delay',
@@ -79,10 +78,6 @@ const tr = (key, fallback = key) => {
     'adminDashboard.teMbyllura': 'Closed',
     'adminDashboard.teAnuluara': 'Cancelled',
     'adminDashboard.nePritje': 'Pending',
-    'adminDashboard.neProgres': 'In Progress',
-    'adminDashboard.mbyllurMeVonese': 'Closed with Delay',
-    'adminDashboard.teAnuluara': 'Cancelled',
-    'adminDashboard.teMbyllura': 'Closed',
     
     // Albanian translations
     'adminDashboard.title.sq': 'Paneli i Administrimit',
@@ -127,7 +122,6 @@ const tr = (key, fallback = key) => {
     'adminDashboard.status.sq': 'Statusi',
     'adminDashboard.inProgress.sq': 'Në progres',
     'adminDashboard.suspended.sq': 'I pezulluar',
-    'adminDashboard.completed.sq': 'I përfunduar',
     'adminDashboard.cancelled.sq': 'I anulluar',
     'adminDashboard.pending.sq': 'Në pritje',
     'adminDashboard.closedWithDelay.sq': 'I mbyllur me vonesë',
@@ -142,11 +136,7 @@ const tr = (key, fallback = key) => {
     'adminDashboard.tePezulluara.sq': 'Të pezulluara',
     'adminDashboard.teMbyllura.sq': 'Të mbyllura',
     'adminDashboard.teAnuluara.sq': 'Të anuluara',
-    'adminDashboard.nePritje.sq': 'Në pritje',
-    'adminDashboard.neProgres.sq': 'Në progres',
-    'adminDashboard.mbyllurMeVonese.sq': 'Mbyllur me vonesë',
-    'adminDashboard.teAnuluara.sq': 'Të anuluara',
-    'adminDashboard.teMbyllura.sq': 'Të mbyllura'
+    'adminDashboard.nePritje.sq': 'Në pritje'
   };
   
   const langKey = userLanguage === 'en' ? key : `${key}.sq`;
