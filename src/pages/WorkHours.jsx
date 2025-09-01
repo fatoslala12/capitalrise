@@ -737,6 +737,13 @@ export default function WorkHours() {
               paidStatus={paidStatus}
               siteOptions={siteOptions}
               showPaymentControl={isAdmin}
+              onChange={handleChange}
+              readOnly={(empId) => {
+                if (isAdmin) return true; // admin cannot edit inputs
+                if (isUser) return true;  // user is read-only
+                // manager can edit unless this week is marked paid for that employee
+                return paidStatus[`${currentWeekLabel}_${empId}`] === true;
+              }}
               onPaymentToggle={(key, newStatus) => {
                 setPaidStatus(prev => ({
                   ...prev,
@@ -764,6 +771,12 @@ export default function WorkHours() {
                     siteOptions={[site]}
                     siteScope={site === '(Pa site)' ? '' : site}
                     showPaymentControl={isAdmin}
+                    onChange={handleChange}
+                    readOnly={(empId) => {
+                      if (isAdmin) return true;
+                      if (isUser) return true;
+                      return paidStatus[`${currentWeekLabel}_${empId}`] === true;
+                    }}
                     onPaymentToggle={(key, newStatus) => {
                       setPaidStatus(prev => ({
                         ...prev,
