@@ -1,5 +1,6 @@
 // src/pages/AdminDashboard.jsx
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import api from "../api";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie, Legend
@@ -170,6 +171,7 @@ function snakeToCamel(obj) {
 }
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const [contracts, setContracts] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({

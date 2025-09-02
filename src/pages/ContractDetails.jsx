@@ -18,6 +18,7 @@ import PageLoader from "../components/ui/PageLoader";
 export default function ContractDetails() {
   const { contract_number } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [contract, setContract] = useState(null);
   const [invoices, setInvoices] = useState([]);
