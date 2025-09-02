@@ -24,7 +24,7 @@ const NotificationAnalytics = lazy(() => import("../pages/NotificationAnalytics"
 const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
 const BackupManagement = lazy(() => import("../pages/BackupManagement"));
 const AuditTrail = lazy(() => import("../pages/AuditTrail"));
-const TranslationManagement = lazy(() => import("../pages/TranslationManagement"));
+
 
 // Loading handled at layout level
 
@@ -64,7 +64,7 @@ export default function AppRouter() {
               <Route path="reports" element={<Reports />} />
               <Route path="backup" element={<BackupManagement />} />
               <Route path="audit-trail" element={<AuditTrail />} />
-              <Route path="translations" element={<TranslationManagement />} />
+
               <Route path="my-profile" element={<MyProfile />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="notifications/analytics" element={<NotificationAnalytics />} />
