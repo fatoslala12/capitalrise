@@ -194,7 +194,7 @@ export default function Contracts() {
         transition: all 0.2s ease;
       }
       .status-badge:hover {
-        transform: scale(1.05);
+        transform: none;
       }
       
       /* Progress bars */
@@ -1093,13 +1093,7 @@ export default function Contracts() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Loading states
-  const LoadingSpinner = () => (
-    <div className="flex items-center justify-center p-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span className="ml-2 text-gray-600">Duke ngarkuar...</span>
-    </div>
-  );
+  // Loading states - use global LoadingSpinner component instead of local
 
   const ErrorMessage = ({ message }) => (
     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
@@ -1125,14 +1119,8 @@ export default function Contracts() {
   );
 
   if (loading || contractsLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">{t('contracts.messages.loadingContracts')}</h2>
-        </div>
-      </div>
-    );
+    const { default: LoadingSpinner } = require('../components/ui/LoadingSpinner');
+    return <LoadingSpinner fullScreen={true} size="xl" />;
   }
 
   if (contractsError) {

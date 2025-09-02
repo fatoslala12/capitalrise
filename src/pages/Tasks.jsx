@@ -76,14 +76,8 @@ export default function Tasks() {
   // Don't render until translations are ready
   if (!translation.ready) {
     console.log('🔍 Tasks component: Translations not ready, showing loading...');
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading translations...</p>
-        </div>
-      </div>
-    );
+    const { default: LoadingSpinner } = require('../components/ui/LoadingSpinner');
+    return <LoadingSpinner fullScreen={true} size="xl" />;
   }
   
   console.log('🔍 Tasks component: Translations ready, proceeding with render...');
@@ -491,14 +485,8 @@ export default function Tasks() {
 
   if (loading) {
     console.log('🔍 Render: Showing loading state...');
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-600">{safeT('tasks.validation.dataLoadError')}</h2>
-        </div>
-      </div>
-    );
+    const { default: LoadingSpinner } = require('../components/ui/LoadingSpinner');
+    return <LoadingSpinner fullScreen={true} size="xl" />;
   }
   
   console.log('🔍 Render: Starting main render...');
@@ -608,7 +596,7 @@ export default function Tasks() {
             {/* Add Task Button */}
             <button
               onClick={() => setShowForm(!showForm)}
-              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 text-sm sm:text-base"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-200 shadow-sm hover:shadow-md text-sm sm:text-base"
             >
               {showForm ? `❌ ${safeT('tasks.close')}` : `➕ ${safeT('tasks.addTask')}`}
             </button>
@@ -777,7 +765,7 @@ export default function Tasks() {
                 <button
                   onClick={handleAssign}
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg hover:from-green-600 hover:to-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-xl font-bold text-lg shadow-lg hover:from-green-600 hover:to-blue-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center gap-2">
@@ -922,7 +910,7 @@ export default function Tasks() {
                           {t.status === "ongoing" && (
                             <button
                               onClick={() => handleStatusChange(t.id, "completed")}
-                              className="px-2 sm:px-3 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all transform hover:scale-105"
+                              className="px-2 sm:px-3 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all"
                             >
                               ✅ {safeT('tasks.finish')}
                             </button>

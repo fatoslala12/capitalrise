@@ -9,6 +9,7 @@ import api from "../api";
 import axios from "axios";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
 import { useTranslation } from "react-i18next";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
@@ -318,21 +319,7 @@ export default function Dashboard() {
   };
 
   if (loading || !ready) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <div className="animate-spin rounded-full h-32 w-32 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
-            Duke ngarkuar dashboard-in...
-          </h2>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen={true} size="xl" />;
   }
 
   return (
@@ -626,7 +613,7 @@ export default function Dashboard() {
                 to={`/${user.role}/work-hours`}
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:from-blue-100 hover:to-blue-200 transition-all duration-200 group"
               >
-                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">🕒</div>
+                <div className="text-3xl mb-2">🕒</div>
                 <span className="text-sm font-semibold text-blue-800 text-center">{safeT('dashboard.workHours', 'Work Hours')}</span>
               </Link>
               
@@ -634,7 +621,7 @@ export default function Dashboard() {
                 to={`/${user.role}/my-tasks`}
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 hover:from-green-100 hover:to-green-200 transition-all duration-200 group"
               >
-                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">📋</div>
+                <div className="text-3xl mb-2">📋</div>
                 <span className="text-sm font-semibold text-green-800 text-center">{safeT('dashboard.tasks', 'Tasks')}</span>
               </Link>
               
@@ -642,7 +629,7 @@ export default function Dashboard() {
                 to={`/${user.role}/my-profile`}
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:from-purple-100 hover:to-purple-200 transition-all duration-200 group"
               >
-                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">👤</div>
+                <div className="text-3xl mb-2">👤</div>
                 <span className="text-sm font-semibold text-purple-800 text-center">{safeT('dashboard.profile', 'Profile')}</span>
               </Link>
               
@@ -650,7 +637,7 @@ export default function Dashboard() {
                 to="/notifications"
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200 hover:from-orange-100 hover:to-orange-200 transition-all duration-200 group"
               >
-                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">🔔</div>
+                <div className="text-3xl mb-2">🔔</div>
                 <span className="text-sm font-semibold text-orange-800 text-center">Njoftimet</span>
               </Link>
             </div>

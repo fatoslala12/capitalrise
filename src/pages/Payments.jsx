@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FaCalendarAlt, FaMapMarkerAlt, FaHashtag, FaBuilding } from "react-icons/fa";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 export default function Payments() {
   const { t } = useTranslation();
@@ -27,14 +28,7 @@ export default function Payments() {
   });
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">{t('payments.loadingMessage')}</h2>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen={true} size="xl" />;
   }
 
   return (
@@ -66,7 +60,7 @@ export default function Payments() {
             <Link
               key={c.contract_number}
               to={`/admin/payments/details/${c.contract_number}`}
-              className="bg-white/70 backdrop-blur-md rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 lg:p-7 flex flex-col gap-3 md:gap-4 hover:scale-[1.02] md:hover:scale-[1.04] hover:shadow-2xl hover:border-blue-300 transition-all duration-300 group"
+              className="bg-white/70 backdrop-blur-md rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 lg:p-7 flex flex-col gap-3 md:gap-4 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 group"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
                 <div className="flex flex-col gap-1">

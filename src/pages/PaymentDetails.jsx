@@ -627,7 +627,7 @@ export default function PaymentDetails() {
                   <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <button 
                       type="submit" 
-                      className="flex-1 bg-gradient-to-r from-emerald-400 to-blue-500 hover:from-emerald-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
+                      className="flex-1 bg-gradient-to-r from-emerald-400 to-blue-500 hover:from-emerald-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl"
                     >
                       <span className="text-xl">💾</span>
                       <span className="hidden sm:inline">Shto Shpenzim</span>
@@ -636,7 +636,7 @@ export default function PaymentDetails() {
                     <button 
                       type="button"
                       onClick={closeAddModal}
-                      className="flex-1 bg-slate-400 hover:bg-slate-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
+                      className="flex-1 bg-slate-400 hover:bg-slate-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl"
                     >
                       <span className="text-xl">✕</span>
                       <span className="hidden sm:inline">Anulo</span>
@@ -753,7 +753,7 @@ export default function PaymentDetails() {
               </h4>
               <button
                 onClick={openAddModal}
-                className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all flex items-center gap-2 justify-center text-sm sm:text-base hover:shadow-xl hover:scale-105"
+                className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all flex items-center gap-2 justify-center text-sm sm:text-base hover:shadow-xl"
               >
                 <span className="text-lg sm:text-xl">➕</span>
                 <span className="hidden sm:inline">{t('paymentDetails.addExpenseInvoice')}</span>
@@ -842,7 +842,7 @@ export default function PaymentDetails() {
                       <td className="py-2 px-3 text-center">
                         <button
                           onClick={() => handleDelete(inv.id)}
-                          className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl"
+                          className="text-red-600 hover:text-red-800 transition-all text-xl"
                           title="Fshi"
                         >
                           🗑

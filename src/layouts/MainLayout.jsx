@@ -111,7 +111,7 @@ export default function MainLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`group flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 transform hover:scale-105
+              className={`group flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300
                 ${isActive 
                   ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg border-l-4 border-blue-200" 
                   : "text-blue-100 hover:bg-blue-700/50 hover:text-white hover:shadow-md"
@@ -120,7 +120,7 @@ export default function MainLayout() {
               `}
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <span className={`text-xl transition-transform duration-300 group-hover:scale-110 ${isActive ? 'animate-pulse' : ''}`}>
+              <span className={`text-xl transition-transform duration-300 ${isActive ? 'animate-pulse' : ''}`}>
                 {item.icon}
               </span>
               <span className="flex-1 whitespace-nowrap font-semibold">
@@ -225,7 +225,7 @@ export default function MainLayout() {
             {/* Enhanced Logout button */}
             <button
               onClick={logout}
-              className="group px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-300 flex items-center gap-2 text-sm shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="group px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-300 flex items-center gap-2 text-sm shadow-lg hover:shadow-xl"
             >
               <span className="text-lg transition-transform duration-300 group-hover:rotate-12">🚪</span>
               <span className="hidden sm:inline">{t('navigation.logout')}</span>

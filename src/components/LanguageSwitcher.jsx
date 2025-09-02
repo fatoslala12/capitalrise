@@ -16,7 +16,7 @@ const LanguageSwitcher = ({ className = '' }) => {
   return (
     <button
       onClick={handleClick}
-      className={`flex items-center gap-3 px-4 py-2 rounded-xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg ${
+      className={`flex items-center gap-3 px-4 py-2 rounded-xl border-2 transition-all duration-300 hover:shadow-lg ${
         isAlbanian
           ? 'border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100'
           : 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'

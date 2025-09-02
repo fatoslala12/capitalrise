@@ -5,6 +5,7 @@ import { FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 const employeePlaceholder = "https://via.placeholder.com/100";
 
@@ -64,7 +65,7 @@ export default function EmployeesList() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const token = localStorage.getItem("token");
-  if (!user) return <div className="p-4 text-center">{t('common.loading')}</div>;
+  if (!user) return <LoadingSpinner fullScreen={true} size="xl" />;
   const isManager = user?.role === "manager";
   const managerSites = Array.isArray(user?.workplace) ? user.workplace : [];
 
@@ -544,14 +545,7 @@ export default function EmployeesList() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar punonjësit...</h2>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen={true} size="xl" />;
   }
 
   return (
@@ -1032,17 +1026,17 @@ export default function EmployeesList() {
                         <td className="py-3 px-2 text-center font-semibold text-blue-600">{emp.labelType || emp.label_type || ""}</td>
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-1 justify-center">
-                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-1.5 text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-sm" title={t('employeesList.viewDetails')}>
+                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-1.5 text-blue-600 hover:text-blue-800 transition-all text-sm" title={t('employeesList.viewDetails')}>
                         <FaEye />
                       </button>
                       <button
                         onClick={() => handleExtract(emp)}
-                              className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:scale-110 transition-all text-sm"
+                              className="p-1.5 text-emerald-600 hover:text-emerald-800 transition-all text-sm"
                         title={t('employeesList.exportData')}
                       >
                         📥
                       </button>
-                            <button onClick={() => handleDelete(emp.id)} className="p-1.5 text-red-600 hover:text-red-800 hover:scale-110 transition-all text-sm" title={t('employeesList.delete')}>
+                            <button onClick={() => handleDelete(emp.id)} className="p-1.5 text-red-600 hover:text-red-800 transition-all text-sm" title={t('employeesList.delete')}>
                         🗑
                       </button>
                           </div>
@@ -1091,17 +1085,17 @@ export default function EmployeesList() {
                             <span className="font-medium">Taksimi:</span> {emp.labelType || emp.label_type || "N/A"}
                           </div>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 text-blue-600 hover:text-blue-800 hover:scale-110 transition-all" title="Shiko Detaje">
+                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 text-blue-600 hover:text-blue-800 transition-all" title="Shiko Detaje">
                               <FaEye />
                             </button>
                             <button
                               onClick={() => handleExtract(emp)}
-                              className="p-2 text-emerald-600 hover:text-emerald-800 hover:scale-110 transition-all"
+                              className="p-2 text-emerald-600 hover:text-emerald-800 transition-all"
                               title="Eksporto të dhënat"
                             >
                               📥
                             </button>
-                            <button onClick={() => handleDelete(emp.id)} className="p-2 text-red-600 hover:text-red-800 hover:scale-110 transition-all" title="Fshi">
+                            <button onClick={() => handleDelete(emp.id)} className="p-2 text-red-600 hover:text-red-800 transition-all" title="Fshi">
                               🗑
                             </button>
                           </div>
@@ -1119,7 +1113,7 @@ export default function EmployeesList() {
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg border border-slate-200/50 p-4 sm:p-6 text-center">
         <button
           onClick={exportToCSV}
-            className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 mx-auto hover:shadow-xl hover:scale-105"
+            className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 mx-auto hover:shadow-xl"
         >
             <span className="text-xl">📤</span> 
             <span className="hidden sm:inline">{t('employeesList.exportEmployeesCSV')}</span>

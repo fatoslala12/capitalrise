@@ -39,14 +39,18 @@ class AuditService {
 
   // Specific audit methods for different modules
   static async logContractCreate(contractNumber, details = {}) {
-    return this.logCreate('CONTRACTS', `Kontratë e re u krijua: ${contractNumber}`, {
+    const lang = localStorage.getItem('language') || 'sq';
+    const msg = lang === 'en' ? `New contract created: ${contractNumber}` : `Kontratë e re u krijua: ${contractNumber}`;
+    return this.logCreate('CONTRACTS', msg, {
       contractNumber,
       ...details
     });
   }
 
   static async logContractUpdate(contractNumber, changes = [], details = {}) {
-    return this.logUpdate('CONTRACTS', `Kontratë u përditësua: ${contractNumber}`, {
+    const lang = localStorage.getItem('language') || 'sq';
+    const msg = lang === 'en' ? `Contract updated: ${contractNumber}` : `Kontratë u përditësua: ${contractNumber}`;
+    return this.logUpdate('CONTRACTS', msg, {
       contractNumber,
       changes,
       ...details
