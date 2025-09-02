@@ -1,194 +1,81 @@
 const { pool } = require('../db'); // Updated to use new structure
 const { sendInvoiceEmail, sendContractDetailsEmail } = require('../services/emailService');
-const puppeteer = require('puppeteer');
+const PDFDocument = require('pdfkit');
 
-// Funksion për të gjeneruar HTML për PDF
-function generateInvoicePDFHTML(invoice, contract) {
+// Generate invoice PDF buffer using PDFKit (avoids Chromium download)
+async function generateInvoicePDFBuffer(invoice, contract) {
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return d.toLocaleDateString('sq-AL', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
+  const formatCurrency = (amount) => new Intl.NumberFormat('sq-AL', { style: 'currency', currency: 'GBP' }).format(amount || 0);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('sq-AL', { 
-      style: 'currency', 
-      currency: 'GBP' 
-    }).format(amount || 0);
-  };
+  return await new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margin: 40 });
+    const chunks = [];
+    doc.on('data', (c) => chunks.push(c));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
 
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <title>Invoice #${invoice.invoice_number}</title>
-      <style>
-        body {
-          font-family: 'Segoe UI', sans-serif;
-          font-size: 14px;
-          margin: 0;
-          padding: 20px;
-          color: #333;
-          background: white;
-        }
-        .header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 30px;
-          border-bottom: 2px solid #cc6600;
-          padding-bottom: 20px;
-        }
-        .title-block h1 {
-          color: #cc6600;
-          font-size: 24px;
-          margin: 0;
-        }
-        .subtitle {
-          font-size: 12px;
-          color: #666;
-          margin-top: 4px;
-        }
-        .company-info {
-          text-align: right;
-        }
-        .company-info div {
-          margin: 2px 0;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 20px;
-        }
-        th {
-          background: #d4f2dd;
-          color: #333;
-          padding: 8px;
-          border: 1px solid #c0e6ca;
-          text-align: left;
-          font-size: 12px;
-        }
-        td {
-          padding: 8px;
-          border: 1px solid #eee;
-          font-size: 12px;
-        }
-        .totals {
-          margin-top: 20px;
-          display: flex;
-          justify-content: flex-end;
-        }
-        .totals-table {
-          width: 250px;
-          border-collapse: collapse;
-        }
-        .totals-table td {
-          padding: 6px;
-          text-align: right;
-        }
-        .totals-table .label {
-          text-align: left;
-          color: #333;
-        }
-        .totals-table .grand-total {
-          font-size: 14px;
-          font-weight: bold;
-          color: #cc6600;
-        }
-        .bank-details {
-          margin-top: 30px;
-          color: #333;
-        }
-        .bank-details h3 {
-          color: #cc6600;
-          margin-bottom: 8px;
-          font-size: 16px;
-        }
-        .bank-details div {
-          margin: 2px 0;
-          font-size: 12px;
-        }
-        .thank-you {
-          margin-top: 30px;
-          text-align: center;
-          font-weight: bold;
-          color: #0a8340;
-          font-size: 14px;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="title-block">
-          <h1>INVOICE #${invoice.invoice_number}</h1>
-          <div class="subtitle">Contract #${contract.contract_number} – ${contract.site_name || contract.company}</div>
-        </div>
-        <div class="company-info">
-          <div><strong>Date:</strong> ${formatDate(invoice.date)}</div>
-          <div><strong>Client:</strong> ${contract.company}</div>
-          <div><em>${contract.site_name || contract.company}</em></div>
-        </div>
-      </div>
+    // Header
+    doc
+      .fillColor('#cc6600')
+      .fontSize(22)
+      .text(`INVOICE #${invoice.invoice_number}`, { align: 'left' });
+    doc
+      .moveDown(0.3)
+      .fontSize(10)
+      .fillColor('#555')
+      .text(`Contract #${contract.contract_number} – ${contract.site_name || contract.company}`);
 
-      <table>
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Shifts</th>
-            <th>Rate</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${(invoice.items || []).map(item => `
-            <tr>
-              <td>${item.description || ''}</td>
-              <td>${item.shifts || ''}</td>
-              <td>${formatCurrency(item.rate)}</td>
-              <td>${formatCurrency(item.amount)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+    // Client info
+    doc.moveDown().fillColor('#333').fontSize(11);
+    doc.text(`Date: ${formatDate(invoice.date)}`);
+    doc.text(`Client: ${contract.company}`);
+    doc.text(`Project: ${contract.site_name || contract.company}`);
 
-      <div class="totals">
-        <table class="totals-table">
-          <tr>
-            <td class="label">Subtotal:</td>
-            <td>${formatCurrency(invoice.total_net)}</td>
-          </tr>
-          <tr>
-            <td class="label">VAT (20%):</td>
-            <td>${formatCurrency(invoice.vat)}</td>
-          </tr>
-          <tr>
-            <td class="label">Other:</td>
-            <td>${formatCurrency(invoice.other)}</td>
-          </tr>
-          <tr>
-            <td class="label grand-total">Total:</td>
-            <td class="grand-total">${formatCurrency(invoice.total)}</td>
-          </tr>
-        </table>
-      </div>
+    // Table header
+    doc.moveDown().fontSize(11).fillColor('#007bff').text('Items');
+    doc.moveDown(0.2).fillColor('#333');
+    doc.fontSize(10);
+    doc.text('Description', 40, doc.y, { continued: true, width: 250 });
+    doc.text('Shifts', 300, doc.y, { continued: true, width: 60, align: 'right' });
+    doc.text('Rate', 370, doc.y, { continued: true, width: 80, align: 'right' });
+    doc.text('Amount', 450, doc.y, { width: 100, align: 'right' });
+    doc.moveTo(40, doc.y + 3).lineTo(555, doc.y + 3).strokeColor('#ddd').stroke();
 
-      <div class="bank-details">
-        <h3>Capital Rise Ltd</h3>
-        <div>HSBC Bank</div>
-        <div>Account Number: 81845403</div>
-        <div>Sort Code: 52474549</div>
-        <div>Email: billing@capitalrise.al</div>
-        <div>Phone: +355 XX XXX XXX</div>
-        <div>Website: www.capitalrise.al</div>
-      </div>
+    // Table rows
+    (invoice.items || []).forEach((item) => {
+      const y = doc.y + 6;
+      doc.fillColor('#333').text(item.description || '', 40, y, { continued: true, width: 250 });
+      doc.text(String(item.shifts || ''), 300, y, { continued: true, width: 60, align: 'right' });
+      doc.text(formatCurrency(item.rate), 370, y, { continued: true, width: 80, align: 'right' });
+      doc.text(formatCurrency(item.amount), 450, y, { width: 100, align: 'right' });
+      doc.moveDown(0.6);
+    });
 
-      <div class="thank-you">
-        THANK YOU FOR YOUR BUSINESS!
-      </div>
-    </body>
-    </html>
-  `;
+    // Totals
+    doc.moveDown();
+    doc.text(`Subtotal: ${formatCurrency(invoice.total_net)}`, { align: 'right' });
+    doc.text(`VAT (20%): ${formatCurrency(invoice.vat)}`, { align: 'right' });
+    doc.text(`Other: ${formatCurrency(invoice.other)}`, { align: 'right' });
+    doc.fontSize(12).fillColor('#cc6600').text(`Total: ${formatCurrency(invoice.total)}`, { align: 'right' });
+
+    // Bank details
+    doc.moveDown().fillColor('#007bff').fontSize(12).text('Capital Rise Ltd');
+    doc.fillColor('#333').fontSize(10);
+    doc.text('HSBC Bank');
+    doc.text('Account Number: 81845403');
+    doc.text('Sort Code: 52474549');
+    doc.text('Email: billing@capitalrise.al');
+    doc.text('Phone: +355 XX XXX XXX');
+    doc.text('Website: www.capitalrise.al');
+
+    doc.moveDown().fillColor('#0a8340').fontSize(11).text('THANK YOU FOR YOUR BUSINESS!', { align: 'center' });
+
+    doc.end();
+  });
 }
 
 exports.getInvoicesByContract = async (req, res) => {
@@ -349,29 +236,10 @@ exports.sendInvoiceEmail = async (req, res) => {
       });
     }
     
-    // Gjenero PDF për faturën
+    // Gjenero PDF për faturën (PDFKit)
     let pdfBuffer = null;
     try {
-      const browser = await puppeteer.launch({ headless: true });
-      const page = await browser.newPage();
-      
-      // Krijon HTML për PDF
-      const htmlContent = generateInvoicePDFHTML(invoice, contract);
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-      
-      // Gjeneron PDF
-      pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: {
-          top: '20px',
-          right: '20px',
-          bottom: '20px',
-          left: '20px'
-        }
-      });
-      
-      await browser.close();
+      pdfBuffer = await generateInvoicePDFBuffer(invoice, contract);
     } catch (pdfError) {
       console.error('Gabim në gjenerimin e PDF:', pdfError);
       // Vazhdon pa PDF nëse ka gabim
