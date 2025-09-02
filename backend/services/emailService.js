@@ -646,12 +646,12 @@ Ju lutem mos përgjigjuni këtij email-i.
         throw createError('EMAIL_SERVICE_ERROR', null, 'Email service nuk është i disponueshëm');
       }
 
-      const subject = `Detajet e Kontratës #${contract.contract_number} - ${contract.company}`;
+      const subject = `🎉 Your Contract #${contract.contract_number} with 🏗️ Capital Rise is Ready!`;
       const htmlContent = this.generateContractDetailsEmailHTML(contract);
       const textContent = this.generateContractDetailsEmailText(contract);
 
       const result = await this.resend.emails.send({
-        from: 'Alban Construction <onboarding@resend.dev>',
+        from: 'Capital Rise <onboarding@resend.dev>',
         to: [recipientEmail],
         subject: subject,
         html: htmlContent,
@@ -842,7 +842,7 @@ Ju lutem mos përgjigjuni këtij email-i.
               <strong>${contract.site_name || contract.company}</strong>.
             </p>
           </div>
-
+          
           <div class="header">
             <div class="title-block">
               <img src="https://img.icons8.com/ios-filled/50/invoice.png" alt="Invoice Icon" width="32" />
@@ -850,7 +850,7 @@ Ju lutem mos përgjigjuni këtij email-i.
                 <h1>INVOICE</h1>
                 <div class="subtitle">Contract #${contract.contract_number} – ${contract.site_name || contract.company}</div>
               </div>
-            </div>
+              </div>
             <div class="company-info">
               <div><strong>Date:</strong> ${formatDate(invoice.date)}</div>
               <div><strong>Client:</strong> ${contract.company}</div>
@@ -859,24 +859,24 @@ Ju lutem mos përgjigjuni këtij email-i.
           </div>
 
           <table>
-            <thead>
-              <tr>
+              <thead>
+                <tr>
                 <th>Description</th>
                 <th>Shifts</th>
                 <th>Rate</th>
                 <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${(invoice.items || []).map(item => `
-                <tr>
-                  <td>${item.description || ''}</td>
-                  <td>${item.shifts || ''}</td>
-                  <td>${formatCurrency(item.rate)}</td>
-                  <td>${formatCurrency(item.amount)}</td>
                 </tr>
-              `).join('')}
-            </tbody>
+              </thead>
+              <tbody>
+                ${(invoice.items || []).map(item => `
+                  <tr>
+                    <td>${item.description || ''}</td>
+                    <td>${item.shifts || ''}</td>
+                    <td>${formatCurrency(item.rate)}</td>
+                    <td>${formatCurrency(item.amount)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
           </table>
 
           <div class="totals">
@@ -908,20 +908,20 @@ Ju lutem mos përgjigjuni këtij email-i.
             <div>Email: billing@capitalrise.al</div>
             <div>Phone: +355 XX XXX XXX</div>
             <div>Website: www.capitalrise.al</div>
-          </div>
+            </div>
 
           <div class="qr-section">
             <p>Scan to pay:</p>
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://your-payment-link.com/pay/${invoice.invoice_number}" alt="QR Code" />
             <br>
             <a class="pay-button" href="https://your-payment-link.com/pay/${invoice.invoice_number}" target="_blank">💳 Pay Now</a>
-          </div>
+            </div>
 
           <div class="thank-you">
             THANK YOU FOR YOUR BUSINESS!
           </div>
 
-        </div>
+          </div>
 
       </body>
       </html>
@@ -991,84 +991,97 @@ THANK YOU FOR YOUR BUSINESS!
 
     return `
       <!DOCTYPE html>
-      <html>
+<html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>Detajet e Kontratës #${contract.contract_number}</title>
+  <title>Contract #${contract.contract_number} – Capital Rise</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
-          .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-          .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 30px; }
-          .logo { font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 10px; }
-          .contract-details { margin-bottom: 30px; }
-          .contract-details h2 { color: #333; margin-bottom: 20px; }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background-color: #f4f6f8; color: #333; }
+    .container { max-width: 760px; margin: 40px auto; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+    .header { background: linear-gradient(90deg, #007bff, #0052cc); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
+    .header h1 { font-size: 26px; margin: 0; }
+    .brand { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+    .success-message { font-size: 16px; margin: 30px 0; background: #e6f4ea; border-left: 5px solid #28a745; padding: 18px 24px; border-radius: 8px; color: #155724; }
+    .friendly-note { font-size: 15px; margin-top: 10px; background: #fff3cd; border-left: 5px solid #ffc107; padding: 16px 24px; border-radius: 8px; color: #856404; }
+    .info-section h2 { color: #007bff; font-size: 20px; margin-bottom: 20px; }
           .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-          .info-item { padding: 15px; background: #f8f9fa; border-radius: 5px; }
-          .info-label { font-weight: bold; color: #007bff; }
-          .status-badge { display: inline-block; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+    .info-card { background: #f8f9fa; border-radius: 8px; padding: 15px 18px; border-left: 4px solid #007bff; }
+    .info-label { font-weight: 600; color: #007bff; font-size: 14px; margin-bottom: 4px; }
+    .status-badge { display: inline-block; padding: 6px 14px; border-radius: 15px; font-size: 13px; font-weight: bold; }
           .status-active { background: #d4edda; color: #155724; }
           .status-completed { background: #f8d7da; color: #721c24; }
-          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; }
+    .footer { text-align: center; font-size: 14px; color: #666; padding-top: 30px; border-top: 1px solid #ddd; }
+    .footer a { color: #007bff; text-decoration: none; }
         </style>
       </head>
       <body>
         <div class="container">
+
           <div class="header">
-            <div class="logo">🏗️ Alban Construction</div>
-            <h1>Detajet e Kontratës #${contract.contract_number}</h1>
+      <div class="brand">🏗️ Capital Rise</div>
+      <h1>Contract #${contract.contract_number} Created</h1>
           </div>
           
-          <div class="contract-details">
-            <h2>Informacionet e Kontratës</h2>
+    <div class="success-message">
+      ✅ We are excited to let you know that your contract has been successfully created and recorded in our system.
+    </div>
+
+    <div class="friendly-note">
+      🤝 This marks the beginning of what we believe will be a productive and meaningful collaboration.<br><br>
+      At Capital Rise, we don’t just build projects — we build partnerships based on trust, clarity, and shared success.<br><br>
+      Whether it's bricks or bridges, challenges or deadlines — we’re right here with you. Let's make this journey smooth, impactful and maybe even a little fun. 🚀
+    </div>
+
+    <div class="info-section">
+      <h2>📋 Contract Details</h2>
             <div class="info-grid">
-              <div class="info-item">
-                <div class="info-label">Kompania:</div>
+        <div class="info-card">
+          <div class="info-label">Company:</div>
                 <div>${contract.company}</div>
               </div>
-              <div class="info-item">
-                <div class="info-label">Kontrata #:</div>
+        <div class="info-card">
+          <div class="info-label">Contract #:</div>
                 <div>${contract.contract_number}</div>
               </div>
-              <div class="info-item">
-                <div class="info-label">Vendodhja:</div>
+        <div class="info-card">
+          <div class="info-label">Location:</div>
                 <div>${contract.site_name || 'N/A'}</div>
               </div>
-              <div class="info-item">
-                <div class="info-label">Adresa:</div>
+        <div class="info-card">
+          <div class="info-label">Address:</div>
                 <div>${contract.address || 'N/A'}</div>
               </div>
-              <div class="info-item">
-                <div class="info-label">Data e Fillimit:</div>
+        <div class="info-card">
+          <div class="info-label">Start Date:</div>
                 <div>${formatDate(contract.start_date)}</div>
               </div>
-              <div class="info-item">
-                <div class="info-label">Data e Mbarimit:</div>
+        <div class="info-card">
+          <div class="info-label">End Date:</div>
                 <div>${formatDate(contract.finish_date)}</div>
               </div>
-              <div class="info-item">
-                <div class="info-label">Statusi:</div>
+        <div class="info-card">
+          <div class="info-label">Status:</div>
                 <div>
-                  <span class="status-badge ${contract.status === 'Mbyllur' || contract.status === 'Mbyllur me vonese' ? 'status-completed' : 'status-active'}">
-                    ${contract.status}
-                  </span>
+            <span class="status-badge ${contract.status === 'Closed' || contract.status === 'Closed with Delay' ? 'status-completed' : 'status-active'}">${contract.status}</span>
                 </div>
               </div>
-              <div class="info-item">
-                <div class="info-label">Vlera e Kontratës:</div>
+        <div class="info-card">
+          <div class="info-label">Contract Value:</div>
                 <div>£${contract.contract_value || 'N/A'}</div>
               </div>
             </div>
           </div>
 
           <div class="footer">
-            <p>Falënderojmë për besimin tuaj!</p>
-            <p>Alban Construction</p>
-            <p>Email: info@albanconstruction.com</p>
+      Thank you for choosing <strong>Capital Rise</strong>!<br>
+      Let’s build something great together. 🧱<br><br>
+      <a href="mailto:info@capitalrise.al">info@capitalrise.al</a> |
+      <a href="https://www.capitalrise.al">www.capitalrise.al</a>
           </div>
+
         </div>
       </body>
-      </html>
-    `;
+</html>`;
   }
 
   // Generate text për contract details email
@@ -1080,20 +1093,20 @@ THANK YOU FOR YOUR BUSINESS!
     };
 
     return `
-Detajet e Kontratës #${contract.contract_number} - ${contract.company}
+🎉 Your Contract #${contract.contract_number} with 🏗️ Capital Rise is Ready!
 
-Informacionet e Kontratës:
-- Kompania: ${contract.company}
-- Kontrata #: ${contract.contract_number}
-- Vendodhja: ${contract.site_name || 'N/A'}
-- Adresa: ${contract.address || 'N/A'}
-- Data e Fillimit: ${formatDate(contract.start_date)}
-- Data e Mbarimit: ${formatDate(contract.finish_date)}
-- Statusi: ${contract.status}
-- Vlera e Kontratës: £${contract.contract_value || 'N/A'}
+📋 Contract Details
+- Company: ${contract.company}
+- Contract #: ${contract.contract_number}
+- Location: ${contract.site_name || 'N/A'}
+- Address: ${contract.address || 'N/A'}
+- Start Date: ${formatDate(contract.start_date)}
+- End Date: ${formatDate(contract.finish_date)}
+- Status: ${contract.status}
+- Contract Value: £${contract.contract_value || 'N/A'}
 
-Falënderojmë për besimin tuaj!
-Alban Construction
+Thank you for choosing Capital Rise!
+Let’s build something great together. 🧱
     `;
   }
 
