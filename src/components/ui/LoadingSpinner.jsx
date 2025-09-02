@@ -18,37 +18,96 @@ const LoadingSpinner = ({
   };
 
   const variantClasses = {
-    primary: 'border-blue-600',
-    secondary: 'border-gray-600',
-    success: 'border-green-600',
-    warning: 'border-yellow-600',
-    danger: 'border-red-600',
-    white: 'border-white'
+    primary: 'from-blue-500 to-purple-600',
+    secondary: 'from-gray-500 to-gray-700',
+    success: 'from-green-500 to-emerald-600',
+    warning: 'from-yellow-500 to-orange-600',
+    danger: 'from-red-500 to-pink-600',
+    white: 'from-white to-gray-200'
   };
 
   const spinner = (
     <div className={`relative ${className}`}>
-      {/* Main spinning ring */}
-      <div className={`${sizeClasses[size]} border-4 border-gray-200 rounded-full animate-spin`}>
-        <div className={`absolute inset-0 border-4 border-transparent border-t-current rounded-full ${variantClasses[variant]}`}></div>
+      {/* Outer rotating ring */}
+      <div className={`${sizeClasses[size]} border-4 border-transparent rounded-full animate-spin`} 
+           style={{
+             background: `conic-gradient(from 0deg, transparent, ${variant === 'primary' ? '#3b82f6' : variant === 'success' ? '#10b981' : variant === 'warning' ? '#f59e0b' : variant === 'danger' ? '#ef4444' : '#6b7280'}, transparent)`
+           }}>
       </div>
       
-      {/* Pulsing background ring */}
-      <div className={`absolute inset-0 ${sizeClasses[size]} border-4 border-gray-200 rounded-full animate-pulse`}></div>
+      {/* Inner pulsing ring */}
+      <div className={`absolute inset-2 border-2 border-transparent rounded-full animate-pulse`}
+           style={{
+             background: `conic-gradient(from 180deg, transparent, ${variant === 'primary' ? '#8b5cf6' : variant === 'success' ? '#34d399' : variant === 'warning' ? '#fbbf24' : variant === 'danger' ? '#f87171' : '#9ca3af'}, transparent)`
+           }}>
+      </div>
       
-      {/* Glowing effect */}
-      <div className={`absolute inset-0 ${sizeClasses[size]} rounded-full bg-gradient-to-r from-transparent via-current to-transparent opacity-20 animate-pulse`}></div>
+      {/* Center dot with breathing effect */}
+      <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-gradient-to-r ${variantClasses[variant]} animate-pulse`}></div>
+      
+      {/* Glowing aura effect */}
+      <div className={`absolute inset-0 ${sizeClasses[size]} rounded-full bg-gradient-to-r ${variantClasses[variant]} opacity-10 animate-ping`}></div>
+      
+      {/* Sparkle effects */}
+      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+      <div className="absolute bottom-0 right-0 w-1 h-1 bg-white rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute top-1/2 right-0 transform -translate-y-1/2 w-1 h-1 bg-white rounded-full animate-ping" style={{ animationDelay: '1.5s' }}></div>
     </div>
   );
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center z-50">
-        <div className="text-center">
-          {spinner}
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 flex items-center justify-center z-50 overflow-hidden">
+        {/* Animated background particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400 rounded-full animate-ping opacity-30" style={{ animationDelay: '0s' }}></div>
+          <div className="absolute top-3/4 right-1/4 w-3 h-3 bg-purple-400 rounded-full animate-ping opacity-20" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/6 w-1 h-1 bg-indigo-400 rounded-full animate-ping opacity-40" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute bottom-1/4 right-1/3 w-2 h-2 bg-blue-300 rounded-full animate-ping opacity-25" style={{ animationDelay: '0.5s' }}></div>
+        </div>
+        
+        <div className="text-center relative z-10">
+          {/* Enhanced spinner with larger size for fullscreen */}
+          <div className="mb-8">
+            <div className="relative">
+              {/* Outer rotating ring */}
+              <div className="h-32 w-32 border-4 border-transparent rounded-full animate-spin mx-auto" 
+                   style={{
+                     background: `conic-gradient(from 0deg, transparent, #3b82f6, #8b5cf6, #3b82f6, transparent)`
+                   }}>
+              </div>
+              
+              {/* Inner pulsing ring */}
+              <div className="absolute inset-4 border-2 border-transparent rounded-full animate-pulse mx-auto"
+                   style={{
+                     background: `conic-gradient(from 180deg, transparent, #8b5cf6, #a855f7, #8b5cf6, transparent)`
+                   }}>
+              </div>
+              
+              {/* Center dot with breathing effect */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse"></div>
+              
+              {/* Glowing aura effect */}
+              <div className="absolute inset-0 h-32 w-32 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 opacity-10 animate-ping mx-auto"></div>
+              
+              {/* Enhanced sparkle effects */}
+              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+              <div className="absolute bottom-2 right-2 w-2 h-2 bg-white rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
+              <div className="absolute top-1/2 right-2 transform -translate-y-1/2 w-2 h-2 bg-white rounded-full animate-ping" style={{ animationDelay: '1.5s' }}></div>
+              <div className="absolute top-1/2 left-2 transform -translate-y-1/2 w-1 h-1 bg-white rounded-full animate-ping" style={{ animationDelay: '2s' }}></div>
+            </div>
+          </div>
+          
           {text && (
-            <div className="mt-4 animate-pulse">
-              <p className="text-gray-600 font-medium text-lg">{text}</p>
+            <div className="animate-pulse">
+              <p className="text-gray-700 font-semibold text-xl mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {text}
+              </p>
+              <div className="flex justify-center space-x-1">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              </div>
             </div>
           )}
         </div>

@@ -39,6 +39,12 @@ const tr = (key, fallback = key) => {
     'adminDashboard.by': 'By',
     'adminDashboard.weeklyHoursBySite': 'Weekly Hours by Site',
     'adminDashboard.contractProgress': 'Contract Progress',
+    'adminDashboard.topPaidEmployees': 'Top 5 Highest Paid Employees',
+    'adminDashboard.paid': 'Paid',
+    'adminDashboard.unpaid': 'Unpaid',
+    'adminDashboard.weeklyStaffPayments': 'Weekly Staff Payments',
+    'adminDashboard.totalPayment': 'Total Payment (£)',
+    'adminDashboard.payment': 'Payment',
     'adminDashboard.expenseStatus': 'Expense Status',
     'adminDashboard.invoiceStatus': 'Invoice Status',
     'adminDashboard.unpaidInvoices': 'Unpaid Invoices',
@@ -98,6 +104,12 @@ const tr = (key, fallback = key) => {
     'adminDashboard.by.sq': 'Nga',
     'adminDashboard.weeklyHoursBySite.sq': 'Orët sipas site-ve këtë javë',
     'adminDashboard.contractProgress.sq': 'Progresi i kontratave',
+    'adminDashboard.topPaidEmployees.sq': 'Top 5 Punonjësit Më të Paguar',
+    'adminDashboard.paid.sq': 'E paguar',
+    'adminDashboard.unpaid.sq': 'E papaguar',
+    'adminDashboard.weeklyStaffPayments.sq': 'Pagesa Javore për Stafin',
+    'adminDashboard.totalPayment.sq': 'Pagesa Totale (£)',
+    'adminDashboard.payment.sq': 'Pagesa',
     'adminDashboard.expenseStatus.sq': 'Statusi i Shpenzimeve',
     'adminDashboard.invoiceStatus.sq': 'Statusi i Faturave',
     'adminDashboard.unpaidInvoices.sq': 'Faturat e Papaguara',
@@ -486,20 +498,7 @@ export default function AdminDashboard() {
           </div>
         </div>
         
-        {/* Language Switcher */}
-        <div className="flex-shrink-0">
-          <select 
-            value={localStorage.getItem('language') || 'sq'} 
-            onChange={(e) => {
-              localStorage.setItem('language', e.target.value);
-              window.location.reload(); // Reload to apply language change
-            }}
-            className="bg-white border border-blue-300 rounded-lg px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="sq">🇦🇱 Shqip</option>
-            <option value="en">🇬🇧 English</option>
-          </select>
-        </div>
+
       </div>
 
       {/* Statistika kryesore */}
@@ -634,7 +633,7 @@ export default function AdminDashboard() {
       {/* Top 5 më të paguar */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            🏅 Top 5 {localStorage.getItem('language') === 'en' ? 'highest paid employees' : 'punonjësit më të paguar'}
+            🏅 {tr('adminDashboard.topPaidEmployees')}
           </h3>
         {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
@@ -693,7 +692,7 @@ export default function AdminDashboard() {
                       {displayName}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
+                      {e.isPaid ? `✅ ${tr('adminDashboard.paid')}` : `⏳ ${tr('adminDashboard.unpaid')}`}
                     </p>
                   </div>
                   <div className="text-blue-700 font-extrabold text-xl">£{Number(amount).toFixed(2)}</div>
@@ -709,11 +708,7 @@ export default function AdminDashboard() {
 
       
 
-      {/* Grafik për shpenzimet sipas site-ve */}
-      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 {localStorage.getItem('language') === 'en' ? 'Expenses (expenses_invoice.gross) + Work Hours (work_hours.hours × rate) by Site' : 'Shpenzimet (expenses_invoice.gross) + Orët e Punës (work_hours.hours × rate) sipas Site-ve'}</h3>
-        <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} structuredWorkHours={structuredWorkHours} allPayments={allPayments} />
-      </div>
+
 
       {/* Grafik për statusin e kontratave */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
@@ -723,14 +718,14 @@ export default function AdminDashboard() {
 
       {/* Grafik për pagesat javore */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 {localStorage.getItem('language') === 'en' ? 'Weekly Staff Payments' : 'Pagesa Javore për stafin'}</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 {tr('adminDashboard.weeklyStaffPayments')}</h3>
         {weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
             <BarChart data={weeklyProfitData.filter(w => w.totalPaid > 0)} margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
-              <YAxis label={{ value: "Pagesa totale (£)", angle: -90, position: "insideLeft", offset: 0 }} tick={{ fontSize: 14, fill: '#6366f1' }} />
-              <Tooltip formatter={v => [`£${Number(v).toFixed(2)}`, "Pagesa"]} />
+              <YAxis label={{ value: tr('adminDashboard.totalPayment'), angle: -90, position: "insideLeft", offset: 0 }} tick={{ fontSize: 14, fill: '#6366f1' }} />
+              <Tooltip formatter={v => [`£${Number(v).toFixed(2)}`, tr('adminDashboard.payment')]} />
               <Bar dataKey="totalPaid" radius={[6, 6, 0, 0]} barSize={32}>
                 {weeklyProfitData.filter(w => w.totalPaid > 0).map((_, i) => (
                   <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -826,13 +821,17 @@ function VonesaFaturashChart() {
         const invoices = res.data || [];
         
         // Thjeshtëzo: vetëm paid TRUE vs FALSE
-        const result = { "Paguar": 0, "Pa paguar": 0 };
+        const userLanguage = localStorage.getItem('language') || 'sq';
+        const paidLabel = userLanguage === 'en' ? 'Paid' : 'Paguar';
+        const unpaidLabel = userLanguage === 'en' ? 'Unpaid' : 'Pa paguar';
+        
+        const result = { [paidLabel]: 0, [unpaidLabel]: 0 };
         
         invoices.forEach(inv => {
           if (inv.paid) {
-            result["Paguar"]++;
+            result[paidLabel]++;
           } else {
-            result["Pa paguar"]++;
+            result[unpaidLabel]++;
           }
         });
         
@@ -847,9 +846,12 @@ function VonesaFaturashChart() {
       } catch (error) {
         console.error('[ERROR] Failed to fetch invoices:', error);
         // Nëse ka error, vendos të dhëna bosh
+        const userLanguage = localStorage.getItem('language') || 'sq';
+        const paidLabel = userLanguage === 'en' ? 'Paid' : 'Paguar';
+        const unpaidLabel = userLanguage === 'en' ? 'Unpaid' : 'Pa paguar';
         setData([
-          { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
-          { name: "Pa paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[1] }
+          { name: `${paidLabel}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[0] },
+          { name: `${unpaidLabel}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
@@ -912,13 +914,17 @@ function StatusiShpenzimeveChart() {
         const expenses = res.data || [];
         
         // Llogarit statusin e pagesës për shpenzimet
-        const result = { "Paguar": 0, "Pa paguar": 0 };
+        const userLanguage = localStorage.getItem('language') || 'sq';
+        const paidLabel = userLanguage === 'en' ? 'Paid' : 'Paguar';
+        const unpaidLabel = userLanguage === 'en' ? 'Unpaid' : 'Pa paguar';
+        
+        const result = { [paidLabel]: 0, [unpaidLabel]: 0 };
         
         expenses.forEach(exp => {
           if (exp.paid) {
-            result["Paguar"]++;
+            result[paidLabel]++;
           } else {
-            result["Pa paguar"]++;
+            result[unpaidLabel]++;
           }
         });
         
@@ -933,9 +939,12 @@ function StatusiShpenzimeveChart() {
       } catch (error) {
         console.error('[ERROR] Failed to fetch expenses:', error);
         // Nëse ka error, vendos të dhëna bosh
+        const userLanguage = localStorage.getItem('language') || 'sq';
+        const paidLabel = userLanguage === 'en' ? 'Paid' : 'Paguar';
+        const unpaidLabel = userLanguage === 'en' ? 'Unpaid' : 'Pa paguar';
         setData([
-          { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
-          { name: "Pa paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[1] }
+          { name: `${paidLabel}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[0] },
+          { name: `${unpaidLabel}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
@@ -985,134 +994,7 @@ function StatusiShpenzimeveChart() {
   );
 }
 
-function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, allPayments }) {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    async function fetchAllExpensesData() {
-      try {
-        setLoading(true);
-        
-        // Merr të gjitha shpenzimet nga expenses_invoice table
-        const expensesRes = await api.get("/api/expenses");
-        const expenses = expensesRes.data || [];
-        
-        // Merr të gjitha work_hours për të llogaritur hours * rate
-        const workHoursRes = await api.get("/api/work-hours");
-        const workHours = workHoursRes.data || [];
-        
-        // Merr të gjitha punonjësit për hourly rates
-        const employeesRes = await api.get("/api/employees");
-        const employees = employeesRes.data || [];
-        
-        // Llogarit shpenzimet totale sipas site-ve
-        const expensesBySite = {};
-        
-        // 1. Shto shpenzimet nga expenses_invoice table - kolona [gross] sipas site-ve
-        expenses.forEach(exp => {
-          if (exp.contract_id) {
-            const contract = contracts.find(c => c.id === exp.contract_id);
-            if (contract) {
-              const site = contract.site_name || contract.siteName || 'Unknown';
-              if (!expensesBySite[site]) {
-                expensesBySite[site] = { 
-                  expenses: 0, 
-                  workHours: 0, 
-                  total: 0
-                };
-              }
-              // Përdor kolonën [gross] nga expenses_invoice
-              expensesBySite[site].expenses += parseFloat(exp.gross || 0);
-            }
-          }
-        });
-        
-        // 2. Shto work_hours: kolona [hours] × kolona [rate] sipas site-ve
-        workHours.forEach(wh => {
-          if (wh.contract_id && wh.site) {
-            const site = wh.site;
-            if (!expensesBySite[site]) {
-              expensesBySite[site] = { 
-                expenses: 0, 
-                workHours: 0, 
-                total: 0
-              };
-            }
-            // Llogarit si: hours * rate nga work_hours table
-            const hours = parseFloat(wh.hours || 0);
-            const rate = parseFloat(wh.rate || 0);
-            const workHoursCost = hours * rate;
-            expensesBySite[site].workHours += workHoursCost;
-          }
-        });
-        
-        // 3. Llogarit totalin për çdo site
-        Object.keys(expensesBySite).forEach(site => {
-          expensesBySite[site].total = 
-            expensesBySite[site].expenses + 
-            expensesBySite[site].workHours;
-        });
-        
-        // Konverto në array dhe sorto
-        const chartData = Object.entries(expensesBySite)
-          .map(([site, data]) => ({
-            site,
-            expenses: parseFloat(data.expenses),
-            workHours: parseFloat(data.workHours),
-            total: parseFloat(data.total)
-          }))
-          .sort((a, b) => b.total - a.total);
-        
-        setData(chartData);
-        
-      } catch (error) {
-        console.error('[ERROR] Failed to fetch expenses data:', error);
-        setData([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    fetchAllExpensesData();
-  }, [allExpenses, contracts, structuredWorkHours, allPayments]);
-  
-  if (loading) {
-    return <div className="text-center py-8">Duke ngarkuar...</div>;
-  }
-  
-  if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
-  }
-  
-  return (
-    <div>
-      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h4 className="font-semibold text-blue-800 mb-2">📊 Shpjegim i llogaritjes:</h4>
-        <div className="text-sm text-blue-700 space-y-1">
-          <p><strong>Shpenzime:</strong> Shpenzimet nga tabela expenses_invoice - kolona [gross] sipas site-ve</p>
-          <p><strong>Orët e Punës:</strong> Orët e punuara × rate nga tabela work_hours - kolona [hours] × kolona [rate]</p>
-          <p><strong>Totali:</strong> Shpenzime + Orët e Punës</p>
-        </div>
-      </div>
-      
-      <ResponsiveContainer width="100%" height={450}>
-        <BarChart data={data} layout="vertical" margin={{ left: 50, right: 50, top: 20, bottom: 20 }} barCategoryGap={18}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" label={{ value: "Shuma totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
-          <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0284c7' }} />
-          <Tooltip 
-            contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} 
-            formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} 
-          />
-          <Legend />
-          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name="Shpenzime (expenses_invoice.gross)" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[1]} name="Orët e Punës (work_hours.hours × rate)" radius={[0, 0, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
+
 
 function StatusiKontrataveChart({ contracts }) {
   const [data, setData] = useState([]);
@@ -1141,20 +1023,40 @@ function StatusiKontrataveChart({ contracts }) {
       statusCount[statusKey] = (statusCount[statusKey] || 0) + 1;
     });
     
-    const chartData = Object.entries(statusCount).map(([status, count]) => ({
-      name: status === 'active' ? 'Aktive' : 
-            status === 'suspended' ? 'Të pezulluara' :
-            status === 'completed' ? 'Të mbyllura' :
-            status === 'cancelled' ? 'Të anuluara' :
-            status === 'pending' ? 'Në pritje' :
-            status === 'ne progres' ? 'Në progres' :
-            status === 'pezulluar' ? 'Të pezulluara' :
-            status === 'mbyllur me vonese' ? 'Mbyllur me vonesë' :
-            status === 'anulluar' ? 'Të anuluara' :
-            status === 'mbyllur' ? 'Të mbyllura' : status,
-      value: count,
-      color: statusColors[status] || '#6b7280'
-    }));
+    const chartData = Object.entries(statusCount).map(([status, count]) => {
+      const userLanguage = localStorage.getItem('language') || 'sq';
+      let translatedName;
+      
+      if (userLanguage === 'en') {
+        translatedName = status === 'active' ? 'Active' : 
+                        status === 'suspended' ? 'Suspended' :
+                        status === 'completed' ? 'Completed' :
+                        status === 'cancelled' ? 'Cancelled' :
+                        status === 'pending' ? 'Pending' :
+                        status === 'ne progres' ? 'In Progress' :
+                        status === 'pezulluar' ? 'Suspended' :
+                        status === 'mbyllur me vonese' ? 'Closed with Delay' :
+                        status === 'anulluar' ? 'Cancelled' :
+                        status === 'mbyllur' ? 'Closed' : status;
+      } else {
+        translatedName = status === 'active' ? 'Aktive' : 
+                        status === 'suspended' ? 'Të pezulluara' :
+                        status === 'completed' ? 'Të mbyllura' :
+                        status === 'cancelled' ? 'Të anuluara' :
+                        status === 'pending' ? 'Në pritje' :
+                        status === 'ne progres' ? 'Në progres' :
+                        status === 'pezulluar' ? 'Të pezulluara' :
+                        status === 'mbyllur me vonese' ? 'Mbyllur me vonesë' :
+                        status === 'anulluar' ? 'Të anuluara' :
+                        status === 'mbyllur' ? 'Të mbyllura' : status;
+      }
+      
+      return {
+        name: translatedName,
+        value: count,
+        color: statusColors[status] || '#6b7280'
+      };
+    });
     
     setData(chartData);
   }, [contracts]);
