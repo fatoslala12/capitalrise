@@ -20,7 +20,7 @@ const InvoicePreview = forwardRef(({ invoice, contract }, ref) => {
       {/* Header */}
       <div className="border-b border-green-300 pb-4 mb-6 flex flex-col items-center">
         {/* Logo në qendër */}
-        <img src="/albanconstruction.png" alt="Logo" className="h-14 mb-2" />
+        <img src="/Capital Rise logo.png" alt="Capital Rise Logo" className="h-14 mb-2" />
 
         {/* Titulli dhe info */}
         <h1 className="text-4xl font-extrabold text-amber-700 tracking-tight flex items-center gap-2 mb-2">
@@ -72,13 +72,13 @@ const InvoicePreview = forwardRef(({ invoice, contract }, ref) => {
       {/* Totals */}
       <div className="flex justify-between mt-8 text-base">
         <div className="text-left text-gray-700 space-y-1 max-w-[45%]">
-          <p className="font-bold text-amber-700">Alban Construction Ltd</p>
+          <p className="font-bold text-amber-700">Capital Rise Ltd</p>
           <p>HSBC Bank</p>
-          <p>Account Number: 81845403</p>
-          <p>Sort Code: 52474549</p>
-          <p>Email: adi@albanconstruction.co.uk</p>
-          <p>Phone: +7588893238</p>
-          <p>Website: www.albanconstruction.co.uk</p>
+          <p>Account Number: 60845411</p>
+          <p>Sort Code: 23474549</p>
+          <p>Email: info@capitalrise.com</p>
+          <p>Phone: 004478125498</p>
+          <p>Website: www.capitalrise.co.uk</p>
         </div>
         <div className="text-right text-base space-y-1 min-w-[200px]">
           <div className="flex justify-between">

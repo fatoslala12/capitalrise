@@ -899,7 +899,7 @@ export default function ContractDetails() {
                     <h1 className="text-3xl font-extrabold text-amber-600">🧾 FATURË</h1>
                     <p className="text-xs text-gray-500">Kont #{contract.contract_number} – {contract.site_name}</p>
                   </div>
-                  <img src="/albanconstruction.png" alt="Alban Construction Logo" className="h-20 w-auto object-contain" />
+                  <img src="/Capital Rise logo.png" alt="Capital Rise Logo" className="h-20 w-auto object-contain" />
                   <div className="text-right text-xs">
                     <p><strong>Data:</strong> {invoiceToPrint.date}</p>
                     <p><strong>Kompania:</strong> {contract.company}</p>
@@ -930,13 +930,13 @@ export default function ContractDetails() {
 
                 <div className="flex justify-between mt-8 text-sm">
                   <div className="text-left text-gray-700 space-y-1 max-w-[45%]">
-                    <p className="font-bold text-amber-700">Alban Construction Ltd</p>
+                    <p className="font-bold text-amber-700">Capital Rise Ltd</p>
                     <p>HSBC Bank</p>
-                    <p>Account Number: 81845403</p>
-                    <p>Sort Code: 52474549</p>
-                    <p>Email: adi@albancosntruction.co.uk</p>
-                    <p>Phone: +7588893238</p>
-                    <p>Website: www.albanconstruction.co.uk</p>
+                    <p>Account Number: 60845411</p>
+                    <p>Sort Code: 23474549</p>
+                    <p>Email: info@capitalrise.com</p>
+                    <p>Phone: 004478125498</p>
+                    <p>Website: www.capitalrise.co.uk</p>
                   </div>
 
                   <div className="text-right text-sm space-y-4 max-w-[45%] leading-loose">

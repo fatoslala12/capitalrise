@@ -903,11 +903,11 @@ Ju lutem mos përgjigjuni këtij email-i.
           <div class="bank-details">
             <h3>Capital Rise Ltd</h3>
             <div>HSBC Bank</div>
-            <div>Account Number: 81845403</div>
-            <div>Sort Code: 52474549</div>
-            <div>Email: billing@capitalrise.al</div>
-            <div>Phone: +355 XX XXX XXX</div>
-            <div>Website: www.capitalrise.al</div>
+            <div>Account Number: 60845411</div>
+            <div>Sort Code: 23474549</div>
+            <div>Email: info@capitalrise.com</div>
+            <div>Phone: 004478125498</div>
+            <div>Website: www.capitalrise.co.uk</div>
             </div>
 
           <div class="qr-section">
@@ -971,11 +971,11 @@ Totals:
 Bank Details:
 Capital Rise Ltd
 HSBC Bank
-Account Number: 81845403
-Sort Code: 52474549
-Email: billing@capitalrise.al
-Phone: +355 XX XXX XXX
-Website: www.capitalrise.al
+Account Number: 60845411
+Sort Code: 23474549
+Email: info@capitalrise.com
+Phone: 004478125498
+Website: www.capitalrise.co.uk
 
 THANK YOU FOR YOUR BUSINESS!
     `;
@@ -1074,9 +1074,9 @@ THANK YOU FOR YOUR BUSINESS!
 
           <div class="footer">
       Thank you for choosing <strong>Capital Rise</strong>!<br>
-      Let’s build something great together. 🧱<br><br>
-      <a href="mailto:info@capitalrise.al">info@capitalrise.al</a> |
-      <a href="https://www.capitalrise.al">www.capitalrise.al</a>
+      Let's build something great together. 🧱<br><br>
+      <a href="mailto:info@capitalrise.com">info@capitalrise.com</a> |
+      <a href="https://www.capitalrise.co.uk">www.capitalrise.co.uk</a>
           </div>
 
         </div>

@@ -66,11 +66,11 @@ async function generateInvoicePDFBuffer(invoice, contract) {
     doc.moveDown().fillColor('#007bff').fontSize(12).text('Capital Rise Ltd');
     doc.fillColor('#333').fontSize(10);
     doc.text('HSBC Bank');
-    doc.text('Account Number: 81845403');
-    doc.text('Sort Code: 52474549');
-    doc.text('Email: billing@capitalrise.al');
-    doc.text('Phone: +355 XX XXX XXX');
-    doc.text('Website: www.capitalrise.al');
+    doc.text('Account Number: 60845411');
+    doc.text('Sort Code: 23474549');
+    doc.text('Email: info@capitalrise.com');
+    doc.text('Phone: 004478125498');
+    doc.text('Website: www.capitalrise.co.uk');
 
     doc.moveDown().fillColor('#0a8340').fontSize(11).text('THANK YOU FOR YOUR BUSINESS!', { align: 'center' });
 
