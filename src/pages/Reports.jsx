@@ -209,7 +209,7 @@ export default function Reports() {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullScreen={true} size="xl" />;
   }
 
   if (error) {
@@ -236,24 +236,24 @@ export default function Reports() {
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4 md:p-6 text-white mb-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="text-center md:text-left">
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">📊 Raportet e Administrimit</h1>
-              <p className="text-blue-100 text-sm md:text-base">Analiza e plotë e performancës dhe eksportimi i të dhënave</p>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">📊 {t('reportsPage.adminReports')}</h1>
+              <p className="text-blue-100 text-sm md:text-base">{t('reportsPage.fullPerformanceAnalysis')}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3 w-full md:w-auto">
-              <Button 
-                onClick={() => setShowFilters(!showFilters)} 
-                variant="secondary"
-                className="bg-white/20 hover:bg-white/30 border-white/30 text-sm"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">{showFilters ? 'Fsheh Filtra' : 'Shfaq Filtra'}</span>
-                <span className="sm:hidden">Filtra</span>
-              </Button>
-              <Button onClick={fetchData} variant="secondary" className="bg-white/20 hover:bg-white/30 border-white/30 text-sm">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Rifresko</span>
-                <span className="sm:hidden">🔄</span>
-              </Button>
+                              <Button 
+                  onClick={() => setShowFilters(!showFilters)} 
+                  variant="secondary"
+                  className="bg-white/20 hover:bg-white/30 border-white/30 text-sm"
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">{showFilters ? t('reportsPage.hideFilters') : t('reportsPage.showFilters')}</span>
+                  <span className="sm:hidden">{t('reportsPage.filters')}</span>
+                </Button>
+                <Button onClick={fetchData} variant="secondary" className="bg-white/20 hover:bg-white/30 border-white/30 text-sm">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">{t('reportsPage.refresh')}</span>
+                  <span className="sm:hidden">🔄</span>
+                </Button>
             </div>
           </div>
         </div>
@@ -264,27 +264,27 @@ export default function Reports() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Filter className="w-5 h-5" />
-                Filtra dhe Periudha
+                {t('reportsPage.filtersAndPeriod')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Grid cols={4} gap={4}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Periudha</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('reportsPage.period')}</label>
                   <select
                     value={period}
                     onChange={(e) => setPeriod(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="month">Muaj i fundit</option>
-                    <option value="quarter">3 Muajt e fundit</option>
-                    <option value="year">Viti i fundit</option>
-                    <option value="custom">Periudhë e përzgjedhur</option>
+                    <option value="month">{t('reportsPage.lastMonth')}</option>
+                    <option value="quarter">{t('reportsPage.last3Months')}</option>
+                    <option value="year">{t('reportsPage.lastYear')}</option>
+                    <option value="custom">{t('reportsPage.customPeriod')}</option>
                   </select>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Data e Fillimit</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('reportsPage.startDate')}</label>
                   <DatePicker
                     selected={startDate}
                     onChange={setStartDate}
@@ -294,7 +294,7 @@ export default function Reports() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Data e Përfundimit</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('reportsPage.endDate')}</label>
                   <DatePicker
                     selected={endDate}
                     onChange={setEndDate}
@@ -304,16 +304,16 @@ export default function Reports() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Statusi</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('reportsPage.status')}</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="">Të gjitha</option>
-                    <option value="Ne progres">Në progres</option>
-                    <option value="Mbyllur">Mbyllur</option>
-                    <option value="Draft">Draft</option>
+                    <option value="">{t('reportsPage.allStatuses')}</option>
+                    <option value="Ne progres">{t('reportsPage.inProgress')}</option>
+                    <option value="Mbyllur">{t('reportsPage.closed')}</option>
+                    <option value="Draft">{t('reportsPage.draft')}</option>
                   </select>
                 </div>
               </Grid>
@@ -324,12 +324,12 @@ export default function Reports() {
         {/* Navigation Tabs */}
         <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6 overflow-x-auto scrollbar-hide">
           {[
-            { id: 'overview', label: 'Përmbledhja', icon: BarChart3 },
-            { id: 'financial', label: 'Financiare', icon: DollarSign },
-            { id: 'employees', label: 'Punonjësit', icon: Users },
-            { id: 'sites', label: 'Site-t', icon: Building2 },
-            { id: 'contracts', label: 'Kontratat', icon: FileText },
-            { id: 'analytics', label: 'Analitika', icon: TrendingUp }
+            { id: 'overview', label: t('reportsPage.overview'), icon: BarChart3 },
+            { id: 'financial', label: t('reportsPage.financial'), icon: DollarSign },
+            { id: 'employees', label: t('reportsPage.employees'), icon: Users },
+            { id: 'sites', label: t('reportsPage.sites'), icon: Building2 },
+            { id: 'contracts', label: t('reportsPage.contracts'), icon: FileText },
+            { id: 'analytics', label: t('reportsPage.analytics'), icon: TrendingUp }
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -359,7 +359,7 @@ export default function Reports() {
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-blue-600">Total Orë</p>
+                      <p className="text-xs md:text-sm font-medium text-blue-600">{t('reportsPage.totalHours')}</p>
                       <p className="text-xl md:text-2xl lg:text-3xl font-bold text-blue-900">
                         {(financialData?.workHours?.total || 0).toFixed(1)}
                       </p>
@@ -373,7 +373,7 @@ export default function Reports() {
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-green-600">Total Fitim</p>
+                      <p className="text-xs md:text-sm font-medium text-green-600">{t('reportsPage.totalProfit')}</p>
                       <p className="text-xl md:text-2xl lg:text-3xl font-bold text-green-900">
                         £{(financialData?.profit?.total || 0).toFixed(2)}
                       </p>
@@ -387,7 +387,7 @@ export default function Reports() {
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-purple-600">Kontrata Aktive</p>
+                      <p className="text-xs md:text-sm font-medium text-purple-600">{t('reportsPage.activeContracts')}</p>
                       <p className="text-xl md:text-2xl lg:text-3xl font-bold text-purple-900">
                         {financialData?.revenue?.active || '0'}
                       </p>
@@ -401,7 +401,7 @@ export default function Reports() {
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-orange-600">Punonjës Aktive</p>
+                      <p className="text-xs md:text-sm font-medium text-orange-600">{t('reportsPage.activeEmployees')}</p>
                       <p className="text-xl md:text-2xl lg:text-3xl font-bold text-orange-900">
                         {financialData?.workHours?.employees || '0'}
                       </p>
@@ -416,7 +416,7 @@ export default function Reports() {
             <Grid cols={1} lg:cols={2} gap={4} md:gap={6} className="mb-6 md:mb-8">
               <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-lg md:text-xl">📈 Aktiviteti i Orëve në Kohë</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">📈 {t('reportsPage.hourlyActivity')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
@@ -446,15 +446,15 @@ export default function Reports() {
 
               <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-lg md:text-xl">📊 Statusi i Faturave</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">📊 {t('reportsPage.invoiceStatus')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <PieChart>
                       <Pie
                         data={[
-                          { name: 'Paguar', value: financialData?.invoices?.paid || 0, fill: chartColors.success },
-                          { name: 'Pa paguar', value: financialData?.invoices?.unpaid || 0, fill: chartColors.warning }
+                          { name: t('reportsPage.paid'), value: financialData?.invoices?.paid || 0, fill: chartColors.success },
+                          { name: t('reportsPage.unpaid'), value: financialData?.invoices?.unpaid || 0, fill: chartColors.warning }
                         ]}
                         cx="50%"
                         cy="50%"
@@ -473,7 +473,7 @@ export default function Reports() {
             {/* Export Buttons */}
             <Card className="mb-6 md:mb-8 hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-lg md:text-xl">📤 Eksportimi i Raporteve</CardTitle>
+                <CardTitle className="text-lg md:text-xl">📤 {t('reportsPage.reportExport')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
@@ -484,8 +484,8 @@ export default function Reports() {
                     className="flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
                   >
                     <FileSpreadsheet className="w-4 h-4" />
-                    <span className="hidden sm:inline">Eksporto Orët e Punës (Excel)</span>
-                    <span className="sm:hidden">Eksporto Orët</span>
+                    <span className="hidden sm:inline">{t('reportsPage.exportWorkHours')}</span>
+                    <span className="sm:hidden">{t('reportsPage.exportWorkHoursShort')}</span>
                   </Button>
                   <Button 
                     onClick={() => exportToExcel('expenses')} 
@@ -494,8 +494,8 @@ export default function Reports() {
                     className="flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
                   >
                     <FileSpreadsheet className="w-4 h-4" />
-                    <span className="hidden sm:inline">Eksporto Shpenzimet (Excel)</span>
-                    <span className="sm:hidden">Eksporto Shpenzimet</span>
+                    <span className="hidden sm:inline">{t('reportsPage.exportExpenses')}</span>
+                    <span className="sm:hidden">{t('reportsPage.exportExpensesShort')}</span>
                   </Button>
                   <Button 
                     onClick={() => exportToPDF('overview-section')} 
@@ -504,8 +504,8 @@ export default function Reports() {
                     className="flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
                   >
                     <FileText className="w-4 h-4" />
-                    <span className="hidden sm:inline">Eksporto PDF</span>
-                    <span className="sm:hidden">Eksporto PDF</span>
+                    <span className="hidden sm:inline">{t('reportsPage.exportPDF')}</span>
+                    <span className="sm:hidden">{t('reportsPage.exportPDFShort')}</span>
                   </Button>
                 </div>
               </CardContent>
@@ -518,7 +518,7 @@ export default function Reports() {
             {/* Financial Summary */}
             <Card className="mb-6 hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-lg md:text-xl">💰 Përmbledhja Financiare</CardTitle>
+                <CardTitle className="text-lg md:text-xl">💰 {t('reportsPage.financialSummary')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Grid cols={1} md:cols={3} gap={4} md:gap={6}>
@@ -527,7 +527,7 @@ export default function Reports() {
                     <div className="text-xl md:text-2xl font-bold text-green-600">
                       £{(financialData?.revenue?.total || 0).toFixed(2)}
                     </div>
-                    <div className="text-xs md:text-sm text-green-600">Total Të Ardhura</div>
+                    <div className="text-xs md:text-sm text-green-600">{t('reportsPage.totalRevenue')}</div>
                   </div>
                   
                   <div className="text-center p-4 md:p-6 bg-red-50 rounded-lg border border-red-200 hover:shadow-md transition-all duration-300">
@@ -535,7 +535,7 @@ export default function Reports() {
                     <div className="text-xl md:text-2xl font-bold text-red-600">
                       £{(financialData?.expenses?.total || 0).toFixed(2)}
                     </div>
-                    <div className="text-xs md:text-sm text-red-600">Total Shpenzime</div>
+                    <div className="text-xs md:text-sm text-red-600">{t('reportsPage.totalExpenses')}</div>
                   </div>
                   
                   <div className="text-center p-4 md:p-6 bg-blue-50 rounded-lg border border-blue-200 hover:shadow-md transition-all duration-300">
@@ -543,13 +543,13 @@ export default function Reports() {
                     <div className="text-xl md:text-2xl font-bold text-blue-600">
                       £{(financialData?.profit?.total || 0).toFixed(2)}
                     </div>
-                    <div className="text-xs md:text-sm text-blue-600">Total Fitim</div>
+                    <div className="text-xs md:text-sm text-blue-600">{t('reportsPage.totalProfit')}</div>
                   </div>
                 </Grid>
                 
                 <div className="mt-4 md:mt-6 p-3 md:p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs md:text-sm font-medium text-gray-600">Marzhi i Fitimit:</span>
+                    <span className="text-xs md:text-sm font-medium text-gray-600">{t('reportsPage.profitMargin')}:</span>
                     <span className="text-base md:text-lg font-bold text-green-600">
                       {financialData?.profit?.percentage || '0'}%
                     </span>
@@ -562,15 +562,15 @@ export default function Reports() {
             <Grid cols={1} lg:cols={2} gap={4} md:gap={6} className="mb-6 md:mb-8">
               <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-lg md:text-xl">📊 Shpërndarja e Shpenzimeve</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">📊 {t('reportsPage.expenseDistribution')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <PieChart>
                       <Pie
                         data={[
-                          { name: 'Materiale', value: financialData?.expenses?.materials || 0, fill: chartColors.primary },
-                          { name: 'Punë', value: financialData?.expenses?.labor || 0, fill: chartColors.secondary }
+                          { name: t('reportsPage.materials'), value: financialData?.expenses?.materials || 0, fill: chartColors.primary },
+                          { name: t('reportsPage.labor'), value: financialData?.expenses?.labor || 0, fill: chartColors.secondary }
                         ]}
                         cx="50%"
                         cy="50%"
@@ -587,13 +587,13 @@ export default function Reports() {
 
               <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-lg md:text-xl">📈 Të Ardhurat vs Shpenzimet</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">📈 {t('reportsPage.revenueVsExpenses')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <BarChart data={[
-                      { category: 'Të Ardhura', value: financialData?.revenue?.total || 0, fill: chartColors.success },
-                      { category: 'Shpenzime', value: financialData?.expenses?.total || 0, fill: chartColors.danger }
+                      { category: t('reportsPage.revenue'), value: financialData?.revenue?.total || 0, fill: chartColors.success },
+                      { category: t('reportsPage.expenses'), value: financialData?.expenses?.total || 0, fill: chartColors.danger }
                     ]}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis dataKey="category" stroke="#6b7280" fontSize={12} />
@@ -620,19 +620,19 @@ export default function Reports() {
             {/* Employee Performance Table */}
             <Card className="mb-6 hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-lg md:text-xl">👥 Performanca e Punonjësve</CardTitle>
+                <CardTitle className="text-lg md:text-xl">👥 {t('reportsPage.employeePerformance')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Punonjësi</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden md:table-cell">Orë Totale</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden md:table-cell">Fitimi Total</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden sm:table-cell">Ditët e Punës</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden lg:table-cell">Mesatarja/Ditë</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Efikasiteti</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">{t('reportsPage.employee')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden md:table-cell">{t('reportsPage.totalHoursCol')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden md:table-cell">{t('reportsPage.totalEarnings')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden sm:table-cell">{t('reportsPage.workingDays')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden lg:table-cell">{t('reportsPage.avgHoursPerDay')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">{t('reportsPage.efficiency')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -678,7 +678,7 @@ export default function Reports() {
                 className="flex items-center gap-2"
               >
                 <FileSpreadsheet className="w-4 h-4" />
-                Eksporto Excel
+                {t('reportsPage.exportExcel')}
               </Button>
               <Button 
                 onClick={() => exportToPDF('employees-section')} 
@@ -687,7 +687,7 @@ export default function Reports() {
                 className="flex items-center gap-2"
               >
                 <FileText className="w-4 h-4" />
-                Eksporto PDF
+                {t('reportsPage.exportPDF')}
               </Button>
             </div>
           </div>
@@ -708,24 +708,24 @@ export default function Reports() {
                   <CardContent>
                     <div className="space-y-2 md:space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-xs md:text-sm text-gray-600">Total Orë:</span>
+                        <span className="text-xs md:text-sm text-gray-600">{t('reportsPage.totalHours')}:</span>
                         <span className="font-medium text-xs md:text-sm">{(site.totalHours || 0).toFixed(1)}h</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-xs md:text-sm text-gray-600">Kosto e Punës:</span>
+                        <span className="text-xs md:text-sm text-gray-600">{t('reportsPage.laborCost')}:</span>
                         <span className="font-medium text-blue-600 text-xs md:text-sm">£{(site.totalLaborCost || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-xs md:text-sm text-gray-600">Shpenzime:</span>
+                        <span className="text-xs md:text-sm text-gray-600">{t('reportsPage.expenses')}:</span>
                         <span className="font-medium text-red-600 text-xs md:text-sm">£{(site.totalExpenses || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-xs md:text-sm text-gray-600">Punonjës:</span>
+                        <span className="text-xs md:text-sm text-gray-600">{t('reportsPage.activeEmployeesCol')}:</span>
                         <span className="font-medium text-xs md:text-sm">{site.activeEmployees || 0}</span>
                       </div>
                       <div className="pt-2 border-t border-gray-100">
                         <div className="flex justify-between">
-                          <span className="text-xs md:text-sm text-gray-600">Efikasiteti:</span>
+                          <span className="text-xs md:text-sm text-gray-600">{t('reportsPage.efficiency')}:</span>
                           <span className="font-medium text-green-600 text-xs md:text-sm">{(site.efficiency || 0).toFixed(1)}%</span>
                         </div>
                       </div>
@@ -742,21 +742,21 @@ export default function Reports() {
             {/* Contract Performance Table */}
             <Card className="mb-6 hover:shadow-lg transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-lg md:text-xl">📄 Performanca e Kontratave</CardTitle>
+                <CardTitle className="text-lg md:text-xl">📄 {t('reportsPage.contractPerformance')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Kontrata</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden md:table-cell">Site</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Vlera</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Statusi</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden lg:table-cell">Kosto e Përgjithshme</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Fitimi</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden xl:table-cell">Marzhi</th>
-                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">Përfundimi</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">{t('reportsPage.contract')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden md:table-cell">{t('reportsPage.site')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">{t('reportsPage.value')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">{t('reportsPage.status')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden lg:table-cell">{t('reportsPage.overallCost')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">{t('reportsPage.profit')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm hidden xl:table-cell">{t('reportsPage.margin')}</th>
+                        <th className="text-left p-2 md:p-3 font-medium text-gray-700 text-xs md:text-sm">{t('reportsPage.completion')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -819,9 +819,9 @@ export default function Reports() {
                           })
                         ) : (
                           <tr>
-                            <td colSpan="8" className="p-6 text-center text-gray-500">
-                              Nuk ka të dhëna për kontratat
-                            </td>
+                                                      <td colSpan="8" className="p-6 text-center text-gray-500">
+                            {t('reportsPage.noContractData')}
+                          </td>
                           </tr>
                         );
                       })()}
@@ -840,8 +840,8 @@ export default function Reports() {
                 className="flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
               >
                 <FileSpreadsheet className="w-4 h-4" />
-                <span className="hidden sm:inline">Eksporto Excel</span>
-                <span className="sm:hidden">Eksporto Excel</span>
+                <span className="hidden sm:inline">{t('reportsPage.exportExcel')}</span>
+                <span className="sm:hidden">{t('reportsPage.exportExcel')}</span>
               </Button>
               <Button 
                 onClick={() => exportToPDF('contracts-section')} 
@@ -850,8 +850,8 @@ export default function Reports() {
                 className="flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
               >
                 <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline">Eksporto PDF</span>
-                <span className="sm:hidden">Eksporto PDF</span>
+                <span className="hidden sm:inline">{t('reportsPage.exportPDF')}</span>
+                <span className="sm:hidden">{t('reportsPage.exportPDF')}</span>
               </Button>
             </div>
           </div>
@@ -863,7 +863,7 @@ export default function Reports() {
             <Grid cols={1} lg:cols={2} gap={4} md:gap={6} className="mb-6 md:mb-8">
               <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-lg md:text-xl">📊 Analiza e Trendit</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">📊 {t('reportsPage.trendAnalysis')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
@@ -893,22 +893,22 @@ export default function Reports() {
 
               <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-lg md:text-xl">🎯 Metrikat e Performancës</CardTitle>
+                  <CardTitle className="text-lg md:text-xl">🎯 {t('reportsPage.performanceMetrics')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                     <RadarChart data={[
-                      { metric: 'Orët', value: 85, fullMark: 100 },
-                      { metric: 'Efikasiteti', value: 78, fullMark: 100 },
-                      { metric: 'Fitimi', value: 92, fullMark: 100 },
-                      { metric: 'Kontratat', value: 88, fullMark: 100 },
-                      { metric: 'Punonjësit', value: 95, fullMark: 100 }
+                      { metric: t('reportsPage.hours'), value: 85, fullMark: 100 },
+                      { metric: t('reportsPage.efficiencyMetric'), value: 78, fullMark: 100 },
+                      { metric: t('reportsPage.profitMetric'), value: 92, fullMark: 100 },
+                      { metric: t('reportsPage.contractsMetric'), value: 88, fullMark: 100 },
+                      { metric: t('reportsPage.employeesMetric'), value: 95, fullMark: 100 }
                     ]}>
                       <PolarGrid stroke="#e5e7eb" />
                       <PolarAngleAxis dataKey="metric" stroke="#6b7280" fontSize={12} />
                       <PolarRadiusAxis stroke="#6b7280" fontSize={12} />
                       <Radar 
-                        name="Performanca" 
+                        name={t('reportsPage.performance')} 
                         dataKey="value" 
                         stroke={chartColors.primary} 
                         fill={chartColors.primary} 

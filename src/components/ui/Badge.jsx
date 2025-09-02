@@ -39,14 +39,22 @@ export default function Badge({
 // Specialized status badges
 export function StatusBadge({ status, ...props }) {
   const statusConfig = {
+    // New translation keys
+    'draft': { variant: 'default', icon: '📝' },
+    'cancelled': { variant: 'danger', icon: '❌' },
+    'inProgress': { variant: 'primary', icon: '🔄' },
+    'suspended': { variant: 'warning', icon: '⏸️' },
+    'closed': { variant: 'success', icon: '✅' },
+    'closedWithDelay': { variant: 'danger', icon: '⚠️' },
+    // Legacy support for backward compatibility
     'Draft': { variant: 'default', icon: '📝' },
     'Anulluar': { variant: 'danger', icon: '❌' },
     'Ne progres': { variant: 'primary', icon: '🔄' },
     'Pezulluar': { variant: 'warning', icon: '⏸️' },
     'Mbyllur': { variant: 'success', icon: '✅' },
     'Mbyllur me vonese': { variant: 'danger', icon: '⚠️' },
-    'Aktive': { variant: 'success', icon: '✅' },
     'Mbyllur me vonesë': { variant: 'danger', icon: '⚠️' },
+    'Aktive': { variant: 'success', icon: '✅' },
     'Active': { variant: 'success', icon: '✅' },
     'Closed': { variant: 'info', icon: '✔️' },
     'Closed Late': { variant: 'danger', icon: '⚠️' },

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
 import api from "../api";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
@@ -10,6 +11,19 @@ import { toast } from "react-hot-toast";
 
 export default function BackupManagement() {
   const { user } = useAuth();
+  const { t } = useTranslation();
+  
+  // Safe translation function with fallback
+  const safeT = (key, fallback = key) => {
+    try {
+      const result = t(key);
+      return result && result !== key ? result : fallback;
+    } catch (error) {
+      console.error(`Translation error for key "${key}":`, error);
+      return fallback;
+    }
+  };
+  
   const [backups, setBackups] = useState([]);
   const [databaseStatus, setDatabaseStatus] = useState(null);
   const [tableInfo, setTableInfo] = useState([]);
@@ -24,14 +38,14 @@ export default function BackupManagement() {
 
   // Tabelat e disponueshme për backup të pjesshëm
   const [availableTables, setAvailableTables] = useState([
-    { name: 'employees', label: 'Punonjësit', icon: '👷', count: 0 },
-    { name: 'contracts', label: 'Kontratat', icon: '📄', count: 0 },
-    { name: 'work_hours', label: 'Orët e Punës', icon: '🕒', count: 0 },
-    { name: 'payments', label: 'Pagesat', icon: '💰', count: 0 },
-    { name: 'tasks', label: 'Detyrat', icon: '📋', count: 0 },
-    { name: 'expenses_invoices', label: 'Shpenzimet', icon: '💸', count: 0 },
-    { name: 'invoices', label: 'Faturat', icon: '🧾', count: 0 },
-    { name: 'notifications', label: 'Njoftimet', icon: '🔔', count: 0 }
+    { name: 'employees', label: safeT('backup.tables.employees', 'Punonjësit'), icon: '👷', count: 0 },
+    { name: 'contracts', label: safeT('backup.tables.contracts', 'Kontratat'), icon: '📄', count: 0 },
+    { name: 'work_hours', label: safeT('backup.tables.workHours', 'Orët e Punës'), icon: '🕒', count: 0 },
+    { name: 'payments', label: safeT('backup.tables.payments', 'Pagesat'), icon: '💰', count: 0 },
+    { name: 'tasks', label: safeT('backup.tables.tasks', 'Detyrat'), icon: '📋', count: 0 },
+    { name: 'expenses_invoices', label: safeT('backup.tables.expenses', 'Shpenzimet'), icon: '💸', count: 0 },
+    { name: 'invoices', label: safeT('backup.tables.invoices', 'Faturat'), icon: '🧾', count: 0 },
+    { name: 'notifications', label: safeT('backup.tables.notifications', 'Njoftimet'), icon: '🔔', count: 0 }
   ]);
 
   // Merr të dhënat në fillim
@@ -104,7 +118,7 @@ export default function BackupManagement() {
       setTableInfo([]); // For now, we'll skip table info
     } catch (error) {
       console.error('Error fetching backup data:', error);
-      toast.error('Gabim gjatë ngarkimit të të dhënave');
+      toast.error(safeT('backup.messages.dataLoadError', 'Gabim gjatë ngarkimit të të dhënave'));
     } finally {
       setLoading(false);
     }
@@ -119,13 +133,13 @@ export default function BackupManagement() {
       });
 
       if (response.data.success) {
-        toast.success('Backup i plotë u krijua me sukses!');
+        toast.success(safeT('backup.messages.fullBackupSuccess', 'Backup i plotë u krijua me sukses!'));
         setBackupDescription("");
         fetchData(); // Rifresko listën
       }
     } catch (error) {
       console.error('Error creating full backup:', error);
-      toast.error('Gabim gjatë krijimit të backup');
+      toast.error(safeT('backup.messages.createBackupError', 'Gabim gjatë krijimit të backup'));
     } finally {
       setCreatingBackup(false);
     }
@@ -134,7 +148,7 @@ export default function BackupManagement() {
   // Krijo backup të pjesshëm
   const createPartialBackup = async () => {
     if (selectedTables.length === 0) {
-      toast.error('Zgjidhni të paktën një tabelë për backup');
+      toast.error(safeT('backup.messages.selectTablesError', 'Zgjidhni të paktën një tabelë për backup'));
       return;
     }
 
@@ -146,14 +160,14 @@ export default function BackupManagement() {
       });
 
       if (response.data.success) {
-        toast.success('Backup i pjesshëm u krijua me sukses!');
+        toast.success(safeT('backup.messages.partialBackupSuccess', 'Backup i pjesshëm u krijua me sukses!'));
         setSelectedTables([]);
         setBackupDescription("");
         fetchData(); // Rifresko listën
       }
     } catch (error) {
       console.error('Error creating partial backup:', error);
-      toast.error('Gabim gjatë krijimit të backup të pjesshëm');
+      toast.error(safeT('backup.messages.partialBackupError', 'Gabim gjatë krijimit të backup të pjesshëm'));
     } finally {
       setCreatingBackup(false);
     }
@@ -161,7 +175,7 @@ export default function BackupManagement() {
 
   // Restore backup
   const restoreBackup = async (filename) => {
-    if (!window.confirm('A jeni i sigurt që doni të restauroni këtë backup? Kjo do të zëvendësojë të dhënat aktuale!')) {
+    if (!window.confirm(safeT('backup.messages.restoreConfirm', 'A jeni i sigurt që doni të restauroni këtë backup? Kjo do të zëvendësojë të dhënat aktuale!'))) {
       return;
     }
 
@@ -170,12 +184,12 @@ export default function BackupManagement() {
       const response = await api.post(`/api/backup/restore/${filename}`);
 
       if (response.data.success) {
-        toast.success('Backup u restaurua me sukses!');
+        toast.success(safeT('backup.messages.backupRestored', 'Backup u restaurua me sukses!'));
         fetchData();
       }
     } catch (error) {
       console.error('Error restoring backup:', error);
-      toast.error('Gabim gjatë restaurimit të backup');
+      toast.error(safeT('backup.messages.restoreError', 'Gabim gjatë restaurimit të backup'));
     } finally {
       setRestoringBackup(null);
     }
@@ -183,7 +197,7 @@ export default function BackupManagement() {
 
   // Fshi backup
   const deleteBackup = async (filename) => {
-    if (!window.confirm('A jeni i sigurt që doni të fshini këtë backup?')) {
+    if (!window.confirm(safeT('backup.messages.deleteConfirm', 'A jeni i sigurt që doni të fshini këtë backup?'))) {
       return;
     }
 
@@ -191,12 +205,12 @@ export default function BackupManagement() {
       const response = await api.delete(`/api/backup/${filename}`);
 
       if (response.data.success) {
-        toast.success('Backup u fshi me sukses!');
+        toast.success(safeT('backup.messages.backupDeleted', 'Backup u fshi me sukses!'));
         fetchData();
       }
     } catch (error) {
       console.error('Error deleting backup:', error);
-      toast.error('Gabim gjatë fshirjes së backup');
+      toast.error(safeT('backup.messages.deleteError', 'Gabim gjatë fshirjes së backup'));
     }
   };
 
@@ -216,16 +230,16 @@ export default function BackupManagement() {
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      toast.success('Backup u shkarkua me sukses!');
+      toast.success(safeT('backup.messages.backupDownloaded', 'Backup u shkarkua me sukses!'));
     } catch (error) {
       console.error('Error downloading backup:', error);
-      toast.error('Gabim gjatë shkarkimit të backup');
+      toast.error(safeT('backup.messages.downloadError', 'Gabim gjatë shkarkimit të backup'));
     }
   };
 
   // Pastro backup të vjetër
   const cleanupOldBackups = async () => {
-    if (!window.confirm('A jeni i sigurt që doni të pastroni backup të vjetër (më të vjetër se 30 ditë)?')) {
+    if (!window.confirm(safeT('backup.messages.cleanupConfirm', 'A jeni i sigurt që doni të pastroni backup të vjetër (më të vjetër se 30 ditë)?'))) {
       return;
     }
 
@@ -233,12 +247,12 @@ export default function BackupManagement() {
       const response = await api.post('/api/backup/cleanup', { retentionDays: 30 });
 
       if (response.data.success) {
-        toast.success(`Pastrimi u krye! ${response.data.data.deletedCount} backup u fshinë`);
+        toast.success(safeT('backup.messages.cleanupCompleted', `Pastrimi u krye! ${response.data.data.deletedCount} backup u fshinë`));
         fetchData();
       }
     } catch (error) {
       console.error('Error cleaning up backups:', error);
-      toast.error('Gabim gjatë pastrimit të backup-ve');
+      toast.error(safeT('backup.messages.cleanupError', 'Gabim gjatë pastrimit të backup-ve'));
     }
   };
 
@@ -273,14 +287,14 @@ export default function BackupManagement() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="max-w-md mx-auto text-center p-8">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-            <h2 className="text-xl font-bold mb-2">🔌 Lidhja me Backend u humb</h2>
+            <h2 className="text-xl font-bold mb-2">🔌 {safeT('backup.connectionLost', 'Lidhja me Backend u humb')}</h2>
             <p className="text-sm">
-              Nuk mund të lidhem me serverin e backend. Ju lutem kontrolloni:
+              {safeT('backup.connectionLostMessage', 'Nuk mund të lidhem me serverin e backend. Ju lutem kontrolloni:')}
             </p>
             <ul className="text-sm mt-2 text-left list-disc list-inside">
-              <li>Nëse backend është duke punuar</li>
-              <li>Nëse URL-ja e API është e saktë</li>
-              <li>Nëse ka probleme me rrjetin</li>
+              <li>{safeT('backup.backendRunning', 'Nëse backend është duke punuar')}</li>
+              <li>{safeT('backup.apiUrlCorrect', 'Nëse URL-ja e API është e saktë')}</li>
+              <li>{safeT('backup.networkIssues', 'Nëse ka probleme me rrjetin')}</li>
             </ul>
           </div>
           
@@ -289,12 +303,12 @@ export default function BackupManagement() {
               onClick={refreshConnection}
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
-              🔄 Provoni përsëri
+              {safeT('backup.tryAgain', '🔄 Provoni përsëri')}
             </Button>
             
             <div className="text-sm text-gray-600">
-              <p><strong>Backend aktual:</strong> {api.defaults.baseURL}</p>
-              <p><strong>Status:</strong> {connectionStatus}</p>
+              <p><strong>{safeT('backup.currentBackend', 'Backend aktual')}:</strong> {api.defaults.baseURL}</p>
+              <p><strong>{safeT('backup.status', 'Status')}:</strong> {connectionStatus}</p>
             </div>
           </div>
         </div>
@@ -303,7 +317,7 @@ export default function BackupManagement() {
   }
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat e backup..." />;
+    return <LoadingSpinner fullScreen={true} size="xl" text={safeT('backup.loadingRecordCount', null)} />;
   }
 
   if (user?.role !== 'admin' && user?.role !== 'manager') {
@@ -311,8 +325,8 @@ export default function BackupManagement() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100">
         <div className="text-center">
           <div className="text-6xl mb-4">🚫</div>
-          <h1 className="text-2xl font-bold text-red-800 mb-2">Akses i Kufizuar</h1>
-          <p className="text-red-600">Vetëm adminët dhe menaxherët mund të aksesojnë këtë faqe.</p>
+          <h1 className="text-2xl font-bold text-red-800 mb-2">{safeT('backup.accessRestricted', 'Akses i Kufizuar')}</h1>
+          <p className="text-red-600">{safeT('backup.accessRestrictedMessage', 'Vetëm adminët dhe menaxherët mund të aksesojnë këtë faqe.')}</p>
         </div>
       </div>
     );
@@ -328,10 +342,10 @@ export default function BackupManagement() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
-              Menaxhimi i Backup-ve
+              {safeT('backup.title', 'Menaxhimi i Backup-ve')}
             </h1>
             <p className="text-lg text-purple-700 mt-1">
-              Siguroni dhe menaxhoni të dhënat e sistemit
+              {safeT('backup.subtitle', 'Siguroni dhe menaxhoni të dhënat e sistemit')}
             </p>
           </div>
         </div>
@@ -342,7 +356,7 @@ export default function BackupManagement() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              📊 Statusi i Databazës
+              📊 {safeT('backup.databaseStatus', 'Statusi i Databazës')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -351,29 +365,29 @@ export default function BackupManagement() {
                 <div className="text-2xl font-bold text-blue-600">
                   {databaseStatus.database?.name || 'N/A'}
                 </div>
-                <div className="text-sm text-blue-800">Emri i Databazës</div>
+                <div className="text-sm text-blue-800">{safeT('backup.databaseName', 'Emri i Databazës')}</div>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
                 <div className="text-2xl font-bold text-green-600">
                   {databaseStatus.database?.status || 'N/A'}
                 </div>
-                <div className="text-sm text-green-800">Statusi</div>
+                <div className="text-sm text-green-800">{safeT('backup.status', 'Statusi')}</div>
               </div>
               <div className="text-center p-4 bg-purple-50 rounded-lg">
                 <div className="text-2xl font-bold text-purple-600">
                   {databaseStatus.backup?.exists ? '✅' : '❌'}
                 </div>
-                <div className="text-sm text-purple-800">Direktoria e Backup-ve</div>
+                <div className="text-sm text-purple-800">{safeT('backup.backupDirectory', 'Direktoria e Backup-ve')}</div>
               </div>
             </div>
             
             {/* Database Version Info */}
             {databaseStatus.database?.version && (
               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <h4 className="font-semibold text-gray-700 mb-2">ℹ️ Informacione të Detajuara:</h4>
+                <h4 className="font-semibold text-gray-700 mb-2">ℹ️ {safeT('backup.detailedInfo', 'Informacione të Detajuara')}:</h4>
                 <div className="text-sm text-gray-600 space-y-1">
-                  <p><strong>Versioni:</strong> {databaseStatus.database.version}</p>
-                  <p><strong>Direktoria e Backup-ve:</strong> {databaseStatus.backup?.directory || 'N/A'}</p>
+                                      <p><strong>{safeT('backup.version', 'Versioni')}:</strong> {databaseStatus.database.version}</p>
+                    <p><strong>{safeT('backup.backupDirectory', 'Direktoria e Backup-ve')}:</strong> {databaseStatus.backup?.directory || 'N/A'}</p>
                 </div>
               </div>
             )}
@@ -384,9 +398,9 @@ export default function BackupManagement() {
       {/* Tabelat e Databazës */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            🗄️ Tabelat e Databazës
-          </CardTitle>
+                      <CardTitle className="flex items-center gap-2">
+              🗄️ {safeT('backup.databaseTables', 'Tabelat e Databazës')}
+            </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -420,7 +434,7 @@ export default function BackupManagement() {
           {availableTables.some(table => table.count === 0) && (
             <div className="text-center py-6">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-              <p className="text-gray-500">Duke ngarkuar numrin e regjistrimeve...</p>
+              <p className="text-gray-500">{safeT('backup.loadingRecordCount', 'Duke ngarkuar numrin e regjistrimeve...')}</p>
             </div>
           )}
         </CardContent>
@@ -429,19 +443,19 @@ export default function BackupManagement() {
       {/* Aksionet e Backup */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            🔄 Aksionet e Backup
-          </CardTitle>
+                      <CardTitle className="flex items-center gap-2">
+              🔄 {safeT('backup.backupActions', 'Aksionet e Backup')}
+            </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* Backup i Plotë */}
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-200">
-              <h3 className="text-xl font-bold text-blue-800 mb-4">Backup i Plotë</h3>
+              <h3 className="text-xl font-bold text-blue-800 mb-4">{safeT('backup.fullBackup', 'Backup i Plotë')}</h3>
               <div className="flex flex-col sm:flex-row gap-4">
                 <input
                   type="text"
-                  placeholder="Përshkrimi i backup (opsional)"
+                                      placeholder={safeT('backup.backupDescription', 'Përshkrimi i backup (opsional)')}
                   value={backupDescription}
                   onChange={(e) => setBackupDescription(e.target.value)}
                   className="flex-1 p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -454,10 +468,10 @@ export default function BackupManagement() {
                   {creatingBackup ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Duke krijuar...
+                      {safeT('backup.creating', 'Duke krijuar...')}
                     </>
                   ) : (
-                    '🔄 Krijo Backup të Plotë'
+                    safeT('backup.createFullBackup', '🔄 Krijo Backup të Plotë')
                   )}
                 </Button>
               </div>
@@ -465,19 +479,19 @@ export default function BackupManagement() {
 
             {/* Backup i Pjesshëm */}
             <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border border-green-200">
-              <h3 className="text-xl font-bold text-green-800 mb-4">Backup i Pjesshëm</h3>
+              <h3 className="text-xl font-bold text-green-800 mb-4">{safeT('backup.partialBackup', 'Backup i Pjesshëm')}</h3>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   onClick={() => setShowPartialBackupModal(true)}
                   className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:from-green-600 hover:to-blue-600 transition-all"
                 >
-                  📋 Krijo Backup të Pjesshëm
+                  {safeT('backup.createPartialBackup', '📋 Krijo Backup të Pjesshëm')}
                 </Button>
                 <Button
                   onClick={cleanupOldBackups}
                   className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:from-orange-600 hover:to-red-600 transition-all"
                 >
-                  🧹 Pastro Backup të Vjetër
+                  {safeT('backup.cleanupOldBackups', '🧹 Pastro Backup të Vjetër')}
                 </Button>
               </div>
             </div>
@@ -488,16 +502,16 @@ export default function BackupManagement() {
       {/* Lista e Backup-ve */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            📋 Lista e Backup-ve ({backups.length})
-          </CardTitle>
+                      <CardTitle className="flex items-center gap-2">
+              📋 {safeT('backup.backupList', 'Lista e Backup-ve')} ({backups.length})
+            </CardTitle>
         </CardHeader>
         <CardContent>
           {backups.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📭</div>
-              <h3 className="text-xl font-bold text-gray-700 mb-2">Nuk ka backup</h3>
-              <p className="text-gray-500">Krijo backup të parë për të parë listën</p>
+              <h3 className="text-xl font-bold text-gray-700 mb-2">{safeT('backup.noBackups', 'Nuk ka backup')}</h3>
+              <p className="text-gray-500">{safeT('backup.noBackupsMessage', 'Krijo backup të parë për të parë listën')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -527,7 +541,7 @@ export default function BackupManagement() {
                         onClick={() => downloadBackup(backup.filename)}
                         className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
                       >
-                        ⬇️ Shkarko
+                        {safeT('backup.download', '⬇️ Shkarko')}
                       </Button>
                       {user?.role === 'admin' && (
                         <>
@@ -539,17 +553,17 @@ export default function BackupManagement() {
                             {restoringBackup === backup.filename ? (
                               <>
                                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                                Duke restauruar...
+                                {safeT('backup.restoring', 'Duke restauruar...')}
                               </>
                             ) : (
-                              '🔄 Restore'
+                              safeT('backup.restore', '🔄 Restore')
                             )}
                           </Button>
                           <Button
                             onClick={() => deleteBackup(backup.filename)}
                             className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
                           >
-                            🗑️ Fshi
+                                                          {safeT('backup.delete', '🗑️ Fshi')}
                           </Button>
                         </>
                       )}
@@ -566,11 +580,11 @@ export default function BackupManagement() {
       {showPartialBackupModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Krijo Backup të Pjesshëm</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">{safeT('backup.partialBackupModal', 'Krijo Backup të Pjesshëm')}</h2>
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Zgjidhni tabelat:
+                                  {safeT('backup.selectTables', 'Zgjidhni tabelat:')}
               </label>
               <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
                 {availableTables.map((table) => (
@@ -595,14 +609,14 @@ export default function BackupManagement() {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Përshkrimi (opsional):
-              </label>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {safeT('backup.descriptionOptional', 'Përshkrimi (opsional):')}
+                </label>
               <input
                 type="text"
                 value={backupDescription}
                 onChange={(e) => setBackupDescription(e.target.value)}
-                placeholder="Përshkrimi i backup të pjesshëm"
+                                  placeholder={safeT('backup.partialBackupDescription', 'Përshkrimi i backup të pjesshëm')}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -613,7 +627,7 @@ export default function BackupManagement() {
                 disabled={creatingBackup || selectedTables.length === 0}
                 className="bg-green-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-600 transition-colors disabled:opacity-50"
               >
-                {creatingBackup ? 'Duke krijuar...' : 'Krijo Backup'}
+                                  {creatingBackup ? safeT('backup.creating', 'Duke krijuar...') : safeT('backup.createBackup', 'Krijo Backup')}
               </Button>
               <Button
                 onClick={() => {
@@ -623,7 +637,7 @@ export default function BackupManagement() {
                 }}
                 className="bg-gray-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-600 transition-colors"
               >
-                Anulo
+                                  {safeT('backup.cancel', 'Anulo')}
               </Button>
             </div>
           </div>

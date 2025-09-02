@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import WorkHoursTable from "../components/WorkHoursTable";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
@@ -57,11 +58,15 @@ const formatDateRange = (startDate) => {
 
 export default function WorkHours() {
   const { t } = useTranslation();
+  const { currentLanguage, isAlbanian } = useLanguage();
   const { user, setUser } = useAuth();
   const isManager = user?.role === "manager";
   const isAdmin = user?.role === "admin";
   const isUser = user?.role === "user";
   const token = localStorage.getItem("token");
+
+  // Debug language context
+  console.log('[DEBUG] WorkHours language context:', { currentLanguage, isAlbanian });
 
   const [employees, setEmployees] = useState([]);
   const [hourData, setHourData] = useState({});
@@ -266,7 +271,61 @@ export default function WorkHours() {
         console.log('[DEBUG] WorkHours API data keys:', Object.keys(res.data || {}));
         
         const data = res.data || {};
-        setHourData(data);
+        
+        // Debug: Check the actual structure of the data
+        if (Array.isArray(data)) {
+          console.log('[DEBUG] API returned array, converting to expected structure');
+          console.log('[DEBUG] First few array items:', data.slice(0, 3));
+          
+          // If API returns array, convert to expected object structure
+          const convertedData = {};
+          data.forEach((item, index) => {
+            console.log(`[DEBUG] Processing item ${index}:`, item);
+            console.log(`[DEBUG] Item keys:`, Object.keys(item));
+            
+            // Try different possible field names for employee ID
+            const empId = item.employeeId || item.employee_id || item.empId || item.emp_id || item.id;
+            const week = item.week || item.weekLabel || item.week_label || item.weekLabel || currentWeekLabel;
+            const day = item.day || item.dayOfWeek || item.day_of_week || item.dayName;
+            const hours = item.hours || item.hour || item.hourCount || item.hour_count || 0;
+            const site = item.site || item.siteName || item.site_name || item.workplace || '';
+            
+            console.log(`[DEBUG] Extracted values:`, { empId, week, day, hours, site });
+            
+            if (empId && week && day !== undefined) {
+              if (!convertedData[empId]) {
+                convertedData[empId] = {};
+              }
+              if (!convertedData[empId][week]) {
+                convertedData[empId][week] = {};
+              }
+              convertedData[empId][week][day] = {
+                hours: parseFloat(hours) || 0,
+                site: site
+              };
+              console.log(`[DEBUG] Added to convertedData[${empId}][${week}][${day}]:`, convertedData[empId][week][day]);
+            } else {
+              console.warn(`[WARNING] Skipping item ${index} - missing required fields:`, { empId, week, day, hours, site });
+            }
+          });
+          
+          console.log('[DEBUG] Final converted data structure:', convertedData);
+          console.log('[DEBUG] Converted data keys:', Object.keys(convertedData));
+          
+          // Debug: show sample of converted data
+          Object.entries(convertedData).forEach(([empId, empData]) => {
+            console.log(`[DEBUG] Employee ${empId} converted data:`, empData);
+            Object.entries(empData).forEach(([week, weekData]) => {
+              console.log(`[DEBUG] Employee ${empId} week ${week}:`, weekData);
+            });
+          });
+          
+          setHourData(convertedData);
+        } else {
+          console.log('[DEBUG] API returned object, using as is');
+          console.log('[DEBUG] Object data structure:', data);
+          setHourData(data);
+        }
         
         // Debug: shfaq disa shembuj të të dhënave
         Object.entries(data).forEach(([empId, empData]) => {
@@ -550,7 +609,7 @@ export default function WorkHours() {
                 </svg>
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-blue-700">
-                Ruaj Orët e Punës
+                {t('workHours.saveWorkHours')}
               </h2>
             </div>
             <div className="flex justify-center sm:justify-start">
@@ -564,14 +623,14 @@ export default function WorkHours() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    U ruajt!
+                    {t('workHours.saved')}
                   </>
                 ) : (
                   <>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 0V4a2 2 0 00-2-2H8a2 2 0 00-2 2v3m2 0h4m-4 0v1m4-1v1m-4 3h4" />
                     </svg>
-                    Ruaj Orët e Punës
+                    {t('workHours.saveWorkHours')}
                   </>
                 )}
               </button>
@@ -588,10 +647,10 @@ export default function WorkHours() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-blue-800">Informacion</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-800">{t('workHours.info')}</h2>
             </div>
             <p className="text-sm sm:text-base text-blue-700">
-              Kjo faqe shfaq vetëm orët tuaja të punës. Për ndryshime, kontaktoni menaxherin tuaj.
+              {t('workHours.userReadOnlyInfo')}
             </p>
           </div>
         )}
@@ -605,10 +664,10 @@ export default function WorkHours() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.882 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-yellow-800">Informacion për Menaxherin</h2>
+              <h2 className="text-base sm:text-lg font-bold text-yellow-800">{t('workHours.managerInfo')}</h2>
             </div>
             <p className="text-sm sm:text-base text-yellow-700 mb-4">
-              Nuk u gjetën punonjës për site-t tuaja. Kjo mund të ndodhë për arsyet e mëposhtme:
+              {t('workHours.noEmployeesForSites')}
             </p>
             <ul className="text-sm sm:text-base text-yellow-700 list-disc list-inside space-y-2">
               <li>Nuk jeni caktuar në asnjë site</li>
@@ -616,7 +675,7 @@ export default function WorkHours() {
               <li>Ka problem me të dhënat e databazës</li>
             </ul>
             <p className="text-sm sm:text-base text-yellow-700 mt-4">
-              Kontaktoni administratorin për të rregulluar këtë problem.
+              {t('workHours.contactAdmin')}
             </p>
           </div>
         )}
@@ -662,11 +721,22 @@ export default function WorkHours() {
               employees={employees}
               weekLabel={currentWeekLabel}
               data={hourData}
-              onChange={handleChange}
-              readOnly={(empId) => isUser || (isManager && paidStatus[`${currentWeekLabel}_${empId}`])}
-              showPaymentControl={isAdmin}
               paidStatus={paidStatus}
-              setPaidStatus={setPaidStatus}
+              siteOptions={siteOptions}
+              showPaymentControl={isAdmin}
+              onChange={handleChange}
+              readOnly={(empId) => {
+                if (isAdmin) return true; // admin cannot edit inputs
+                if (isUser) return true;  // user is read-only
+                // manager can edit unless this week is marked paid for that employee
+                return paidStatus[`${currentWeekLabel}_${empId}`] === true;
+              }}
+              onPaymentToggle={(key, newStatus) => {
+                setPaidStatus(prev => ({
+                  ...prev,
+                  [key]: newStatus
+                }));
+              }}
             />
           ) : (
             Object.entries(employeesBySite).sort(([a],[b])=>a.localeCompare(b)).map(([site, list]) => (
@@ -684,13 +754,22 @@ export default function WorkHours() {
                     employees={list}
                     weekLabel={currentWeekLabel}
                     data={hourData}
-                    onChange={handleChange}
-                    readOnly={(empId) => isUser || (isManager && paidStatus[`${currentWeekLabel}_${empId}`])}
-                    showPaymentControl={isAdmin}
                     paidStatus={paidStatus}
-                    setPaidStatus={setPaidStatus}
-                    siteScope={site === '(Pa site)' ? '' : site}
                     siteOptions={[site]}
+                    siteScope={site === '(Pa site)' ? '' : site}
+                    showPaymentControl={isAdmin}
+                    onChange={handleChange}
+                    readOnly={(empId) => {
+                      if (isAdmin) return true;
+                      if (isUser) return true;
+                      return paidStatus[`${currentWeekLabel}_${empId}`] === true;
+                    }}
+                    onPaymentToggle={(key, newStatus) => {
+                      setPaidStatus(prev => ({
+                        ...prev,
+                        [key]: newStatus
+                      }));
+                    }}
                   />
                 </div>
               </div>
@@ -698,9 +777,9 @@ export default function WorkHours() {
           )
         ) : (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-            <h4 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Nuk ka punonjës për të shfaqur</h4>
+            <h4 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ {t('workHours.noEmployeesToShow')}</h4>
             <p className="text-yellow-700 mb-4">
-              Nuk u gjetën punonjës për këtë javë. Kjo mund të ndodhë nëse:
+              {t('workHours.noEmployeesThisWeek')}
             </p>
             <ul className="text-yellow-700 list-disc list-inside space-y-2">
               <li>Nuk ka punonjës të caktuar për rolin tuaj</li>
@@ -720,7 +799,7 @@ export default function WorkHours() {
                 </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-700 to-gray-900">
-                Javët e Kaluara
+                {t('workHours.pastWeeks')}
               </h3>
             </div>
             {(() => {

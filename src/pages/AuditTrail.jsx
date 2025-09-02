@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { sq } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import api from "../api";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
@@ -26,6 +27,19 @@ const CHART_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#0
 
 export default function AuditTrail() {
   const { user } = useAuth();
+  const { t } = useTranslation();
+  
+  // Safe translation function with fallback
+  const safeT = (key, fallback = key) => {
+    try {
+      const result = t(key);
+      return result && result !== key ? result : fallback;
+    } catch (error) {
+      console.error(`Translation error for key "${key}":`, error);
+      return fallback;
+    }
+  };
+  
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -81,7 +95,7 @@ export default function AuditTrail() {
       setMostActiveEntities(entitiesRes.data.data || []);
     } catch (error) {
       console.error('Error fetching audit data:', error);
-      toast.error('Gabim gjatë ngarkimit të të dhënave');
+      toast.error(safeT('auditTrail.messages.dataLoadError', 'Gabim gjatë ngarkimit të të dhënave'));
     } finally {
       setLoading(false);
     }
@@ -242,7 +256,7 @@ export default function AuditTrail() {
   };
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar audit trail..." />;
+    return <LoadingSpinner fullScreen={true} size="xl" text={safeT('auditTrail.loading', null)} />;
   }
 
   if (error) {
@@ -250,10 +264,10 @@ export default function AuditTrail() {
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Gabim</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">{safeT('auditTrail.error', 'Gabim')}</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <Button onClick={() => window.location.reload()} className="bg-red-600 hover:bg-red-700">
-            Provoni përsëri
+            {safeT('auditTrail.tryAgain', 'Provoni përsëri')}
           </Button>
         </div>
       </div>
@@ -265,8 +279,8 @@ export default function AuditTrail() {
       <Container>
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">🔍 Audit Trail</h1>
-          <p className="text-gray-600 text-lg">Monitorimi i të gjitha aktiviteteve në sistem</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">🔍 {safeT('auditTrail.title', 'Audit Trail')}</h1>
+          <p className="text-gray-600 text-lg">{safeT('auditTrail.subtitle', 'Monitorimi i të gjitha aktiviteteve në sistem')}</p>
         </div>
 
         {/* Statistics Cards */}
@@ -275,9 +289,9 @@ export default function AuditTrail() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600 mb-1">Total Aktivitetet</p>
+                  <p className="text-sm font-medium text-blue-600 mb-1">{safeT('auditTrail.totalActivities', 'Total Aktivitetet')}</p>
                   <p className="text-3xl font-bold text-blue-900">{stats.totalLogs || 0}</p>
-                  <p className="text-xs text-blue-600 mt-1">Gjithsej</p>
+                  <p className="text-xs text-blue-600 mt-1">{safeT('auditTrail.total', 'Gjithsej')}</p>
                 </div>
                 <div className="p-3 bg-blue-200 rounded-full">
                   <Activity className="w-6 h-6 text-blue-700" />
@@ -290,9 +304,9 @@ export default function AuditTrail() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600 mb-1">Aktivitetet Sot</p>
+                  <p className="text-sm font-medium text-green-600 mb-1">{safeT('auditTrail.todayActivities', 'Aktivitetet Sot')}</p>
                   <p className="text-3xl font-bold text-green-900">{stats.todayLogs || 0}</p>
-                  <p className="text-xs text-green-600 mt-1">Këtë ditë</p>
+                  <p className="text-xs text-green-600 mt-1">{safeT('auditTrail.today', 'Këtë ditë')}</p>
                 </div>
                 <div className="p-3 bg-green-200 rounded-full">
                   <Calendar className="w-6 h-6 text-green-700" />
@@ -305,11 +319,11 @@ export default function AuditTrail() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-yellow-600 mb-1">Kyçje të Dështuara</p>
+                  <p className="text-sm font-medium text-yellow-600 mb-1">{safeT('auditTrail.failedLogins', 'Kyçje të Dështuara')}</p>
                   <p className="text-3xl font-bold text-yellow-900">
                     {stats.actionStats?.find(s => s.action === 'LOGIN_FAILED')?.count || 0}
                   </p>
-                  <p className="text-xs text-yellow-600 mt-1">Këtë javë</p>
+                  <p className="text-xs text-yellow-600 mt-1">{safeT('auditTrail.thisWeek', 'Këtë javë')}</p>
                 </div>
                 <div className="p-3 bg-yellow-200 rounded-full">
                   <XCircle className="w-6 h-6 text-yellow-700" />
@@ -322,9 +336,9 @@ export default function AuditTrail() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600 mb-1">Përdorues Aktivë</p>
+                  <p className="text-sm font-medium text-purple-600 mb-1">{safeT('auditTrail.activeUsers', 'Përdorues Aktivë')}</p>
                   <p className="text-3xl font-bold text-purple-900">{stats.activeUsers || 0}</p>
-                  <p className="text-xs text-purple-600 mt-1">Këtë javë</p>
+                  <p className="text-xs text-purple-600 mt-1">{safeT('auditTrail.thisWeek', 'Këtë javë')}</p>
                 </div>
                 <div className="p-3 bg-purple-200 rounded-full">
                   <Users className="w-6 h-6 text-purple-700" />
@@ -341,7 +355,7 @@ export default function AuditTrail() {
             <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100">
               <CardTitle className="flex items-center gap-2 text-indigo-800">
                 <PieChart className="w-5 h-5" />
-                Shpërndarja e Aktiviteteve
+                {safeT('auditTrail.activityDistribution', 'Shpërndarja e Aktiviteteve')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -377,7 +391,7 @@ export default function AuditTrail() {
             <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
               <CardTitle className="flex items-center gap-2 text-green-800">
                 <TrendingUp className="w-5 h-5" />
-                Aktivitetet Sipas Ditëve
+                {safeT('auditTrail.dailyActivities', 'Aktivitetet Sipas Ditëve')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -405,57 +419,57 @@ export default function AuditTrail() {
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
             <CardTitle className="flex items-center gap-2 text-gray-800">
               <Filter className="w-5 h-5" />
-              Filtro Aktivitetet
+              {safeT('auditTrail.filterActivities', 'Filtro Aktivitetet')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Veprimi
+                  {safeT('auditTrail.action', 'Veprimi')}
                 </label>
                 <select
                   value={filters.action}
                   onChange={(e) => setFilters({...filters, action: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 >
-                  <option value="">Të gjitha veprimet</option>
-                  <option value="CREATE">Krijo</option>
-                  <option value="UPDATE">Përditëso</option>
-                  <option value="DELETE">Fshi</option>
-                  <option value="LOGIN">Kyçje</option>
-                  <option value="LOGIN_SUCCESS">Kyçje e Suksesshme</option>
-                  <option value="LOGIN_FAILED">Kyçje e Dështuar</option>
-                  <option value="PAYMENT">Pagesë</option>
-                  <option value="EXPORT">Eksporto</option>
-                  <option value="IMPORT">Importo</option>
-                  <option value="BACKUP">Backup</option>
-                  <option value="RESTORE">Rikthe</option>
+                  <option value="">{safeT('auditTrail.allActions', 'Të gjitha veprimet')}</option>
+                  <option value="CREATE">{safeT('auditTrail.actions.CREATE', 'Krijo')}</option>
+                  <option value="UPDATE">{safeT('auditTrail.actions.UPDATE', 'Përditëso')}</option>
+                  <option value="DELETE">{safeT('auditTrail.actions.DELETE', 'Fshi')}</option>
+                  <option value="LOGIN">{safeT('auditTrail.actions.LOGIN', 'Kyçje')}</option>
+                  <option value="LOGIN_SUCCESS">{safeT('auditTrail.actions.LOGIN_SUCCESS', 'Kyçje e Suksesshme')}</option>
+                  <option value="LOGIN_FAILED">{safeT('auditTrail.actions.LOGIN_FAILED', 'Kyçje e Dështuar')}</option>
+                  <option value="PAYMENT">{safeT('auditTrail.actions.PAYMENT', 'Pagesë')}</option>
+                  <option value="EXPORT">{safeT('auditTrail.actions.EXPORT', 'Eksporto')}</option>
+                  <option value="IMPORT">{safeT('auditTrail.actions.IMPORT', 'Importo')}</option>
+                  <option value="BACKUP">{safeT('auditTrail.actions.BACKUP', 'Backup')}</option>
+                  <option value="RESTORE">{safeT('auditTrail.actions.RESTORE', 'Rikthe')}</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Moduli
+                  {safeT('auditTrail.module', 'Moduli')}
                 </label>
                 <select
                   value={filters.module}
                   onChange={(e) => setFilters({...filters, module: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 >
-                  <option value="">Të gjitha modulet</option>
-                  <option value="CONTRACTS">Kontratat</option>
-                  <option value="EMPLOYEES">Punonjësit</option>
-                  <option value="TASKS">Detyrat</option>
-                  <option value="AUTH">Autentifikimi</option>
-                  <option value="PAYMENTS">Pagesat</option>
-                  <option value="REPORTS">Raportet</option>
-                  <option value="SETTINGS">Konfigurimet</option>
-                  <option value="BACKUP">Backup</option>
+                  <option value="">{safeT('auditTrail.allModules', 'Të gjitha modulet')}</option>
+                  <option value="CONTRACTS">{safeT('auditTrail.modules.CONTRACTS', 'Kontratat')}</option>
+                  <option value="EMPLOYEES">{safeT('auditTrail.modules.EMPLOYEES', 'Punonjësit')}</option>
+                  <option value="TASKS">{safeT('auditTrail.modules.TASKS', 'Detyrat')}</option>
+                  <option value="AUTH">{safeT('auditTrail.modules.AUTH', 'Autentifikimi')}</option>
+                  <option value="PAYMENTS">{safeT('auditTrail.modules.PAYMENTS', 'Pagesat')}</option>
+                  <option value="REPORTS">{safeT('auditTrail.modules.REPORTS', 'Raportet')}</option>
+                  <option value="SETTINGS">{safeT('auditTrail.modules.SETTINGS', 'Konfigurimet')}</option>
+                  <option value="BACKUP">{safeT('auditTrail.modules.BACKUP', 'Backup')}</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Përdoruesi
+                  {safeT('auditTrail.user', 'Përdoruesi')}
                 </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -463,7 +477,7 @@ export default function AuditTrail() {
                     type="text"
                     value={filters.user}
                     onChange={(e) => setFilters({...filters, user: e.target.value})}
-                    placeholder="Kërko përdorues..."
+                    placeholder={safeT('auditTrail.searchUser', 'Kërko përdorues...')}
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   />
                 </div>
@@ -473,7 +487,7 @@ export default function AuditTrail() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Data nga
+                  {safeT('auditTrail.dateFrom', 'Data nga')}
                 </label>
                 <input
                   type="date"
@@ -484,7 +498,7 @@ export default function AuditTrail() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Data deri
+                  {safeT('auditTrail.dateTo', 'Data deri')}
                 </label>
                 <input
                   type="date"
@@ -499,7 +513,7 @@ export default function AuditTrail() {
                   className="bg-blue-600 hover:bg-blue-700 px-6 py-2"
                 >
                   <Filter className="w-4 h-4 mr-2" />
-                  Apliko
+                  {safeT('auditTrail.apply', 'Apliko')}
                 </Button>
                 <Button
                   onClick={resetFilters}
@@ -507,7 +521,7 @@ export default function AuditTrail() {
                   className="px-6 py-2"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset
+                  {safeT('auditTrail.reset', 'Reset')}
                 </Button>
               </div>
             </div>
@@ -519,15 +533,15 @@ export default function AuditTrail() {
           <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100">
             <CardTitle className="flex items-center gap-2 text-purple-800">
               <Eye className="w-5 h-5" />
-              Aktivitetet ({filteredLogs.length} rezultate)
+              {safeT('auditTrail.activities', 'Aktivitetet')} ({filteredLogs.length} {safeT('auditTrail.results', 'rezultate')})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             {filteredLogs.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">📋</div>
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">Nuk u gjetën aktivitete</h3>
-                <p className="text-gray-500">Provoni të ndryshoni filtrat për të parë më shumë rezultate</p>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">{safeT('auditTrail.noActivitiesFound', 'Nuk u gjetën aktivitete')}</h3>
+                <p className="text-gray-500">{safeT('auditTrail.tryChangingFilters', 'Provoni të ndryshoni filtrat për të parë më shumë rezultate')}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -558,7 +572,7 @@ export default function AuditTrail() {
                           
                           <div className="space-y-2">
                             <p className="text-gray-800 font-medium">
-                              {log.user_name || log.user_email || 'Përdorues i panjohur'}
+                              {log.user_name || log.user_email || safeT('auditTrail.unknownUser', 'Përdorues i panjohur')}
                             </p>
                             
                             {log.description && (
@@ -570,14 +584,14 @@ export default function AuditTrail() {
                               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                                 <div className="flex items-center gap-2 text-red-700 mb-2">
                                   <XCircle className="w-4 h-4" />
-                                  <span className="font-medium">Arsyeja e dështimit:</span>
+                                  <span className="font-medium">{safeT('auditTrail.failedLoginReason', 'Arsyeja e dështimit:')}</span>
                                 </div>
                                 <p className="text-red-600 text-sm">
-                                  {log.details.reason || log.details.error || 'Fjalëkalim ose email i gabuar'}
+                                                                      {log.details.reason || log.details.error || safeT('auditTrail.wrongCredentials', 'Fjalëkalim ose email i gabuar')}
                                 </p>
                                 {log.details.attemptedEmail && (
                                   <p className="text-red-500 text-xs mt-1">
-                                    Email i provuar: {log.details.attemptedEmail}
+                                    {safeT('auditTrail.attemptedEmail', 'Email i provuar:')} {log.details.attemptedEmail}
                                   </p>
                                 )}
                               </div>
@@ -588,7 +602,7 @@ export default function AuditTrail() {
                               <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                                 <div className="flex items-center gap-2 text-green-700">
                                   <CheckCircle className="w-4 h-4" />
-                                  <span className="font-medium">Kyçje e suksesshme</span>
+                                  <span className="font-medium">{safeT('auditTrail.successfulLogin', 'Kyçje e suksesshme')}</span>
                                 </div>
                               </div>
                             )}
@@ -607,7 +621,7 @@ export default function AuditTrail() {
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <span className="flex items-center gap-1">
-                            🌐 IP: <span className="font-medium">{log.ip_address}</span>
+                            🌐 {safeT('auditTrail.ipAddress', 'IP:')} <span className="font-medium">{log.ip_address}</span>
                             {log.details?.ipInfo && (
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 log.details.ipInfo.isLocal 
@@ -622,12 +636,12 @@ export default function AuditTrail() {
                           </span>
                           {log.entity_id && (
                             <span className="flex items-center gap-1">
-                              🆔 ID: <span className="font-medium">{log.entity_id}</span>
+                              🆔 {safeT('auditTrail.entityId', 'ID:')} <span className="font-medium">{log.entity_id}</span>
                             </span>
                           )}
                           {log.details?.ipInfo?.location && (
                             <span className="flex items-center gap-1">
-                              📍 <span className="font-medium">{log.details.ipInfo.location}</span>
+                              📍 <span className="font-medium">{safeT('auditTrail.location', 'Lokacioni:')} {log.details.ipInfo.location}</span>
                             </span>
                           )}
                         </div>
@@ -636,21 +650,21 @@ export default function AuditTrail() {
                           <div className="mt-2 p-2 bg-gray-50 rounded-lg">
                             <div className="grid grid-cols-2 gap-2 text-xs">
                               <div>
-                                <span className="text-gray-500">Tipi:</span>
+                                <span className="text-gray-500">{safeT('auditTrail.type', 'Tipi:')}</span>
                                 <span className="ml-1 font-medium">{log.details.ipInfo.type}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Lokacioni:</span>
+                                <span className="text-gray-500">{safeT('auditTrail.location', 'Lokacioni:')}</span>
                                 <span className="ml-1 font-medium">{log.details.ipInfo.location}</span>
                               </div>
                               {log.details.ipInfo.isLocal && (
                                 <div className="col-span-2">
-                                  <span className="text-blue-600 text-xs">🔒 Lidhje lokale/private</span>
+                                  <span className="text-blue-600 text-xs">🔒 {safeT('auditTrail.localConnection', 'Lidhje lokale/private')}</span>
                                 </div>
                               )}
                               {log.details.ipInfo.isProxy && (
                                 <div className="col-span-2">
-                                  <span className="text-purple-600 text-xs">☁️ Lidhje përmes cloud/proxy</span>
+                                  <span className="text-purple-600 text-xs">☁️ {safeT('auditTrail.cloudProxyConnection', 'Lidhje përmes cloud/proxy')}</span>
                                 </div>
                               )}
                             </div>
@@ -671,7 +685,7 @@ export default function AuditTrail() {
             <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-gray-800">Detajet e Aktivitetit</h3>
+                  <h3 className="text-xl font-bold text-gray-800">{safeT('auditTrail.activityDetails', 'Detajet e Aktivitetit')}</h3>
                   <Button
                     onClick={() => setShowDetails(false)}
                     variant="ghost"
@@ -684,15 +698,15 @@ export default function AuditTrail() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Veprimi</label>
+                      <label className="block text-sm font-medium text-gray-700">{safeT('auditTrail.action', 'Veprimi')}</label>
                       <p className="text-gray-900 font-medium">{selectedLog.action}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Moduli</label>
+                      <label className="block text-sm font-medium text-gray-700">{safeT('auditTrail.module', 'Moduli')}</label>
                       <p className="text-gray-900">{selectedLog.module}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Përdoruesi</label>
+                      <label className="block text-sm font-medium text-gray-700">{safeT('auditTrail.user', 'Përdoruesi')}</label>
                       <p className="text-gray-900">{selectedLog.user_name || selectedLog.user_email}</p>
                     </div>
                     <div>
@@ -703,14 +717,14 @@ export default function AuditTrail() {
                   
                   {selectedLog.description && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Përshkrimi</label>
+                      <label className="block text-sm font-medium text-gray-700">{safeT('auditTrail.description', 'Përshkrimi')}</label>
                       <p className="text-gray-900">{selectedLog.description}</p>
                     </div>
                   )}
                   
                   {selectedLog.details && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Detajet</label>
+                      <label className="block text-sm font-medium text-gray-700">{safeT('auditTrail.details', 'Detajet')}</label>
                       <pre className="bg-gray-50 p-3 rounded-lg text-sm overflow-x-auto">
                         {JSON.stringify(selectedLog.details, null, 2)}
                       </pre>
@@ -719,7 +733,7 @@ export default function AuditTrail() {
                   
                   {selectedLog.ip_address && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">IP Address</label>
+                      <label className="block text-sm font-medium text-gray-700">{safeT('auditTrail.ipAddress', 'IP Address')}</label>
                       <p className="text-gray-900">{selectedLog.ip_address}</p>
                     </div>
                   )}
