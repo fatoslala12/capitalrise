@@ -579,10 +579,10 @@ export default function AdminDashboard() {
       {/* Grafik për site */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
-            📊 {tr('adminDashboard.weeklyHoursBySite')}
+            📊 {t('adminDashboard.hoursBySiteThisWeek')}
           </h3>
         <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
-          Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
+          {t('adminDashboard.totalHoursWorked')} <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
         </div>
         {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
@@ -645,7 +645,7 @@ export default function AdminDashboard() {
       {/* Top 5 më të paguar */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            🏅 Top 5 {localStorage.getItem('language') === 'en' ? 'highest paid employees' : 'punonjësit më të paguar'}
+            🏅 {t('adminDashboard.topPaidEmployees')}
           </h3>
         {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
@@ -720,15 +720,11 @@ export default function AdminDashboard() {
 
       
 
-      {/* Grafik për shpenzimet sipas site-ve */}
-      <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">💸 {localStorage.getItem('language') === 'en' ? 'Expenses (expenses_invoice.gross) + Work Hours (work_hours.hours × rate) by Site' : 'Shpenzimet (expenses_invoice.gross) + Orët e Punës (work_hours.hours × rate) sipas Site-ve'}</h3>
-        <ShpenzimePerSiteChart allExpenses={allExpenses} contracts={contracts} structuredWorkHours={structuredWorkHours} allPayments={allPayments} />
-      </div>
+
 
       {/* Grafik për statusin e kontratave */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 {localStorage.getItem('language') === 'en' ? 'Contract Status' : 'Statusi i kontratave'}</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 {t('adminDashboard.contractsProgressTitle')}</h3>
         <StatusiKontrataveChart contracts={contracts} />
       </div>
 
@@ -756,7 +752,7 @@ export default function AdminDashboard() {
 
       {/* Grafik për vonesat në pagesa/fatura */}
       <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📊 {tr('adminDashboard.invoiceStatus')}</h3>
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📊 {t('adminDashboard.invoiceStatus')}</h3>
         <VonesaFaturashChart />
       </div>
 

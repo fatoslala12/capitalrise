@@ -482,7 +482,7 @@ export default function ContractDetails() {
   };
 
   if (loading) {
-    return <PageLoader text="Duke ngarkuar detajet e kontratës..." />;
+    return <PageLoader text={t('contracts.loadingDetails')} />;
   }
 
   if (!contract || Object.keys(contract).length === 0) {

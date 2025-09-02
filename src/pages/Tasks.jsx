@@ -370,7 +370,7 @@ export default function Tasks() {
   };
 
   if (loading) {
-    return <PageLoader text="Duke ngarkuar detyrat..." />;
+    return <PageLoader text={t('myProfile.loadingTasks')} />;
   }
 
   return (

@@ -252,9 +252,9 @@ const NotificationsPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-4"></div>
           <p className="text-gray-600">{safeT('notifications.loading', 'Duke ngarkuar njoftimet...')}</p>
         </div>
       </div>
@@ -262,9 +262,9 @@ const NotificationsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+    <div className="container mx-auto px-4 py-4">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
           🔔 {safeT('notifications.title', 'Njoftimet')}
         </h1>
         <p className="text-gray-600">

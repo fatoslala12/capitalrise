@@ -31,6 +31,7 @@ import api from '../api';
 import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import PageLoader from '../components/ui/PageLoader';
 
 // Color palette for charts
 const CHART_COLORS = [
@@ -159,11 +160,7 @@ const NotificationAnalytics = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <LoadingSpinner fullScreen={true} size="xl" text={safeT('analytics.loading', null)} />
-      </div>
-    );
+    return <PageLoader text="Duke ngarkuar analytics..." />;
   }
 
   if (error) {

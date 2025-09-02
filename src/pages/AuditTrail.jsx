@@ -4,6 +4,7 @@ import { sq } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import api from "../api";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import PageLoader from "../components/ui/PageLoader";
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { Container, Grid } from "../components/ui/Layout";
@@ -256,7 +257,7 @@ export default function AuditTrail() {
   };
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text={safeT('auditTrail.loading', null)} />;
+    return <PageLoader text="Duke ngarkuar audit trail..." />;
   }
 
   if (error) {

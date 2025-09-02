@@ -545,7 +545,7 @@ export default function EmployeesList() {
   };
 
   if (loading) {
-    return <PageLoader text="Duke ngarkuar punonjësit..." />;
+    return <PageLoader text={t('employees.loading')} />;
   }
 
   return (

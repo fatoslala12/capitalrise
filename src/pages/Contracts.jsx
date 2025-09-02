@@ -815,7 +815,7 @@ export default function Contracts() {
   );
 
   if (loading || contractsLoading) {
-    return <PageLoader text="Duke ngarkuar kontratat..." />;
+    return <PageLoader text={t('contracts.loadingContracts')} />;
   }
 
   if (contractsError) {

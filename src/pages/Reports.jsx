@@ -21,6 +21,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import api from "../api";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import PageLoader from "../components/ui/PageLoader";
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { Container, Grid } from "../components/ui/Layout";
@@ -209,7 +210,7 @@ export default function Reports() {
   };
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" />;
+    return <PageLoader text="Duke ngarkuar raportet..." />;
   }
 
   if (error) {

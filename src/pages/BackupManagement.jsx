@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import api from "../api";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import PageLoader from "../components/ui/PageLoader";
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
 import { Container, Grid } from "../components/ui/Layout";
 import Button from "../components/ui/Button";
@@ -317,7 +318,7 @@ export default function BackupManagement() {
   }
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text={safeT('backup.loadingRecordCount', null)} />;
+    return <PageLoader text="Duke ngarkuar backup..." />;
   }
 
   if (user?.role !== 'admin' && user?.role !== 'manager') {

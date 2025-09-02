@@ -431,7 +431,7 @@ export default function PaymentDetails() {
                 </div>
                 <div>
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-blue-700 tracking-tight mb-1">
-                    {t('paymentDetails.title')}
+                    {t('payments.paymentDetails')}
                   </h1>
                   <div className="text-base sm:text-lg font-semibold text-slate-600">
                     {t('paymentDetails.contractNumber')}{contract_number}
@@ -449,25 +449,25 @@ export default function PaymentDetails() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 <div className="lg:col-span-2 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📌 {t('paymentDetails.project')}</span>
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📌 {t('payments.project')}</span>
                     <span className="text-lg sm:text-xl font-bold text-slate-800">{contract.site_name}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏢 {t('paymentDetails.company')}</span>
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏢 {t('payments.company')}</span>
                     <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.company}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 {t('paymentDetails.startDate')}</span>
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 {t('payments.startDate')}</span>
                     <span className="text-base sm:text-lg font-semibold text-slate-800">{formatContractDate(contract.start_date)}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">💰 {t('paymentDetails.value')}</span>
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">💰 {t('payments.value')}</span>
                     <span className="text-base sm:text-lg font-bold text-emerald-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</span>
                   </div>
                 </div>
                 
                 <div className="flex flex-col items-start lg:items-end justify-start lg:justify-center">
-                  <span className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-2">📊 {t('paymentDetails.contractStatus')}</span>
+                  <span className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-2">📊 {t('payments.status')}</span>
                   <span className={`inline-flex px-4 py-2 rounded-full text-sm font-bold border ${
                     contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700 border-blue-200' :
                     contract.status === 'Draft' ? 'bg-gray-100 text-gray-700 border-gray-200' :
