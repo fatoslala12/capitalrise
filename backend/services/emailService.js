@@ -593,23 +593,34 @@ Ju lutem mos përgjigjuni këtij email-i.
   }
 
   // Dërgo faturë në email
-  async sendInvoiceEmail(invoice, contract, recipientEmail) {
+  async sendInvoiceEmail(invoice, contract, recipientEmail, pdfBuffer = null) {
     try {
       if (!this.resend) {
         throw createError('EMAIL_SERVICE_ERROR', null, 'Email service nuk është i disponueshëm');
       }
 
-      const subject = `Fatura #${invoice.invoice_number} - ${contract.company}`;
+      const subject = `Capital Rise Invoice #${invoice.invoice_number} for ${contract.company}`;
       const htmlContent = this.generateInvoiceEmailHTML(invoice, contract);
       const textContent = this.generateInvoiceEmailText(invoice, contract);
 
-      const result = await this.resend.emails.send({
-        from: 'Alban Construction <onboarding@resend.dev>',
+      const emailData = {
+        from: 'Capital Rise <onboarding@resend.dev>',
         to: [recipientEmail],
         subject: subject,
         html: htmlContent,
         text: textContent
-      });
+      };
+
+      // Shto PDF attachment nëse është i disponueshëm
+      if (pdfBuffer) {
+        emailData.attachments = [{
+          filename: `Invoice_${invoice.invoice_number}.pdf`,
+          content: pdfBuffer,
+          contentType: 'application/pdf'
+        }];
+      }
+
+      const result = await this.resend.emails.send(emailData);
       
       console.log('✅ Invoice email u dërgua me sukses:', result.id);
       
@@ -681,103 +692,237 @@ Ju lutem mos përgjigjuni këtij email-i.
 
     return `
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
       <head>
-        <meta charset="utf-8">
-        <title>Fatura #${invoice.invoice_number}</title>
+        <meta charset="UTF-8">
+        <title>Invoice #${invoice.invoice_number}</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
-          .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-          .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 30px; }
-          .logo { font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 10px; }
-          .invoice-details { margin-bottom: 30px; }
-          .invoice-details h2 { color: #333; margin-bottom: 20px; }
-          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-          .info-item { padding: 15px; background: #f8f9fa; border-radius: 5px; }
-          .info-label { font-weight: bold; color: #007bff; }
-          .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-          .items-table th, .items-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-          .items-table th { background: #007bff; color: white; }
-          .total-section { text-align: right; margin-top: 30px; }
-          .total-row { margin: 10px 0; font-size: 16px; }
-          .grand-total { font-size: 20px; font-weight: bold; color: #007bff; }
-          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; }
+          body {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 15px;
+            margin: 0;
+            background: #f4f6f8;
+            padding: 40px;
+            color: #333;
+          }
+          .email-wrapper {
+            max-width: 760px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            padding: 30px;
+          }
+          .intro {
+            margin-bottom: 30px;
+          }
+          .intro .brand {
+            font-size: 24px;
+            font-weight: bold;
+            color: #cc6600;
+            margin-bottom: 8px;
+          }
+          .intro p {
+            font-size: 16px;
+            line-height: 1.6;
+          }
+
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+          }
+          .title-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
+          .title-block h1 {
+            color: #cc6600;
+            font-size: 28px;
+            margin: 0;
+          }
+          .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+          }
+          .company-info {
+            text-align: right;
+          }
+          .company-info div {
+            margin: 2px 0;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+          }
+          th {
+            background: #d4f2dd;
+            color: #333;
+            padding: 10px;
+            border: 1px solid #c0e6ca;
+            text-align: left;
+          }
+          td {
+            padding: 10px;
+            border: 1px solid #eee;
+          }
+          .totals {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+          }
+          .totals-table {
+            width: 300px;
+            border-collapse: collapse;
+          }
+          .totals-table td {
+            padding: 8px;
+            text-align: right;
+          }
+          .totals-table .label {
+            text-align: left;
+            color: #333;
+          }
+          .totals-table .grand-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #cc6600;
+          }
+          .bank-details {
+            margin-top: 40px;
+            color: #333;
+          }
+          .bank-details h3 {
+            color: #cc6600;
+            margin-bottom: 10px;
+          }
+          .bank-details div {
+            margin: 2px 0;
+          }
+          .qr-section {
+            text-align: center;
+            margin-top: 40px;
+          }
+          .qr-section img {
+            border: 8px solid #f1f1f1;
+            border-radius: 8px;
+          }
+          .pay-button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 16px;
+          }
+          .thank-you {
+            margin-top: 50px;
+            text-align: center;
+            font-weight: bold;
+            color: #0a8340;
+          }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <div class="logo">🏗️ Alban Construction</div>
-            <h1>Fatura #${invoice.invoice_number}</h1>
+
+        <div class="email-wrapper">
+
+          <div class="intro">
+            <div class="brand">🏗️ Capital Rise</div>
+            <p>
+              Përshëndetje,<br><br>
+              Ju dërgojmë më poshtë detajet e faturës të lëshuar për punimet e kryera në kuadër të kontratës:
+              <strong>${contract.site_name || contract.company}</strong>.
+            </p>
           </div>
-          
-          <div class="invoice-details">
-            <h2>Detajet e Faturës</h2>
-            <div class="info-grid">
-              <div class="info-item">
-                <div class="info-label">Kompania:</div>
-                <div>${contract.company}</div>
+
+          <div class="header">
+            <div class="title-block">
+              <img src="https://img.icons8.com/ios-filled/50/invoice.png" alt="Invoice Icon" width="32" />
+              <div>
+                <h1>INVOICE</h1>
+                <div class="subtitle">Contract #${contract.contract_number} – ${contract.site_name || contract.company}</div>
               </div>
-              <div class="info-item">
-                <div class="info-label">Kontrata #:</div>
-                <div>${contract.contract_number}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Data:</div>
-                <div>${formatDate(invoice.date)}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Statusi:</div>
-                <div>${invoice.paid ? 'E paguar' : 'E papaguar'}</div>
-              </div>
+            </div>
+            <div class="company-info">
+              <div><strong>Date:</strong> ${formatDate(invoice.date)}</div>
+              <div><strong>Client:</strong> ${contract.company}</div>
+              <div><em>${contract.site_name || contract.company}</em></div>
             </div>
           </div>
 
-          <div class="items-section">
-            <h2>Artikujt</h2>
-            <table class="items-table">
-              <thead>
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Shifts</th>
+                <th>Rate</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(invoice.items || []).map(item => `
                 <tr>
-                  <th>Përshkrimi</th>
-                  <th>Shifte</th>
-                  <th>Çmimi</th>
-                  <th>Shuma</th>
+                  <td>${item.description || ''}</td>
+                  <td>${item.shifts || ''}</td>
+                  <td>${formatCurrency(item.rate)}</td>
+                  <td>${formatCurrency(item.amount)}</td>
                 </tr>
-              </thead>
-              <tbody>
-                ${(invoice.items || []).map(item => `
-                  <tr>
-                    <td>${item.description || ''}</td>
-                    <td>${item.shifts || ''}</td>
-                    <td>${formatCurrency(item.rate)}</td>
-                    <td>${formatCurrency(item.amount)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="totals">
+            <table class="totals-table">
+              <tr>
+                <td class="label">Subtotal:</td>
+                <td>${formatCurrency(invoice.total_net)}</td>
+              </tr>
+              <tr>
+                <td class="label">VAT (20%):</td>
+                <td>${formatCurrency(invoice.vat)}</td>
+              </tr>
+              <tr>
+                <td class="label">Other:</td>
+                <td>${formatCurrency(invoice.other)}</td>
+              </tr>
+              <tr>
+                <td class="label grand-total">Total:</td>
+                <td class="grand-total">${formatCurrency(invoice.total)}</td>
+              </tr>
             </table>
           </div>
 
-          <div class="total-section">
-            <div class="total-row">
-              <strong>Totali Neto:</strong> ${formatCurrency(invoice.total_net)}
-            </div>
-            <div class="total-row">
-              <strong>TVSH (20%):</strong> ${formatCurrency(invoice.vat)}
-            </div>
-            <div class="total-row">
-              <strong>Të tjera:</strong> ${formatCurrency(invoice.other)}
-            </div>
-            <div class="total-row grand-total">
-              <strong>Totali i Përgjithshëm:</strong> ${formatCurrency(invoice.total)}
-            </div>
+          <div class="bank-details">
+            <h3>Capital Rise Ltd</h3>
+            <div>HSBC Bank</div>
+            <div>Account Number: 81845403</div>
+            <div>Sort Code: 52474549</div>
+            <div>Email: billing@capitalrise.al</div>
+            <div>Phone: +355 XX XXX XXX</div>
+            <div>Website: www.capitalrise.al</div>
           </div>
 
-          <div class="footer">
-            <p>Falënderojmë për besimin tuaj!</p>
-            <p>Alban Construction</p>
-            <p>Email: info@albanconstruction.com</p>
+          <div class="qr-section">
+            <p>Scan to pay:</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://your-payment-link.com/pay/${invoice.invoice_number}" alt="QR Code" />
+            <br>
+            <a class="pay-button" href="https://your-payment-link.com/pay/${invoice.invoice_number}" target="_blank">💳 Pay Now</a>
           </div>
+
+          <div class="thank-you">
+            THANK YOU FOR YOUR BUSINESS!
+          </div>
+
         </div>
+
       </body>
       </html>
     `;
@@ -799,27 +944,40 @@ Ju lutem mos përgjigjuni këtij email-i.
     };
 
     return `
-Fatura #${invoice.invoice_number} - ${contract.company}
+Capital Rise Invoice #${invoice.invoice_number} for ${contract.company}
 
-Detajet e Faturës:
-- Kompania: ${contract.company}
-- Kontrata #: ${contract.contract_number}
-- Data: ${formatDate(invoice.date)}
-- Statusi: ${invoice.paid ? 'E paguar' : 'E papaguar'}
+Përshëndetje,
 
-Artikujt:
+Ju dërgojmë më poshtë detajet e faturës të lëshuar për punimet e kryera në kuadër të kontratës: ${contract.site_name || contract.company}.
+
+INVOICE
+Contract #${contract.contract_number} – ${contract.site_name || contract.company}
+
+Date: ${formatDate(invoice.date)}
+Client: ${contract.company}
+Project: ${contract.site_name || contract.company}
+
+Items:
 ${(invoice.items || []).map(item => `
-- ${item.description || ''} | ${item.shifts || ''} shifte | ${formatCurrency(item.rate)} | ${formatCurrency(item.amount)}
+- ${item.description || ''} | ${item.shifts || ''} shifts | ${formatCurrency(item.rate)} | ${formatCurrency(item.amount)}
 `).join('')}
 
-Totali:
-- Totali Neto: ${formatCurrency(invoice.total_net)}
-- TVSH (20%): ${formatCurrency(invoice.vat)}
-- Të tjera: ${formatCurrency(invoice.other)}
-- Totali i Përgjithshëm: ${formatCurrency(invoice.total)}
+Totals:
+- Subtotal: ${formatCurrency(invoice.total_net)}
+- VAT (20%): ${formatCurrency(invoice.vat)}
+- Other: ${formatCurrency(invoice.other)}
+- Total: ${formatCurrency(invoice.total)}
 
-Falënderojmë për besimin tuaj!
-Alban Construction
+Bank Details:
+Capital Rise Ltd
+HSBC Bank
+Account Number: 81845403
+Sort Code: 52474549
+Email: billing@capitalrise.al
+Phone: +355 XX XXX XXX
+Website: www.capitalrise.al
+
+THANK YOU FOR YOUR BUSINESS!
     `;
   }
 
@@ -957,7 +1115,7 @@ const emailService = new EmailService();
 // Export functions for use in controllers
 module.exports = {
   EmailService,
-  sendInvoiceEmail: (invoice, contract, recipientEmail) => emailService.sendInvoiceEmail(invoice, contract, recipientEmail),
+  sendInvoiceEmail: (invoice, contract, recipientEmail, pdfBuffer) => emailService.sendInvoiceEmail(invoice, contract, recipientEmail, pdfBuffer),
   sendContractDetailsEmail: (contract, recipientEmail) => emailService.sendContractDetailsEmail(contract, recipientEmail),
   sendWelcomeEmail: (userData) => emailService.sendWelcomeEmail(userData),
   sendPasswordResetEmail: (email, resetToken) => emailService.sendPasswordResetEmail(email, resetToken),
