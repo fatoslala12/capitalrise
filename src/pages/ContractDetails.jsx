@@ -951,7 +951,7 @@ export default function ContractDetails() {
                   </div>
                 </div>
                 <p className="text-center text-green-700 font-semibold mt-12">
-                  THANK YOU FOR YOUR BUSINESS!
+                  {t('contractDetails.thankYou')}
                 </p>
               </div>
 
