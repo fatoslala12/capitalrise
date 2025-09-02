@@ -604,7 +604,7 @@ export default function ContractDetails() {
                     </div>
                     <div>
                       <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1">
-                        Detajet e Kontratës
+                        {t('contractDetails.pageTitle')}
                       </h1>
                       <div className="text-base sm:text-lg font-semibold text-slate-600">
                         {contract?.site_name || "N/A"}
@@ -643,40 +643,40 @@ export default function ContractDetails() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                   <div className="space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏢 Kompania</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏢 {t('contractDetails.company')}</span>
                       <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.company}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📍 Vendodhja</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📍 {t('contracts.location')}</span>
                       <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.site_name}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📬 Adresa</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📬 {t('contractDetails.address')}</span>
                       <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.address || "N/A"}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📋 Tipi</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📋 {t('contractDetails.type')}</span>
                       <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold ${
                         (contract.contract_type || 'day_work') === 'price_work' 
                           ? 'bg-orange-100 text-orange-700 border border-orange-200' 
                           : 'bg-blue-100 text-blue-700 border border-blue-200'
                       }`}>
-                        {(contract.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
+                        {(contract.contract_type || 'day_work') === 'price_work' ? t('contractDetails.priceWork') : t('contractDetails.dayWork')}
                       </span>
                     </div>
                   </div>
                   
                   <div className="space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 Fillimi</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 {t('contractDetails.start')}</span>
                       <span className="text-base sm:text-lg font-semibold text-slate-800">{formatDate(contract.start_date)}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 Mbarimi</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🗓 {t('contractDetails.end')}</span>
                       <span className="text-base sm:text-lg font-semibold text-slate-800">{formatDate(contract.finish_date)}</span>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📊 Statusi</span>
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📊 {t('contractDetails.status')}</span>
                       <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold border ${
                         contract.status === "Mbyllur" || contract.status === "Mbyllur me vonese" ? "bg-red-100 text-red-700 border-red-200" : 
                         contract.status === "Ne progres" ? "bg-blue-100 text-blue-700 border-blue-200" : 
@@ -689,7 +689,7 @@ export default function ContractDetails() {
                     </div>
                     {contract.closed_date && (
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🔒 Mbyllur</span>
+                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🔒 {t('contractDetails.closed')}</span>
                         <span className="text-base sm:text-lg font-semibold text-slate-800">{formatDate(contract.closed_date)}</span>
                       </div>
                     )}
@@ -700,7 +700,7 @@ export default function ContractDetails() {
 
           {/* Chart */}
           <div className="bg-white/70 p-10 shadow-2xl rounded-3xl border-2 border-purple-200 animate-fade-in">
-            <h3 className="text-2xl font-bold mb-6 text-purple-800 flex items-center gap-2"><span>📈</span> Progresi i Kontratës</h3>
+            <h3 className="text-2xl font-bold mb-6 text-purple-800 flex items-center gap-2"><span>📈</span> {t('contracts.progressHeader')}</h3>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={getProgressChartData()}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -714,7 +714,7 @@ export default function ContractDetails() {
 
           {/* Dokumente */}
           <div className="bg-white/70 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
-            <h3 className="text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2">📎 Dokumentet</h3>
+            <h3 className="text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2">📎 {t('contractDetails.documents')}</h3>
             <input 
               type="file" 
               accept="application/pdf" 
@@ -745,21 +745,21 @@ export default function ContractDetails() {
               onClick={openAddModal}
               className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
             >
-              <span className="text-xl">🧾</span> Shto Faturë
+              <span className="text-xl">🧾</span> {t('contractDetails.addInvoice')}
             </button>
           </div>
 
 
           {/* Lista Faturave + Print */}
           <div className="bg-white/80 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
-            <h3 className="font-bold mb-6 text-2xl text-blue-900 flex items-center gap-3">📋 Lista e Faturave</h3>
+            <h3 className="font-bold mb-6 text-2xl text-blue-900 flex items-center gap-3">📋 {t('contractDetails.invoicesList')}</h3>
             
             {/* Search and Filter for Invoices */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="md:col-span-2">
                 <input
                   type="text"
-                  placeholder="🔍 Kërko faturë, përshkrim ose datë..."
+                  placeholder={t('contractDetails.searchInvoicesPlaceholder')}
                   value={invoicesSearch}
                   onChange={(e) => setInvoicesSearch(e.target.value)}
                   className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
@@ -771,11 +771,11 @@ export default function ContractDetails() {
                   onChange={(e) => setInvoicesFilter(e.target.value)}
                   className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
                 >
-                  <option value="all">Të gjitha faturat</option>
-                  <option value="paid">Paguar</option>
-                  <option value="unpaid">Pa paguar</option>
-                  <option value="emailed">Të dërguara me email</option>
-                  <option value="not_emailed">Pa u dërguar me email</option>
+                  <option value="all">{t('contractDetails.allInvoices')}</option>
+                  <option value="paid">{t('contractDetails.paid')}</option>
+                  <option value="unpaid">{t('contractDetails.unpaid')}</option>
+                  <option value="emailed">{t('contractDetails.emailed')}</option>
+                  <option value="not_emailed">{t('contractDetails.notEmailed')}</option>
                 </select>
               </div>
             </div>
@@ -786,11 +786,11 @@ export default function ContractDetails() {
                   <thead className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-900">
                     <tr>
                       <th className="py-4 px-2 text-center align-middle font-semibold">Nr</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Data</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Total</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Status</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Paguar</th>
-                      <th className="py-4 px-2 text-center align-middle font-semibold">Veprime</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('paymentDetails.date')}</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('common.total')}</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('paymentDetails.status')}</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('paymentDetails.paid')}</th>
+                      <th className="py-4 px-2 text-center align-middle font-semibold">{t('paymentDetails.actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -828,7 +828,7 @@ export default function ContractDetails() {
                               <button 
                                 onClick={() => setInvoiceToPrint(inv)} 
                                 className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl"
-                                title="Shiko / Printo"
+                                title={t('contractDetails.viewPrint')}
                               >
                                 🖨
                               </button>
@@ -842,7 +842,7 @@ export default function ContractDetails() {
                                 }`}
                                 title={inv.emailed 
                                   ? `E dërguar më: ${inv.emailed_at ? new Date(inv.emailed_at).toLocaleString('sq-AL') : 'pa datë'} - Kliko për të dërguar përsëri`
-                                  : "Dërgo në Email"
+                                  : t('contractDetails.sendEmail')
                                 }
                               >
                                 {loadingStates.sendEmail[inv.id] ? (
@@ -862,7 +862,7 @@ export default function ContractDetails() {
                                 onClick={() => handleDeleteInvoice(inv.id)} 
                                 disabled={loadingStates.deleteInvoice[inv.id]}
                                 className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl disabled:opacity-50"
-                                title="Fshi"
+                                title={t('contractDetails.delete')}
                               >
                                 {loadingStates.deleteInvoice[inv.id] ? (
                                   <div className="w-4 h-4 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
@@ -880,8 +880,8 @@ export default function ContractDetails() {
                 <div className="text-center py-8">
                   <p className="text-gray-500 italic">
                     {invoices.length === 0 
-                      ? "Nuk ka faturat për këtë kontratë akoma" 
-                      : "Nuk u gjetën faturat që përputhen me kërkimin tuaj"}
+                      ? t('contractDetails.noInvoices') 
+                      : t('contractDetails.noInvoicesMatch')}
                   </p>
                 </div>
               )}
@@ -896,8 +896,8 @@ export default function ContractDetails() {
               >
                 <div className="flex justify-between items-center border-b border-green-300 pb-4 mb-6">
                   <div>
-                    <h1 className="text-3xl font-extrabold text-amber-600">🧾 FATURË</h1>
-                    <p className="text-xs text-gray-500">Kont #{contract.contract_number} – {contract.site_name}</p>
+                    <h1 className="text-3xl font-extrabold text-amber-600">🧾 {t('contractDetails.invoice')}</h1>
+                    <p className="text-xs text-gray-500">{t('contractDetails.contractShort')} #{contract.contract_number} – {contract.site_name}</p>
                   </div>
                   <img src="/Capital Rise logo.png" alt="Capital Rise Logo" className="h-20 w-auto object-contain" />
                   <div className="text-right text-xs">
@@ -910,10 +910,10 @@ export default function ContractDetails() {
                 <table className="w-full border-collapse border border-gray-300 mb-6 text-xs">
                   <thead className="bg-green-100 text-amber-800 font-semibold">
                     <tr>
-                      <th className="border border-green-300 py-3 px-2">Përshkrimi</th>
-                      <th className="border border-green-300 py-3 px-2">Shifts</th>
-                      <th className="border border-green-300 py-3 px-2">Rate</th>
-                      <th className="border border-green-300 py-3 px-2">Shuma</th>
+                      <th className="border border-green-300 py-3 px-2">{t('contractDetails.description')}</th>
+                      <th className="border border-green-300 py-3 px-2">{t('contractDetails.shifts')}</th>
+                      <th className="border border-green-300 py-3 px-2">{t('contractDetails.rate')}</th>
+                      <th className="border border-green-300 py-3 px-2">{t('contractDetails.amount')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -940,10 +940,10 @@ export default function ContractDetails() {
                   </div>
 
                   <div className="text-right text-sm space-y-4 max-w-[45%] leading-loose">
-                    <p><strong>Neto:</strong> £{invoiceToPrint.items.reduce((a, i) => a + (i.amount || 0), 0).toFixed(2)}</p>
-                    <p><strong>TVSH (20%):</strong> £{(invoiceToPrint.items.reduce((a, i) => a + (i.amount || 0), 0) * 0.2).toFixed(2)}</p>
-                    <p><strong>Të tjera:</strong> £{parseFloat(invoiceToPrint.other || 0).toFixed(2)}</p>
-                    <p className="text-lg font-extrabold text-amber-700 mt-2">Total: £{(
+                    <p><strong>{t('contractDetails.net')}:</strong> £{invoiceToPrint.items.reduce((a, i) => a + (i.amount || 0), 0).toFixed(2)}</p>
+                    <p><strong>{t('contractDetails.vat20')}:</strong> £{(invoiceToPrint.items.reduce((a, i) => a + (i.amount || 0), 0) * 0.2).toFixed(2)}</p>
+                    <p><strong>{t('contractDetails.other')}:</strong> £{parseFloat(invoiceToPrint.other || 0).toFixed(2)}</p>
+                    <p className="text-lg font-extrabold text-amber-700 mt-2">{t('contractDetails.total')}: £{(
                       invoiceToPrint.items.reduce((a, i) => a + (i.amount || 0), 0) +
                       (invoiceToPrint.items.reduce((a, i) => a + (i.amount || 0), 0) * 0.2) +
                       parseFloat(invoiceToPrint.other || 0)
@@ -960,7 +960,7 @@ export default function ContractDetails() {
                   onClick={exportToPDF}
                   className="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700 shadow-md"
                 >
-                  📄 Shkarko PDF
+                  📄 {t('contractDetails.downloadPdf')}
                 </button>
               </div>
             </div>
@@ -969,7 +969,7 @@ export default function ContractDetails() {
             <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
               <div className="p-4 sm:p-6 lg:p-8">
                 <h3 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-                  ⏰ Orët e Punës
+                  ⏰ {t('contractDetails.workHoursSection')}
                 </h3>
                 
                 {/* Search and Filter for Work Hours */}
@@ -977,7 +977,7 @@ export default function ContractDetails() {
                   <div className="md:col-span-2">
                     <input
                       type="text"
-                      placeholder="🔍 Kërko punonjës ose datë..."
+                      placeholder={t('contractDetails.searchWorkHoursPlaceholder')}
                       value={workHoursSearch}
                       onChange={(e) => setWorkHoursSearch(e.target.value)}
                       className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
@@ -989,7 +989,7 @@ export default function ContractDetails() {
                       onChange={(e) => setWorkHoursFilter(e.target.value)}
                       className="w-full p-3 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
                     >
-                      <option value="all">Të gjitha llojet</option>
+                      <option value="all">{t('contractDetails.allTypes')}</option>
                       <option value="NI">NI</option>
                       <option value="UTR">UTR</option>
                     </select>
@@ -1047,7 +1047,7 @@ export default function ContractDetails() {
                         </tbody>
                         <tfoot className="bg-emerald-100">
                           <tr>
-                            <td colSpan="2" className="py-4 px-2 text-center font-bold text-emerald-800">TOTALET:</td>
+                            <td colSpan="2" className="py-4 px-2 text-center font-bold text-emerald-800">{t('contractDetails.totals')}</td>
                             <td className="py-4 px-2 text-center font-bold text-blue-700">
                               {filteredWorkHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} orë
                             </td>
@@ -1077,14 +1077,14 @@ export default function ContractDetails() {
                     ) : (
                       <div className="text-center py-8">
                         <p className="text-slate-500 italic">
-                          Nuk u gjetën orë pune që përputhen me kërkimin tuaj
+                          {t('contractDetails.noWorkHoursMatch')}
                         </p>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-slate-500 italic">Nuk ka orë pune të regjistruara për këtë kontratë akoma</p>
+                    <p className="text-slate-500 italic">{t('contractDetails.noWorkHoursRecorded')}</p>
                   </div>
                 )}
               </div>
@@ -1094,7 +1094,7 @@ export default function ContractDetails() {
             <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
               <div className="p-4 sm:p-6 lg:p-8">
                 <h3 className="text-xl sm:text-2xl font-bold text-purple-700 mb-6 flex items-center gap-2">
-                  💬 Komente
+                  💬 {t('contractDetails.comments')}
                 </h3>
                 <div className="flex flex-col sm:flex-row gap-3 mb-6">
                   <textarea 
@@ -1102,7 +1102,7 @@ export default function ContractDetails() {
                     onChange={(e) => setNewComment(e.target.value)} 
                     disabled={loadingStates.addComment}
                     className="flex-1 border-2 border-purple-200 rounded-xl p-3 text-base bg-purple-50/50 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm disabled:opacity-50 min-h-[100px] resize-none" 
-                    placeholder="Shkruaj një koment..." 
+                    placeholder={t('contractDetails.writeComment')} 
                   />
                   <button 
                     onClick={handleAddComment} 
@@ -1112,13 +1112,13 @@ export default function ContractDetails() {
                     {loadingStates.addComment ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span className="hidden sm:inline">Duke shtuar...</span>
+                        <span className="hidden sm:inline">{t('contractDetails.adding')}</span>
                         <span className="sm:hidden">...</span>
                       </>
                     ) : (
                       <>
                         <span className="text-lg">➕</span>
-                        <span className="hidden sm:inline">Shto</span>
+                        <span className="hidden sm:inline">{t('contractDetails.add')}</span>
                         <span className="sm:hidden">+</span>
                       </>
                     )}
@@ -1138,7 +1138,7 @@ export default function ContractDetails() {
                   ))}
                   {(!contract.comments || contract.comments.length === 0) && (
                     <div className="text-center py-8">
-                      <p className="text-slate-500 italic">Nuk ka komente të shtuar akoma</p>
+                      <p className="text-slate-500 italic">{t('contractDetails.noComments')}</p>
                     </div>
                   )}
                 </div>
