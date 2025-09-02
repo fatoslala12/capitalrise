@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy } from "react";
 import MainLayout from "../layouts/MainLayout";
 import { useAuth } from "../context/AuthContext";
 import Login from "../pages/Login";
@@ -26,22 +26,16 @@ const BackupManagement = lazy(() => import("../pages/BackupManagement"));
 const AuditTrail = lazy(() => import("../pages/AuditTrail"));
 const TranslationManagement = lazy(() => import("../pages/TranslationManagement"));
 
-// Loading component
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-  </div>
-);
+// Loading handled at layout level
 
 export default function AppRouter() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner />;
+    return null;
   }
 
   return (
-    <Suspense fallback={<LoadingSpinner />}>
       <Routes>
         {/* Rruga për Forgot Password e hapur për të gjithë */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -97,6 +91,5 @@ export default function AppRouter() {
           </>
         )}
       </Routes>
-    </Suspense>
   );
 }

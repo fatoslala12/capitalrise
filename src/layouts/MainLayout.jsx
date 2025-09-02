@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAuth } from "../context/AuthContext";
 import { MobileSidebar } from "../components/ui/Layout";
 import NotificationBell from "../components/NotificationBell";
@@ -7,6 +7,7 @@ import api from "../api";
 // import Button from "../components/ui/Button";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import PageLoader from "../components/ui/PageLoader";
 
 const adminMenu = [
   { path: "/admin/dashboard", label: "🏠 Dashboard" },
@@ -184,7 +185,9 @@ export default function MainLayout() {
 
         {/* Main Content */}
         <main className="flex-1 bg-gray-50 overflow-auto w-full">
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

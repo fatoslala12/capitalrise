@@ -5,6 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, PieChart, Pie, Legend
 } from "recharts";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import PageLoader from "../components/ui/PageLoader";
 import Card, { CardHeader, CardTitle, CardContent } from "../components/ui/Card";
 import { Container, Grid, Stack } from "../components/ui/Layout";
 import { CountStatCard, MoneyStatCard } from "../components/ui/StatCard";
@@ -475,7 +476,7 @@ export default function AdminDashboard() {
       : "";
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat..." />;
+    return <PageLoader text="Duke ngarkuar statistikat..." />;
   }
 
   return (

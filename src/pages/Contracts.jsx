@@ -10,6 +10,7 @@ import { saveAs } from 'file-saver';
 import NotificationService from '../utils/notifications';
 import { StatusBadge } from "../components/ui/Badge";
 import { useTranslation } from "react-i18next";
+import PageLoader from "../components/ui/PageLoader";
 
 // Konstante për statuset e kontratave
 const CONTRACT_STATUSES = [
@@ -789,12 +790,6 @@ export default function Contracts() {
   const [error, setError] = useState(null);
 
   // Loading states
-  const LoadingSpinner = () => (
-    <div className="flex items-center justify-center p-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span className="ml-2 text-gray-600">Duke ngarkuar...</span>
-    </div>
-  );
 
   const ErrorMessage = ({ message }) => (
     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
@@ -820,19 +815,12 @@ export default function Contracts() {
   );
 
   if (loading || contractsLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar kontratat...</h2>
-        </div>
-      </div>
-    );
+    return <PageLoader text="Duke ngarkuar kontratat..." />;
   }
 
   if (contractsError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+      <div className="w-full h-full min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Gabim në ngarkimin e kontratave</h2>
           <button 
@@ -847,7 +835,7 @@ export default function Contracts() {
   }
 
   return (
-    <div className="max-w-full xl:max-w-[90vw] mx-auto px-4 py-8 space-y-12 bg-gradient-to-br from-blue-100 via-white to-purple-100 min-h-screen">
+    <div className="max-w-full xl:max-w-[90vw] mx-auto px-4 py-8 space-y-8 bg-gray-50 min-h-screen">
       {/* Toast Notification */}
       {showToast.show && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -888,16 +876,16 @@ export default function Contracts() {
         </div>
       )}
 
-      {/* HEADER MODERN */}
-      <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50 to-purple-100 rounded-2xl shadow-lg px-8 py-4 mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
-        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-3 shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-10 h-10">
+      {/* HEADER SIMPLIFIED */}
+      <div className="flex items-center gap-4 bg-white rounded-lg shadow-sm px-6 py-4 mb-6 border border-gray-200">
+        <div className="flex-shrink-0 bg-blue-50 rounded-lg p-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#3b82f6" className="w-8 h-8">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
           </svg>
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">{t('contracts.title')}</h2>
-          <div className="text-lg font-medium text-purple-700">{t('contracts.subtitle')}</div>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-1">{t('contracts.title')}</h2>
+          <div className="text-sm text-gray-600">{t('contracts.subtitle')}</div>
         </div>
       </div>
 
@@ -905,18 +893,18 @@ export default function Contracts() {
       <div className="flex justify-end mb-6">
         <button
           onClick={openAddModal}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2"
         >
-          <span className="text-xl">➕</span> {t('contracts.addNewContract')}
+          <span className="text-lg">+</span> {t('contracts.addNewContract')}
         </button>
       </div>
 
       {/* LISTA E KONTRAVE */}
-      <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 px-8 py-6 rounded-2xl shadow-lg border border-blue-100 animate-fade-in w-full">
+      <div className="bg-white px-6 py-6 rounded-lg shadow-sm border border-gray-200 w-full">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-bold text-blue-900 flex items-center gap-2">
-            📋 {t('contracts.contractsList')}
-            <span className="text-lg text-gray-600">({filteredAndSortedContracts.length} kontrata)</span>
+          <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            {t('contracts.contractsList')}
+            <span className="text-sm text-gray-500">({filteredAndSortedContracts.length} kontrata)</span>
           </h3>
           
           <div className="flex items-center gap-4">
@@ -988,7 +976,7 @@ export default function Contracts() {
               placeholder={t('contracts.searchContracts')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           
@@ -996,9 +984,9 @@ export default function Contracts() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-400 shadow-sm"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-                              <option value="all">{t('contracts.allStatuses')}</option>
+              <option value="all">{t('contracts.allStatuses')}</option>
               <option value="Draft">Draft</option>
               <option value="Anulluar">Anulluar</option>
               <option value="Ne progres">Ne progres</option>
@@ -1012,9 +1000,9 @@ export default function Contracts() {
             <select
               value={filterContractType}
               onChange={(e) => setFilterContractType(e.target.value)}
-              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-                              <option value="all">{t('contracts.allTypes')}</option>
+              <option value="all">{t('contracts.allTypes')}</option>
               <option value="day_work">Day Work</option>
               <option value="price_work">Price Work</option>
             </select>
@@ -1028,14 +1016,14 @@ export default function Contracts() {
                 setSortBy(field);
                 setSortOrder(order);
               }}
-              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 shadow-sm"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-                              <option value="start_date-desc">{t('contracts.startDateNewest')}</option>
-                <option value="start_date-asc">{t('contracts.startDateOldest')}</option>
-                <option value="contract_value-desc">{t('contracts.valueHighest')}</option>
-                <option value="contract_value-asc">{t('contracts.valueLowest')}</option>
-                <option value="company-asc">{t('contracts.companyAZ')}</option>
-                <option value="company-desc">{t('contracts.companyZA')}</option>
+              <option value="start_date-desc">{t('contracts.startDateNewest')}</option>
+              <option value="start_date-asc">{t('contracts.startDateOldest')}</option>
+              <option value="contract_value-desc">{t('contracts.valueHighest')}</option>
+              <option value="contract_value-asc">{t('contracts.valueLowest')}</option>
+              <option value="company-asc">{t('contracts.companyAZ')}</option>
+              <option value="company-desc">{t('contracts.companyZA')}</option>
             </select>
           </div>
         </div>
@@ -1068,8 +1056,8 @@ export default function Contracts() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white rounded-lg shadow-lg overflow-hidden">
-            <thead className="bg-gradient-to-r from-blue-100 via-white to-purple-100 text-blue-900 text-base font-bold">
+          <table className="min-w-full bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+            <thead className="bg-gray-50 text-gray-900 text-sm font-semibold">
               <tr>
                                     <th className="py-4 px-4 text-center">{t('contracts.select')}</th>
                     <th className="py-4 px-4 text-center">{t('contracts.contractNumberHeader')}</th>
@@ -1092,7 +1080,7 @@ export default function Contracts() {
                 const profitMargin = vlera > 0 ? (fitimi / vlera) * 100 : 0;
                 const progres = calculateProgress(c.start_date, c.finish_date);
                 return (
-                  <tr key={c.id || index} className="text-center hover:bg-purple-50 transition-all duration-200 transform hover:scale-[1.01]">
+                  <tr key={c.id || index} className="text-center hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100">
                     <td className="py-4 px-4 align-middle">
                       <input
                         type="checkbox"
@@ -1101,8 +1089,8 @@ export default function Contracts() {
                         className="w-4 h-4"
                       />
                     </td>
-                    <td className="py-4 px-4 align-middle font-bold text-blue-900">
-                      <Link to={`/admin/contracts/${c.contract_number}`} className="underline hover:text-purple-700 transition-colors">{c.contract_number}</Link>
+                    <td className="py-4 px-4 align-middle font-medium text-blue-600">
+                      <Link to={`/admin/contracts/${c.contract_number}`} className="hover:text-blue-800 transition-colors">{c.contract_number}</Link>
                     </td>
                     <td className="py-4 px-4 align-middle">
                       <div className="flex items-center justify-center gap-1">
@@ -1115,12 +1103,12 @@ export default function Contracts() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-4 align-middle font-semibold text-blue-700 underline cursor-pointer hover:text-blue-900 transition">
-                      <Link to={`/admin/contracts/${c.contract_number}`}>{c.site_name}</Link>
+                    <td className="py-4 px-4 align-middle font-medium text-gray-700">
+                      <Link to={`/admin/contracts/${c.contract_number}`} className="hover:text-blue-600 transition-colors">{c.site_name}</Link>
                     </td>
-                    <td className="py-4 px-4 align-middle font-semibold text-gray-800">{c.company}</td>
-                    <td className="py-4 px-4 align-middle font-bold text-blue-900">£{vlera.toFixed(2)}</td>
-                    <td className="py-4 px-4 align-middle font-bold text-purple-700">£{shpenzuar.toFixed(2)}</td>
+                    <td className="py-4 px-4 align-middle font-medium text-gray-800">{c.company}</td>
+                    <td className="py-4 px-4 align-middle font-semibold text-gray-900">£{vlera.toFixed(2)}</td>
+                    <td className="py-4 px-4 align-middle font-semibold text-gray-700">£{shpenzuar.toFixed(2)}</td>
                     <td className={`py-4 px-4 align-middle font-bold ${getProfitColor(fitimi)}`}> 
                       <div className="text-center">
                         <div className="text-lg">£{fitimi.toFixed(2)}</div>
@@ -1148,47 +1136,50 @@ export default function Contracts() {
                     <td className="py-4 px-4 align-middle">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
-                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${Math.min(100, Math.max(0, progres))}%` }}
                         ></div>
                       </div>
-                      <span className="text-xs text-gray-600 mt-1">{progres.toFixed(0)}%</span>
+                      <span className="text-xs text-gray-500 mt-1">{progres.toFixed(0)}%</span>
                     </td>
                     <td className="py-4 px-4 align-middle">
                       <div className="flex gap-2 justify-center">
                         <button
                           onClick={() => navigate(`/admin/contracts/${c.contract_number}`)}
-                          className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl"
+                          className="text-blue-600 hover:text-blue-800 transition-colors p-1"
                           title="Shiko"
                         >
-                          👁️
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
                         </button>
                         <button
                           onClick={() => handleToggleStatus(c.contract_number)}
                           disabled={loadingStates.toggleStatus[c.contract_number]}
-                          className="text-purple-600 hover:text-purple-800 hover:scale-110 transition-all text-xl disabled:opacity-50 flex items-center gap-1"
+                          className="text-gray-600 hover:text-gray-800 transition-colors p-1 disabled:opacity-50"
                           title="Toggle"
                         >
                           {loadingStates.toggleStatus[c.contract_number] ? (
-                            <>
-                              <div className="w-3 h-3 border border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                            </>
+                            <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
                           ) : (
-                            '🔄'
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
                           )}
                         </button>
                         <button
                           onClick={() => handleDelete(c.contract_number)}
                           disabled={loadingStates.delete[c.contract_number]}
-                          className="text-red-600 hover:text-red-800 hover:scale-110 transition-all text-xl disabled:opacity-50 flex items-center gap-1"
+                          className="text-red-600 hover:text-red-800 transition-colors p-1 disabled:opacity-50"
                           title="Fshi"
                         >
                           {loadingStates.delete[c.contract_number] ? (
-                            <>
-                              <div className="w-3 h-3 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                            </>
+                            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
                           ) : (
-                            '🗑️'
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                           )}
                         </button>
                       </div>

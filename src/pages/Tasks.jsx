@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import axios from "axios";
 import toast from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
+import PageLoader from "../components/ui/PageLoader";
 
 export default function Tasks() {
   const { t } = useTranslation();
@@ -369,14 +370,7 @@ export default function Tasks() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-600">{t('tasks.validation.dataLoadError')}</h2>
-        </div>
-      </div>
-    );
+    return <PageLoader text="Duke ngarkuar detyrat..." />;
   }
 
   return (

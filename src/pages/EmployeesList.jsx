@@ -5,6 +5,7 @@ import { FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import PageLoader from "../components/ui/PageLoader";
 
 const employeePlaceholder = "https://via.placeholder.com/100";
 
@@ -544,14 +545,7 @@ export default function EmployeesList() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar punonjësit...</h2>
-        </div>
-      </div>
-    );
+    return <PageLoader text="Duke ngarkuar punonjësit..." />;
   }
 
   return (
