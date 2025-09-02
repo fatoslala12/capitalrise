@@ -11,6 +11,7 @@ import html2pdf from 'html2pdf.js';
 import NotificationService from '../utils/notifications';
 import { StatusBadge } from "../components/ui/Badge";
 import { useTranslation } from "react-i18next";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 // Contract statuses - will be translated in the component
 const CONTRACT_STATUSES = [
@@ -1119,7 +1120,6 @@ export default function Contracts() {
   );
 
   if (loading || contractsLoading) {
-    const { default: LoadingSpinner } = require('../components/ui/LoadingSpinner');
     return <LoadingSpinner fullScreen={true} size="xl" />;
   }
 
