@@ -256,7 +256,7 @@ export default function AuditTrail() {
   };
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text={safeT('auditTrail.loading', 'Duke ngarkuar audit trail...')} />;
+    return <LoadingSpinner fullScreen={true} size="xl" text={safeT('auditTrail.loading', null)} />;
   }
 
   if (error) {

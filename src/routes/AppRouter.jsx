@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import LoadingSpinner, { PageLoader } from "../components/ui/LoadingSpinner";
 import MainLayout from "../layouts/MainLayout";
 import { useAuth } from "../context/AuthContext";
 import Login from "../pages/Login";
@@ -29,31 +30,18 @@ const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
 const BackupManagement = lazy(() => import("../pages/BackupManagement"));
 const AuditTrail = lazy(() => import("../pages/AuditTrail"));
 
-// Enhanced loading component with animations
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-    <div className="text-center">
-      <div className="relative">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-blue-600 mx-auto mb-6"></div>
-        <div className="absolute inset-0 rounded-full border-4 border-blue-200 animate-pulse"></div>
-      </div>
-      <div className="animate-pulse">
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">Loading...</h2>
-        <p className="text-gray-500">Please wait while we prepare your dashboard</p>
-      </div>
-    </div>
-  </div>
-);
+// Use unified PageLoader
+const RouterLoader = () => <PageLoader />;
 
 export default function AppRouter() {
   const { user, loading, isAuthenticated } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <RouterLoader />;
   }
 
   return (
-    <Suspense fallback={<LoadingSpinner />}>
+    <Suspense fallback={<RouterLoader />}>
       <Routes>
         {/* Public routes */}
         <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const LoadingSpinner = ({ 
   size = 'md', 
@@ -7,6 +8,8 @@ const LoadingSpinner = ({
   fullScreen = false,
   className = '' 
 }) => {
+  const { t } = useTranslation();
+  const displayText = text || t('common.loadingData');
   const sizeClasses = {
     xs: 'h-4 w-4',
     sm: 'h-6 w-6',
@@ -98,10 +101,10 @@ const LoadingSpinner = ({
             </div>
           </div>
           
-          {text && (
+          {displayText && (
             <div className="animate-pulse">
               <p className="text-gray-700 font-semibold text-xl mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                {text}
+                {displayText}
               </p>
               <div className="flex justify-center space-x-1">
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
@@ -118,9 +121,9 @@ const LoadingSpinner = ({
   return (
     <div className="flex flex-col items-center justify-center">
       {spinner}
-      {text && (
+      {displayText && (
         <div className="mt-3 animate-pulse">
-          <p className="text-gray-600 font-medium text-sm">{text}</p>
+          <p className="text-gray-600 font-medium text-sm">{displayText}</p>
         </div>
       )}
     </div>
@@ -128,7 +131,7 @@ const LoadingSpinner = ({
 };
 
 // Specialized loading spinners
-export const PageLoader = ({ text = "Loading page..." }) => (
+export const PageLoader = ({ text = '' }) => (
   <LoadingSpinner 
     size="3xl" 
     variant="primary" 
@@ -137,7 +140,7 @@ export const PageLoader = ({ text = "Loading page..." }) => (
   />
 );
 
-export const ContentLoader = ({ text = "Loading content..." }) => (
+export const ContentLoader = ({ text = '' }) => (
   <LoadingSpinner 
     size="xl" 
     variant="primary" 

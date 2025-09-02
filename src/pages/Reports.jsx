@@ -209,7 +209,7 @@ export default function Reports() {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullScreen={true} size="xl" />;
   }
 
   if (error) {

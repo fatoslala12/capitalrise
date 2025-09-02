@@ -317,7 +317,7 @@ export default function BackupManagement() {
   }
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text={safeT('backup.loadingRecordCount', 'Duke ngarkuar statistikat e backup...')} />;
+    return <LoadingSpinner fullScreen={true} size="xl" text={safeT('backup.loadingRecordCount', null)} />;
   }
 
   if (user?.role !== 'admin' && user?.role !== 'manager') {

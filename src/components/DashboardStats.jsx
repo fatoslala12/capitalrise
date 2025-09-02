@@ -237,7 +237,7 @@ export default function DashboardStats() {
       : "";
 
   if (loading) {
-    return <LoadingSpinner fullScreen={true} size="xl" text="Duke ngarkuar statistikat..." />;
+    return <LoadingSpinner fullScreen={true} size="xl" />;
   }
 
   return (
