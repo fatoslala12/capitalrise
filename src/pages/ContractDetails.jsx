@@ -253,9 +253,9 @@ export default function ContractDetails() {
     const elapsedDays = Math.max(0, Math.min((today - start) / (1000 * 60 * 60 * 24), totalDays));
 
     return [
-      { name: "Fillimi", progress: 0 },
-      { name: "Tani", progress: Math.floor((elapsedDays / totalDays) * 100) },
-      { name: "Përfundimi", progress: 100 }
+      { name: t('contractDetails.start'), progress: 0 },
+      { name: t('contractDetails.now') || 'Tani', progress: Math.floor((elapsedDays / totalDays) * 100) },
+      { name: t('contractDetails.endLabel') || t('contractDetails.end'), progress: 100 }
     ];
   };
 
@@ -804,9 +804,9 @@ export default function ContractDetails() {
                         const oneMonth = 30 * 24 * 60 * 60 * 1000;
                         const status = inv.paid
                           ? paidDate - invoiceDate <= oneMonth
-                            ? "Paguar në kohë"
-                            : "Paguar me vonesë"
-                          : "Pa paguar";
+                            ? t('payments.paidOnTime')
+                            : t('payments.paidLate')
+                          : t('payments.unpaidText');
                         return (
                           <tr key={inv.id} className="text-center hover:bg-purple-50 transition-all">
                             <td className="py-3 px-2 align-middle font-semibold">{inv.invoice_number}</td>

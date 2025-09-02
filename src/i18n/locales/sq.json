@@ -978,6 +978,8 @@
     "priceWork": "🏗️ Price Work",
     "start": "Fillimi",
     "end": "Mbarimi",
+    "now": "Tani",
+    "endLabel": "Përfundimi",
     "status": "Statusi",
     "closed": "Mbyllur",
     "documents": "Dokumentet",
