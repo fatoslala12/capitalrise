@@ -413,13 +413,13 @@ export default function PaymentDetails() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Gabim</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {t('paymentDetails.error')}</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button 
             onClick={() => window.location.reload()} 
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
           >
-            Provoni përsëri
+            {t('paymentDetails.tryAgain')}
           </button>
         </div>
       </div>
@@ -482,8 +482,34 @@ export default function PaymentDetails() {
                     <span className="text-base sm:text-lg font-semibold text-slate-800">{formatContractDate(contract.start_date)}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📅 {t('paymentDetails.endDate')}</span>
+                    <span className="text-base sm:text-lg font-semibold text-slate-800">{formatContractDate(contract.finish_date)}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">💰 {t('payments.value')}</span>
                     <span className="text-base sm:text-lg font-bold text-emerald-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</span>
+                  </div>
+                  {contract.address && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📍 {t('paymentDetails.address')}</span>
+                      <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.address}</span>
+                    </div>
+                  )}
+                  {contract.company_email && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📧 {t('paymentDetails.companyEmail')}</span>
+                      <span className="text-base sm:text-lg font-semibold text-slate-800">{contract.company_email}</span>
+                    </div>
+                  )}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">🏗️ {t('paymentDetails.contractType')}</span>
+                    <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                      (contract.contract_type || 'day_work') === 'price_work' 
+                        ? 'bg-orange-100 text-orange-700 border border-orange-200' 
+                        : 'bg-blue-100 text-blue-700 border border-blue-200'
+                    }`}>
+                      {(contract.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
+                    </span>
                   </div>
                 </div>
                 
