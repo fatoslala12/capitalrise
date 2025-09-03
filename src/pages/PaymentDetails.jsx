@@ -463,109 +463,109 @@ export default function PaymentDetails() {
           </div>
         </div>
 
-        {/* CONTRACT INFO SECTION - IMPROVED DESIGN */}
+                {/* CONTRACT INFO SECTION - MINIMALIST DESIGN */}
         {contract && (
-          <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
-            <div className="p-4 sm:p-6 lg:p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {/* Left Column - Main Contract Info */}
-                <div className="md:col-span-1 xl:col-span-2 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="bg-slate-50 rounded-lg p-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">📌</span>
-                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">{t('payments.project')}</span>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Project */}
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <span className="text-lg">📌</span>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Project</div>
+                    <div className="font-semibold text-gray-900">{contract.site_name}</div>
                   </div>
-                      <span className="text-lg font-bold text-slate-800">{contract.site_name}</span>
-                  </div>
-                    
-                    <div className="bg-slate-50 rounded-lg p-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">🏢</span>
-                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">{t('payments.company')}</span>
-                  </div>
-                      <span className="text-lg font-bold text-slate-800">{contract.company}</span>
-                  </div>
-                    
-                    <div className="bg-slate-50 rounded-lg p-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">🗓</span>
-                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">{t('payments.startDate')}</span>
-                      </div>
-                      <span className="text-lg font-bold text-slate-800">{formatContractDate(contract.start_date)}</span>
                 </div>
                 
-                    <div className="bg-slate-50 rounded-lg p-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">📅</span>
-                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">{t('paymentDetails.endDate')}</span>
-                      </div>
-                      <span className="text-lg font-bold text-slate-800">{formatContractDate(contract.finish_date)}</span>
-                    </div>
+                {/* Company */}
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <span className="text-lg">🏢</span>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Company</div>
+                    <div className="font-semibold text-gray-900">{contract.company}</div>
                   </div>
-                  
-                  {/* Full width items */}
-                  <div className="bg-emerald-50 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-2xl">💰</span>
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">{t('payments.value')}</span>
-                    </div>
-                    <span className="text-2xl font-bold text-emerald-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</span>
-                  </div>
-                  
-                  {contract.address && (
-                    <div className="bg-slate-50 rounded-lg p-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">📍</span>
-                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">{t('paymentDetails.address')}</span>
-                      </div>
-                      <span className="text-lg font-bold text-slate-800">{contract.address}</span>
-                    </div>
-                  )}
-                  
-                  {contract.company_email && (
-                    <div className="bg-slate-50 rounded-lg p-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">📧</span>
-                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">{t('paymentDetails.companyEmail')}</span>
-                      </div>
-                      <span className="text-lg font-bold text-slate-800">{contract.company_email}</span>
-                    </div>
-                  )}
                 </div>
                 
-                {/* Right Column - Status and Contract Type */}
-                <div className="space-y-4">
-                  <div className="bg-blue-50 rounded-lg p-6 text-center">
-                    <div className="flex items-center justify-center gap-3 mb-4">
-                      <span className="text-2xl">📊</span>
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">{t('payments.status')}</span>
-                    </div>
-                  <span className={`inline-flex px-4 py-2 rounded-full text-sm font-bold border ${
-                    contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                    contract.status === 'Draft' ? 'bg-gray-100 text-gray-700 border-gray-200' :
-                    contract.status === 'Anulluar' ? 'bg-red-100 text-red-700 border-red-200' :
-                    contract.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                    contract.status === 'Mbyllur' ? 'bg-green-100 text-green-700 border-green-200' :
-                    contract.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                    'bg-gray-200 text-gray-700 border-gray-300'
-                  }`}>
+                {/* Start Date */}
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <span className="text-lg">🗓</span>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Start Date</div>
+                    <div className="font-semibold text-gray-900">{formatContractDate(contract.start_date)}</div>
+                  </div>
+                </div>
+                
+                {/* End Date */}
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <span className="text-lg">📅</span>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">End Date</div>
+                    <div className="font-semibold text-gray-900">{formatContractDate(contract.finish_date)}</div>
+                  </div>
+                </div>
+                
+                {/* Value */}
+                <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
+                  <span className="text-lg">💰</span>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Value</div>
+                    <div className="font-bold text-emerald-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</div>
+                  </div>
+                </div>
+                
+                {/* Status */}
+                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                  <span className="text-lg">📊</span>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Status</div>
+                    <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                      contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700' :
+                      contract.status === 'Draft' ? 'bg-gray-100 text-gray-700' :
+                      contract.status === 'Anulluar' ? 'bg-red-100 text-red-700' :
+                      contract.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700' :
+                      contract.status === 'Mbyllur' ? 'bg-green-100 text-green-700' :
+                      contract.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
                       {translateStatus(contract.status)}
-                  </span>
-                </div>
-                  
-                  <div className="bg-orange-50 rounded-lg p-6 text-center">
-                    <div className="flex items-center justify-center gap-3 mb-4">
-                      <span className="text-2xl">🏗️</span>
-                      <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">{t('paymentDetails.contractType')}</span>
                     </div>
-                    <span className={`inline-flex px-4 py-2 rounded-full text-sm font-bold border ${
+                  </div>
+                </div>
+                
+                {/* Address */}
+                {contract.address && (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <span className="text-lg">📍</span>
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">Address</div>
+                      <div className="font-semibold text-gray-900">{contract.address}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Company Email */}
+                {contract.company_email && (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <span className="text-lg">📧</span>
+                    <div>
+                      <div className="text-xs text-gray-500 uppercase tracking-wide">Company Email</div>
+                      <div className="font-semibold text-gray-900 text-sm">{contract.company_email}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Contract Type */}
+                <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
+                  <span className="text-lg">🏗️</span>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Contract Type</div>
+                    <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                       (contract.contract_type || 'day_work') === 'price_work' 
-                        ? 'bg-orange-100 text-orange-700 border-orange-200' 
-                        : 'bg-blue-100 text-blue-700 border-blue-200'
+                        ? 'bg-orange-100 text-orange-700' 
+                        : 'bg-blue-100 text-blue-700'
                     }`}>
                       {(contract.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
-                    </span>
+                    </div>
                   </div>
                 </div>
               </div>
