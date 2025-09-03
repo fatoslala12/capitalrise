@@ -38,6 +38,27 @@ export default function Badge({
 
 // Specialized status badges
 export function StatusBadge({ status, ...props }) {
+  // Function to translate contract status
+  const translateStatus = (status) => {
+    const userLanguage = localStorage.getItem('language') || 'en';
+    
+    if (userLanguage === 'sq') {
+      return status; // Return Albanian status as is
+    }
+    
+    // Translate to English
+    const statusMap = {
+      'Ne progres': 'In Progress',
+      'Draft': 'Draft',
+      'Anulluar': 'Cancelled',
+      'Pezulluar': 'Suspended',
+      'Mbyllur': 'Closed',
+      'Mbyllur me vonese': 'Closed with Delay'
+    };
+    
+    return statusMap[status] || status;
+  };
+
   const statusConfig = {
     // New translation keys
     'draft': { variant: 'default', icon: '📝' },
@@ -69,7 +90,7 @@ export function StatusBadge({ status, ...props }) {
   return (
     <Badge variant={config.variant} {...props}>
       <span className="mr-1">{config.icon}</span>
-      {status}
+      {translateStatus(status)}
     </Badge>
   );
 }

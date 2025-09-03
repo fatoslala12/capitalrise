@@ -25,6 +25,27 @@ const CONTRACT_STATUSES = [
 export default function Contracts() {
   const { t } = useTranslation();
   const [contracts, setContracts] = useState([]);
+
+  // Function to translate contract status
+  const translateStatus = (status) => {
+    const userLanguage = localStorage.getItem('language') || 'en';
+    
+    if (userLanguage === 'sq') {
+      return status; // Return Albanian status as is
+    }
+    
+    // Translate to English
+    const statusMap = {
+      'Ne progres': 'In Progress',
+      'Draft': 'Draft',
+      'Anulluar': 'Cancelled',
+      'Pezulluar': 'Suspended',
+      'Mbyllur': 'Closed',
+      'Mbyllur me vonese': 'Closed with Delay'
+    };
+    
+    return statusMap[status] || status;
+  };
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -822,12 +843,12 @@ export default function Contracts() {
     return (
       <div className="w-full h-full min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Gabim në ngarkimin e kontratave</h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {t('contracts.errorLoadingContracts')}</h2>
           <button 
             onClick={refetchContracts}
             className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
           >
-            🔄 Provoni përsëri
+            🔄 {t('contracts.tryAgain')}
           </button>
         </div>
       </div>
@@ -835,7 +856,7 @@ export default function Contracts() {
   }
 
   return (
-    <div className="max-w-full xl:max-w-[90vw] mx-auto px-4 py-8 space-y-8 bg-gray-50 min-h-screen">
+    <div className="max-w-[95vw] xl:max-w-[90vw] mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8 bg-gray-50 min-h-screen">
       {/* Toast Notification */}
       {showToast.show && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -1125,7 +1146,7 @@ export default function Contracts() {
                           className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white disabled:opacity-50"
                         >
                           {CONTRACT_STATUSES.map(status => (
-                            <option key={status} value={status}>{status}</option>
+                            <option key={status} value={status}>{translateStatus(status)}</option>
                           ))}
                         </select>
                         {loadingStates.statusChange[c.id] && (
