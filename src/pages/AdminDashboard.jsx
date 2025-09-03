@@ -21,7 +21,7 @@ const STATUS_CHART_COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf
 
 // Translation function
 const tr = (key, fallback = key) => {
-  const userLanguage = localStorage.getItem('language') || 'sq';
+  const userLanguage = localStorage.getItem('language') || 'en';
   const translations = {
     'adminDashboard.title': 'Admin Panel',
     'adminDashboard.subtitle': 'Statistics, tasks, payments and more',
@@ -148,10 +148,70 @@ const tr = (key, fallback = key) => {
     'adminDashboard.neProgres.sq': 'Në progres',
     'adminDashboard.mbyllurMeVonese.sq': 'Mbyllur me vonesë',
     'adminDashboard.teAnuluara.sq': 'Të anuluara',
-    'adminDashboard.teMbyllura.sq': 'Të mbyllura'
+    'adminDashboard.teMbyllura.sq': 'Të mbyllura',
+    
+    // Missing translations that are used with t() function
+    'adminDashboard.hoursBySiteThisWeek': 'Weekly Hours by Site',
+    'adminDashboard.hoursBySiteThisWeek.sq': 'Orët sipas site-ve këtë javë',
+    'adminDashboard.totalHoursWorked': 'Total Hours Worked',
+    'adminDashboard.totalHoursWorked.sq': 'Orët totale të punuara',
+    'adminDashboard.topPaidEmployees': 'Top Paid Employees',
+    'adminDashboard.topPaidEmployees.sq': 'Top 5 Punonjësit më të paguar',
+    'adminDashboard.contractsProgressTitle': 'Contract Status Distribution',
+    'adminDashboard.contractsProgressTitle.sq': 'Shpërndarja e Statusit të Kontratave',
+    'adminDashboard.weeklyStaffPayments': 'Weekly Staff Payments',
+    'adminDashboard.weeklyStaffPayments.sq': 'Pagesa Javore për stafin',
+    'adminDashboard.noDeadline': 'No deadline',
+    'adminDashboard.noDeadline.sq': 'Pa afat',
+    'adminDashboard.paid': 'Paid',
+    'adminDashboard.paid.sq': 'E paguar',
+    'adminDashboard.unpaid': 'Unpaid',
+    'adminDashboard.unpaid.sq': 'E papaguar',
+    'adminDashboard.loadingStats': 'Loading statistics...',
+    'adminDashboard.loadingStats.sq': 'Duke ngarkuar statistikat...',
+    'adminDashboard.noWorkHoursThisWeek': 'No work hours recorded for this week',
+    'adminDashboard.noWorkHoursThisWeek.sq': 'Nuk ka orë pune të regjistruara për këtë javë',
+    'adminDashboard.noActiveContracts': 'No active contracts at the moment',
+    'adminDashboard.noActiveContracts.sq': 'Nuk ka kontrata aktive për momentin',
+    'adminDashboard.noPaymentsThisWeek': 'No payments recorded for this week',
+    'adminDashboard.noPaymentsThisWeek.sq': 'Nuk ka pagesa të regjistruara për këtë javë',
+    'adminDashboard.noContractStatusData': 'No data for contract status',
+    'adminDashboard.noContractStatusData.sq': 'Nuk ka të dhëna për statusin e kontratave',
+    'adminDashboard.noInvoiceStatusData': 'No data for invoice status',
+    'adminDashboard.noInvoiceStatusData.sq': 'Nuk ka të dhëna për statusin e invoice-ve',
+    'adminDashboard.noExpenseStatusData': 'No data for expense status',
+    'adminDashboard.noExpenseStatusData.sq': 'Nuk ka të dhëna për statusin e faturave të shpenzimeve',
+    'adminDashboard.noExpensesBySiteData': 'No data for expenses by site',
+    'adminDashboard.noExpensesBySiteData.sq': 'Nuk ka të dhëna për shpenzimet sipas site-ve',
+    'adminDashboard.hours': 'Hours',
+    'adminDashboard.hours.sq': 'Orë',
+    'adminDashboard.progress': 'Progress',
+    'adminDashboard.progress.sq': 'Progresi',
+    'adminDashboard.payment': 'Payment',
+    'adminDashboard.payment.sq': 'Pagesa',
+    'adminDashboard.total': 'Total',
+    'adminDashboard.total.sq': 'Totali',
+    'adminDashboard.expenses': 'Expenses',
+    'adminDashboard.expenses.sq': 'Shpenzime',
+    'adminDashboard.workHours': 'Work Hours',
+    'adminDashboard.workHours.sq': 'Orët e Punës',
+    'adminDashboard.calculationExplanation': 'Calculation explanation:',
+    'adminDashboard.calculationExplanation.sq': 'Shpjegim i llogaritjes:',
+    'adminDashboard.expensesFromTable': 'Expenses from expenses_invoice table - column [gross] by sites',
+    'adminDashboard.expensesFromTable.sq': 'Shpenzimet nga tabela expenses_invoice - kolona [gross] sipas site-ve',
+    'adminDashboard.workHoursCalculation': 'Work hours × rate from work_hours table - column [hours] × column [rate]',
+    'adminDashboard.workHoursCalculation.sq': 'Orët e punuara × rate nga tabela work_hours - kolona [hours] × kolona [rate]',
+    'adminDashboard.totalCalculation': 'Total: Expenses + Work Hours',
+    'adminDashboard.totalCalculation.sq': 'Totali: Shpenzime + Orët e Punës',
+    'adminDashboard.totalAmount': 'Total Amount (£)',
+    'adminDashboard.totalAmount.sq': 'Shuma totale (£)',
+    'adminDashboard.expensesFromInvoice': 'Expenses (expenses_invoice.gross)',
+    'adminDashboard.expensesFromInvoice.sq': 'Shpenzime (expenses_invoice.gross)',
+    'adminDashboard.workHoursFromTable': 'Work Hours (work_hours.hours × rate)',
+    'adminDashboard.workHoursFromTable.sq': 'Orët e Punës (work_hours.hours × rate)'
   };
   
-  const langKey = userLanguage === 'en' ? key : `${key}.sq`;
+  const langKey = userLanguage === 'sq' ? `${key}.sq` : key;
   return translations[langKey] || translations[key] || fallback;
 };
 
@@ -459,7 +519,7 @@ export default function AdminDashboard() {
   }, []);
 
   // Llogarit site-t aktive dhe punonjësit aktivë
-  const activeSites = contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar");
+  const activeSites = contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar" || c.status === "In Progress" || c.status === "Suspended");
   const activeEmployees = employees.filter(e => e.status === "active" || e.status === "Aktiv");
 
   // Filtro detyrat
@@ -478,7 +538,7 @@ export default function AdminDashboard() {
       : "";
 
   if (loading) {
-    return <PageLoader text="Duke ngarkuar statistikat..." />;
+    return <PageLoader text={tr('adminDashboard.loadingStats')} />;
   }
 
   return (
@@ -492,17 +552,17 @@ export default function AdminDashboard() {
         </div>
         <div className="text-center md:text-left">
           <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">
-            {localStorage.getItem('language') === 'en' ? 'Admin Panel' : 'Paneli i Administrimit'}
+            {localStorage.getItem('language') === 'sq' ? 'Paneli i Administrimit' : 'Admin Panel'}
           </div>
           <div className="text-sm md:text-lg font-medium text-purple-700">
-            {localStorage.getItem('language') === 'en' ? 'Statistics, tasks, payments and more' : 'Statistika, detyra, pagesa dhe më shumë'}
+            {localStorage.getItem('language') === 'sq' ? 'Statistika, detyra, pagesa dhe më shumë' : 'Statistics, tasks, payments and more'}
           </div>
         </div>
         
         {/* Language Switcher */}
         <div className="flex-shrink-0">
           <select 
-            value={localStorage.getItem('language') || 'sq'} 
+            value={localStorage.getItem('language') || 'en'} 
             onChange={(e) => {
               localStorage.setItem('language', e.target.value);
               window.location.reload(); // Reload to apply language change
@@ -568,7 +628,7 @@ export default function AdminDashboard() {
                 <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
                 <span className="font-semibold flex-1 text-sm md:text-lg">{t.description || t.title || ''}</span>
                 <span className="text-sm md:text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
-                                    <span className="text-sm md:text-lg text-purple-700 font-bold">{tr('adminDashboard.deadline')}: {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : (localStorage.getItem('language') === 'en' ? 'No deadline' : 'Pa afat')}</span>
+                                    <span className="text-sm md:text-lg text-purple-700 font-bold">{tr('adminDashboard.deadline')}: {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : tr('adminDashboard.noDeadline')}</span>
                                     <span className="text-xs text-gray-500">{tr('adminDashboard.by')}: {t.assigned_by || t.assignedBy || ''}</span>
               </li>
             ))}
@@ -581,18 +641,18 @@ export default function AdminDashboard() {
       {/* Grafik për site */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">
-            📊 {t('adminDashboard.hoursBySiteThisWeek')}
+            📊 {tr('adminDashboard.hoursBySiteThisWeek')}
           </h3>
         <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
-          {t('adminDashboard.totalHoursWorked')} <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
+          {tr('adminDashboard.totalHoursWorked')} <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> {tr('adminDashboard.hours')}
         </div>
         {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
             <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
+              <XAxis type="number" label={{ value: tr('adminDashboard.hours'), position: "insideBottomRight", offset: -5 }} />
               <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
-              <Tooltip formatter={v => [v, "Orë"]} />
+              <Tooltip formatter={v => [v, tr('adminDashboard.hours')]} />
               <Bar dataKey="hours" radius={[0, 6, 6, 0]} barSize={32}>
                 {dashboardStats.workHoursBysite.map((_, i) => (
                   <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -601,17 +661,17 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka orë pune të regjistruara për këtë javë</p>
+          <p className="text-gray-500 italic text-center py-8">{tr('adminDashboard.noWorkHoursThisWeek')}</p>
         )}
       </div>
 
       {/* Grafik për progresin e kontratave aktive */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📈 {tr('adminDashboard.contractProgress')} (%)</h3>
-        {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").length > 0 ? (
+        {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar" || c.status === "In Progress" || c.status === "Suspended").length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
             <BarChart
-              data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map(c => {
+              data={contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar" || c.status === "In Progress" || c.status === "Suspended").map(c => {
                 const start = c.startDate ? new Date(c.startDate) : (c.start_date ? new Date(c.start_date) : null);
                 const end = c.finishDate ? new Date(c.finishDate) : (c.finish_date ? new Date(c.finish_date) : null);
                 const now = new Date();
@@ -631,23 +691,23 @@ export default function AdminDashboard() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" domain={[0, 100]} label={{ value: "%", position: "insideBottomRight", offset: -5 }} tickFormatter={v => `${v}%`} />
               <YAxis type="category" dataKey="name" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#a21caf' }} />
-              <Tooltip formatter={v => [`${v}%`, "Progresi"]} />
+              <Tooltip formatter={v => [`${v}%`, tr('adminDashboard.progress')]} />
               <Bar dataKey="progress" radius={[0, 6, 6, 0]} barSize={30}>
-                {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar").map((_, i) => (
+                {contracts.filter(c => c.status === "Ne progres" || c.status === "Pezulluar" || c.status === "In Progress" || c.status === "Suspended").map((_, i) => (
                   <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka kontrata aktive për momentin</p>
+          <p className="text-gray-500 italic text-center py-8">{tr('adminDashboard.noActiveContracts')}</p>
         )}
       </div>
 
       {/* Top 5 më të paguar */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
         <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            🏅 {t('adminDashboard.topPaidEmployees')}
+            🏅 {tr('adminDashboard.topPaidEmployees')}
           </h3>
         {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
@@ -706,7 +766,7 @@ export default function AdminDashboard() {
                       {displayName}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
+                      {e.isPaid ? `✅ ${tr('adminDashboard.paid')}` : `⏳ ${tr('adminDashboard.unpaid')}`}
                     </p>
                   </div>
                   <div className="text-blue-700 font-extrabold text-xl">£{Number(amount).toFixed(2)}</div>
@@ -715,7 +775,7 @@ export default function AdminDashboard() {
             })}
           </ul>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka pagesa të regjistruara për këtë javë</p>
+          <p className="text-gray-500 italic text-center py-8">{tr('adminDashboard.noPaymentsThisWeek')}</p>
         )}
       </div>
 
@@ -726,20 +786,20 @@ export default function AdminDashboard() {
 
       {/* Grafik për statusin e kontratave */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 {t('adminDashboard.contractsProgressTitle')}</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 {tr('adminDashboard.contractsProgressTitle')}</h3>
         <StatusiKontrataveChart contracts={contracts} />
       </div>
 
       {/* Grafik për pagesat javore */}
       <div className="bg-white p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 {localStorage.getItem('language') === 'en' ? 'Weekly Staff Payments' : 'Pagesa Javore për stafin'}</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">💸 {tr('adminDashboard.weeklyStaffPayments')}</h3>
         {weeklyProfitData.filter(w => w.totalPaid > 0).length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
             <BarChart data={weeklyProfitData.filter(w => w.totalPaid > 0)} margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#6366f1', angle: -30, textAnchor: 'end' }} interval={0} height={80} />
-              <YAxis label={{ value: "Pagesa totale (£)", angle: -90, position: "insideLeft", offset: 0 }} tick={{ fontSize: 14, fill: '#6366f1' }} />
-              <Tooltip formatter={v => [`£${Number(v).toFixed(2)}`, "Pagesa"]} />
+              <YAxis label={{ value: `${tr('adminDashboard.payment')} (£)`, angle: -90, position: "insideLeft", offset: 0 }} tick={{ fontSize: 14, fill: '#6366f1' }} />
+              <Tooltip formatter={v => [`£${Number(v).toFixed(2)}`, tr('adminDashboard.payment')]} />
               <Bar dataKey="totalPaid" radius={[6, 6, 0, 0]} barSize={32}>
                 {weeklyProfitData.filter(w => w.totalPaid > 0).map((_, i) => (
                   <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -748,13 +808,13 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka pagesa të regjistruara për këtë javë</p>
+          <p className="text-gray-500 italic text-center py-8">{tr('adminDashboard.noPaymentsThisWeek')}</p>
         )}
       </div>
 
       {/* Grafik për vonesat në pagesa/fatura */}
       <div className="bg-white p-4 md:p-8 rounded-xl md:rounded-2xl shadow-md col-span-full">
-        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📊 {t('adminDashboard.invoiceStatus')}</h3>
+        <h3 className="text-lg md:text-2xl font-bold mb-4 flex items-center gap-2">📊 {tr('adminDashboard.invoiceStatus')}</h3>
         <VonesaFaturashChart />
       </div>
 
@@ -869,11 +929,11 @@ function VonesaFaturashChart() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-8">Duke ngarkuar...</div>;
+    return <div className="text-center py-8">{tr('adminDashboard.loading')}</div>;
   }
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e invoice-ve</div>;
+    return <div className="text-center text-gray-400 py-8">{tr('adminDashboard.noInvoiceStatusData')}</div>;
   }
 
   return (
@@ -955,11 +1015,11 @@ function StatusiShpenzimeveChart() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-8">Duke ngarkuar...</div>;
+    return <div className="text-center py-8">{tr('adminDashboard.loading')}</div>;
   }
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e faturave të shpenzimeve</div>;
+    return <div className="text-center text-gray-400 py-8">{tr('adminDashboard.noExpenseStatusData')}</div>;
   }
 
   return (
@@ -1087,36 +1147,36 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
   }, [allExpenses, contracts, structuredWorkHours, allPayments]);
   
   if (loading) {
-    return <div className="text-center py-8">Duke ngarkuar...</div>;
+    return <div className="text-center py-8">{tr('adminDashboard.loading')}</div>;
   }
   
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për shpenzimet sipas site-ve</div>;
+    return <div className="text-center text-gray-400 py-8">{tr('adminDashboard.noExpensesBySiteData')}</div>;
   }
   
   return (
     <div>
       <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h4 className="font-semibold text-blue-800 mb-2">📊 Shpjegim i llogaritjes:</h4>
+        <h4 className="font-semibold text-blue-800 mb-2">📊 {tr('adminDashboard.calculationExplanation')}</h4>
         <div className="text-sm text-blue-700 space-y-1">
-          <p><strong>Shpenzime:</strong> Shpenzimet nga tabela expenses_invoice - kolona [gross] sipas site-ve</p>
-          <p><strong>Orët e Punës:</strong> Orët e punuara × rate nga tabela work_hours - kolona [hours] × kolona [rate]</p>
-          <p><strong>Totali:</strong> Shpenzime + Orët e Punës</p>
+          <p><strong>{tr('adminDashboard.expenses')}:</strong> {tr('adminDashboard.expensesFromTable')}</p>
+          <p><strong>{tr('adminDashboard.workHours')}:</strong> {tr('adminDashboard.workHoursCalculation')}</p>
+          <p><strong>{tr('adminDashboard.total')}:</strong> {tr('adminDashboard.totalCalculation')}</p>
         </div>
       </div>
       
       <ResponsiveContainer width="100%" height={450}>
         <BarChart data={data} layout="vertical" margin={{ left: 50, right: 50, top: 20, bottom: 20 }} barCategoryGap={18}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" label={{ value: "Shuma totale (£)", position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
+          <XAxis type="number" label={{ value: tr('adminDashboard.totalAmount'), position: "insideBottomRight", offset: -5 }} tick={{ fontSize: 14 }} />
           <YAxis type="category" dataKey="site" width={220} tick={{ fontSize: 16, fontWeight: 'bold', fill: '#0284c7' }} />
           <Tooltip 
             contentStyle={{ background: '#fffbe9', border: '1px solid #fbbf24', borderRadius: 12, fontSize: 16, color: '#78350f' }} 
-            formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? 'Totali' : n]} 
+            formatter={(v, n) => [`£${Number(v).toFixed(2)}`, n === 'total' ? tr('adminDashboard.total') : n]} 
           />
           <Legend />
-          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name="Shpenzime (expenses_invoice.gross)" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[1]} name="Orët e Punës (work_hours.hours × rate)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="expenses" stackId="a" fill={CHART_COLORS[0]} name={tr('adminDashboard.expensesFromInvoice')} radius={[0, 0, 0, 0]} />
+          <Bar dataKey="workHours" stackId="a" fill={CHART_COLORS[1]} name={tr('adminDashboard.workHoursFromTable')} radius={[0, 0, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -1169,7 +1229,7 @@ function StatusiKontrataveChart({ contracts }) {
   }, [contracts]);
 
   if (data.length === 0) {
-    return <div className="text-center text-gray-400 py-8">Nuk ka të dhëna për statusin e kontratave</div>;
+    return <div className="text-center text-gray-400 py-8">{tr('adminDashboard.noContractStatusData')}</div>;
   }
 
   return (
