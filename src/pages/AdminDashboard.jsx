@@ -558,21 +558,6 @@ export default function AdminDashboard() {
             {localStorage.getItem('language') === 'sq' ? 'Statistika, detyra, pagesa dhe më shumë' : 'Statistics, tasks, payments and more'}
           </div>
         </div>
-        
-        {/* Language Switcher */}
-        <div className="flex-shrink-0">
-          <select 
-            value={localStorage.getItem('language') || 'en'} 
-            onChange={(e) => {
-              localStorage.setItem('language', e.target.value);
-              window.location.reload(); // Reload to apply language change
-            }}
-            className="bg-white border border-blue-300 rounded-lg px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="sq">🇦🇱 Shqip</option>
-            <option value="en">🇬🇧 English</option>
-          </select>
-        </div>
       </div>
 
       {/* Statistika kryesore */}
@@ -894,14 +879,18 @@ function VonesaFaturashChart() {
         const res = await api.get("/api/invoices");
         const invoices = res.data || [];
         
-        // Thjeshtëzo: vetëm paid TRUE vs FALSE
-        const result = { "Paguar": 0, "Pa paguar": 0 };
+        // Get user language for translations
+        const userLanguage = localStorage.getItem('language') || 'en';
+        const paidLabel = userLanguage === 'sq' ? 'Paguar' : 'Paid';
+        const unpaidLabel = userLanguage === 'sq' ? 'Pa paguar' : 'Unpaid';
+        
+        const result = { [paidLabel]: 0, [unpaidLabel]: 0 };
         
         invoices.forEach(inv => {
           if (inv.paid) {
-            result["Paguar"]++;
+            result[paidLabel]++;
           } else {
-            result["Pa paguar"]++;
+            result[unpaidLabel]++;
           }
         });
         
@@ -980,14 +969,19 @@ function StatusiShpenzimeveChart() {
         const res = await api.get("/api/expenses");
         const expenses = res.data || [];
         
+        // Get user language for translations
+        const userLanguage = localStorage.getItem('language') || 'en';
+        const paidLabel = userLanguage === 'sq' ? 'Paguar' : 'Paid';
+        const unpaidLabel = userLanguage === 'sq' ? 'Pa paguar' : 'Unpaid';
+        
         // Llogarit statusin e pagesës për shpenzimet
-        const result = { "Paguar": 0, "Pa paguar": 0 };
+        const result = { [paidLabel]: 0, [unpaidLabel]: 0 };
         
         expenses.forEach(exp => {
           if (exp.paid) {
-            result["Paguar"]++;
+            result[paidLabel]++;
           } else {
-            result["Pa paguar"]++;
+            result[unpaidLabel]++;
           }
         });
         
@@ -1210,8 +1204,13 @@ function StatusiKontrataveChart({ contracts }) {
       statusCount[statusKey] = (statusCount[statusKey] || 0) + 1;
     });
     
-    const chartData = Object.entries(statusCount).map(([status, count]) => ({
-      name: status === 'active' ? 'Aktive' : 
+    const chartData = Object.entries(statusCount).map(([status, count]) => {
+      const userLanguage = localStorage.getItem('language') || 'en';
+      let translatedName;
+      
+      if (userLanguage === 'sq') {
+        // Albanian translations
+        translatedName = status === 'active' ? 'Aktive' : 
             status === 'suspended' ? 'Të pezulluara' :
             status === 'completed' ? 'Të mbyllura' :
             status === 'cancelled' ? 'Të anuluara' :
@@ -1220,10 +1219,27 @@ function StatusiKontrataveChart({ contracts }) {
             status === 'pezulluar' ? 'Të pezulluara' :
             status === 'mbyllur me vonese' ? 'Mbyllur me vonesë' :
             status === 'anulluar' ? 'Të anuluara' :
-            status === 'mbyllur' ? 'Të mbyllura' : status,
+                        status === 'mbyllur' ? 'Të mbyllura' : status;
+      } else {
+        // English translations
+        translatedName = status === 'active' ? 'Active' : 
+                        status === 'suspended' ? 'Suspended' :
+                        status === 'completed' ? 'Completed' :
+                        status === 'cancelled' ? 'Cancelled' :
+                        status === 'pending' ? 'Pending' :
+                        status === 'ne progres' ? 'In Progress' :
+                        status === 'pezulluar' ? 'Suspended' :
+                        status === 'mbyllur me vonese' ? 'Closed with Delay' :
+                        status === 'anulluar' ? 'Cancelled' :
+                        status === 'mbyllur' ? 'Closed' : status;
+      }
+      
+      return {
+        name: translatedName,
       value: count,
       color: statusColors[status] || '#6b7280'
-    }));
+      };
+    });
     
     setData(chartData);
   }, [contracts]);
