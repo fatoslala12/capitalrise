@@ -39,6 +39,27 @@ export default function PaymentDetails() {
   const { t } = useTranslation();
   const { contract_number } = useParams();
   const [contract, setContract] = useState(null);
+
+  // Function to translate contract status
+  const translateStatus = (status) => {
+    const userLanguage = localStorage.getItem('language') || 'en';
+    
+    if (userLanguage === 'sq') {
+      return status; // Return Albanian status as is
+    }
+    
+    // Translate to English
+    const statusMap = {
+      'Ne progres': 'In Progress',
+      'Draft': 'Draft',
+      'Anulluar': 'Cancelled',
+      'Pezulluar': 'Suspended',
+      'Mbyllur': 'Closed',
+      'Mbyllur me vonese': 'Closed with Delay'
+    };
+    
+    return statusMap[status] || status;
+  };
   const [expensesInvoices, setExpensesInvoices] = useState([]);
   const [workHours, setWorkHours] = useState({});
   const [employees, setEmployees] = useState([]);
@@ -417,8 +438,8 @@ export default function PaymentDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+<div className="max-w-[95vw] xl:max-w-[90vw] mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
         {/* HEADER SECTION - MOBILE RESPONSIVE */}
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
           <div className="p-4 sm:p-6 lg:p-8">
@@ -477,7 +498,7 @@ export default function PaymentDetails() {
                     contract.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700 border-orange-200' :
                     'bg-gray-200 text-gray-700 border-gray-300'
                   }`}>
-                    {contract.status}
+                    {translateStatus(contract.status)}
                   </span>
                 </div>
               </div>
@@ -630,8 +651,8 @@ export default function PaymentDetails() {
                       className="flex-1 bg-gradient-to-r from-emerald-400 to-blue-500 hover:from-emerald-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl"
                     >
                       <span className="text-xl">💾</span>
-                      <span className="hidden sm:inline">Shto Shpenzim</span>
-                      <span className="sm:hidden">Shto</span>
+                      <span className="hidden sm:inline">{t('paymentDetails.addExpense')}</span>
+                      <span className="sm:hidden">{t('paymentDetails.add')}</span>
                     </button>
                     <button 
                       type="button"
@@ -639,8 +660,8 @@ export default function PaymentDetails() {
                       className="flex-1 bg-slate-400 hover:bg-slate-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl"
                     >
                       <span className="text-xl">✕</span>
-                      <span className="hidden sm:inline">Anulo</span>
-                      <span className="sm:hidden">Mbyll</span>
+                      <span className="hidden sm:inline">{t('paymentDetails.cancel')}</span>
+                      <span className="sm:hidden">{t('paymentDetails.close')}</span>
                     </button>
                   </div>
                 </form>
@@ -649,8 +670,8 @@ export default function PaymentDetails() {
           </div>
         )}
 
-        {/* GRID LAYOUT - PARALEL NË WEB, VERTIKAL NË MOBILE */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        {/* GRID LAYOUT - RESPONSIVE DESIGN FOR ALL DEVICES */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           
           {/* ORËT E PUNËS SECTION - MOBILE RESPONSIVE */}
           <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
