@@ -81,10 +81,6 @@ const tr = (key, fallback = key) => {
     'adminDashboard.teMbyllura': 'Closed',
     'adminDashboard.teAnuluara': 'Cancelled',
     'adminDashboard.nePritje': 'Pending',
-    'adminDashboard.neProgres': 'In Progress',
-    'adminDashboard.mbyllurMeVonese': 'Closed with Delay',
-    'adminDashboard.teAnuluara': 'Cancelled',
-    'adminDashboard.teMbyllura': 'Closed',
     
     // Albanian translations
     'adminDashboard.title.sq': 'Paneli i Administrimit',
@@ -145,10 +141,6 @@ const tr = (key, fallback = key) => {
     'adminDashboard.teMbyllura.sq': 'Të mbyllura',
     'adminDashboard.teAnuluara.sq': 'Të anuluara',
     'adminDashboard.nePritje.sq': 'Në pritje',
-    'adminDashboard.neProgres.sq': 'Në progres',
-    'adminDashboard.mbyllurMeVonese.sq': 'Mbyllur me vonesë',
-    'adminDashboard.teAnuluara.sq': 'Të anuluara',
-    'adminDashboard.teMbyllura.sq': 'Të mbyllura',
     
     // Missing translations that are used with t() function
     'adminDashboard.hoursBySiteThisWeek': 'Weekly Hours by Site',
@@ -171,10 +163,6 @@ const tr = (key, fallback = key) => {
     'adminDashboard.loadingStats.sq': 'Duke ngarkuar statistikat...',
     'adminDashboard.noWorkHoursThisWeek': 'No work hours recorded for this week',
     'adminDashboard.noWorkHoursThisWeek.sq': 'Nuk ka orë pune të regjistruara për këtë javë',
-    'adminDashboard.noActiveContracts': 'No active contracts at the moment',
-    'adminDashboard.noActiveContracts.sq': 'Nuk ka kontrata aktive për momentin',
-    'adminDashboard.noPaymentsThisWeek': 'No payments recorded for this week',
-    'adminDashboard.noPaymentsThisWeek.sq': 'Nuk ka pagesa të regjistruara për këtë javë',
     'adminDashboard.noContractStatusData': 'No data for contract status',
     'adminDashboard.noContractStatusData.sq': 'Nuk ka të dhëna për statusin e kontratave',
     'adminDashboard.noInvoiceStatusData': 'No data for invoice status',
