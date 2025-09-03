@@ -768,7 +768,15 @@
     "exportData": "Eksporto të dhënat",
     "delete": "Fshi",
     "exportEmployeesCSV": "Eksporto punonjësit (CSV)",
-    "exportCSV": "Eksporto CSV"
+    "exportCSV": "Eksporto CSV",
+    "placeOfBirth": "Vendi i lindjes",
+    "residentialAddress": "Adresa e banimit",
+    "salaryPerHour": "Paga / Orë (£)",
+    "documents": "Dokumentet",
+    "uploadPhoto": "Ngarko Foto",
+    "uploadPdfDocument": "Ngarko Dokument PDF",
+    "add": "Shto",
+    "noSitesAvailable": "Nuk ka site të disponueshme. Kontrolloni që menaxheri të ketë site të caktuar."
   },
   "employeeDetails": {
     "loadingMessage": "Duke ngarkuar detajet e punonjësit...",

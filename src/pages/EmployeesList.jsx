@@ -394,7 +394,7 @@ export default function EmployeesList() {
       phone: "",
       role: "user",
       hourlyRate: "",
-      status: "Aktiv",
+      status: t('employeesList.active'),
       qualification: "CSS",
       labelType: "UTR",
       photo: employeePlaceholder,
@@ -698,7 +698,7 @@ export default function EmployeesList() {
                         <input 
                           type="text" 
                           name="pob" 
-                          placeholder="Vendi i lindjes" 
+                          placeholder={t('employeesList.placeOfBirth')} 
                           value={newEmployee.pob} 
                           onChange={handleChange} 
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
@@ -709,7 +709,7 @@ export default function EmployeesList() {
                         <input 
                           type="text" 
                           name="residence" 
-                          placeholder="Adresa e banimit" 
+                          placeholder={t('employeesList.residentialAddress')} 
                           value={newEmployee.residence} 
                           onChange={handleChange} 
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
@@ -740,7 +740,7 @@ export default function EmployeesList() {
                         ))
                       ) : (
                         <div className="text-red-500 text-sm">
-                          ⚠️ Nuk ka site të disponueshme. Kontrolloni që menaxheri të ketë site të caktuar.
+                          ⚠️ {t('employeesList.noSitesAvailable')}
                         </div>
                       )}
                     </div>
@@ -757,7 +757,7 @@ export default function EmployeesList() {
                         <input 
                           type="text" 
                           name="phone" 
-                          placeholder="Numri i telefonit" 
+                          placeholder={t('employeesList.phoneNumber')} 
                           required 
                           value={newEmployee.phone} 
                     onChange={handleChange}
@@ -769,7 +769,7 @@ export default function EmployeesList() {
                         <input 
                           type="text" 
                           name="nextOfKin" 
-                          placeholder="Kontakti i ngushtë" 
+                          placeholder={t('employeesList.nextOfKin')} 
                           value={newEmployee.nextOfKin || ""} 
                           onChange={handleChange} 
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
@@ -780,7 +780,7 @@ export default function EmployeesList() {
                         <input 
                           type="text" 
                           name="nextOfKinPhone" 
-                          placeholder="Telefoni i kontaktit" 
+                          placeholder={t('employeesList.nextOfKinPhone')} 
                           value={newEmployee.nextOfKinPhone || ""} 
                     onChange={handleChange}
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
@@ -792,23 +792,23 @@ export default function EmployeesList() {
                   {/* WORK DETAILS SECTION */}
                   <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      💼 Detajet e Punës
+                      💼 {t('employeesList.workDetails')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Roli</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.role')}</label>
                 <select
                   name="role"
                   value={newEmployee.role}
                   onChange={handleChange}
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
                 >
-                  <option value="user">Punonjës</option>
-                  <option value="manager">Menaxher</option>
+                  <option value="user">{t('employeesList.employee')}</option>
+                  <option value="manager">{t('employeesList.manager')}</option>
                 </select>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Paga / Orë (£)</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.salaryPerHour')}</label>
                         <input 
                           type="number" 
                           name="hourlyRate" 
@@ -819,7 +819,7 @@ export default function EmployeesList() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Kualifikimi</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.qualification')}</label>
                         <select 
                           name="qualification" 
                           value={newEmployee.qualification} 
@@ -844,7 +844,7 @@ export default function EmployeesList() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Statusi *</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.status')} *</label>
                         <select 
                           name="status" 
                           required 
@@ -852,8 +852,8 @@ export default function EmployeesList() {
                           onChange={handleChange} 
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
                         >
-                  <option value="Aktiv">Aktiv</option>
-                  <option value="Joaktiv">Joaktiv</option>
+                  <option value="Aktiv">{t('employeesList.active')}</option>
+                  <option value="Joaktiv">{t('employeesList.inactive')}</option>
                 </select>
                       </div>
                     </div>
@@ -862,11 +862,11 @@ export default function EmployeesList() {
                   {/* FILES SECTION */}
                   <div className="bg-orange-50/50 rounded-xl p-4 border border-orange-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      📁 Dokumentet
+                      📁 {t('employeesList.documents')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Ngarko Foto</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.uploadPhoto')}</label>
                         <input 
                           type="file" 
                           name="photo" 
@@ -876,7 +876,7 @@ export default function EmployeesList() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Ngarko Dokument PDF</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.uploadPdfDocument')}</label>
                         <input 
                           type="file" 
                           name="documents" 
@@ -895,8 +895,8 @@ export default function EmployeesList() {
                       className="flex-1 bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
                       <span className="text-xl">➕</span>
-                      <span className="hidden sm:inline">Shto Punonjës</span>
-                      <span className="sm:hidden">Shto</span>
+                      <span className="hidden sm:inline">{t('employeesList.addEmployee')}</span>
+                      <span className="sm:hidden">{t('employeesList.add')}</span>
                   </button>
                   <button 
                     type="button"
@@ -904,8 +904,8 @@ export default function EmployeesList() {
                       className="flex-1 bg-slate-400 hover:bg-slate-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
                       <span className="text-xl">✕</span>
-                      <span className="hidden sm:inline">Anulo</span>
-                      <span className="sm:hidden">Mbyll</span>
+                      <span className="hidden sm:inline">{t('employeesList.cancel')}</span>
+                      <span className="sm:hidden">{t('employeesList.close')}</span>
                   </button>
                 </div>
               </form>
@@ -927,8 +927,8 @@ export default function EmployeesList() {
                 className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
               >
             <option value="All">{t('employeesList.allStatuses')}</option>
-            <option value="Aktiv">Aktiv</option>
-            <option value="Joaktiv">Joaktiv</option>
+            <option value="Aktiv">{t('employeesList.active')}</option>
+            <option value="Joaktiv">{t('employeesList.inactive')}</option>
           </select>
               <select 
                 value={filterWorkplace} 
@@ -944,8 +944,8 @@ export default function EmployeesList() {
                 className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
               >
             <option value="All">{t('employeesList.allRoles')}</option>
-            <option value="user">Punonjës</option>
-            <option value="manager">Menaxher</option>
+            <option value="user">{t('employeesList.employee')}</option>
+            <option value="manager">{t('employeesList.manager')}</option>
           </select>
               <select 
                 value={filterTax} 

@@ -997,7 +997,15 @@
     "exportData": "Export Data",
     "delete": "Delete",
     "exportEmployeesCSV": "Export Employees (CSV)",
-    "exportCSV": "Export CSV"
+    "exportCSV": "Export CSV",
+    "placeOfBirth": "Place of Birth",
+    "residentialAddress": "Residential Address",
+    "salaryPerHour": "Salary / Hour (£)",
+    "documents": "Documents",
+    "uploadPhoto": "Upload Photo",
+    "uploadPdfDocument": "Upload PDF Document",
+    "add": "Add",
+    "noSitesAvailable": "No sites available. Check that the manager has sites assigned."
   },
   "employeeDetails": {
     "loadingMessage": "Loading employee details...",
