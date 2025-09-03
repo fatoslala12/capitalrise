@@ -12,6 +12,27 @@ export default function Payments() {
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
+  // Function to translate contract status
+  const translateStatus = (status) => {
+    const userLanguage = localStorage.getItem('language') || 'en';
+    
+    if (userLanguage === 'sq') {
+      return status; // Return Albanian status as is
+    }
+    
+    // Translate to English
+    const statusMap = {
+      'Ne progres': 'In Progress',
+      'Draft': 'Draft',
+      'Anulluar': 'Cancelled',
+      'Pezulluar': 'Suspended',
+      'Mbyllur': 'Closed',
+      'Mbyllur me vonese': 'Closed with Delay'
+    };
+    
+    return statusMap[status] || status;
+  };
+
   useEffect(() => {
     setLoading(true);
     axios
@@ -80,7 +101,7 @@ export default function Payments() {
                     c.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700 border-orange-200' :
                     'bg-gray-200 text-gray-700 border-gray-300'}
                 `}>
-                  {c.status}
+                  {translateStatus(c.status)}
                 </span>
               </div>
               <div className="space-y-2 text-blue-900 text-sm md:text-base lg:text-lg">
