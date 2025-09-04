@@ -76,21 +76,25 @@ export default function MainLayout() {
 
   const SidebarContent = () => (
     <>
-      {/* Simplified Logo Section */}
-      <div className="p-4 mb-4">
-        <div className="text-center">
-          <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-12 w-12 mx-auto mb-2" />
-          <h1 className="text-lg font-bold text-white drop-shadow-lg">Capital Rise</h1>
-          <p className="text-xs text-blue-200/80 font-medium capitalize">
-            {user?.role === 'admin' ? '👑 Administrator' : 
-             user?.role === 'manager' ? '👨‍💼 Manager' : 
-             '👤 User'}
-          </p>
+      {/* Logo Section - Bigger and cleaner */}
+      <div className="p-4 mb-2">
+        <div className="flex items-center gap-3">
+          <div className="bg-white/20 rounded-lg p-2">
+            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-8 w-8" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-white">Capital Rise</h1>
+            <p className="text-xs text-blue-200 capitalize">
+              {user?.role === 'admin' ? 'Administrator' : 
+               user?.role === 'manager' ? 'Manager' : 
+               'User'}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Simplified Navigation */}
-      <nav className="flex-1 px-3 space-y-1">
+      {/* Navigation - Like in image */}
+      <nav className="flex-1 px-4 space-y-1">
         {menu.map((item) => {
           const isActive = location.pathname === item.path;
           const icon = item.label.split(" ")[0];
@@ -102,8 +106,8 @@ export default function MainLayout() {
               onClick={() => setIsMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
                 isActive 
-                  ? "bg-blue-500/30 text-white shadow-md" 
-                  : "text-blue-100 hover:bg-white/10 hover:text-white"
+                  ? "bg-blue-400/30 text-white shadow-lg" 
+                  : "text-white hover:bg-white/10"
               }`}
             >
               <span className="text-lg">{icon}</span>
@@ -123,15 +127,14 @@ export default function MainLayout() {
   );
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-blue-50 via-blue-100/50 to-indigo-100/30">
-      {/* Desktop Sidebar - Softer Blue Design */}
+    <div className="flex h-screen w-full overflow-hidden bg-gray-100">
+      {/* Desktop Sidebar - Proper Blue Design */}
       <aside className="hidden lg:flex w-64 relative">
-        {/* Softer blue gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-blue-800/30 via-transparent to-blue-400/20"></div>
+        {/* Proper blue gradient background like in image */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-800 via-blue-700 to-blue-600"></div>
         
-        {/* Glassmorphism overlay */}
-        <div className="relative w-full bg-white/10 backdrop-blur-xl border-r border-blue-200/30 shadow-2xl">
+        {/* Content */}
+        <div className="relative w-full">
           <SidebarContent />
         </div>
       </aside>
@@ -139,18 +142,17 @@ export default function MainLayout() {
       {/* Desktop content spacer */}
       <div className="hidden lg:block w-64 flex-shrink-0"></div>
 
-      {/* Mobile Sidebar - Collapsible with softer design */}
+      {/* Mobile Sidebar - Collapsible with proper design */}
       <MobileSidebar 
         isOpen={isMobileMenuOpen} 
         onClose={() => setIsMobileMenuOpen(false)}
       >
         <div className="relative h-full">
-          {/* Softer blue gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-blue-800/30 via-transparent to-blue-400/20"></div>
+          {/* Proper blue gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-800 via-blue-700 to-blue-600"></div>
           
-          {/* Glassmorphism overlay */}
-          <div className="relative h-full bg-white/10 backdrop-blur-xl border-r border-blue-200/30">
+          {/* Content */}
+          <div className="relative h-full">
             <SidebarContent />
           </div>
         </div>
@@ -158,13 +160,13 @@ export default function MainLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col w-full relative">
-        {/* Modern Header */}
-        <header className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg">
-          <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
+        {/* White Modern Header */}
+        <header className="bg-white shadow-sm border-b border-gray-200">
+          <div className="px-6 py-4 flex items-center justify-between">
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+              className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
             >
               <span className="sr-only">Open sidebar</span>
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -178,17 +180,16 @@ export default function MainLayout() {
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center gap-2">
               <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-8 w-8" />
-              <span className="font-bold text-lg">Capital Rise</span>
+              <span className="font-bold text-lg text-gray-900">Capital Rise</span>
             </div>
             
-            {/* Center welcome message */}
+            {/* Center welcome message - Modern distribution */}
             <div className="hidden sm:flex flex-1 justify-center">
               <div className="text-center">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  <span>👋</span>
+                <h2 className="text-lg font-semibold text-gray-800">
                   {t('auth.welcome')}, {getUserDisplayName()}
                 </h2>
-                <p className="text-sm text-blue-100 font-medium">
+                <p className="text-sm text-gray-500 font-medium">
                   {new Date().toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     year: 'numeric', 
@@ -201,18 +202,18 @@ export default function MainLayout() {
             
             {/* Mobile welcome */}
             <div className="sm:hidden flex flex-1 justify-center">
-              <span className="text-sm font-medium">👋 {t('auth.welcome')}</span>
+              <span className="text-sm font-medium text-gray-600">{t('auth.welcome')}</span>
             </div>
             
-            {/* Right side actions */}
-            <div className="flex items-center gap-2">
+            {/* Right side actions - Modern spacing */}
+            <div className="flex items-center gap-3">
               <div className="hidden sm:block">
                 <LanguageSwitcher />
               </div>
               <NotificationBell />
               <button
                 onClick={logout}
-                className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors flex items-center gap-1 text-sm"
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors flex items-center gap-2 text-sm"
               >
                 <span>🚪</span>
                 <span className="hidden sm:inline">{t('navigation.logout')}</span>
@@ -221,13 +222,11 @@ export default function MainLayout() {
           </div>
         </header>
 
-        {/* Main Content - Sticky Layout */}
-        <main className="flex-1 bg-gradient-to-br from-blue-50 to-indigo-100 overflow-auto">
-          <div className="h-full">
-            <Suspense fallback={<PageLoader />}>
-              <Outlet />
-            </Suspense>
-          </div>
+        {/* Main Content - No spacing */}
+        <main className="flex-1 bg-gray-100 overflow-auto">
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
