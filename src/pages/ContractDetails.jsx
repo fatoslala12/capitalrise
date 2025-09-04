@@ -1002,12 +1002,12 @@ export default function ContractDetails() {
                       <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
                         <thead className="bg-gradient-to-r from-emerald-100 to-blue-100">
                           <tr>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Data</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Punonjësi</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Orë</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Tarifa/orë</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Bruto (£)</th>
-                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">Neto (£)</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.date')}</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.employee')}</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.hours')}</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.ratePerHour')}</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.gross')} (£)</th>
+                            <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('contractDetails.net')} (£)</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1166,7 +1166,7 @@ export default function ContractDetails() {
                     <span className="text-2xl">🧾</span>
                   </div>
                   <h3 className="text-xl sm:text-2xl font-bold text-white">
-                    Shto Faturë të Re
+                    {t('contractDetails.addNewInvoice')}
                   </h3>
                 </div>
                 <button
@@ -1184,10 +1184,10 @@ export default function ContractDetails() {
                 {/* DESCRIPTION SECTION */}
                 <div className="bg-slate-50 rounded-xl p-4">
                   <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-2 block">
-                    📝 Përshkrimi i Faturës
+                    📝 {t('contractDetails.invoiceDescription')}
                   </label>
                   <input
-                    placeholder="Shkruaj përshkrimin e faturës..."
+                    placeholder={t('contractDetails.writeInvoiceDescription')}
                     className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newInvoice.description}
                     onChange={e => setNewInvoice({ ...newInvoice, description: e.target.value })}
@@ -1197,22 +1197,22 @@ export default function ContractDetails() {
                 {/* INVOICE ITEMS SECTION */}
                 <div className="bg-slate-50 rounded-xl p-4">
                   <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                    📋 Artikujt e Faturës
+                    📋 {t('contractDetails.invoiceItems')}
                   </label>
                   <div className="space-y-4">
                     {newInvoice.items.map((item, index) => (
                       <div key={index} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Përshkrimi</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('contractDetails.description')}</label>
                           <input 
-                            placeholder="Përshkrimi i punës" 
+                            placeholder={t('contractDetails.workDescription')} 
                             className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
                             value={item.description} 
                             onChange={(e) => handleItemChange(index, "description", e.target.value)} 
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Shifts</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('contractDetails.shifts')}</label>
                           <input 
                             type="number" 
                             placeholder="0" 
@@ -1222,7 +1222,7 @@ export default function ContractDetails() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Rate (£)</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('contractDetails.rate')}</label>
                           <input 
                             type="number" 
                             placeholder="0.00" 
@@ -1233,7 +1233,7 @@ export default function ContractDetails() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Totali (£)</label>
+                          <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('contractDetails.total')}</label>
                           <input 
                             disabled 
                             className="w-full p-2.5 border border-slate-200 rounded-lg bg-slate-100 text-sm font-semibold text-slate-700" 
@@ -1247,7 +1247,7 @@ export default function ContractDetails() {
                       onClick={handleAddItem} 
                       className="w-full bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg p-3 text-blue-600 font-semibold transition-all flex items-center justify-center gap-2"
                     >
-                      <span className="text-xl">➕</span> Shto Rresht të Ri
+                      <span className="text-xl">➕</span> {t('contractDetails.addNewRow')}
                     </button>
                   </div>
                 </div>
@@ -1257,7 +1257,7 @@ export default function ContractDetails() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                     <div>
                       <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-2 block">
-                        💰 Kosto Shtesë (£)
+                        💰 {t('contractDetails.additionalCost')}
                       </label>
                       <input 
                         type="number" 
@@ -1270,7 +1270,7 @@ export default function ContractDetails() {
                     </div>
                     <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg p-4 border-2 border-blue-200">
                       <div className="text-center">
-                        <div className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">Totali i Faturës</div>
+                        <div className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">{t('contractDetails.invoiceTotal')}</div>
                         <div className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                           £{grandTotal.toFixed(2)}
                         </div>
@@ -1289,14 +1289,14 @@ export default function ContractDetails() {
                     {loadingStates.saveInvoice ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span className="hidden sm:inline">Duke ruajtur...</span>
+                        <span className="hidden sm:inline">{t('contractDetails.saving')}</span>
                         <span className="sm:hidden">...</span>
                       </>
                     ) : (
                       <>
                         <span className="text-xl">💾</span>
-                        <span className="hidden sm:inline">Ruaj Faturën</span>
-                        <span className="sm:hidden">Ruaj</span>
+                        <span className="hidden sm:inline">{t('contractDetails.saveInvoice')}</span>
+                        <span className="sm:hidden">{t('contractDetails.saveInvoice')}</span>
                       </>
                     )}
                   </button>
@@ -1307,8 +1307,8 @@ export default function ContractDetails() {
                     className="flex-1 bg-slate-500 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
                     <span className="text-xl">✕</span>
-                    <span className="hidden sm:inline">Anulo</span>
-                    <span className="sm:hidden">Mbyll</span>
+                    <span className="hidden sm:inline">{t('contractDetails.cancel')}</span>
+                    <span className="sm:hidden">{t('contractDetails.cancel')}</span>
                   </button>
                 </div>
               </div>
@@ -1319,12 +1319,3 @@ export default function ContractDetails() {
     </div>
   );
 }
-
-/* Animacion fade-in */
-<style jsx>{`
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: none; }
-}
-.animate-fade-in { animation: fade-in 0.7s cubic-bezier(.4,0,.2,1) both; }
-`}</style>
