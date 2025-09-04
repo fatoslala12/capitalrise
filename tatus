@@ -1,0 +1,5 @@
+[33m3a626f3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix: replace hardcoded Albanian payment statuses with translation system
+[33m354198a[m i18n: fix payment status translations and contract details loading message
+[33m76ede1d[m fix: Translate invoice statuses in ContractDetails.jsx
+[33m8913615[m feat: Translate ContractDetails.jsx to English and fix build errors
+[33m1018a96[m fix: Remove duplicate keys from AdminDashboard.jsx to fix build warnings

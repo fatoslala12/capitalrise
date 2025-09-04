@@ -821,6 +821,15 @@ export default function ContractDetails() {
                             ? t('payments.paidOnTime')
                             : t('payments.paidLate')
                           : t('payments.unpaidText');
+                        
+                        // Debug log
+                        console.log('Status translation:', {
+                          paid: inv.paid,
+                          status: status,
+                          paidOnTime: t('payments.paidOnTime'),
+                          paidLate: t('payments.paidLate'),
+                          unpaidText: t('payments.unpaidText')
+                        });
                         return (
                           <tr key={inv.id} className="text-center hover:bg-purple-50 transition-all">
                             <td className="py-3 px-2 align-middle font-semibold">{inv.invoice_number}</td>
