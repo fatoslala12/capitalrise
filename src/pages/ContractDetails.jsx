@@ -77,6 +77,20 @@ export default function ContractDetails() {
   
   const token = localStorage.getItem("token");
 
+  // Translate status function
+  const translateStatus = (status) => {
+    const statusMap = {
+      'Pa paguar': t('payments.unpaidText'),
+      'Paguar në kohë': t('payments.paidOnTime'),
+      'Paguar me vonesë': t('payments.paidLate'),
+      'Ne progres': t('payments.inProgress'),
+      'Mbyllur me vonese': t('payments.closedWithDelay'),
+      'Pezulluar': t('payments.suspended'),
+      'Anulluar': t('payments.cancelled')
+    };
+    return statusMap[status] || status;
+  };
+
   // Confirmation dialog functions
   const showConfirmDialog = useCallback((title, message, onConfirm, onCancel = null) => {
     setConfirmDialog({
@@ -804,16 +818,16 @@ export default function ContractDetails() {
                         const oneMonth = 30 * 24 * 60 * 60 * 1000;
                         const status = inv.paid
                           ? paidDate - invoiceDate <= oneMonth
-                            ? t('payments.paidOnTime')
-                            : t('payments.paidLate')
-                          : t('payments.unpaidText');
+                            ? 'Paguar në kohë'
+                            : 'Paguar me vonesë'
+                          : 'Pa paguar';
                         return (
                           <tr key={inv.id} className="text-center hover:bg-purple-50 transition-all">
                             <td className="py-3 px-2 align-middle font-semibold">{inv.invoice_number}</td>
                             <td className="py-3 px-2 align-middle">{formatDate(inv.date)}</td>
                             <td className="py-3 px-2 align-middle font-bold text-purple-700">£{total.toFixed(2)}</td>
                             <td className="py-3 px-2 align-middle">
-                              <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === "Pa paguar" ? "bg-red-100 text-red-600" : status === "Paguar në kohë" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{status}</span>
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === "Pa paguar" ? "bg-red-100 text-red-600" : status === "Paguar në kohë" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{translateStatus(status)}</span>
                             </td>
                             <td className="py-3 px-2 align-middle">
                               <input
