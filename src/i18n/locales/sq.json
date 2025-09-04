@@ -315,6 +315,23 @@
     },
     "loadingContracts": "Duke ngarkuar kontratat...",
     "loadingDetails": "Duke ngarkuar detajet e kontratës...",
+    "details": {
+      "title": "Detajet e Kontratës",
+      "loading": "Duke ngarkuar detajet e kontratës...",
+      "notFound": "Kontrata nuk u gjet",
+      "backToContracts": "Kthehu te Kontratat",
+      "sendEmail": "Dërgo në Email",
+      "sending": "Duke dërguar...",
+      "company": "Kompania",
+      "location": "Vendodhja",
+      "address": "Adresa",
+      "type": "Tipi",
+      "startDate": "Data e Fillimit",
+      "endDate": "Data e Mbarimit",
+      "status": "Statusi",
+      "closedDate": "Data e Mbylljes",
+      "contractProgress": "Progresi i Kontratës"
+    },
     "validation": {
       "companyRequired": "Emri i kompanisë është i detyrueshëm",
       "valuePositive": "Vlera e kontratës duhet të jetë një numër pozitiv",
@@ -344,7 +361,10 @@
     "project": "Projekti",
     "startDate": "Data e Fillimit",
     "value": "Vlera",
-    "status": "Statusi"
+    "status": "Statusi",
+    "paidLate": "Paguar me vonesë",
+    "paidOnTime": "Paguar në kohë",
+    "unpaidText": "E papaguar"
   },
   "paymentDetails": {
     "title": "Detajet e Pagesës",
