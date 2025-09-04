@@ -818,16 +818,16 @@ export default function ContractDetails() {
                         const oneMonth = 30 * 24 * 60 * 60 * 1000;
                         const status = inv.paid
                           ? paidDate - invoiceDate <= oneMonth
-                            ? 'Paguar në kohë'
-                            : 'Paguar me vonesë'
-                          : 'Pa paguar';
+                            ? t('payments.paidOnTime')
+                            : t('payments.paidLate')
+                          : t('payments.unpaidText');
                         return (
                           <tr key={inv.id} className="text-center hover:bg-purple-50 transition-all">
                             <td className="py-3 px-2 align-middle font-semibold">{inv.invoice_number}</td>
                             <td className="py-3 px-2 align-middle">{formatDate(inv.date)}</td>
                             <td className="py-3 px-2 align-middle font-bold text-purple-700">£{total.toFixed(2)}</td>
                             <td className="py-3 px-2 align-middle">
-                              <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === "Pa paguar" ? "bg-red-100 text-red-600" : status === "Paguar në kohë" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{translateStatus(status)}</span>
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === t('payments.unpaidText') ? "bg-red-100 text-red-600" : status === t('payments.paidOnTime') ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{status}</span>
                             </td>
                             <td className="py-3 px-2 align-middle">
                               <input

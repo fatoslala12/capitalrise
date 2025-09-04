@@ -677,7 +677,7 @@ export default function MyProfile() {
                           <strong>Paga:</strong> £{totalPay.toFixed(2)}
                         </span>
                         <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold shadow-sm border ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
-                          {isPaid ? 'Paguar' : 'Pa paguar'}
+                          {isPaid ? t('payments.paid') : t('payments.unpaid')}
                         </span>
                       </div>
                     </div>

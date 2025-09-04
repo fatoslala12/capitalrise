@@ -869,8 +869,8 @@ function VonesaFaturashChart() {
         
         // Get user language for translations
         const userLanguage = localStorage.getItem('language') || 'en';
-        const paidLabel = userLanguage === 'sq' ? 'Paguar' : 'Paid';
-        const unpaidLabel = userLanguage === 'sq' ? 'Pa paguar' : 'Unpaid';
+        const paidLabel = t('payments.paid');
+        const unpaidLabel = t('payments.unpaid');
         
         const result = { [paidLabel]: 0, [unpaidLabel]: 0 };
         
@@ -894,8 +894,8 @@ function VonesaFaturashChart() {
         console.error('[ERROR] Failed to fetch invoices:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
-          { name: "Pa paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[1] }
+          { name: `${t('payments.paid')}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[0] },
+          { name: `${t('payments.unpaid')}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
@@ -959,8 +959,8 @@ function StatusiShpenzimeveChart() {
         
         // Get user language for translations
         const userLanguage = localStorage.getItem('language') || 'en';
-        const paidLabel = userLanguage === 'sq' ? 'Paguar' : 'Paid';
-        const unpaidLabel = userLanguage === 'sq' ? 'Pa paguar' : 'Unpaid';
+        const paidLabel = t('payments.paid');
+        const unpaidLabel = t('payments.unpaid');
         
         // Llogarit statusin e pagesës për shpenzimet
         const result = { [paidLabel]: 0, [unpaidLabel]: 0 };
@@ -985,8 +985,8 @@ function StatusiShpenzimeveChart() {
         console.error('[ERROR] Failed to fetch expenses:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: "Paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[0] },
-          { name: "Pa paguar: 0 (0%)", value: 0, color: STATUS_CHART_COLORS[1] }
+          { name: `${t('payments.paid')}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[0] },
+          { name: `${t('payments.unpaid')}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
