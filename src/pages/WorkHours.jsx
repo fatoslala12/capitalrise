@@ -869,5 +869,4 @@ export default function WorkHours() {
             })()}
           </div>
         )}
-        </div>
   );
