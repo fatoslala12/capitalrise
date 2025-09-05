@@ -491,8 +491,6 @@ export default function WorkHours() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <div className="w-full max-w-none mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
     <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
         {/* Toast Notification */}
         {toast.show && (
@@ -869,4 +867,7 @@ export default function WorkHours() {
             })()}
           </div>
         )}
+        </div>
+      </div>
+    </div>
   );
