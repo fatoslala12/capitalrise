@@ -105,7 +105,7 @@ export default function MainLayout() {
               onClick={() => setIsMobileMenuOpen(false)}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
                 isActive 
-                  ? "bg-blue-400/30 text-white shadow-lg" 
+                  ? "bg-blue-600 text-white shadow-md" 
                   : "text-white hover:bg-white/10"
               }`}
             >
@@ -128,7 +128,7 @@ export default function MainLayout() {
   return (
     <div className="flex h-screen w-full bg-gray-100">
       {/* Desktop Sidebar - Solid dark blue like image */}
-      <aside className="hidden lg:flex w-64 bg-blue-900 flex-shrink-0">
+      <aside className="hidden lg:flex w-72 bg-blue-900 flex-shrink-0">
         <SidebarContent />
       </aside>
 
@@ -145,8 +145,8 @@ export default function MainLayout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header - Exactly like image */}
-        <header className="bg-white flex-shrink-0">
-          <div className="px-6 py-4 flex items-center justify-between">
+        <header className="bg-white flex-shrink-0 shadow-sm">
+          <div className="px-8 py-4 flex items-center justify-between">
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
@@ -195,7 +195,7 @@ export default function MainLayout() {
         </header>
 
         {/* Main Content - No spacing, full width */}
-        <main className="flex-1 bg-gray-100 overflow-auto">
+        <main className="flex-1 bg-gray-100 overflow-auto p-6">
           <Suspense fallback={<PageLoader />}>
             <Outlet />
           </Suspense>
