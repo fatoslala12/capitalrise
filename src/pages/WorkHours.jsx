@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import WorkHoursTable from "../components/WorkHoursTable";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import PageLoader from "../components/ui/PageLoader";
 
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
   const day = today.getDay();
-  
+
   // Java sipas backend: E Hëna (1) → E Diel (0)
   // Backend përdor Monday-Sunday week calculation
   // Monday = 1, Sunday = 0
@@ -20,13 +22,13 @@ const getStartOfWeek = (offset = 0) => {
     // Monday-Saturday - go back (day-1) days to get to Monday
     diff = -(day - 1);
   }
-  
+
   // Shto offset për javët e tjera
   const adjustedDiff = diff + (offset * 7);
-  
+
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() + adjustedDiff);
-  
+
   // Debug logging
   console.log('[DEBUG] getStartOfWeek calculation:');
   console.log('[DEBUG] Today:', today.toISOString().slice(0, 10));
@@ -35,7 +37,7 @@ const getStartOfWeek = (offset = 0) => {
   console.log('[DEBUG] Adjusted diff with offset:', adjustedDiff);
   console.log('[DEBUG] Start of week:', startOfWeek.toISOString().slice(0, 10));
   console.log('[DEBUG] Offset:', offset);
-  
+
   return startOfWeek;
 };
 
@@ -44,23 +46,27 @@ const formatDateRange = (startDate) => {
   endDate.setDate(startDate.getDate() + 6);
   const startStr = startDate.toISOString().slice(0, 10);
   const endStr = endDate.toISOString().slice(0, 10);
-  
+
   // Debug logging
   console.log('[DEBUG] formatDateRange calculation:');
   console.log('[DEBUG] Start date:', startDate.toISOString().slice(0, 10));
   console.log('[DEBUG] End date:', endDate.toISOString().slice(0, 10));
   console.log('[DEBUG] Formatted range:', `${startStr} - ${endStr}`);
-  
+
   return `${startStr} - ${endStr}`;
 };
 
 export default function WorkHours() {
   const { t } = useTranslation();
+  const { currentLanguage, isAlbanian } = useLanguage();
   const { user, setUser } = useAuth();
   const isManager = user?.role === "manager";
   const isAdmin = user?.role === "admin";
   const isUser = user?.role === "user";
   const token = localStorage.getItem("token");
+
+  // Debug language context
+  console.log('[DEBUG] WorkHours language context:', { currentLanguage, isAlbanian });
 
   const [employees, setEmployees] = useState([]);
   const [hourData, setHourData] = useState({});
@@ -73,12 +79,12 @@ export default function WorkHours() {
   const [viewMode, setViewMode] = useState('all'); // 'all' | 'bySite'
   const currentWeekStart = getStartOfWeek();
   const currentWeekLabel = formatDateRange(currentWeekStart);
-  
+
   // Debug log when employees state changes
   useEffect(() => {
     console.log('[DEBUG] Employees state changed:', employees.length, employees);
   }, [employees]);
-  
+
   // Debug logging
   console.log('[DEBUG] Current week start:', currentWeekStart);
   console.log('[DEBUG] Current week label:', currentWeekLabel);
@@ -131,17 +137,17 @@ export default function WorkHours() {
   // Merr punonjësit nga backend
   useEffect(() => {
     if (!user) return;
-    
+
     console.log('[DEBUG] Starting to fetch employees for user:', user);
     setLoading(true);
-    
+
     axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(async res => {
         const emps = res.data || [];
         console.log("All employees:", emps);
-        
+
         if (isAdmin) {
           // ADMIN: shfaq të gjithë punonjësit aktivë
           const activeEmps = emps.filter(emp =>             emp.status !== t('workHours.passive'));
@@ -149,7 +155,7 @@ export default function WorkHours() {
           setEmployees(activeEmps);
           return;
         }
-        
+
         if (isUser) {
           // USER: shfaq vetëm veten
           const selfEmployee = emps.find(emp => {
@@ -162,12 +168,12 @@ export default function WorkHours() {
           setEmployees(selfEmployee ? [selfEmployee] : []);
           return;
         }
-        
+
         if (isManager) {
           // MANAGER: shfaq punonjësit e site-ve të tij
           console.log("Manager user:", user);
           console.log("Manager employee_id:", user.employee_id);
-          
+
           // Fallback: nëse nuk ka employee_id, gjej nga email
           if (!user.employee_id) {
             console.log("Manager has no employee_id, searching by email:", user.email);
@@ -184,7 +190,7 @@ export default function WorkHours() {
             }
             return;
           }
-          
+
           // Gjej menaxherin në listën e punonjësve
           const managerEmployee = emps.find(emp => String(emp.id) === String(user.employee_id));
           if (!managerEmployee) {
@@ -192,18 +198,18 @@ export default function WorkHours() {
             setEmployees([]);
             return;
           }
-          
+
           // Përdor workplace nga managerEmployee nëse user.workplace është bosh
           const managerSites = user.workplace || managerEmployee.workplace || [];
           console.log("Manager sites:", managerSites);
-          
+
           // Nëse manager nuk ka site-t, shfaq vetëm veten
           if (managerSites.length === 0) {
             console.log("Manager has no sites, showing only self");
             setEmployees([managerEmployee]);
             return;
           }
-          
+
           // Filtro punonjësit që punojnë në site-t e menaxherit (vetëm aktivë)
           const filteredEmps = emps.filter(emp => {
             // Filtro punonjësit e pasiv (përveç menaxherit)
@@ -211,25 +217,25 @@ export default function WorkHours() {
               console.log(`Excluding inactive employee: ${emp.first_name} ${emp.last_name} (Status: ${emp.status})`);
               return false;
             }
-            
+
             if (String(emp.id) === String(user.employee_id)) {
               console.log(`Including manager self: ${emp.first_name} ${emp.last_name}`);
               return true; // Gjithmonë përfshij veten
             }
-            
+
             // Kontrollo nëse punonjësi ka site-t e përbashkëta me menaxherin
             if (emp.workplace && Array.isArray(emp.workplace)) {
               const hasCommonSite = emp.workplace.some(site => managerSites.includes(site));
               console.log(`Employee ${emp.first_name} ${emp.last_name} sites:`, emp.workplace, "Manager sites:", managerSites, "Has common site:", hasCommonSite, "Status:", emp.status);
               return hasCommonSite;
             }
-            
+
             console.log(`Employee ${emp.first_name} ${emp.last_name} has no workplace or not array`);
             return false;
           });
-          
+
           console.log("Filtered employees for manager:", filteredEmps);
-          
+
           // Nëse nuk gjej asnjë punonjës, shfaq vetëm menaxherin
           if (filteredEmps.length === 0) {
             console.log("No employees found for manager sites, showing only manager");
@@ -252,9 +258,9 @@ export default function WorkHours() {
   // Merr orët e punës nga backend
   useEffect(() => {
     if (!user || !currentWeekLabel) return;
-    
+
     setLoading(true);
-    
+
     axios.get("https://capitalrise-cwcq.onrender.com/api/work-hours/structured", {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -263,10 +269,64 @@ export default function WorkHours() {
         console.log('[DEBUG] WorkHours API data:', res.data);
         console.log('[DEBUG] WorkHours API data type:', typeof res.data);
         console.log('[DEBUG] WorkHours API data keys:', Object.keys(res.data || {}));
-        
+
         const data = res.data || {};
-        setHourData(data);
-        
+
+        // Debug: Check the actual structure of the data
+        if (Array.isArray(data)) {
+          console.log('[DEBUG] API returned array, converting to expected structure');
+          console.log('[DEBUG] First few array items:', data.slice(0, 3));
+
+          // If API returns array, convert to expected object structure
+          const convertedData = {};
+          data.forEach((item, index) => {
+            console.log(`[DEBUG] Processing item ${index}:`, item);
+            console.log(`[DEBUG] Item keys:`, Object.keys(item));
+
+            // Try different possible field names for employee ID
+            const empId = item.employeeId || item.employee_id || item.empId || item.emp_id || item.id;
+            const week = item.week || item.weekLabel || item.week_label || item.weekLabel || currentWeekLabel;
+            const day = item.day || item.dayOfWeek || item.day_of_week || item.dayName;
+            const hours = item.hours || item.hour || item.hourCount || item.hour_count || 0;
+            const site = item.site || item.siteName || item.site_name || item.workplace || '';
+
+            console.log(`[DEBUG] Extracted values:`, { empId, week, day, hours, site });
+
+            if (empId && week && day !== undefined) {
+              if (!convertedData[empId]) {
+                convertedData[empId] = {};
+              }
+              if (!convertedData[empId][week]) {
+                convertedData[empId][week] = {};
+              }
+              convertedData[empId][week][day] = {
+                hours: parseFloat(hours) || 0,
+                site: site
+              };
+              console.log(`[DEBUG] Added to convertedData[${empId}][${week}][${day}]:`, convertedData[empId][week][day]);
+            } else {
+              console.warn(`[WARNING] Skipping item ${index} - missing required fields:`, { empId, week, day, hours, site });
+            }
+          });
+
+          console.log('[DEBUG] Final converted data structure:', convertedData);
+          console.log('[DEBUG] Converted data keys:', Object.keys(convertedData));
+
+          // Debug: show sample of converted data
+          Object.entries(convertedData).forEach(([empId, empData]) => {
+            console.log(`[DEBUG] Employee ${empId} converted data:`, empData);
+            Object.entries(empData).forEach(([week, weekData]) => {
+              console.log(`[DEBUG] Employee ${empId} week ${week}:`, weekData);
+            });
+          });
+
+          setHourData(convertedData);
+        } else {
+          console.log('[DEBUG] API returned object, using as is');
+          console.log('[DEBUG] Object data structure:', data);
+          setHourData(data);
+        }
+
         // Debug: shfaq disa shembuj të të dhënave
         Object.entries(data).forEach(([empId, empData]) => {
           console.log(`[DEBUG] Employee ${empId} data:`, empData);
@@ -335,7 +395,7 @@ export default function WorkHours() {
       }
       return;
     }
-    
+
     if (isManager) {
       // MANAGER: mund të ndryshojë të gjitha fushat
       setHourData((prev) => ({
@@ -357,7 +417,7 @@ export default function WorkHours() {
   const handleSubmit = async () => {
     try {
       setSaved(true);
-      
+
       if (isAdmin) {
         // ADMIN: ruaj vetëm statusin e pagesës
         const paymentUpdates = [];
@@ -371,7 +431,7 @@ export default function WorkHours() {
             });
           }
         });
-        
+
         if (paymentUpdates.length > 0) {
           await axios.post("https://capitalrise-cwcq.onrender.com/api/work-hours/update-payment-status", {
             updates: paymentUpdates
@@ -399,7 +459,7 @@ export default function WorkHours() {
             });
           }
         });
-        
+
         if (updates.length > 0) {
           await axios.post("https://capitalrise-cwcq.onrender.com/api/work-hours/bulk-update", {
             updates: updates
@@ -408,7 +468,7 @@ export default function WorkHours() {
           });
         }
       }
-      
+
       showToast(t('workHours.dataSavedSuccess'), "success");
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {
@@ -427,26 +487,13 @@ export default function WorkHours() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <div className="animate-spin rounded-full h-32 w-32 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
-            {t('workHours.loadingMessage')}
-          </h2>
-        </div>
-      </div>
-    );
+    return <PageLoader text={t('workHours.loadingMessage')} />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="w-full max-w-none mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
         {/* Toast Notification */}
         {toast.show && (
           <div className={`fixed top-16 sm:top-20 right-2 sm:right-4 z-50 px-4 sm:px-6 py-3 sm:py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 text-sm sm:text-base ${
@@ -499,7 +546,7 @@ export default function WorkHours() {
                 </div>
                 <div className="text-xs sm:text-sm opacity-90 font-medium">{t('workHours.employee')}</div>
               </div>
-              
+
               <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="text-xl sm:text-2xl font-bold">
                   {(() => {
@@ -520,7 +567,7 @@ export default function WorkHours() {
                 </div>
                 <div className="text-xs sm:text-sm opacity-90 font-medium">{t('workHours.total')} {t('workHours.hours')}</div>
               </div>
-              
+
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="text-xl sm:text-2xl font-bold">
                   £{(() => {
@@ -542,7 +589,7 @@ export default function WorkHours() {
                 </div>
                 <div className="text-xs sm:text-sm opacity-90 font-medium">Total Paga</div>
               </div>
-              
+
               <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="text-xl sm:text-2xl font-bold">
                   {Object.keys(hourData).length}
@@ -563,7 +610,7 @@ export default function WorkHours() {
                 </svg>
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-blue-700">
-                Ruaj Orët e Punës
+                {t('workHours.saveWorkHours')}
               </h2>
             </div>
             <div className="flex justify-center sm:justify-start">
@@ -577,14 +624,14 @@ export default function WorkHours() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    U ruajt!
+                    {t('workHours.saved')}
                   </>
                 ) : (
                   <>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 0V4a2 2 0 00-2-2H8a2 2 0 00-2 2v3m2 0h4m-4 0v1m4-1v1m-4 3h4" />
                     </svg>
-                    Ruaj Orët e Punës
+                    {t('workHours.saveWorkHours')}
                   </>
                 )}
               </button>
@@ -601,10 +648,10 @@ export default function WorkHours() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-blue-800">Informacion</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-800">{t('workHours.info')}</h2>
             </div>
             <p className="text-sm sm:text-base text-blue-700">
-              Kjo faqe shfaq vetëm orët tuaja të punës. Për ndryshime, kontaktoni menaxherin tuaj.
+              {t('workHours.userReadOnlyInfo')}
             </p>
           </div>
         )}
@@ -618,10 +665,10 @@ export default function WorkHours() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.882 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-yellow-800">Informacion për Menaxherin</h2>
+              <h2 className="text-base sm:text-lg font-bold text-yellow-800">{t('workHours.managerInfo')}</h2>
             </div>
             <p className="text-sm sm:text-base text-yellow-700 mb-4">
-              Nuk u gjetën punonjës për site-t tuaja. Kjo mund të ndodhë për arsyet e mëposhtme:
+              {t('workHours.noEmployeesForSites')}
             </p>
             <ul className="text-sm sm:text-base text-yellow-700 list-disc list-inside space-y-2">
               <li>Nuk jeni caktuar në asnjë site</li>
@@ -629,7 +676,7 @@ export default function WorkHours() {
               <li>Ka problem me të dhënat e databazës</li>
             </ul>
             <p className="text-sm sm:text-base text-yellow-700 mt-4">
-              Kontaktoni administratorin për të rregulluar këtë problem.
+              {t('workHours.contactAdmin')}
             </p>
           </div>
         )}
@@ -666,8 +713,8 @@ export default function WorkHours() {
         {loading ? (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-            <h4 className="text-lg font-semibold text-blue-800 mb-2">{t('workHours.loadingData')}</h4>
-            <p className="text-blue-700">{t('workHours.pleaseWait')}</p>
+            <h4 className="text-lg font-semibold text-blue-800 mb-2">Duke ngarkuar të dhënat...</h4>
+            <p className="text-blue-700">Ju lutem prisni ndërsa po ngarkojmë orët e punës.</p>
           </div>
         ) : Array.isArray(employees) && employees.length > 0 ? (
           viewMode === 'all' ? (
@@ -675,21 +722,32 @@ export default function WorkHours() {
               employees={employees}
               weekLabel={currentWeekLabel}
               data={hourData}
-              onChange={handleChange}
-              readOnly={(empId) => isUser || (isManager && paidStatus[`${currentWeekLabel}_${empId}`])}
-              showPaymentControl={isAdmin}
               paidStatus={paidStatus}
-              setPaidStatus={setPaidStatus}
+              siteOptions={siteOptions}
+              showPaymentControl={isAdmin}
+              onChange={handleChange}
+              readOnly={(empId) => {
+                if (isAdmin) return true; // admin cannot edit inputs
+                if (isUser) return true;  // user is read-only
+                // manager can edit unless this week is marked paid for that employee
+                return paidStatus[`${currentWeekLabel}_${empId}`] === true;
+              }}
+              onPaymentToggle={(key, newStatus) => {
+                setPaidStatus(prev => ({
+                  ...prev,
+                  [key]: newStatus
+                }));
+              }}
             />
           ) : (
             Object.entries(employeesBySite).sort(([a],[b])=>a.localeCompare(b)).map(([site, list]) => (
               <div key={site} className="mt-6 bg-white/80 rounded-2xl shadow-xl border border-blue-200">
                 <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-2xl">
                   <h3 className="font-bold text-blue-800 text-lg flex items-center gap-2">
-                    🏗️ {t('workHours.siteLabel')}: <span className="text-purple-700">{site}</span>
+                    🏗️ Site: <span className="text-purple-700">{site}</span>
                   </h3>
                   <div className="text-sm text-blue-600 font-medium">
-                    {list.length} {t('workHours.employeesCount')}
+                    {list.length} punonjës
                   </div>
                 </div>
                 <div className="p-4">
@@ -697,13 +755,22 @@ export default function WorkHours() {
                     employees={list}
                     weekLabel={currentWeekLabel}
                     data={hourData}
-                    onChange={handleChange}
-                    readOnly={(empId) => isUser || (isManager && paidStatus[`${currentWeekLabel}_${empId}`])}
-                    showPaymentControl={isAdmin}
                     paidStatus={paidStatus}
-                    setPaidStatus={setPaidStatus}
-                    siteScope={site === '(Pa site)' ? '' : site}
                     siteOptions={[site]}
+                    siteScope={site === '(Pa site)' ? '' : site}
+                    showPaymentControl={isAdmin}
+                    onChange={handleChange}
+                    readOnly={(empId) => {
+                      if (isAdmin) return true;
+                      if (isUser) return true;
+                      return paidStatus[`${currentWeekLabel}_${empId}`] === true;
+                    }}
+                    onPaymentToggle={(key, newStatus) => {
+                      setPaidStatus(prev => ({
+                        ...prev,
+                        [key]: newStatus
+                      }));
+                    }}
                   />
                 </div>
               </div>
@@ -713,12 +780,12 @@ export default function WorkHours() {
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
             <h4 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ {t('workHours.noEmployeesToShow')}</h4>
             <p className="text-yellow-700 mb-4">
-              {t('workHours.noEmployeesDescription')}
+              {t('workHours.noEmployeesThisWeek')}
             </p>
             <ul className="text-yellow-700 list-disc list-inside space-y-2">
-              <li>{t('workHours.noEmployeesReason1')}</li>
-              <li>{t('workHours.noEmployeesReason2')}</li>
-              <li>{t('workHours.noEmployeesReason3')}</li>
+              <li>Nuk ka punonjës të caktuar për rolin tuaj</li>
+              <li>Punonjësit nuk kanë orë të punës për këtë javë</li>
+              <li>Ka problem me të dhënat e databazës</li>
             </ul>
           </div>
         )}
@@ -772,7 +839,7 @@ export default function WorkHours() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs sm:text-sm text-gray-500">
-                            {expandedWeeks.includes(weekLabel) ? "Mbyll" : "Hap"}
+                            {expandedWeeks.includes(weekLabel) ? "Close" : "Open"}
                           </span>
                           <div className={`transform transition-transform duration-300 ${expandedWeeks.includes(weekLabel) ? 'rotate-180' : ''}`}>
                             <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -806,4 +873,3 @@ export default function WorkHours() {
       </div>
     </div>
   );
-}
