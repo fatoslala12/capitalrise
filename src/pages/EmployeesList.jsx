@@ -142,13 +142,22 @@ export default function EmployeesList() {
         setLoading(false);
         setDataLoaded(true);
         
-        // Load contracts for site options and workplace mapping
-        axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
-          headers: { Authorization: `Bearer ${user?.token}` },
-          timeout: 5000
-        }).then(contractsRes => {
+        // Load contracts and employee_workplaces for proper workplace mapping
+        Promise.all([
+          axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
+            headers: { Authorization: `Bearer ${user?.token}` },
+            timeout: 5000
+          }),
+          axios.get("https://capitalrise-cwcq.onrender.com/api/employee-workplaces", {
+            headers: { Authorization: `Bearer ${user?.token}` },
+            timeout: 5000
+          })
+        ]).then(([contractsRes, employeeWorkplacesRes]) => {
           console.log("Contracts data loaded successfully");
           console.log("Contracts data:", contractsRes.data);
+          console.log("Employee workplaces data loaded successfully");
+          console.log("Employee workplaces data:", employeeWorkplacesRes.data);
+          
           setContracts(contractsRes.data);
           
           // Extract unique site names from contracts (handle both siteName and site_name)
@@ -158,11 +167,21 @@ export default function EmployeesList() {
           console.log("Available sites:", sites);
           setSiteOptions(sites);
           
-          // Map workplace data to employees
+          // Map workplace data to employees using employee_workplaces junction table
           const employeesWithWorkplaces = employeesData.map(employee => {
-            // Find contracts for this employee
+            // Find employee_workplaces entries for this employee
+            const employeeWorkplaceEntries = employeeWorkplacesRes.data.filter(ew => 
+              ew.employeeId === employee.id || ew.employee_id === employee.id
+            );
+            
+            // Get contract IDs for this employee
+            const contractIds = employeeWorkplaceEntries.map(ew => 
+              ew.contractId || ew.contract_id
+            );
+            
+            // Find contracts for this employee using the contract IDs
             const employeeContracts = contractsRes.data.filter(contract => 
-              contract.employeeId === employee.id || contract.employee_id === employee.id
+              contractIds.includes(contract.id || contract.contract_id)
             );
             
             // Extract unique site names for this employee
@@ -171,6 +190,8 @@ export default function EmployeesList() {
             )];
             
             console.log(`Employee ${employee.id} workplaces:`, employeeWorkplaces);
+            console.log(`Employee ${employee.id} contract IDs:`, contractIds);
+            console.log(`Employee ${employee.id} contracts:`, employeeContracts);
             
             return {
               ...employee,
@@ -181,8 +202,8 @@ export default function EmployeesList() {
           console.log("Employees with workplaces:", employeesWithWorkplaces);
           setEmployees(employeesWithWorkplaces);
         }).catch(error => {
-          console.warn("Error loading contracts:", error);
-          // If contracts fail to load, still set employees without workplace data
+          console.warn("Error loading contracts or employee_workplaces:", error);
+          // If data fails to load, still set employees without workplace data
           setEmployees(employeesData);
         });
         
