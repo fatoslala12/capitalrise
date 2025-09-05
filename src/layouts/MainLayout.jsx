@@ -79,7 +79,7 @@ export default function MainLayout() {
       {/* Logo Section - No background, centered */}
       <div className="p-6 border-b border-white/10 flex flex-col items-center">
         <div className="mb-2">
-          <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-16 w-16" />
+          <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-20 w-20" />
         </div>
         <div className="text-center">
           <p className="text-sm text-blue-200 capitalize font-medium">
@@ -90,8 +90,8 @@ export default function MainLayout() {
         </div>
       </div>
 
-      {/* Navigation - Left aligned and moved down */}
-      <nav className="flex-1 px-2 py-4 space-y-1 mt-12">
+      {/* Navigation - Far left aligned and moved much further down */}
+      <nav className="flex-1 pl-2 pr-1 py-4 space-y-1 mt-20">
         {menu.map((item) => {
           const isActive = location.pathname === item.path;
           const icon = item.label.split(" ")[0];
@@ -101,7 +101,7 @@ export default function MainLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+              className={`flex items-center gap-2 pl-2 pr-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
                 isActive 
                   ? "bg-blue-600 text-white shadow-md" 
                   : "text-white hover:bg-white/10"
