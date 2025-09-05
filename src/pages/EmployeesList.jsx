@@ -135,26 +135,55 @@ export default function EmployeesList() {
               role: emp.role
             });
           });
-          setEmployees(employeesData);
+          // Don't set employees here - will be set in contracts callback with workplace data
         }
         
         // Set loading to false immediately after employees load
         setLoading(false);
         setDataLoaded(true);
         
-        // Load contracts for site options in background (needed for form)
+        // Load contracts for site options and workplace mapping
         axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
           headers: { Authorization: `Bearer ${user?.token}` },
           timeout: 5000
         }).then(contractsRes => {
           console.log("Contracts data loaded successfully");
+          console.log("Contracts data:", contractsRes.data);
           setContracts(contractsRes.data);
           
-          // Extract unique site names from contracts
-          const sites = [...new Set(contractsRes.data.map(contract => contract.siteName).filter(Boolean))];
+          // Extract unique site names from contracts (handle both siteName and site_name)
+          const sites = [...new Set(contractsRes.data.map(contract => 
+            contract.siteName || contract.site_name
+          ).filter(Boolean))];
+          console.log("Available sites:", sites);
           setSiteOptions(sites);
+          
+          // Map workplace data to employees
+          const employeesWithWorkplaces = employeesData.map(employee => {
+            // Find contracts for this employee
+            const employeeContracts = contractsRes.data.filter(contract => 
+              contract.employeeId === employee.id || contract.employee_id === employee.id
+            );
+            
+            // Extract unique site names for this employee
+            const employeeWorkplaces = [...new Set(
+              employeeContracts.map(contract => contract.siteName || contract.site_name).filter(Boolean)
+            )];
+            
+            console.log(`Employee ${employee.id} workplaces:`, employeeWorkplaces);
+            
+            return {
+              ...employee,
+              workplace: employeeWorkplaces
+            };
+          });
+          
+          console.log("Employees with workplaces:", employeesWithWorkplaces);
+          setEmployees(employeesWithWorkplaces);
         }).catch(error => {
           console.warn("Error loading contracts:", error);
+          // If contracts fail to load, still set employees without workplace data
+          setEmployees(employeesData);
         });
         
         // Load additional data in background (not critical for initial display)
