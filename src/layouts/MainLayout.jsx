@@ -76,14 +76,14 @@ export default function MainLayout() {
 
   const SidebarContent = () => (
     <>
-      {/* Logo Section - Bigger logo without text */}
-      <div className="p-6">
-        <div className="flex flex-col items-center gap-3">
-          <div className="bg-white rounded-xl p-4 shadow-lg">
-            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-16 w-16" />
+      {/* Logo Section - Compact design */}
+      <div className="p-4 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="bg-white rounded-lg p-2 shadow-sm">
+            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-10 w-10" />
           </div>
-          <div className="text-center">
-            <p className="text-sm text-blue-200 capitalize font-medium">
+          <div>
+            <p className="text-xs text-blue-200 capitalize font-medium">
               {user?.role === 'admin' ? 'Administrator' : 
                user?.role === 'manager' ? 'Manager' : 
                'User'}
@@ -92,8 +92,8 @@ export default function MainLayout() {
         </div>
       </div>
 
-      {/* Navigation - Like in image */}
-      <nav className="flex-1 px-4 space-y-2">
+      {/* Navigation - Compact design */}
+      <nav className="flex-1 px-3 py-2 space-y-1">
         {menu.map((item) => {
           const isActive = location.pathname === item.path;
           const icon = item.label.split(" ")[0];
@@ -103,13 +103,13 @@ export default function MainLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`flex items-center gap-4 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
                 isActive 
                   ? "bg-blue-400/30 text-white shadow-lg" 
                   : "text-white hover:bg-white/10"
               }`}
             >
-              <span className="text-lg flex-shrink-0">{icon}</span>
+              <span className="text-base flex-shrink-0">{icon}</span>
               <span className="whitespace-nowrap">{translatedText}</span>
             </Link>
           );
@@ -117,8 +117,8 @@ export default function MainLayout() {
       </nav>
 
       {/* Simplified Footer */}
-      <div className="mt-auto p-6 border-t border-white/10">
-        <div className="text-center text-sm text-blue-200/80 font-medium">
+      <div className="mt-auto p-4 border-t border-white/10">
+        <div className="text-center text-xs text-blue-200/70 font-medium">
           © 2025 Capital Rise
         </div>
       </div>
@@ -165,8 +165,8 @@ export default function MainLayout() {
             <div className="hidden lg:block flex-1"></div>
             
             {/* Mobile logo */}
-            <div className="lg:hidden flex items-center gap-3">
-              <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-8 w-8" />
+            <div className="lg:hidden flex items-center gap-2">
+              <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-6 w-6" />
             </div>
             
             {/* Left side - Welcome message */}
