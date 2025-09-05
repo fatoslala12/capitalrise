@@ -76,9 +76,9 @@ export default function MainLayout() {
 
   const SidebarContent = () => (
     <>
-      {/* Logo Section - Centered and larger */}
+      {/* Logo Section - No background, centered */}
       <div className="p-6 border-b border-white/10 flex flex-col items-center">
-        <div className="bg-white rounded-lg p-3 shadow-sm mb-2">
+        <div className="mb-2">
           <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-16 w-16" />
         </div>
         <div className="text-center">
@@ -90,8 +90,8 @@ export default function MainLayout() {
         </div>
       </div>
 
-      {/* Navigation - Centered design */}
-      <nav className="flex-1 px-4 py-4 space-y-1 mt-4">
+      {/* Navigation - Left aligned and moved down */}
+      <nav className="flex-1 px-2 py-4 space-y-1 mt-12">
         {menu.map((item) => {
           const isActive = location.pathname === item.path;
           const icon = item.label.split(" ")[0];
