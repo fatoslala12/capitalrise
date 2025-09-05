@@ -128,12 +128,9 @@ export default function MainLayout() {
   return (
     <div className="flex h-screen w-full bg-gray-100">
       {/* Desktop Sidebar - Solid dark blue like image */}
-      <aside className="hidden lg:flex w-64 bg-blue-900">
+      <aside className="hidden lg:flex w-64 bg-blue-900 flex-shrink-0">
         <SidebarContent />
       </aside>
-      
-      {/* Desktop content spacer */}
-      <div className="hidden lg:block w-64 flex-shrink-0"></div>
 
       {/* Mobile Sidebar - Collapsible with solid blue */}
       <MobileSidebar 
@@ -146,9 +143,9 @@ export default function MainLayout() {
       </MobileSidebar>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Header - Exactly like image */}
-        <header className="bg-white">
+        <header className="bg-white flex-shrink-0">
           <div className="px-6 py-4 flex items-center justify-between">
             {/* Mobile menu button */}
             <button
@@ -160,9 +157,6 @@ export default function MainLayout() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            
-            {/* Desktop spacer */}
-            <div className="hidden lg:block flex-1"></div>
             
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center gap-2">
@@ -200,7 +194,7 @@ export default function MainLayout() {
           </div>
         </header>
 
-        {/* Main Content - No spacing */}
+        {/* Main Content - No spacing, full width */}
         <main className="flex-1 bg-gray-100 overflow-auto">
           <Suspense fallback={<PageLoader />}>
             <Outlet />

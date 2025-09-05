@@ -210,7 +210,7 @@ export default function MyTasks() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-2 md:p-4 lg:p-6 space-y-4 md:space-y-6">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-6">
       {/* Toast Notification */}
       {toast.show && (
         <div className={`fixed top-16 md:top-20 right-2 md:right-4 z-50 px-4 md:px-6 py-3 md:py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 text-sm md:text-base ${

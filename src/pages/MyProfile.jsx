@@ -341,7 +341,7 @@ export default function MyProfile() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
       {/* Toast Notification */}
       {toast.show && (
         <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 ${

@@ -334,7 +334,7 @@ export default function BackupManagement() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl shadow-lg p-8 border border-blue-200">
         <div className="flex items-center gap-4">

@@ -312,7 +312,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="w-full max-w-none px-2 md:px-4 lg:px-8">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8">
       {/* Heqim titullin për admin */}
       {user.role !== "admin" && (
         <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 px-2">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h1>

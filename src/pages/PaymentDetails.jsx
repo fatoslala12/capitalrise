@@ -438,8 +438,7 @@ export default function PaymentDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-<div className="max-w-[95vw] xl:max-w-[90vw] mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-4 sm:space-y-6 lg:space-y-8 bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen">
         {/* HEADER SECTION - MOBILE RESPONSIVE */}
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
           <div className="p-4 sm:p-6 lg:p-8">

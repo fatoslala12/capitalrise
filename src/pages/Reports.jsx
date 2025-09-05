@@ -231,7 +231,7 @@ export default function Reports() {
   }
 
   return (
-    <Container className="px-4 md:px-6">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8">
       <div className="mb-6 md:mb-8">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4 md:p-6 text-white mb-6">

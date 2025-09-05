@@ -374,7 +374,7 @@ export default function Tasks() {
   }
 
   return (
-    <div className="max-w-full xl:max-w-[90vw] mx-auto px-4 py-8 space-y-8 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-8 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
       
       {/* HEADER MODERN */}
       <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-md px-4 sm:px-8 py-4 mb-8 border border-blue-100 animate-fade-in w-full">

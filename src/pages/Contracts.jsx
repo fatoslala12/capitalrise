@@ -856,7 +856,7 @@ export default function Contracts() {
   }
 
   return (
-    <div className="max-w-[95vw] xl:max-w-[90vw] mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8 bg-gray-50 min-h-screen">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-4 sm:space-y-6 lg:space-y-8 bg-gray-50 min-h-screen">
       {/* Toast Notification */}
       {showToast.show && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
