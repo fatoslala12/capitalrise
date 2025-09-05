@@ -98,10 +98,34 @@ export default function EmployeesList() {
         clearTimeout(timeoutId);
         console.log("Employees data loaded successfully:", employeesRes.data);
         console.log("Number of employees:", employeesRes.data?.length || 0);
+        console.log("Raw API response structure:", JSON.stringify(employeesRes.data, null, 2));
         
         const employeesData = snakeToCamel(employeesRes.data || []);
         console.log("Processed employees data:", employeesData);
-        setEmployees(employeesData);
+        console.log("Processed employees length:", employeesData.length);
+        console.log("First employee sample:", employeesData[0]);
+        
+        // If no employees returned, set some test data for debugging
+        if (employeesData.length === 0) {
+          console.log("No employees returned from API, setting test data");
+          const testEmployees = [
+            {
+              id: 1,
+              firstName: "Test",
+              lastName: "Employee",
+              email: "test@example.com",
+              phone: "+355 69 123 4567",
+              role: "user",
+              status: "Aktiv",
+              hourlyRate: 15.00,
+              workplace: ["Test Site"],
+              labelType: "Standard"
+            }
+          ];
+          setEmployees(testEmployees);
+        } else {
+          setEmployees(employeesData);
+        }
         
         // Set loading to false immediately after employees load
         setLoading(false);
@@ -334,7 +358,13 @@ export default function EmployeesList() {
 
   // Filter and sort employees with useMemo for performance
   const filteredEmployees = useMemo(() => {
-    return employees
+    console.log("Filtering employees. Total employees:", employees.length);
+    console.log("Current employees array:", employees);
+    console.log("Filter status:", filterStatus);
+    console.log("Filter workplace:", filterWorkplace);
+    console.log("Search term:", searchTerm);
+    
+    const filtered = employees
       .filter(emp => {
         const matchesStatus = filterStatus === "All" || emp.status === filterStatus;
         let matchesWorkplace = true;
@@ -360,6 +390,10 @@ export default function EmployeesList() {
           return (bVal || "").localeCompare(aVal || "");
         }
       });
+    
+    console.log("Filtered employees result:", filtered);
+    console.log("Filtered employees count:", filtered.length);
+    return filtered;
   }, [employees, filterStatus, filterWorkplace, searchTerm, sortBy, sortOrder]);
 
   // Export to CSV
@@ -424,7 +458,7 @@ export default function EmployeesList() {
     };
   }, [showAddModal]);
 
-  if (loading) {
+  if (loading || !dataLoaded) {
     return (
       <div className="w-full px-4 md:px-6 py-4 md:py-8">
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
