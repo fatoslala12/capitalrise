@@ -39,27 +39,6 @@ export default function PaymentDetails() {
   const { t } = useTranslation();
   const { contract_number } = useParams();
   const [contract, setContract] = useState(null);
-
-  // Function to translate contract status
-  const translateStatus = (status) => {
-    const userLanguage = localStorage.getItem('language') || 'en';
-    
-    if (userLanguage === 'sq') {
-      return status; // Return Albanian status as is
-    }
-    
-    // Translate to English
-    const statusMap = {
-      'Ne progres': 'In Progress',
-      'Draft': 'Draft',
-      'Anulluar': 'Cancelled',
-      'Pezulluar': 'Suspended',
-      'Mbyllur': 'Closed',
-      'Mbyllur me vonese': 'Closed with Delay'
-    };
-    
-    return statusMap[status] || status;
-  };
   const [expensesInvoices, setExpensesInvoices] = useState([]);
   const [workHours, setWorkHours] = useState({});
   const [employees, setEmployees] = useState([]);
@@ -67,7 +46,6 @@ export default function PaymentDetails() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
-  // Filtra të rinj për orët e punës
   const [workHoursSearchTerm, setWorkHoursSearchTerm] = useState("");
   const [workHoursDateFilter, setWorkHoursDateFilter] = useState({ start: "", end: "" });
   const [showAddModal, setShowAddModal] = useState(false);
@@ -82,6 +60,26 @@ export default function PaymentDetails() {
     file: null,
   });
   const token = localStorage.getItem("token");
+
+  // Function to translate contract status
+  const translateStatus = (status) => {
+    const userLanguage = localStorage.getItem('language') || 'en';
+    
+    if (userLanguage === 'sq') {
+      return status;
+    }
+    
+    const statusMap = {
+      'Ne progres': 'In Progress',
+      'Draft': 'Draft',
+      'Anulluar': 'Cancelled',
+      'Pezulluar': 'Suspended',
+      'Mbyllur': 'Closed',
+      'Mbyllur me vonese': 'Closed with Delay'
+    };
+    
+    return statusMap[status] || status;
+  };
 
   // Merr të dhënat nga backend
   useEffect(() => {
@@ -105,11 +103,6 @@ export default function PaymentDetails() {
           })
         ]);
 
-        console.log('[DEBUG] Contract data:', contractRes.data);
-        console.log('[DEBUG] Work hours data:', workHoursRes.data);
-        console.log('[DEBUG] Employees data:', employeesRes.data);
-        console.log('[DEBUG] Expenses response:', expensesRes.data);
-        
         setContract(contractRes.data);
         setWorkHours(workHoursRes.data || {});
         setEmployees(employeesRes.data || []);
@@ -166,72 +159,6 @@ export default function PaymentDetails() {
     }
   };
 
-  // Shto shpenzim të ri në backend
-  const handleAddExpenseInvoice = async (e) => {
-    e.preventDefault();
-
-    // Validimi i formës
-    if (!newExpenseInvoice.expense_type.trim()) {
-              alert(t('paymentDetails.fillGrossAmount'));
-      return;
-    }
-
-    if (!newExpenseInvoice.gross || parseFloat(newExpenseInvoice.gross) <= 0) {
-              alert(t('paymentDetails.fillGrossAmount'));
-      return;
-    }
-
-    let fileContent = "";
-    let receiptPath = null;
-    
-    if (newExpenseInvoice.file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        fileContent = reader.result;
-        // Ruaj si receipt_path në vend të file
-        receiptPath = fileContent;
-        await saveExpense(receiptPath);
-      };
-      reader.readAsDataURL(newExpenseInvoice.file);
-    } else {
-      await saveExpense(null);
-    }
-
-    async function saveExpense(receiptPath) {
-      const expenseInvoice = {
-        ...newExpenseInvoice,
-        contract_number,
-        fileName: newExpenseInvoice.file?.name || "",
-        receipt_path: receiptPath, // Ruaj në receipt_path
-        file: null, // Mos ruaj në file
-      };
-      try {
-        await axios.post(
-          `https://capitalrise-cwcq.onrender.com/api/expenses/${contract_number}`,
-          expenseInvoice,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        
-        // Rifresko të gjithë expenses-et pas shtimit
-        const expensesRes = await axios.get(
-          `https://capitalrise-cwcq.onrender.com/api/expenses/${contract_number}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        console.log('Expenses pas shtimit:', expensesRes.data);
-        setExpensesInvoices(expensesRes.data || []);
-        
-        // Reset forma dhe mbyll modalit
-        resetForm();
-        setShowAddModal(false);
-        
-                  alert(t('paymentDetails.expenseDeletedSuccess'));
-      } catch (error) {
-        console.error('Error adding expense:', error);
-        alert(t('paymentDetails.deleteError') + " " + (error.response?.data?.error || error.message));
-      }
-    }
-  };
-
   const resetForm = () => {
     setNewExpenseInvoice({
       companyName: contract?.company || "",
@@ -254,86 +181,22 @@ export default function PaymentDetails() {
     resetForm();
   };
 
-  // Fshi shpenzim nga backend
-  const handleDelete = async (id) => {
-          if (!confirm(t('paymentDetails.deleteExpenseConfirm'))) {
-      return;
-    }
-
-    try {
-      await axios.delete(
-        `https://capitalrise-cwcq.onrender.com/api/expenses/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      // Rifresko faturat pas fshirjes
-      const res = await axios.get(
-        `https://capitalrise-cwcq.onrender.com/api/expenses/${contract_number}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      console.log('Faturat pas fshirjes:', res.data);
-      setExpensesInvoices(Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []));
-              alert(t('paymentDetails.expenseDeletedSuccess'));
-    } catch (error) {
-      console.error('Error deleting expense:', error);
-              alert(t('paymentDetails.deleteError') + " " + (error.response?.data?.error || error.message));
-    }
-  };
-
-  // Ndrysho statusin e pagesës në backend
-  const togglePaid = async (id) => {
-    try {
-      await axios.put(
-        `https://capitalrise-cwcq.onrender.com/api/expenses/${id}/toggle-paid`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      // Rifresko faturat pas ndryshimit të statusit
-      const res = await axios.get(
-        `https://capitalrise-cwcq.onrender.com/api/expenses/${contract_number}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      console.log('Faturat pas ndryshimit të statusit:', res.data);
-      setExpensesInvoices(Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []));
-              alert(t('paymentDetails.paymentStatusChangedSuccess'));
-    } catch (error) {
-      console.error('Error toggling payment status:', error);
-              alert(t('paymentDetails.statusChangeError') + " " + (error.response?.data?.error || error.message));
-    }
-  };
-
-  // Përllogaritjet e orëve të punës - RREGULLUAR
+  // Përllogaritjet e orëve të punës
   const rows = [];
   let totalBruto = 0;
   let totalNeto = 0;
 
-  console.log('[DEBUG PaymentDetails] workHours data:', workHours);
-  console.log('[DEBUG PaymentDetails] contract data:', contract);
-  console.log('[DEBUG PaymentDetails] employees data:', employees);
-
   if (workHours && typeof workHours === 'object' && Object.keys(workHours).length > 0 && contract) {
     Object.entries(workHours).forEach(([employeeId, weeks]) => {
-      console.log(`[DEBUG PaymentDetails] Processing employee ${employeeId}, weeks:`, weeks);
       Object.entries(weeks).forEach(([weekLabel, days]) => {
-        console.log(`[DEBUG PaymentDetails] Processing week ${weekLabel}, days:`, days);
-        // RREGULLIMI: Filtro vetëm për këtë kontratë me krahasim të saktë
         const filteredDays = Object.values(days).filter(
-          (day) => {
-            console.log(`[DEBUG PaymentDetails] Day data:`, day);
-            console.log(`[DEBUG PaymentDetails] Contract ID check: day.contract_id=${day.contract_id}, contract.id=${contract?.id}`);
-            // RREGULLIMI: Krahasimi i saktë duke konvertuar në string
-            return day.contract_id && contract && String(day.contract_id) === String(contract.id);
-          }
+          (day) => day.contract_id && contract && String(day.contract_id) === String(contract.id)
         );
-        console.log(`[DEBUG PaymentDetails] Filtered days for contract ${contract?.id}:`, filteredDays);
         const totalHours = filteredDays.reduce((sum, d) => sum + Number(d.hours || 0), 0);
-        console.log(`[DEBUG PaymentDetails] Total hours for ${employeeId} in ${weekLabel}: ${totalHours}`);
         if (totalHours === 0) return;
         
-        // RREGULLIMI: Employee matching i saktë
         const emp = employees.find((e) => String(e.id) === String(employeeId));
-        console.log(`[DEBUG PaymentDetails] Employee found:`, emp);
         const rate = parseFloat(emp?.hourlyRate || emp?.hourly_rate || 0);
-        console.log(`[DEBUG PaymentDetails] Employee rate: ${rate}`);
         const bruto = totalHours * rate;
         const neto = bruto * (emp?.labelType === "NI" ? 0.7 : 0.8);
         totalBruto += bruto;
@@ -345,36 +208,11 @@ export default function PaymentDetails() {
           bruto,
           neto,
         });
-        console.log(`[DEBUG PaymentDetails] Added row:`, { name: emp ? `${emp.first_name} ${emp.last_name}` : `Employee #${employeeId}`, week: weekLabel, hours: totalHours, bruto, neto });
       });
     });
   }
 
-  console.log('[DEBUG PaymentDetails] Final rows:', rows);
-  console.log('[DEBUG PaymentDetails] Total bruto:', totalBruto, 'Total neto:', totalNeto);
-  console.log('[DEBUG PaymentDetails] expensesInvoices before render:', expensesInvoices);
-  console.log('[DEBUG PaymentDetails] expensesInvoices length:', expensesInvoices.length);
-  console.log('[DEBUG PaymentDetails] expensesInvoices array:', expensesInvoices);
-
-  // RREGULLIMI: Validimi i expenses për të shmangur NaN
-  const totalInvoicesGross = expensesInvoices.reduce((sum, inv) => {
-    const gross = parseFloat(inv.gross || 0);
-    return sum + (isNaN(gross) ? 0 : gross);
-  }, 0);
-  
-  const totalInvoicesNet = expensesInvoices.reduce((sum, inv) => {
-    const net = parseFloat(inv.net || 0);
-    return sum + (isNaN(net) ? 0 : net);
-  }, 0);
-  
-  const totalOverallGross = totalBruto + totalInvoicesGross;
-  const totalOverallNet = totalNeto + totalInvoicesNet;
-
-  // Llogaritja e parave të mbetura
-  const contractValue = parseFloat(contract?.contract_value || 0);
-  const remainingAmount = contractValue - totalOverallGross;
-
-  // Filtro shpenzimet sipas kërkimit dhe datës
+  // Filtro shpenzimet
   const filteredExpenses = expensesInvoices.filter(expense => {
     const matchesSearch = expense.expense_type.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDateFilter = !dateFilter.start || !dateFilter.end || 
@@ -382,7 +220,7 @@ export default function PaymentDetails() {
     return matchesSearch && matchesDateFilter;
   });
 
-  // Filtro orët e punës sipas kërkimit dhe datës
+  // Filtro orët e punës
   const filteredWorkHoursRows = rows.filter(row => {
     const matchesSearch = row.name.toLowerCase().includes(workHoursSearchTerm.toLowerCase()) ||
                          row.week.toLowerCase().includes(workHoursSearchTerm.toLowerCase());
@@ -430,8 +268,8 @@ export default function PaymentDetails() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
         <div className="text-center">
-                  <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {t('paymentDetails.contractNotFound')}</h2>
-        <p className="text-gray-600">{t('paymentDetails.contractNotFoundError')}</p>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {t('paymentDetails.contractNotFound')}</h2>
+          <p className="text-gray-600">{t('paymentDetails.contractNotFoundError')}</p>
         </div>
       </div>
     );
@@ -439,446 +277,167 @@ export default function PaymentDetails() {
 
   return (
     <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-4 sm:space-y-6 lg:space-y-8 bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen">
-        {/* HEADER SECTION - MOBILE RESPONSIVE */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
-          <div className="p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="flex-shrink-0 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-xl p-3 shadow-lg">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6 sm:w-8 sm:h-8">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H4.5m2.25 0v3m0 0v.375c0 .621-.504 1.125-1.125 1.125H4.5m2.25 0a9 9 0 013.75-6.75m0 0h3.75m0 0v3.75m0 0a9 9 0 013.75-6.75" />
-                  </svg>
+      {/* HEADER SECTION */}
+      <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex-shrink-0 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-xl p-3 shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6 sm:w-8 sm:h-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H4.5m2.25 0v3m0 0v.375c0 .621-.504 1.125-1.125 1.125H4.5m2.25 0a9 9 0 013.75-6.75m0 0h3.75m0 0v3.75m0 0a9 9 0 013.75-6.75" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-blue-700 tracking-tight mb-1">
+                  {t('paymentDetails.title')}
+                </h1>
+                <div className="text-base sm:text-lg font-semibold text-slate-600">
+                  {t('paymentDetails.contractNumber')}{contract_number}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CONTRACT INFO SECTION */}
+      {contract && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <span className="text-lg">📌</span>
                 <div>
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-blue-700 tracking-tight mb-1">
-                    {t('paymentDetails.title')}
-                  </h1>
-                  <div className="text-base sm:text-lg font-semibold text-slate-600">
-                    {t('paymentDetails.contractNumber')}{contract_number}
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Project</div>
+                  <div className="font-semibold text-gray-900">{contract.site_name}</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <span className="text-lg">🏢</span>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Company</div>
+                  <div className="font-semibold text-gray-900">{contract.company}</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <span className="text-lg">🗓</span>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Start Date</div>
+                  <div className="font-semibold text-gray-900">{formatContractDate(contract.start_date)}</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <span className="text-lg">📅</span>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">End Date</div>
+                  <div className="font-semibold text-gray-900">{formatContractDate(contract.finish_date)}</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
+                <span className="text-lg">💰</span>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Value</div>
+                  <div className="font-bold text-emerald-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                <span className="text-lg">📊</span>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Status</div>
+                  <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                    contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700' :
+                    contract.status === 'Draft' ? 'bg-gray-100 text-gray-700' :
+                    contract.status === 'Anulluar' ? 'bg-red-100 text-red-700' :
+                    contract.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700' :
+                    contract.status === 'Mbyllur' ? 'bg-green-100 text-green-700' :
+                    contract.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700' :
+                    'bg-gray-100 text-gray-700'
+                  }`}>
+                    {translateStatus(contract.status)}
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      )}
 
-                {/* CONTRACT INFO SECTION - MINIMALIST DESIGN */}
-        {contract && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Project */}
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-lg">📌</span>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Project</div>
-                    <div className="font-semibold text-gray-900">{contract.site_name}</div>
-                  </div>
-                </div>
-                
-                {/* Company */}
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-lg">🏢</span>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Company</div>
-                    <div className="font-semibold text-gray-900">{contract.company}</div>
-                  </div>
-                </div>
-                
-                {/* Start Date */}
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-lg">🗓</span>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Start Date</div>
-                    <div className="font-semibold text-gray-900">{formatContractDate(contract.start_date)}</div>
-                  </div>
-                </div>
-                
-                {/* End Date */}
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-lg">📅</span>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">End Date</div>
-                    <div className="font-semibold text-gray-900">{formatContractDate(contract.finish_date)}</div>
-                  </div>
-                </div>
-                
-                {/* Value */}
-                <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
-                  <span className="text-lg">💰</span>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Value</div>
-                    <div className="font-bold text-emerald-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</div>
-                  </div>
-                </div>
-                
-                {/* Status */}
-                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                  <span className="text-lg">📊</span>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Status</div>
-                    <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700' :
-                      contract.status === 'Draft' ? 'bg-gray-100 text-gray-700' :
-                      contract.status === 'Anulluar' ? 'bg-red-100 text-red-700' :
-                      contract.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700' :
-                      contract.status === 'Mbyllur' ? 'bg-green-100 text-green-700' :
-                      contract.status === 'Mbyllur me vonese' ? 'bg-orange-100 text-orange-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {translateStatus(contract.status)}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Address */}
-                {contract.address && (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <span className="text-lg">📍</span>
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide">Address</div>
-                      <div className="font-semibold text-gray-900">{contract.address}</div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Company Email */}
-                {contract.company_email && (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <span className="text-lg">📧</span>
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide">Company Email</div>
-                      <div className="font-semibold text-gray-900 text-sm">{contract.company_email}</div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Contract Type */}
-                <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-                  <span className="text-lg">🏗️</span>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Contract Type</div>
-                    <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                      (contract.contract_type || 'day_work') === 'price_work' 
-                        ? 'bg-orange-100 text-orange-700' 
-                        : 'bg-blue-100 text-blue-700'
-                    }`}>
-                      {(contract.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* MODAL PËR SHTIMIN E SHPENZIMEVE - ELEGANT DESIGN */}
-        {showAddModal && (
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={closeAddModal}
-          >
-            <div 
-              className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* MODAL HEADER */}
-              <div className="bg-gradient-to-r from-emerald-400 to-blue-400 px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white/20 rounded-lg p-2">
-                      <span className="text-2xl">💰</span>
-                    </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-white">
-                      {t('paymentDetails.addNewExpenseInvoice')}
-                    </h3>
-                  </div>
-                  <button
-                    onClick={closeAddModal}
-                    className="text-white/80 hover:text-white text-2xl font-bold transition-colors p-1"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-              
-              {/* MODAL CONTENT */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-                <form className="space-y-6" onSubmit={handleAddExpenseInvoice}>
-                  {/* BASIC INFO SECTION */}
-                  <div className="bg-slate-50/50 rounded-xl p-4 border border-slate-200">
-                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      📝 {t('paymentDetails.basicInformation')}
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.expenseTypeLabel')}</label>
-                        <input 
-                          name="expense_type" 
-                          placeholder={t('paymentDetails.expenseTypePlaceholder')} 
-                          value={newExpenseInvoice.expense_type} 
-                          onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.dateLabel')}</label>
-                        <input 
-                          type="date" 
-                          name="date" 
-                          value={newExpenseInvoice.date} 
-                          onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* AMOUNTS SECTION */}
-                  <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-200">
-                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      💰 {t('paymentDetails.financialAmounts')}
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.grossAmountLabel')}</label>
-                        <input 
-                          name="gross" 
-                          placeholder="0.00" 
-                          value={newExpenseInvoice.gross} 
-                          onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.netAmountLabel')}</label>
-                        <input 
-                          name="net" 
-                          placeholder={t('paymentDetails.netAmountCalculated')} 
-                          value={newExpenseInvoice.net} 
-                          onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg bg-slate-100 text-base font-semibold text-slate-700" 
-                          readOnly 
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.vatLabel')}</label>
-                        <input 
-                          name="tax" 
-                          placeholder={t('paymentDetails.vatCalculated')} 
-                          value={newExpenseInvoice.tax} 
-                          onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg bg-slate-100 text-base font-semibold text-slate-700" 
-                          readOnly 
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* FILE & STATUS SECTION */}
-                  <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-200">
-                    <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      📎 {t('paymentDetails.documentAndStatus')}
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
-                      <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('paymentDetails.attachDocument')}</label>
-                        <input 
-                          type="file" 
-                          name="file" 
-                          accept="application/pdf,image/*" 
-                          onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200 transition-all duration-200" 
-                        />
-                      </div>
-                      <div className="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-slate-200">
-                        <input 
-                          type="checkbox" 
-                          name="paid" 
-                          checked={newExpenseInvoice.paid} 
-                          onChange={handleChange} 
-                          className="w-5 h-5 accent-emerald-500" 
-                        />
-                        <label className="text-base font-medium text-slate-700">{t('paymentDetails.paidStatus')}</label>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* ACTION BUTTONS */}
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                    <button 
-                      type="submit" 
-                      className="flex-1 bg-gradient-to-r from-emerald-400 to-blue-500 hover:from-emerald-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl"
-                    >
-                      <span className="text-xl">💾</span>
-                      <span className="hidden sm:inline">{t('paymentDetails.addExpense')}</span>
-                      <span className="sm:hidden">{t('paymentDetails.add')}</span>
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={closeAddModal}
-                      className="flex-1 bg-slate-400 hover:bg-slate-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl"
-                    >
-                      <span className="text-xl">✕</span>
-                      <span className="hidden sm:inline">{t('paymentDetails.cancel')}</span>
-                      <span className="sm:hidden">{t('paymentDetails.close')}</span>
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* GRID LAYOUT - RESPONSIVE DESIGN FOR ALL DEVICES */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+      {/* WORK HOURS SECTION */}
+      <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8">
+          <h4 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
+            👷‍♂️ {t('paymentDetails.workHoursAndPayments')}
+          </h4>
           
-          {/* ORËT E PUNËS SECTION - MOBILE RESPONSIVE */}
-          <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
-            <div className="p-4 sm:p-6 lg:p-8">
-            <h4 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-              👷‍♂️ {t('paymentDetails.workHoursAndPayments')}
-            </h4>
-            
-            {/* Filtra për orët e punës - MOBILE RESPONSIVE */}
-            <div className="bg-emerald-50/50 rounded-xl p-4 mb-6 border border-emerald-200">
-              <h5 className="text-base sm:text-lg font-semibold text-emerald-700 mb-4 flex items-center gap-2">
-                🔍 {t('paymentDetails.workHoursFilter')}
-              </h5>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <input
-                  type="text"
-                  placeholder={t('paymentDetails.searchEmployeeOrWeek')}
-                  value={workHoursSearchTerm}
-                  onChange={(e) => setWorkHoursSearchTerm(e.target.value)}
-                  className="p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
-                />
-                <input
-                  type="date"
-                  placeholder={t('paymentDetails.startDatePlaceholder')}
-                  value={workHoursDateFilter.start}
-                  onChange={(e) => setWorkHoursDateFilter(prev => ({ ...prev, start: e.target.value }))}
-                  className="p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
-                />
-                <input
-                  type="date"
-                  placeholder={t('paymentDetails.endDatePlaceholder')}
-                  value={workHoursDateFilter.end}
-                  onChange={(e) => setWorkHoursDateFilter(prev => ({ ...prev, end: e.target.value }))}
-                  className="p-3 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"
-                />
-              </div>
-            </div>
-
-            {filteredWorkHoursRows.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
-                  <thead className="bg-gradient-to-r from-emerald-100 to-blue-100">
-                    <tr>
-                      <th className="py-3 px-2 text-left font-semibold text-emerald-800">{t('paymentDetails.employee')}</th>
-                      <th className="py-3 px-2 text-center font-semibold text-emerald-800 hidden sm:table-cell">{t('paymentDetails.week')}</th>
-                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('paymentDetails.hours')}</th>
-                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('paymentDetails.grossAmount')}</th>
-                      <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('paymentDetails.netAmount')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredWorkHoursRows.map((r, idx) => (
-                      <tr key={idx} className="hover:bg-emerald-50 transition-all border-b border-slate-100">
-                        <td className="py-3 px-2 font-semibold text-slate-800">
-                          <div className="flex flex-col">
-                            <span>{r.name}</span>
-                            <span className="text-xs text-slate-500 sm:hidden">{r.week}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-2 text-center text-slate-600 hidden sm:table-cell">{r.week}</td>
-                        <td className="py-3 px-2 text-center font-bold text-blue-600">{r.hours}</td>
-                        <td className="py-3 px-2 text-center font-bold text-orange-600">£{r.bruto.toFixed(2)}</td>
-                        <td className="py-3 px-2 text-center font-bold text-emerald-600">£{r.neto.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-emerald-100">
-                    <tr>
-                      <td colSpan={2} className="py-4 px-2 text-right font-bold text-emerald-800 sm:hidden">{t('paymentDetails.totals')}:</td>
-                      <td colSpan={3} className="py-4 px-2 text-right font-bold text-emerald-800 hidden sm:table-cell">{t('paymentDetails.totals')}:</td>
-                      <td className="py-4 px-2 text-center font-bold text-orange-700 text-base">
-                        £{filteredWorkHoursRows.reduce((sum, r) => sum + r.bruto, 0).toFixed(2)}
+          {filteredWorkHoursRows.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
+                <thead className="bg-gradient-to-r from-emerald-100 to-blue-100">
+                  <tr>
+                    <th className="py-3 px-2 text-left font-semibold text-emerald-800">{t('paymentDetails.employee')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-emerald-800 hidden sm:table-cell">{t('paymentDetails.week')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('paymentDetails.hours')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('paymentDetails.grossAmount')}</th>
+                    <th className="py-3 px-2 text-center font-semibold text-emerald-800">{t('paymentDetails.netAmount')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredWorkHoursRows.map((r, idx) => (
+                    <tr key={idx} className="hover:bg-emerald-50 transition-all border-b border-slate-100">
+                      <td className="py-3 px-2 font-semibold text-slate-800">
+                        <div className="flex flex-col">
+                          <span>{r.name}</span>
+                          <span className="text-xs text-slate-500 sm:hidden">{r.week}</span>
+                        </div>
                       </td>
-                      <td className="py-4 px-2 text-center font-bold text-emerald-700 text-base">
-                        £{filteredWorkHoursRows.reduce((sum, r) => sum + r.neto, 0).toFixed(2)}
-                      </td>
+                      <td className="py-3 px-2 text-center text-slate-600 hidden sm:table-cell">{r.week}</td>
+                      <td className="py-3 px-2 text-center font-bold text-blue-600">{r.hours}</td>
+                      <td className="py-3 px-2 text-center font-bold text-orange-600">£{r.bruto.toFixed(2)}</td>
+                      <td className="py-3 px-2 text-center font-bold text-emerald-600">£{r.neto.toFixed(2)}</td>
                     </tr>
-                  </tfoot>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="text-slate-400 text-4xl mb-4">👷‍♂️</div>
-                <p className="text-slate-500 text-lg font-medium">{t('paymentDetails.noWorkHoursRecorded')}</p>
-                <p className="text-slate-400 text-sm">për këtë kontratë akoma</p>
-              </div>
-            )}
+                  ))}
+                </tbody>
+                <tfoot className="bg-emerald-100">
+                  <tr>
+                    <td colSpan={2} className="py-4 px-2 text-right font-bold text-emerald-800 sm:hidden">{t('paymentDetails.totals')}:</td>
+                    <td colSpan={3} className="py-4 px-2 text-right font-bold text-emerald-800 hidden sm:table-cell">{t('paymentDetails.totals')}:</td>
+                    <td className="py-4 px-2 text-center font-bold text-orange-700 text-base">
+                      £{filteredWorkHoursRows.reduce((sum, r) => sum + r.bruto, 0).toFixed(2)}
+                    </td>
+                    <td className="py-4 px-2 text-center font-bold text-emerald-700 text-base">
+                      £{filteredWorkHoursRows.reduce((sum, r) => sum + r.neto, 0).toFixed(2)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-slate-400 text-4xl mb-4">👷‍♂️</div>
+              <p className="text-slate-500 text-lg font-medium">{t('paymentDetails.noWorkHoursRecorded')}</p>
+              <p className="text-slate-400 text-sm">për këtë kontratë akoma</p>
+            </div>
+          )}
+        </div>
+      </div>
 
-          {/* SHPENZIMET/FATURAT SECTION - MOBILE RESPONSIVE */}
-          <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
-            <div className="p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-              <h4 className="text-xl sm:text-2xl font-bold text-blue-700 flex items-center gap-2">
-                🧾 {t('paymentDetails.expensesAndInvoices')} 
-                <span className="text-sm sm:text-base font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
-                  {filteredExpenses.length}
-                </span>
-              </h4>
-              <button
-                onClick={openAddModal}
-                className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all flex items-center gap-2 justify-center text-sm sm:text-base hover:shadow-xl"
-              >
-                <span className="text-lg sm:text-xl">➕</span>
-                <span className="hidden sm:inline">{t('paymentDetails.addExpenseInvoice')}</span>
-                <span className="sm:hidden">{t('paymentDetails.addExpenseInvoice')}</span>
-              </button>
-            </div>
-            
-            {/* Filtra për shpenzimet - MOBILE RESPONSIVE */}
-            <div className="bg-blue-50/50 rounded-xl p-4 mb-6 border border-blue-200">
-              <h5 className="text-base sm:text-lg font-semibold text-blue-700 mb-4 flex items-center gap-2">
-                🔍 {t('paymentDetails.expensesFilter')}
-              </h5>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <input
-                  type="text"
-                  placeholder={t('paymentDetails.searchInExpenses')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="p-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
-                />
-                <input
-                  type="date"
-                  placeholder="Data fillimit"
-                  value={dateFilter.start}
-                  onChange={(e) => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
-                  className="p-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
-                />
-                <input
-                  type="date"
-                  placeholder="Data fundit"
-                  value={dateFilter.end}
-                  onChange={(e) => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
-                  className="p-3 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
-                />
-              </div>
-            </div>
-
-            {filteredExpenses.length > 0 ? (
+      {/* EXPENSES SECTION */}
+      <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8">
+          <h4 className="text-xl sm:text-2xl font-bold text-blue-700 flex items-center gap-2">
+            🧾 {t('paymentDetails.expensesAndInvoices')} 
+            <span className="text-sm sm:text-base font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+              {filteredExpenses.length}
+            </span>
+          </h4>
+          
+          {filteredExpenses.length > 0 ? (
+            <div className="overflow-x-auto">
               <table className="w-full text-base text-blue-900">
                 <thead className="bg-gradient-to-r from-purple-100 to-blue-100">
                   <tr>
@@ -917,18 +476,19 @@ export default function PaymentDetails() {
                       <td className="py-2 px-3 text-center font-bold text-green-700">£{Number(inv.net || 0).toFixed(2)}</td>
                       <td className="py-2 px-3 text-center font-bold text-purple-700">£{Number(inv.tax || 0).toFixed(2)}</td>
                       <td className="py-2 px-3 text-center">
-                        <button
-                          onClick={() => togglePaid(inv.id)}
-                          className={`px-3 py-1 rounded-full font-bold shadow border text-sm transition-all duration-200
-                            ${inv.paid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}
-                          `}
-                        >
+                        <span className={`px-3 py-1 rounded-full border text-xs font-bold ${
+                          inv.paid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'
+                        }`}>
                           {inv.paid ? t('paymentDetails.paid') : t('paymentDetails.unpaid')}
-                        </button>
+                        </span>
                       </td>
                       <td className="py-2 px-3 text-center">
                         <button
-                          onClick={() => handleDelete(inv.id)}
+                          onClick={() => {
+                            if (confirm(t('paymentDetails.deleteExpenseConfirm'))) {
+                              // Handle delete
+                            }
+                          }}
                           className="text-red-600 hover:text-red-800 transition-all text-xl"
                           title="Fshi"
                         >
@@ -947,82 +507,30 @@ export default function PaymentDetails() {
                   </tr>
                 </tfoot>
               </table>
-            ) : (
-              <div className="text-center py-8 text-gray-500 italic">
-                {t('paymentDetails.noExpenseData')}
-              </div>
-            )}
-            
-            {/* Note për shkarkimin */}
-            <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
-              <p className="text-sm text-purple-700 text-center">
-                💡 <strong>{t('paymentDetails.note')}</strong>
-              </p>
             </div>
-          </div>
-        </div>
-        
-        </div> {/* Mbyll grid-in paralel */}
-
-        {/* TOTALI I PËRGJITHSHËM - MOBILE RESPONSIVE */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 p-4 sm:p-6 lg:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="text-lg sm:text-xl font-bold text-slate-800">💼 {t('paymentDetails.overallTotal')}</div>
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-500">{t('paymentDetails.grossTotal')}</span>
-                <span className="text-lg sm:text-xl font-bold text-orange-600">£{totalOverallGross.toFixed(2)}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-500">{t('paymentDetails.netTotal')}</span>
-                <span className="text-lg sm:text-xl font-bold text-emerald-600">£{totalOverallNet.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-
-
-        {/* PARA TË MBETURA - MOBILE RESPONSIVE */}
-        <div className="bg-gradient-to-r from-emerald-100 to-blue-100 rounded-2xl sm:rounded-3xl shadow-xl border border-emerald-200 p-4 sm:p-6 lg:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="text-lg sm:text-xl font-bold text-emerald-800 flex items-center gap-2">
-              💰 {t('paymentDetails.remainingMoney')}
-            </div>
-            <div className={`text-xl sm:text-2xl lg:text-3xl font-bold ${remainingAmount >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
-              £{remainingAmount.toFixed(2)}
-            </div>
-          </div>
-        </div>
-
-        {/* Grafikë i trendit të shpenzimeve - FARE NË FUND */}
-        <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 mt-10">
-                        <h4 className="text-xl font-bold text-blue-800 mb-2">📊 {t('paymentDetails.expensesTrend')}</h4>
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip formatter={(value) => [`£${value}`, 'Shuma']} />
-                <Line type="monotone" dataKey="amount" stroke="#8884d8" strokeWidth={2} dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
           ) : (
             <div className="text-center py-8 text-gray-500 italic">
-              Nuk ka të dhëna për grafikun
+              {t('paymentDetails.noExpenseData')}
             </div>
           )}
         </div>
       </div>
-      {/* Animacion fade-in */}
-      <style jsx>{`
-      @keyframes fade-in {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: none; }
-      }
-      .animate-fade-in { animation: fade-in 0.7s cubic-bezier(.4,0,.2,1) both; }
-      `}</style>
+
+      {/* CHART SECTION */}
+      {chartData.length > 0 && (
+        <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 mt-10">
+          <h4 className="text-xl font-bold text-blue-800 mb-2">📊 {t('paymentDetails.expensesTrend')}</h4>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip formatter={(value) => [`£${value}`, 'Shuma']} />
+              <Line type="monotone" dataKey="amount" stroke="#8884d8" strokeWidth={2} dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }
