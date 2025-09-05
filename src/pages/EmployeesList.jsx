@@ -974,7 +974,7 @@ export default function EmployeesList() {
           <div className="p-4 sm:p-6 lg:p-8">
             <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
               📋 {t('employeesList.employeesTable')}
-          </h3>
+            </h3>
             
             {/* DESKTOP TABLE */}
             <div className="hidden lg:block overflow-x-auto">
@@ -1046,8 +1046,12 @@ export default function EmployeesList() {
             </tbody>
           </table>
         </div>
+          </div>
+        </div>
 
-            {/* MOBILE CARDS */}
+        {/* MOBILE CARDS */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
             <div className="lg:hidden space-y-4">
               {filteredEmployees.map((emp) => {
                 const firstName = emp.firstName || emp.first_name || "";
