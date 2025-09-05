@@ -124,6 +124,17 @@ export default function EmployeesList() {
           ];
           setEmployees(testEmployees);
         } else {
+          // Log each employee's structure for debugging
+          employeesData.forEach((emp, index) => {
+            console.log(`Employee ${index}:`, {
+              id: emp.id,
+              firstName: emp.firstName,
+              lastName: emp.lastName,
+              status: emp.status,
+              workplace: emp.workplace,
+              role: emp.role
+            });
+          });
           setEmployees(employeesData);
         }
         
@@ -366,11 +377,26 @@ export default function EmployeesList() {
     
     const filtered = employees
       .filter(emp => {
-        const matchesStatus = filterStatus === "All" || emp.status === filterStatus;
+        // More flexible status matching
+        let matchesStatus = true;
+        if (filterStatus !== "All") {
+          const empStatus = emp.status || emp.status || "";
+          matchesStatus = empStatus === filterStatus || 
+                         empStatus.toLowerCase() === filterStatus.toLowerCase() ||
+                         (filterStatus === "Aktiv" && (empStatus === "active" || empStatus === "Active")) ||
+                         (filterStatus === "Inaktiv" && (empStatus === "inactive" || empStatus === "Inactive"));
+        }
+        
         let matchesWorkplace = true;
         
         if (filterWorkplace !== "All") {
-          matchesWorkplace = emp.workplace && emp.workplace.includes(filterWorkplace);
+          // More lenient workplace filtering - check if workplace exists and matches
+          if (emp.workplace && Array.isArray(emp.workplace) && emp.workplace.length > 0) {
+            matchesWorkplace = emp.workplace.includes(filterWorkplace);
+          } else {
+            // If no workplace data, don't filter out unless specifically looking for a workplace
+            matchesWorkplace = true; // Show employees even if they don't have workplace data
+          }
         }
         
         const matchesSearch = !searchTerm || 
@@ -378,6 +404,7 @@ export default function EmployeesList() {
           (emp.lastName && emp.lastName.toLowerCase().includes(searchTerm.toLowerCase())) ||
           (emp.id && emp.id.toString().includes(searchTerm));
         
+        console.log(`Employee ${emp.id}: status=${matchesStatus}, workplace=${matchesWorkplace}, search=${matchesSearch}`);
         return matchesStatus && matchesWorkplace && matchesSearch;
       })
       .sort((a, b) => {
