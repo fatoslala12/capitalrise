@@ -72,13 +72,13 @@ export default function MainLayout() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo Section */}
-      <div className="p-8 border-b border-white/10">
+      <div className="p-6 border-b border-white/10">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-6">
+          <div className="mb-4">
             <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-28 w-28 mx-auto" />
           </div>
-          <div className="mb-8">
-            <p className="text-sm text-blue-200 capitalize font-medium tracking-wide">
+          <div className="mb-6">
+            <p className="text-base text-blue-200 capitalize font-semibold tracking-wide">
               {user?.role === 'admin' ? 'Administrator' : 
                user?.role === 'manager' ? 'Manager' : 
                'User'}

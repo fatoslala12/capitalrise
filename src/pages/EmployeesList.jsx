@@ -79,11 +79,22 @@ export default function EmployeesList() {
     const loadData = async () => {
       try {
         setLoading(true);
+        console.log("Starting to load employees data...");
+        
+        // Add timeout to prevent infinite loading
+        const timeoutId = setTimeout(() => {
+          console.warn("Employees API call timed out, setting loading to false");
+          setLoading(false);
+        }, 10000); // 10 second timeout
         
         // Load only employees first (most important for display)
         const employeesRes = await axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
-          headers: { Authorization: `Bearer ${user?.token}` }
+          headers: { Authorization: `Bearer ${user?.token}` },
+          timeout: 8000 // 8 second timeout for the request
         });
+        
+        clearTimeout(timeoutId);
+        console.log("Employees data loaded successfully:", employeesRes.data);
         
         const employeesData = snakeToCamel(employeesRes.data);
         setEmployees(employeesData);
@@ -94,8 +105,10 @@ export default function EmployeesList() {
         
         // Load contracts for site options in background (needed for form)
         axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
-          headers: { Authorization: `Bearer ${user?.token}` }
+          headers: { Authorization: `Bearer ${user?.token}` },
+          timeout: 5000
         }).then(contractsRes => {
+          console.log("Contracts data loaded successfully");
           setContracts(contractsRes.data);
           
           // Extract unique site names from contracts
@@ -108,12 +121,15 @@ export default function EmployeesList() {
         // Load additional data in background (not critical for initial display)
         Promise.all([
           axios.get("https://capitalrise-cwcq.onrender.com/api/work-hours", {
-            headers: { Authorization: `Bearer ${user?.token}` }
+            headers: { Authorization: `Bearer ${user?.token}` },
+            timeout: 5000
           }),
           axios.get("https://capitalrise-cwcq.onrender.com/api/tasks", {
-            headers: { Authorization: `Bearer ${user?.token}` }
+            headers: { Authorization: `Bearer ${user?.token}` },
+            timeout: 5000
           })
         ]).then(([workHoursRes, tasksRes]) => {
+          console.log("Additional data loaded successfully");
           setWorkHours(workHoursRes.data);
           setTasks(tasksRes.data);
         }).catch(error => {
@@ -123,11 +139,16 @@ export default function EmployeesList() {
       } catch (error) {
         console.error("Error loading data:", error);
         setLoading(false);
+        setDataLoaded(true); // Set to true even on error to show the UI
       }
     };
 
     if (user?.token) {
+      console.log("User token found, starting data load...");
       loadData();
+    } else {
+      console.log("No user token found");
+      setLoading(false);
     }
   }, [user?.token]);
 
@@ -386,7 +407,16 @@ export default function EmployeesList() {
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
             <h3 className="text-lg font-semibold text-slate-700 mb-2">Loading Employees...</h3>
-            <p className="text-sm text-slate-500">Please wait while we fetch the latest data</p>
+            <p className="text-sm text-slate-500 mb-4">Please wait while we fetch the latest data</p>
+            <button 
+              onClick={() => {
+                setLoading(false);
+                setDataLoaded(true);
+              }}
+              className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors"
+            >
+              Skip Loading (Show Empty State)
+            </button>
           </div>
         </div>
       </div>
