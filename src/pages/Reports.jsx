@@ -924,6 +924,6 @@ export default function Reports() {
           </div>
         )}
       </div>
-    </Container>
+    </div>
   );
 }
