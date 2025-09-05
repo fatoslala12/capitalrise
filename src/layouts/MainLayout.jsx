@@ -98,16 +98,16 @@ export default function MainLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`group flex items-center gap-4 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 ease-in-out transform hover:scale-[1.02] ${
+              className={`group flex items-center gap-4 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ease-in-out transform hover:scale-[1.02] ${
                 isActive 
                   ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 border-l-4 border-blue-300" 
                   : "text-blue-100 hover:bg-white/10 hover:text-white hover:shadow-md"
               }`}
             >
-              <span className={`text-lg flex-shrink-0 transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+              <span className={`text-xl flex-shrink-0 transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
                 {icon}
               </span>
-              <span className="whitespace-nowrap font-medium tracking-wide">{translatedText}</span>
+              <span className="whitespace-nowrap font-semibold tracking-wide">{translatedText}</span>
               {isActive && (
                 <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
               )}
