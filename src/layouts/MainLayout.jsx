@@ -77,14 +77,14 @@ export default function MainLayout() {
   const SidebarContent = () => (
     <>
       {/* Logo Section - Small like in image */}
-      <div className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-white rounded p-1">
-            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-6 w-6" />
+      <div className="p-6">
+        <div className="flex items-center gap-4">
+          <div className="bg-white rounded-lg p-2 shadow-sm">
+            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-8 w-8" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">Capital Rise</h1>
-            <p className="text-xs text-blue-200 capitalize">
+            <h1 className="text-xl font-bold text-white">Capital Rise</h1>
+            <p className="text-sm text-blue-200 capitalize font-medium">
               {user?.role === 'admin' ? 'Administrator' : 
                user?.role === 'manager' ? 'Manager' : 
                'User'}
@@ -94,7 +94,7 @@ export default function MainLayout() {
       </div>
 
       {/* Navigation - Like in image */}
-      <nav className="flex-1 px-4 space-y-1">
+      <nav className="flex-1 px-4 space-y-2">
         {menu.map((item) => {
           const isActive = location.pathname === item.path;
           const icon = item.label.split(" ")[0];
@@ -104,13 +104,13 @@ export default function MainLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+              className={`flex items-center gap-4 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 ${
                 isActive 
                   ? "bg-blue-400/30 text-white shadow-lg" 
                   : "text-white hover:bg-white/10"
               }`}
             >
-              <span className="text-lg">{icon}</span>
+              <span className="text-lg flex-shrink-0">{icon}</span>
               <span className="whitespace-nowrap">{translatedText}</span>
             </Link>
           );
@@ -118,8 +118,8 @@ export default function MainLayout() {
       </nav>
 
       {/* Simplified Footer */}
-      <div className="mt-auto p-4 border-t border-white/10">
-        <div className="text-center text-xs text-blue-200/70 font-medium">
+      <div className="mt-auto p-6 border-t border-white/10">
+        <div className="text-center text-sm text-blue-200/80 font-medium">
           © 2025 Capital Rise
         </div>
       </div>
@@ -189,12 +189,12 @@ export default function MainLayout() {
             </div>
             
             {/* Right side actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <LanguageSwitcher />
               <NotificationBell />
               <button
                 onClick={logout}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded font-semibold text-sm"
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded font-semibold text-sm transition-colors duration-200"
               >
                 Logout
               </button>

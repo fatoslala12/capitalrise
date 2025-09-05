@@ -530,26 +530,26 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-8 lg:py-10 space-y-4 md:space-y-8 lg:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 lg:py-10 space-y-6 md:space-y-8 lg:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
       {/* HEADER MODERN */}
-      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-4 md:px-10 py-4 md:py-6 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
-        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-2 md:p-3 shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-8 h-8 md:w-12 md:h-12">
+      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-6 md:px-10 py-6 md:py-8 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
+        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-3 md:p-4 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-10 h-10 md:w-12 md:h-12">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
           </svg>
         </div>
-        <div className="text-center md:text-left">
-          <div className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">
+        <div className="text-center sm:text-left">
+          <div className="text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-2 drop-shadow">
             {localStorage.getItem('language') === 'sq' ? 'Paneli i Administrimit' : 'Admin Panel'}
           </div>
-          <div className="text-sm md:text-lg font-medium text-purple-700">
+          <div className="text-base md:text-lg font-medium text-purple-700">
             {localStorage.getItem('language') === 'sq' ? 'Statistika, detyra, pagesa dhe më shumë' : 'Statistics, tasks, payments and more'}
           </div>
         </div>
       </div>
 
       {/* Statistika kryesore */}
-      <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="md" className="mb-6 md:mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-12">
         <CountStatCard
           title={tr('adminDashboard.activeSites')}
           count={activeSites.length}
@@ -576,7 +576,7 @@ export default function AdminDashboard() {
           icon="💰"
           color="yellow"
         />
-      </Grid>
+      </div>
 
       {/* Detyrat - më të dukshme */}
       <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-3 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow-xl col-span-full border border-yellow-200">
@@ -589,20 +589,24 @@ export default function AdminDashboard() {
             <option value="all">{tr('adminDashboard.all')}</option>
           </select>
         </div>
-        <div className="mb-4 flex flex-col sm:flex-row flex-wrap gap-2 md:gap-6">
-          <div className="bg-blue-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">{tr('adminDashboard.total')}: {allTasks.length}</div>
-          <div className="bg-green-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">✅ {tr('adminDashboard.completed')}: {allTasks.filter(t => t.status === 'completed').length}</div>
-          <div className="bg-yellow-100 px-3 md:px-6 py-2 md:py-3 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">🕒 {tr('adminDashboard.ongoing')}: {allTasks.filter(t => t.status === 'ongoing').length}</div>
+        <div className="mb-6 flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
+          <div className="bg-blue-100 px-4 md:px-6 py-3 md:py-4 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">{tr('adminDashboard.total')}: {allTasks.length}</div>
+          <div className="bg-green-100 px-4 md:px-6 py-3 md:py-4 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">✅ {tr('adminDashboard.completed')}: {allTasks.filter(t => t.status === 'completed').length}</div>
+          <div className="bg-yellow-100 px-4 md:px-6 py-3 md:py-4 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">🕒 {tr('adminDashboard.ongoing')}: {allTasks.filter(t => t.status === 'ongoing').length}</div>
         </div>
         {filteredTasks.length > 0 ? (
-          <ul className="space-y-3">
+          <ul className="space-y-4">
             {filteredTasks.map((t, idx) => (
-              <li key={t.id || idx} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-3 md:p-4 shadow border border-blue-100">
-                <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
-                <span className="font-semibold flex-1 text-sm md:text-lg">{t.description || t.title || ''}</span>
-                <span className="text-sm md:text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
-                                    <span className="text-sm md:text-lg text-purple-700 font-bold">{tr('adminDashboard.deadline')}: {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : tr('adminDashboard.noDeadline')}</span>
-                                    <span className="text-xs text-gray-500">{tr('adminDashboard.by')}: {t.assigned_by || t.assignedBy || ''}</span>
+              <li key={t.id || idx} className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-6 bg-white rounded-xl p-4 md:p-6 shadow border border-blue-100">
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
+                  <span className="font-semibold flex-1 text-sm md:text-lg">{t.description || t.title || ''}</span>
+                </div>
+                <div className="flex flex-col sm:flex-row lg:items-center gap-2 lg:gap-4 text-sm md:text-base">
+                  <span className="text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
+                  <span className="text-purple-700 font-bold">{tr('adminDashboard.deadline')}: {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : tr('adminDashboard.noDeadline')}</span>
+                  <span className="text-gray-500">{tr('adminDashboard.by')}: {t.assigned_by || t.assignedBy || ''}</span>
+                </div>
               </li>
             ))}
           </ul>
