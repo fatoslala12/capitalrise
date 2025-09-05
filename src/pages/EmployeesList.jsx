@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { v4 as uuidv4 } from "uuid";
 import { FaEye } from "react-icons/fa";
@@ -32,6 +32,7 @@ export default function EmployeesList() {
   const [workHours, setWorkHours] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newEmployee, setNewEmployee] = useState({
     id: 1000,
@@ -79,7 +80,7 @@ export default function EmployeesList() {
       try {
         setLoading(true);
         
-        // Load employees first (most important for display)
+        // Load only employees first (most important for display)
         const employeesRes = await axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
@@ -87,16 +88,22 @@ export default function EmployeesList() {
         const employeesData = snakeToCamel(employeesRes.data);
         setEmployees(employeesData);
         
-        // Load contracts for site options (needed for form)
-        const contractsRes = await axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
+        // Set loading to false immediately after employees load
+        setLoading(false);
+        setDataLoaded(true);
+        
+        // Load contracts for site options in background (needed for form)
+        axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
           headers: { Authorization: `Bearer ${user?.token}` }
+        }).then(contractsRes => {
+          setContracts(contractsRes.data);
+          
+          // Extract unique site names from contracts
+          const sites = [...new Set(contractsRes.data.map(contract => contract.siteName).filter(Boolean))];
+          setSiteOptions(sites);
+        }).catch(error => {
+          console.warn("Error loading contracts:", error);
         });
-        
-        setContracts(contractsRes.data);
-        
-        // Extract unique site names from contracts
-        const sites = [...new Set(contractsRes.data.map(contract => contract.siteName).filter(Boolean))];
-        setSiteOptions(sites);
         
         // Load additional data in background (not critical for initial display)
         Promise.all([
@@ -115,7 +122,6 @@ export default function EmployeesList() {
         
       } catch (error) {
         console.error("Error loading data:", error);
-      } finally {
         setLoading(false);
       }
     };
@@ -281,33 +287,35 @@ export default function EmployeesList() {
     URL.revokeObjectURL(url);
   };
 
-  // Filter and sort employees
-  const filteredEmployees = employees
-    .filter(emp => {
-      const matchesStatus = filterStatus === "All" || emp.status === filterStatus;
-      let matchesWorkplace = true;
-      
-      if (filterWorkplace !== "All") {
-        matchesWorkplace = emp.workplace && emp.workplace.includes(filterWorkplace);
-      }
-      
-      const matchesSearch = !searchTerm || 
-        (emp.firstName && emp.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (emp.lastName && emp.lastName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (emp.id && emp.id.toString().includes(searchTerm));
-      
-      return matchesStatus && matchesWorkplace && matchesSearch;
-    })
-    .sort((a, b) => {
-      const aVal = a[sortBy] || "";
-      const bVal = b[sortBy] || "";
-      
-      if (sortOrder === "asc") {
-        return (aVal || "").localeCompare(bVal || "");
-      } else {
-        return (bVal || "").localeCompare(aVal || "");
-      }
-    });
+  // Filter and sort employees with useMemo for performance
+  const filteredEmployees = useMemo(() => {
+    return employees
+      .filter(emp => {
+        const matchesStatus = filterStatus === "All" || emp.status === filterStatus;
+        let matchesWorkplace = true;
+        
+        if (filterWorkplace !== "All") {
+          matchesWorkplace = emp.workplace && emp.workplace.includes(filterWorkplace);
+        }
+        
+        const matchesSearch = !searchTerm || 
+          (emp.firstName && emp.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (emp.lastName && emp.lastName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (emp.id && emp.id.toString().includes(searchTerm));
+        
+        return matchesStatus && matchesWorkplace && matchesSearch;
+      })
+      .sort((a, b) => {
+        const aVal = a[sortBy] || "";
+        const bVal = b[sortBy] || "";
+        
+        if (sortOrder === "asc") {
+          return (aVal || "").localeCompare(bVal || "");
+        } else {
+          return (bVal || "").localeCompare(aVal || "");
+        }
+      });
+  }, [employees, filterStatus, filterWorkplace, searchTerm, sortBy, sortOrder]);
 
   // Export to CSV
   const exportToCSV = () => {
@@ -524,7 +532,12 @@ export default function EmployeesList() {
                   🏢 {t('employeesList.workplacesSection')} *
                 </label>
                 <div className="flex flex-wrap gap-3">
-                  {siteOptions.length > 0 ? (
+                  {!dataLoaded ? (
+                    <div className="text-blue-500 text-sm flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                      Loading workplaces...
+                    </div>
+                  ) : siteOptions.length > 0 ? (
                     siteOptions.map((siteName) => (
                       <label key={siteName} className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-blue-200 shadow-sm cursor-pointer hover:bg-blue-50 transition-all">
                         <input

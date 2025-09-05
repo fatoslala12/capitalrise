@@ -70,7 +70,7 @@ export default function MainLayout() {
   else if (user?.role === "user") menu = userMenu;
 
   const SidebarContent = () => (
-    <>
+    <div className="flex flex-col h-full">
       {/* Logo Section */}
       <div className="p-8 border-b border-white/10">
         <div className="flex flex-col items-center text-center">
@@ -127,7 +127,7 @@ export default function MainLayout() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 
   return (
