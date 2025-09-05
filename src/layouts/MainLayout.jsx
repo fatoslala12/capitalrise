@@ -76,14 +76,13 @@ export default function MainLayout() {
 
   const SidebarContent = () => (
     <>
-      {/* Logo Section - Small like in image */}
+      {/* Logo Section - Bigger logo without text */}
       <div className="p-6">
-        <div className="flex items-center gap-4">
-          <div className="bg-white rounded-lg p-2 shadow-sm">
-            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-8 w-8" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="bg-white rounded-xl p-4 shadow-lg">
+            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-16 w-16" />
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-white">Capital Rise</h1>
+          <div className="text-center">
             <p className="text-sm text-blue-200 capitalize font-medium">
               {user?.role === 'admin' ? 'Administrator' : 
                user?.role === 'manager' ? 'Manager' : 
@@ -166,9 +165,8 @@ export default function MainLayout() {
             <div className="hidden lg:block flex-1"></div>
             
             {/* Mobile logo */}
-            <div className="lg:hidden flex items-center gap-2">
-              <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-6 w-6" />
-              <span className="font-bold text-gray-900">Capital Rise</span>
+            <div className="lg:hidden flex items-center gap-3">
+              <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-8 w-8" />
             </div>
             
             {/* Left side - Welcome message */}
