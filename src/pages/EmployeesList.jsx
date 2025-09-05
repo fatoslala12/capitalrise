@@ -78,30 +78,41 @@ export default function EmployeesList() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [contractsRes, employeesRes, workHoursRes, tasksRes] = await Promise.all([
-          axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
-            headers: { Authorization: `Bearer ${user?.token}` }
-          }),
-          axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
-            headers: { Authorization: `Bearer ${user?.token}` }
-          }),
+        
+        // Load employees first (most important for display)
+        const employeesRes = await axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
+          headers: { Authorization: `Bearer ${user?.token}` }
+        });
+        
+        const employeesData = snakeToCamel(employeesRes.data);
+        setEmployees(employeesData);
+        
+        // Load contracts for site options (needed for form)
+        const contractsRes = await axios.get("https://capitalrise-cwcq.onrender.com/api/contracts", {
+          headers: { Authorization: `Bearer ${user?.token}` }
+        });
+        
+        setContracts(contractsRes.data);
+        
+        // Extract unique site names from contracts
+        const sites = [...new Set(contractsRes.data.map(contract => contract.siteName).filter(Boolean))];
+        setSiteOptions(sites);
+        
+        // Load additional data in background (not critical for initial display)
+        Promise.all([
           axios.get("https://capitalrise-cwcq.onrender.com/api/work-hours", {
             headers: { Authorization: `Bearer ${user?.token}` }
           }),
           axios.get("https://capitalrise-cwcq.onrender.com/api/tasks", {
             headers: { Authorization: `Bearer ${user?.token}` }
           })
-        ]);
-
-        const employeesData = snakeToCamel(employeesRes.data);
-        setEmployees(employeesData);
-        setContracts(contractsRes.data);
-        setWorkHours(workHoursRes.data);
-        setTasks(tasksRes.data);
-
-        // Extract unique site names from contracts
-        const sites = [...new Set(contractsRes.data.map(contract => contract.siteName).filter(Boolean))];
-        setSiteOptions(sites);
+        ]).then(([workHoursRes, tasksRes]) => {
+          setWorkHours(workHoursRes.data);
+          setTasks(tasksRes.data);
+        }).catch(error => {
+          console.warn("Error loading additional data:", error);
+        });
+        
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -361,7 +372,17 @@ export default function EmployeesList() {
   }, [showAddModal]);
 
   if (loading) {
-    return <PageLoader />;
+    return (
+      <div className="w-full px-4 md:px-6 py-4 md:py-8">
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <h3 className="text-lg font-semibold text-slate-700 mb-2">Loading Employees...</h3>
+            <p className="text-sm text-slate-500">Please wait while we fetch the latest data</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

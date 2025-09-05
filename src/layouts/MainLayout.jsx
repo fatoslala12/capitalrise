@@ -74,10 +74,10 @@ export default function MainLayout() {
       {/* Logo Section */}
       <div className="p-8 border-b border-white/10">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-4">
-            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-20 w-20 mx-auto" />
+          <div className="mb-6">
+            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-28 w-28 mx-auto" />
           </div>
-          <div>
+          <div className="mb-8">
             <p className="text-sm text-blue-200 capitalize font-medium tracking-wide">
               {user?.role === 'admin' ? 'Administrator' : 
                user?.role === 'manager' ? 'Manager' : 
