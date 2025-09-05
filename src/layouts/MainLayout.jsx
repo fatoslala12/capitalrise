@@ -76,24 +76,22 @@ export default function MainLayout() {
 
   const SidebarContent = () => (
     <>
-      {/* Logo Section - Compact design */}
-      <div className="p-4 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="bg-white rounded-lg p-2 shadow-sm">
-            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-10 w-10" />
-          </div>
-          <div>
-            <p className="text-xs text-blue-200 capitalize font-medium">
-              {user?.role === 'admin' ? 'Administrator' : 
-               user?.role === 'manager' ? 'Manager' : 
-               'User'}
-            </p>
-          </div>
+      {/* Logo Section - Centered and larger */}
+      <div className="p-6 border-b border-white/10 flex flex-col items-center">
+        <div className="bg-white rounded-lg p-3 shadow-sm mb-2">
+          <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-16 w-16" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm text-blue-200 capitalize font-medium">
+            {user?.role === 'admin' ? 'Administrator' : 
+             user?.role === 'manager' ? 'Manager' : 
+             'User'}
+          </p>
         </div>
       </div>
 
-      {/* Navigation - Compact design */}
-      <nav className="flex-1 px-3 py-2 space-y-1">
+      {/* Navigation - Centered design */}
+      <nav className="flex-1 px-4 py-4 space-y-1 mt-4">
         {menu.map((item) => {
           const isActive = location.pathname === item.path;
           const icon = item.label.split(" ")[0];
