@@ -1110,16 +1110,18 @@ export default function EmployeesList() {
         
         {/* EXPORT BUTTON */}
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg border border-slate-200/50 p-4 sm:p-6 text-center">
-        <button
-          onClick={exportToCSV}
+          <button
+            onClick={exportToCSV}
             className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 mx-auto hover:shadow-xl hover:scale-105"
-        >
+          >
             <span className="text-xl">📤</span> 
             <span className="hidden sm:inline">{t('employeesList.exportEmployeesCSV')}</span>
             <span className="sm:hidden">{t('employeesList.exportCSV')}</span>
-        </button>
+          </button>
         </div>
       </div>
     </div>
   );
 }
+
+export default EmployeesList;
