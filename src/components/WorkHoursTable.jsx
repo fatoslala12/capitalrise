@@ -377,21 +377,21 @@ export default function WorkHoursTable({
         
         // Show success message
         if (window.showToast) {
-          const paymentText = safeT('workHours.payment', 'Payment');
-          const statusText = newPaidStatus ? safeT('workHours.markedAsPaid', 'marked as paid') : safeT('workHours.markedAsUnpaid', 'marked as unpaid');
-          const successText = safeT('workHours.successfully', 'successfully');
+          const paymentText = safeT('workHours.payment', 'Pagesa');
+          const statusText = newPaidStatus ? safeT('workHours.markedAsPaid', 'u shënuar si e paguar') : safeT('workHours.markedAsUnpaid', 'u shënuar si e papaguar');
+          const successText = safeT('workHours.successfully', 'me sukses');
           window.showToast(`${paymentText} ${statusText} ${successText}!`, 'success');
         }
       } else {
         console.error("Failed to toggle payment status");
         if (window.showToast) {
-          window.showToast(safeT('workHours.updateFailed', 'Failed to update payment status'), 'error');
+          window.showToast(safeT('workHours.updateFailed', 'Dështoi përditësimi i statusit të pagesës'), 'error');
         }
       }
     } catch (error) {
       console.error("Error toggling payment status:", error);
       if (window.showToast) {
-        window.showToast(safeT('workHours.updateError', 'Error updating payment status'), 'error');
+        window.showToast(safeT('workHours.updateError', 'Gabim gjatë përditësimit të statusit të pagesës'), 'error');
       }
     }
   }, [weekLabel, paidStatus, onPaymentToggle, safeT]);
