@@ -9,6 +9,7 @@ import PageLoader from "../components/ui/PageLoader";
 const getStartOfWeek = (offset = 0) => {
   const today = new Date();
   const day = today.getDay();
+
   
   // Java sipas backend: E Hëna (1) → E Diel (0)
   // Backend përdor Monday-Sunday week calculation
@@ -22,12 +23,15 @@ const getStartOfWeek = (offset = 0) => {
     // Monday-Saturday - go back (day-1) days to get to Monday
     diff = -(day - 1);
   }
+
   
   // Shto offset për javët e tjera
   const adjustedDiff = diff + (offset * 7);
+
   
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() + adjustedDiff);
+
   
   // Debug logging
   console.log('[DEBUG] getStartOfWeek calculation:');
@@ -37,6 +41,7 @@ const getStartOfWeek = (offset = 0) => {
   console.log('[DEBUG] Adjusted diff with offset:', adjustedDiff);
   console.log('[DEBUG] Start of week:', startOfWeek.toISOString().slice(0, 10));
   console.log('[DEBUG] Offset:', offset);
+
   
   return startOfWeek;
 };
@@ -46,12 +51,14 @@ const formatDateRange = (startDate) => {
   endDate.setDate(startDate.getDate() + 6);
   const startStr = startDate.toISOString().slice(0, 10);
   const endStr = endDate.toISOString().slice(0, 10);
+
   
   // Debug logging
   console.log('[DEBUG] formatDateRange calculation:');
   console.log('[DEBUG] Start date:', startDate.toISOString().slice(0, 10));
   console.log('[DEBUG] End date:', endDate.toISOString().slice(0, 10));
   console.log('[DEBUG] Formatted range:', `${startStr} - ${endStr}`);
+
   
   return `${startStr} - ${endStr}`;
 };
@@ -79,11 +86,13 @@ export default function WorkHours() {
   const [viewMode, setViewMode] = useState('all'); // 'all' | 'bySite'
   const currentWeekStart = getStartOfWeek();
   const currentWeekLabel = formatDateRange(currentWeekStart);
+
   
   // Debug log when employees state changes
   useEffect(() => {
     console.log('[DEBUG] Employees state changed:', employees.length, employees);
   }, [employees]);
+
   
   // Debug logging
   console.log('[DEBUG] Current week start:', currentWeekStart);
@@ -137,9 +146,11 @@ export default function WorkHours() {
   // Merr punonjësit nga backend
   useEffect(() => {
     if (!user) return;
+
     
     console.log('[DEBUG] Starting to fetch employees for user:', user);
     setLoading(true);
+
     
     axios.get("https://capitalrise-cwcq.onrender.com/api/employees", {
       headers: { Authorization: `Bearer ${token}` }
@@ -147,6 +158,7 @@ export default function WorkHours() {
       .then(async res => {
         const emps = res.data || [];
         console.log("All employees:", emps);
+
         
         if (isAdmin) {
           // ADMIN: shfaq të gjithë punonjësit aktivë
@@ -155,6 +167,7 @@ export default function WorkHours() {
           setEmployees(activeEmps);
           return;
         }
+
         
         if (isUser) {
           // USER: shfaq vetëm veten
@@ -168,11 +181,13 @@ export default function WorkHours() {
           setEmployees(selfEmployee ? [selfEmployee] : []);
           return;
         }
+
         
         if (isManager) {
           // MANAGER: shfaq punonjësit e site-ve të tij
           console.log("Manager user:", user);
           console.log("Manager employee_id:", user.employee_id);
+
           
           // Fallback: nëse nuk ka employee_id, gjej nga email
           if (!user.employee_id) {
@@ -190,6 +205,7 @@ export default function WorkHours() {
             }
             return;
           }
+
           
           // Gjej menaxherin në listën e punonjësve
           const managerEmployee = emps.find(emp => String(emp.id) === String(user.employee_id));
@@ -198,10 +214,12 @@ export default function WorkHours() {
             setEmployees([]);
             return;
           }
+
           
           // Përdor workplace nga managerEmployee nëse user.workplace është bosh
           const managerSites = user.workplace || managerEmployee.workplace || [];
           console.log("Manager sites:", managerSites);
+
           
           // Nëse manager nuk ka site-t, shfaq vetëm veten
           if (managerSites.length === 0) {
@@ -209,6 +227,7 @@ export default function WorkHours() {
             setEmployees([managerEmployee]);
             return;
           }
+
           
           // Filtro punonjësit që punojnë në site-t e menaxherit (vetëm aktivë)
           const filteredEmps = emps.filter(emp => {
@@ -217,11 +236,13 @@ export default function WorkHours() {
               console.log(`Excluding inactive employee: ${emp.first_name} ${emp.last_name} (Status: ${emp.status})`);
               return false;
             }
+
             
             if (String(emp.id) === String(user.employee_id)) {
               console.log(`Including manager self: ${emp.first_name} ${emp.last_name}`);
               return true; // Gjithmonë përfshij veten
             }
+
             
             // Kontrollo nëse punonjësi ka site-t e përbashkëta me menaxherin
             if (emp.workplace && Array.isArray(emp.workplace)) {
@@ -229,12 +250,15 @@ export default function WorkHours() {
               console.log(`Employee ${emp.first_name} ${emp.last_name} sites:`, emp.workplace, "Manager sites:", managerSites, "Has common site:", hasCommonSite, "Status:", emp.status);
               return hasCommonSite;
             }
+
             
             console.log(`Employee ${emp.first_name} ${emp.last_name} has no workplace or not array`);
             return false;
           });
+
           
           console.log("Filtered employees for manager:", filteredEmps);
+
           
           // Nëse nuk gjej asnjë punonjës, shfaq vetëm menaxherin
           if (filteredEmps.length === 0) {
@@ -258,8 +282,10 @@ export default function WorkHours() {
   // Merr orët e punës nga backend
   useEffect(() => {
     if (!user || !currentWeekLabel) return;
+
     
     setLoading(true);
+
     
     axios.get("https://capitalrise-cwcq.onrender.com/api/work-hours/structured", {
       headers: { Authorization: `Bearer ${token}` }
@@ -269,19 +295,23 @@ export default function WorkHours() {
         console.log('[DEBUG] WorkHours API data:', res.data);
         console.log('[DEBUG] WorkHours API data type:', typeof res.data);
         console.log('[DEBUG] WorkHours API data keys:', Object.keys(res.data || {}));
+
         
         const data = res.data || {};
+
         
         // Debug: Check the actual structure of the data
         if (Array.isArray(data)) {
           console.log('[DEBUG] API returned array, converting to expected structure');
           console.log('[DEBUG] First few array items:', data.slice(0, 3));
+
           
           // If API returns array, convert to expected object structure
           const convertedData = {};
           data.forEach((item, index) => {
             console.log(`[DEBUG] Processing item ${index}:`, item);
             console.log(`[DEBUG] Item keys:`, Object.keys(item));
+
             
             // Try different possible field names for employee ID
             const empId = item.employeeId || item.employee_id || item.empId || item.emp_id || item.id;
@@ -289,8 +319,10 @@ export default function WorkHours() {
             const day = item.day || item.dayOfWeek || item.day_of_week || item.dayName;
             const hours = item.hours || item.hour || item.hourCount || item.hour_count || 0;
             const site = item.site || item.siteName || item.site_name || item.workplace || '';
+
             
             console.log(`[DEBUG] Extracted values:`, { empId, week, day, hours, site });
+
             
             if (empId && week && day !== undefined) {
               if (!convertedData[empId]) {
@@ -308,9 +340,11 @@ export default function WorkHours() {
               console.warn(`[WARNING] Skipping item ${index} - missing required fields:`, { empId, week, day, hours, site });
             }
           });
+
           
           console.log('[DEBUG] Final converted data structure:', convertedData);
           console.log('[DEBUG] Converted data keys:', Object.keys(convertedData));
+
           
           // Debug: show sample of converted data
           Object.entries(convertedData).forEach(([empId, empData]) => {
@@ -319,6 +353,7 @@ export default function WorkHours() {
               console.log(`[DEBUG] Employee ${empId} week ${week}:`, weekData);
             });
           });
+
           
           setHourData(convertedData);
         } else {
@@ -326,6 +361,7 @@ export default function WorkHours() {
           console.log('[DEBUG] Object data structure:', data);
           setHourData(data);
         }
+
         
         // Debug: shfaq disa shembuj të të dhënave
         Object.entries(data).forEach(([empId, empData]) => {
@@ -337,11 +373,10 @@ export default function WorkHours() {
       })
       .catch(err => {
         console.error('[DEBUG] WorkHours API error:', err);
-        showToast(t('workHours.loadError') || 'Error loading work hours data', 'error');
         setHourData({});
       })
       .finally(() => setLoading(false));
-  }, [token, currentWeekLabel, user?.id, showToast, t]);
+  }, [token, currentWeekLabel, user?.id]);
 
   // Merr kontratat për site options
   useEffect(() => {
@@ -379,8 +414,8 @@ export default function WorkHours() {
       if (!map[site].some(e => e.id === emp.id)) map[site].push(emp);
     };
     (employees || []).forEach(e => {
-      const sites = Array.isArray(e.workplace) && e.workplace.length ? e.workplace : ['No Site'];
-      sites.forEach(s => add(s || 'No Site', e)); // siguri
+                  const sites = Array.isArray(e.workplace) && e.workplace.length ? e.workplace : [t('workHours.noSite')];
+            sites.forEach(s => add(s || t('workHours.noSite'), e)); // siguri
     });
     return map;
   }, [employees]);
@@ -396,6 +431,7 @@ export default function WorkHours() {
       }
       return;
     }
+
     
     if (isManager) {
       // MANAGER: mund të ndryshojë të gjitha fushat
@@ -418,6 +454,7 @@ export default function WorkHours() {
   const handleSubmit = async () => {
     try {
       setSaved(true);
+
       
       if (isAdmin) {
         // ADMIN: ruaj vetëm statusin e pagesës
@@ -432,6 +469,7 @@ export default function WorkHours() {
             });
           }
         });
+
         
         if (paymentUpdates.length > 0) {
           await axios.post("https://capitalrise-cwcq.onrender.com/api/work-hours/update-payment-status", {
@@ -460,6 +498,7 @@ export default function WorkHours() {
             });
           }
         });
+
         
         if (updates.length > 0) {
           await axios.post("https://capitalrise-cwcq.onrender.com/api/work-hours/bulk-update", {
@@ -469,6 +508,7 @@ export default function WorkHours() {
           });
         }
       }
+
       
       showToast(t('workHours.dataSavedSuccess'), "success");
       setTimeout(() => setSaved(false), 2000);
@@ -545,6 +585,7 @@ export default function WorkHours() {
                 </div>
                 <div className="text-xs sm:text-sm opacity-90 font-medium">{t('workHours.employee')}</div>
               </div>
+
               
               <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="text-xl sm:text-2xl font-bold">
@@ -566,6 +607,7 @@ export default function WorkHours() {
                 </div>
                 <div className="text-xs sm:text-sm opacity-90 font-medium">{t('workHours.total')} {t('workHours.hours')}</div>
               </div>
+
               
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="text-xl sm:text-2xl font-bold">
@@ -588,6 +630,7 @@ export default function WorkHours() {
                 </div>
                 <div className="text-xs sm:text-sm opacity-90 font-medium">Total Paga</div>
               </div>
+
               
               <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="text-xl sm:text-2xl font-bold">
@@ -756,7 +799,7 @@ export default function WorkHours() {
                     data={hourData}
                     paidStatus={paidStatus}
                     siteOptions={[site]}
-                    siteScope={site === 'No Site' ? '' : site}
+                    siteScope={site === '(Pa site)' ? '' : site}
                     showPaymentControl={isAdmin}
                     onChange={handleChange}
                     readOnly={(empId) => {
