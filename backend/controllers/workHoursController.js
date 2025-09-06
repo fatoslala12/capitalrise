@@ -690,14 +690,16 @@ exports.setPaidStatus = async (req, res) => {
 };
 
 exports.getStructuredWorkHours = async (req, res) => {
+  console.log('[DEBUG] getStructuredWorkHours called by user:', req.user?.id, req.user?.role);
   
   // Debug: kontrollo javët në database
   try {
     const weekLabelsResult = await pool.query('SELECT DISTINCT week_label FROM payments ORDER BY week_label DESC LIMIT 10');
-    
+    console.log('[DEBUG] Week labels in database:', weekLabelsResult.rows);
   } catch (err) {
-    
+    console.log('[DEBUG] Error fetching week labels:', err.message);
   }
+  
   let result;
   try {
     // Check if new columns exist

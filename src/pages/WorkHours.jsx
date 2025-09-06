@@ -337,10 +337,11 @@ export default function WorkHours() {
       })
       .catch(err => {
         console.error('[DEBUG] WorkHours API error:', err);
+        showToast(t('workHours.loadError') || 'Error loading work hours data', 'error');
         setHourData({});
       })
       .finally(() => setLoading(false));
-  }, [token, currentWeekLabel, user?.id]);
+  }, [token, currentWeekLabel, user?.id, showToast, t]);
 
   // Merr kontratat për site options
   useEffect(() => {
@@ -378,8 +379,8 @@ export default function WorkHours() {
       if (!map[site].some(e => e.id === emp.id)) map[site].push(emp);
     };
     (employees || []).forEach(e => {
-                  const sites = Array.isArray(e.workplace) && e.workplace.length ? e.workplace : [t('workHours.noSite')];
-            sites.forEach(s => add(s || t('workHours.noSite'), e)); // siguri
+      const sites = Array.isArray(e.workplace) && e.workplace.length ? e.workplace : ['No Site'];
+      sites.forEach(s => add(s || 'No Site', e)); // siguri
     });
     return map;
   }, [employees]);
@@ -755,7 +756,7 @@ export default function WorkHours() {
                     data={hourData}
                     paidStatus={paidStatus}
                     siteOptions={[site]}
-                    siteScope={site === '(Pa site)' ? '' : site}
+                    siteScope={site === 'No Site' ? '' : site}
                     showPaymentControl={isAdmin}
                     onChange={handleChange}
                     readOnly={(empId) => {

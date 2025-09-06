@@ -377,21 +377,24 @@ export default function WorkHoursTable({
         
         // Show success message
         if (window.showToast) {
-          window.showToast(`${safeT('workHours.payment', 'Payment')} ${newPaidStatus ? safeT('workHours.markedAsPaid', 'marked as paid') : safeT('workHours.markedAsUnpaid', 'marked as unpaid')} ${safeT('workHours.successfully', 'successfully')}!`, 'success');
+          const paymentText = safeT('workHours.payment', 'Payment');
+          const statusText = newPaidStatus ? safeT('workHours.markedAsPaid', 'marked as paid') : safeT('workHours.markedAsUnpaid', 'marked as unpaid');
+          const successText = safeT('workHours.successfully', 'successfully');
+          window.showToast(`${paymentText} ${statusText} ${successText}!`, 'success');
         }
       } else {
         console.error("Failed to toggle payment status");
         if (window.showToast) {
-          window.showToast("Failed to update payment status", 'error');
+          window.showToast(safeT('workHours.updateFailed', 'Failed to update payment status'), 'error');
         }
       }
     } catch (error) {
       console.error("Error toggling payment status:", error);
       if (window.showToast) {
-        window.showToast("Error updating payment status", 'error');
+        window.showToast(safeT('workHours.updateError', 'Error updating payment status'), 'error');
       }
     }
-  }, [weekLabel, paidStatus, onPaymentToggle, t]);
+  }, [weekLabel, paidStatus, onPaymentToggle, safeT]);
 
   if (!Array.isArray(employees) || employees.length === 0) {
     return (
