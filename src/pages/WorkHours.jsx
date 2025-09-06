@@ -838,7 +838,7 @@ export default function WorkHours() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs sm:text-sm text-gray-500">
-                            {expandedWeeks.includes(weekLabel) ? t('workHours.close', 'Mbyll') : t('workHours.open', 'Hap')}
+                            {expandedWeeks.includes(weekLabel) ? "Close" : "Open"}
                           </span>
                           <div className={`transform transition-transform duration-300 ${expandedWeeks.includes(weekLabel) ? 'rotate-180' : ''}`}>
                             <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
