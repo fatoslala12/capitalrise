@@ -68,6 +68,51 @@ const SystemSettings = () => {
     backupEncryption: false
   });
 
+  // System Performance Settings State
+  const [performanceSettings, setPerformanceSettings] = useState({
+    cacheEnabled: true,
+    cacheExpirationMinutes: 60,
+    maxConcurrentUsers: 100,
+    sessionCleanupInterval: 30,
+    logRetentionDays: 90,
+    enableDebugMode: false,
+    enableMaintenanceMode: false,
+    systemOptimization: true,
+    memoryLimit: 512, // MB
+    cpuLimit: 80 // percentage
+  });
+
+  // Email Settings State
+  const [emailSettings, setEmailSettings] = useState({
+    smtpHost: '',
+    smtpPort: 587,
+    smtpUsername: '',
+    smtpPassword: '',
+    smtpSecure: true,
+    fromEmail: '',
+    fromName: 'Capital Rise System',
+    emailQueueEnabled: true,
+    maxEmailsPerHour: 100,
+    emailRetryAttempts: 3
+  });
+
+  // System Maintenance State
+  const [maintenanceSettings, setMaintenanceSettings] = useState({
+    maintenanceMode: false,
+    maintenanceMessage: 'System is under maintenance. Please try again later.',
+    scheduledMaintenance: false,
+    maintenanceStartTime: '',
+    maintenanceEndTime: '',
+    autoRestartEnabled: false,
+    restartTime: '03:00',
+    healthCheckInterval: 5, // minutes
+    alertThresholds: {
+      cpuUsage: 80,
+      memoryUsage: 85,
+      diskUsage: 90
+    }
+  });
+
   // Load settings on component mount
   useEffect(() => {
     if (hasPermission('manage_system')) {
@@ -120,6 +165,18 @@ const SystemSettings = () => {
 
   const handleBackupSettingsSave = () => {
     saveSettings('backup', backupSettings);
+  };
+
+  const handlePerformanceSettingsSave = () => {
+    saveSettings('performance', performanceSettings);
+  };
+
+  const handleEmailSettingsSave = () => {
+    saveSettings('email', emailSettings);
+  };
+
+  const handleMaintenanceSettingsSave = () => {
+    saveSettings('maintenance', maintenanceSettings);
   };
 
   // Check if user has admin permissions
@@ -626,6 +683,325 @@ const SystemSettings = () => {
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Performance Settings */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <span>⚡</span>
+                {t('settings.performanceSettings')}
+              </h2>
+              <button
+                onClick={handlePerformanceSettingsSave}
+                disabled={saving}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200"
+              >
+                {saving ? t('common.saving') : t('common.save')}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('settings.maxConcurrentUsers')}
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="1000"
+                  value={performanceSettings.maxConcurrentUsers}
+                  onChange={(e) => setPerformanceSettings({...performanceSettings, maxConcurrentUsers: parseInt(e.target.value)})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('settings.cacheExpirationMinutes')}
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="1440"
+                  value={performanceSettings.cacheExpirationMinutes}
+                  onChange={(e) => setPerformanceSettings({...performanceSettings, cacheExpirationMinutes: parseInt(e.target.value)})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('settings.memoryLimit')} (MB)
+                </label>
+                <input
+                  type="number"
+                  min="128"
+                  max="4096"
+                  value={performanceSettings.memoryLimit}
+                  onChange={(e) => setPerformanceSettings({...performanceSettings, memoryLimit: parseInt(e.target.value)})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="md:col-span-2 lg:col-span-3">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {t('settings.cacheEnabled')}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {t('settings.cacheEnabledDesc')}
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={performanceSettings.cacheEnabled}
+                        onChange={(e) => setPerformanceSettings({...performanceSettings, cacheEnabled: e.target.checked})}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {t('settings.enableDebugMode')}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {t('settings.enableDebugModeDesc')}
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={performanceSettings.enableDebugMode}
+                        onChange={(e) => setPerformanceSettings({...performanceSettings, enableDebugMode: e.target.checked})}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Email Settings */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <span>📧</span>
+                {t('settings.emailSettings')}
+              </h2>
+              <button
+                onClick={handleEmailSettingsSave}
+                disabled={saving}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200"
+              >
+                {saving ? t('common.saving') : t('common.save')}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('settings.smtpHost')}
+                </label>
+                <input
+                  type="text"
+                  value={emailSettings.smtpHost}
+                  onChange={(e) => setEmailSettings({...emailSettings, smtpHost: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="smtp.gmail.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('settings.smtpPort')}
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="65535"
+                  value={emailSettings.smtpPort}
+                  onChange={(e) => setEmailSettings({...emailSettings, smtpPort: parseInt(e.target.value)})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('settings.smtpUsername')}
+                </label>
+                <input
+                  type="text"
+                  value={emailSettings.smtpUsername}
+                  onChange={(e) => setEmailSettings({...emailSettings, smtpUsername: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('settings.smtpPassword')}
+                </label>
+                <input
+                  type="password"
+                  value={emailSettings.smtpPassword}
+                  onChange={(e) => setEmailSettings({...emailSettings, smtpPassword: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('settings.fromEmail')}
+                </label>
+                <input
+                  type="email"
+                  value={emailSettings.fromEmail}
+                  onChange={(e) => setEmailSettings({...emailSettings, fromEmail: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('settings.fromName')}
+                </label>
+                <input
+                  type="text"
+                  value={emailSettings.fromName}
+                  onChange={(e) => setEmailSettings({...emailSettings, fromName: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* System Maintenance */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <span>🔧</span>
+                {t('settings.systemMaintenance')}
+              </h2>
+              <button
+                onClick={handleMaintenanceSettingsSave}
+                disabled={saving}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200"
+              >
+                {saving ? t('common.saving') : t('common.save')}
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <div>
+                  <div className="font-medium text-yellow-800 dark:text-yellow-200">
+                    {t('settings.maintenanceMode')}
+                  </div>
+                  <div className="text-sm text-yellow-600 dark:text-yellow-300">
+                    {t('settings.maintenanceModeDesc')}
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={maintenanceSettings.maintenanceMode}
+                    onChange={(e) => setMaintenanceSettings({...maintenanceSettings, maintenanceMode: e.target.checked})}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 dark:peer-focus:ring-yellow-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-yellow-500"></div>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('settings.maintenanceMessage')}
+                  </label>
+                  <textarea
+                    value={maintenanceSettings.maintenanceMessage}
+                    onChange={(e) => setMaintenanceSettings({...maintenanceSettings, maintenanceMessage: e.target.value})}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('settings.healthCheckInterval')} (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={maintenanceSettings.healthCheckInterval}
+                    onChange={(e) => setMaintenanceSettings({...maintenanceSettings, healthCheckInterval: parseInt(e.target.value)})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('settings.cpuUsageThreshold')} (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={maintenanceSettings.alertThresholds.cpuUsage}
+                    onChange={(e) => setMaintenanceSettings({
+                      ...maintenanceSettings, 
+                      alertThresholds: {...maintenanceSettings.alertThresholds, cpuUsage: parseInt(e.target.value)}
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('settings.memoryUsageThreshold')} (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={maintenanceSettings.alertThresholds.memoryUsage}
+                    onChange={(e) => setMaintenanceSettings({
+                      ...maintenanceSettings, 
+                      alertThresholds: {...maintenanceSettings.alertThresholds, memoryUsage: parseInt(e.target.value)}
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('settings.diskUsageThreshold')} (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={maintenanceSettings.alertThresholds.diskUsage}
+                    onChange={(e) => setMaintenanceSettings({
+                      ...maintenanceSettings, 
+                      alertThresholds: {...maintenanceSettings.alertThresholds, diskUsage: parseInt(e.target.value)}
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
                 </div>
               </div>
             </div>

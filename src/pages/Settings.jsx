@@ -131,42 +131,6 @@ const Settings = () => {
     </div>
   );
 
-  const [profileData, setProfileData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-  });
-
-  const [isProfileSaving, setIsProfileSaving] = useState(false);
-
-  const handleProfileChange = (field, value) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleProfileSave = async () => {
-    setIsProfileSaving(true);
-    try {
-      // Here you would typically make an API call to update the user profile
-      // For now, we'll just update localStorage and show a success message
-      const updatedUser = { ...user, ...profileData };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Show success message
-      alert(t('profile.profileUpdated'));
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      alert(t('profile.updateError'));
-    } finally {
-      setIsProfileSaving(false);
-    }
-  };
 
   const renderProfileTab = () => (
     <div className="space-y-6">
@@ -183,9 +147,9 @@ const Settings = () => {
             </label>
             <input
               type="text"
-              value={profileData.firstName}
-              onChange={(e) => handleProfileChange('firstName', e.target.value)}
+              defaultValue={user?.firstName || ''}
               className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              readOnly
             />
           </div>
           
@@ -195,9 +159,9 @@ const Settings = () => {
             </label>
             <input
               type="text"
-              value={profileData.lastName}
-              onChange={(e) => handleProfileChange('lastName', e.target.value)}
+              defaultValue={user?.lastName || ''}
               className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              readOnly
             />
           </div>
           
@@ -207,9 +171,9 @@ const Settings = () => {
             </label>
             <input
               type="email"
-              value={profileData.email}
-              onChange={(e) => handleProfileChange('email', e.target.value)}
+              defaultValue={user?.email || ''}
               className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              readOnly
             />
           </div>
           
@@ -219,28 +183,17 @@ const Settings = () => {
             </label>
             <input
               type="tel"
-              value={profileData.phone}
-              onChange={(e) => handleProfileChange('phone', e.target.value)}
+              defaultValue={user?.phone || ''}
               className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              readOnly
             />
           </div>
         </div>
         
-        <div className="mt-6 flex justify-end">
-          <button 
-            onClick={handleProfileSave}
-            disabled={isProfileSaving}
-            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-          >
-            {isProfileSaving ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                {t('common.saving')}
-              </>
-            ) : (
-              t('common.save')
-            )}
-          </button>
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            <span className="font-medium">ℹ️ Info:</span> Për të ndryshuar të dhënat e profilit, kontaktoni administratorin e sistemit.
+          </p>
         </div>
       </div>
     </div>

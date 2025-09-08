@@ -190,10 +190,12 @@ export default function MainLayout() {
             </div>
             
             {/* Actions */}
-            <div className="flex items-center justify-end gap-2 sm:gap-6 w-full max-w-md">
-              <ThemeToggle variant="minimal" size="sm" showLabel={false} />
-              <LanguageSwitcher />
-              <NotificationBell />
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <ThemeToggle variant="minimal" size="sm" showLabel={false} />
+                <LanguageSwitcher />
+                <NotificationBell />
+              </div>
               <button
                 onClick={logout}
                 className="px-3 sm:px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold text-sm transition-all duration-200 hover:shadow-md transform hover:scale-105"
