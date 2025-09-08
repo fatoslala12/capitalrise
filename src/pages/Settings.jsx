@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -24,12 +24,34 @@ const Settings = () => {
     ...(user?.role === 'admin' ? [{ id: 'system', label: t('settings.systemSettings'), icon: '⚙️' }] : []),
   ];
 
+  const [savedThemes, setSavedThemes] = useState([]);
+
+  // Load saved themes from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('customThemes');
+    if (saved) {
+      try {
+        setSavedThemes(JSON.parse(saved));
+      } catch (error) {
+        console.error('Error loading saved themes:', error);
+      }
+    }
+  }, []);
+
   const themeOptions = [
     { value: 'light', label: t('theme.lightMode'), icon: '☀️' },
     { value: 'dark', label: t('theme.darkMode'), icon: '🌙' },
     { value: 'green', label: t('theme.greenMode'), icon: '🌿' },
     { value: 'green-dark', label: t('theme.greenDarkMode'), icon: '🌙🌿' },
     { value: 'auto', label: t('theme.autoMode'), icon: '🔄' },
+    // Add custom themes
+    ...savedThemes.map(savedTheme => ({
+      value: `custom-${savedTheme.id}`,
+      label: savedTheme.name,
+      icon: '🎨',
+      isCustom: true,
+      themeData: savedTheme
+    }))
   ];
 
   const languageOptions = [
@@ -50,7 +72,18 @@ const Settings = () => {
           {themeOptions.map((option) => (
             <button
               key={option.value}
-              onClick={() => setTheme(option.value)}
+              onClick={() => {
+                if (option.isCustom) {
+                  // Apply custom theme
+                  const root = document.documentElement;
+                  Object.entries(option.themeData.colors).forEach(([key, value]) => {
+                    root.style.setProperty(`--theme-${key}`, value);
+                  });
+                  localStorage.setItem('customTheme', JSON.stringify(option.themeData));
+                } else {
+                  setTheme(option.value);
+                }
+              }}
               className={`rounded-2xl border transition-all duration-200 p-6 text-left hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 theme === option.value || (option.value === 'auto' && !localStorage.getItem('theme'))
                   ? 'border-sky-400 ring-2 ring-sky-200 bg-sky-50/60 dark:bg-slate-700/40 text-sky-800 dark:text-sky-200'
@@ -98,6 +131,43 @@ const Settings = () => {
     </div>
   );
 
+  const [profileData, setProfileData] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+  });
+
+  const [isProfileSaving, setIsProfileSaving] = useState(false);
+
+  const handleProfileChange = (field, value) => {
+    setProfileData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleProfileSave = async () => {
+    setIsProfileSaving(true);
+    try {
+      // Here you would typically make an API call to update the user profile
+      // For now, we'll just update localStorage and show a success message
+      const updatedUser = { ...user, ...profileData };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Show success message
+      alert(t('profile.profileUpdated'));
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert(t('profile.updateError'));
+    } finally {
+      setIsProfileSaving(false);
+    }
+  };
+
   const renderProfileTab = () => (
     <div className="space-y-6">
       <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-slate-700">
@@ -113,7 +183,8 @@ const Settings = () => {
             </label>
             <input
               type="text"
-              defaultValue={user?.firstName || ''}
+              value={profileData.firstName}
+              onChange={(e) => handleProfileChange('firstName', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -124,7 +195,8 @@ const Settings = () => {
             </label>
             <input
               type="text"
-              defaultValue={user?.lastName || ''}
+              value={profileData.lastName}
+              onChange={(e) => handleProfileChange('lastName', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -135,7 +207,8 @@ const Settings = () => {
             </label>
             <input
               type="email"
-              defaultValue={user?.email || ''}
+              value={profileData.email}
+              onChange={(e) => handleProfileChange('email', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -146,15 +219,27 @@ const Settings = () => {
             </label>
             <input
               type="tel"
-              defaultValue={user?.phone || ''}
+              value={profileData.phone}
+              onChange={(e) => handleProfileChange('phone', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </div>
         
         <div className="mt-6 flex justify-end">
-          <button className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors duration-200">
-            {t('common.save')}
+          <button 
+            onClick={handleProfileSave}
+            disabled={isProfileSaving}
+            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+          >
+            {isProfileSaving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                {t('common.saving')}
+              </>
+            ) : (
+              t('common.save')
+            )}
           </button>
         </div>
       </div>

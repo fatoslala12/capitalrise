@@ -846,10 +846,13 @@ body {
   color: var(--theme-menu-text);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 10px;
   transition: background-color 180ms ease, transform 180ms ease;
+  text-align: center;
+  min-height: 48px;
 }
 
 .sidebar-modern .nav-item-modern:hover {

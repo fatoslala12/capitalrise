@@ -190,7 +190,7 @@ export default function MainLayout() {
             </div>
             
             {/* Actions */}
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center justify-end gap-2 sm:gap-6 w-full max-w-md">
               <ThemeToggle variant="minimal" size="sm" showLabel={false} />
               <LanguageSwitcher />
               <NotificationBell />
