@@ -165,6 +165,9 @@ app.use('/api/audit-trail', auditTrailRoutes);
 const taskDeadlineRoutes = require('./routes/taskDeadlines');
 app.use('/api/task-deadlines', taskDeadlineRoutes);
 
+const settingsRoutes = require('./routes/settings');
+app.use('/api/settings', settingsRoutes);
+
 
 
 

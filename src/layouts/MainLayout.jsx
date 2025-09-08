@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { MobileSidebar } from "../components/ui/Layout";
 import NotificationBell from "../components/NotificationBell";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import ThemeToggle from "../components/ui/ThemeToggle";
 import { useTranslation } from "react-i18next";
 import PageLoader from "../components/ui/PageLoader";
 
@@ -19,6 +20,7 @@ const adminMenu = [
   { path: "/admin/audit-trail", label: "🔍 Audit Trail" },
   { path: "/admin/notifications", label: "🔔 Njoftimet" },
   { path: "/admin/notifications/analytics", label: "📊 Analytics" },
+  { path: "/admin/settings", label: "⚙️ Cilësimet" },
 ];
 
 const managerMenu = [
@@ -27,6 +29,7 @@ const managerMenu = [
   { path: "/manager/employees-list", label: "👷 Menaxho Punonjësit" },
   { path: "/manager/work-hours", label: "🕒 Orët e Punës" },
   { path: "/manager/my-profile", label: "👤 Profili Im" },
+  { path: "/manager/settings", label: "⚙️ Cilësimet" },
 ];
 
 const userMenu = [
@@ -34,6 +37,7 @@ const userMenu = [
   { path: "/user/work-hours", label: "🕒 Orët e Punës" },
   { path: "/user/my-tasks", label: "📝 Detyrat e Mia" },
   { path: "/user/my-profile", label: "👤 Profili Im" },
+  { path: "/user/settings", label: "⚙️ Cilësimet" },
 ];
 
 export default function MainLayout() {
@@ -133,7 +137,7 @@ export default function MainLayout() {
   return (
     <div className="flex h-screen w-full bg-gray-50 overflow-hidden">
       {/* Sidebar */}
-      <aside className="hidden lg:flex w-80 bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 flex-shrink-0 shadow-2xl">
+      <aside className="hidden lg:flex w-80 sidebar-modern flex-shrink-0 shadow-2xl">
         <SidebarContent />
       </aside>
 
@@ -142,7 +146,7 @@ export default function MainLayout() {
         isOpen={isMobileMenuOpen} 
         onClose={() => setIsMobileMenuOpen(false)}
       >
-        <div className="h-full bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900">
+        <div className="h-full sidebar-modern">
           <SidebarContent />
         </div>
       </MobileSidebar>
@@ -150,7 +154,7 @@ export default function MainLayout() {
       {/* Main Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="bg-white flex-shrink-0 shadow-lg border-b border-gray-200">
+        <header className="header-modern flex-shrink-0 shadow-lg border-b">
           <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
             {/* Mobile menu button */}
             <button
@@ -187,6 +191,7 @@ export default function MainLayout() {
             
             {/* Actions */}
             <div className="flex items-center gap-2 sm:gap-4">
+              <ThemeToggle variant="minimal" size="sm" showLabel={false} />
               <LanguageSwitcher />
               <NotificationBell />
               <button
