@@ -38,41 +38,45 @@ const Settings = () => {
   ];
 
   const renderAppearanceTab = () => (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Theme Selection */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-slate-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-slate-700">
+        <h3 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
           <span>🎨</span>
           {t('theme.colorScheme')}
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {themeOptions.map((option) => (
             <button
               key={option.value}
               onClick={() => setTheme(option.value)}
-              className={`
-                p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105
-                ${theme === option.value || (option.value === 'auto' && !localStorage.getItem('theme'))
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+              className={`rounded-2xl border transition-all duration-200 p-6 text-left hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                theme === option.value || (option.value === 'auto' && !localStorage.getItem('theme'))
+                  ? 'border-sky-400 ring-2 ring-sky-200 bg-sky-50/60 dark:bg-slate-700/40 text-sky-800 dark:text-sky-200'
                   : 'border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-slate-500'
               }`}
             >
-              <div className="text-2xl mb-2">{option.icon}</div>
-              <div className="font-medium">{option.label}</div>
+              <div className="flex items-center gap-4">
+                <div className="text-2xl">{option.icon}</div>
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-white">{option.label}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{t('theme.switchTheme')}</div>
+                </div>
+              </div>
             </button>
           ))}
         </div>
       </div>
 
       {/* Theme Preview */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-slate-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-slate-700">
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
           <span>👁️</span>
           {t('theme.themePreference')}
         </h3>
         
-        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+        <div className="flex items-center justify-between p-5 bg-gray-50 dark:bg-slate-700 rounded-xl">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
               {user?.firstName?.charAt(0) || 'U'}
@@ -278,14 +282,14 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="mb-10 text-center md:text-left">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
             {t('settings.title')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg">
             {t('settings.description')}
           </p>
         </div>
@@ -293,17 +297,17 @@ const Settings = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-700 p-6 sticky top-6">
               <nav className="space-y-2">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200
+                      w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200
                       ${activeTab === tab.id
-                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700'
+                        ? 'bg-sky-50 dark:bg-slate-700/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-slate-600'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/40'
                       }`}
                   >
                     <span className="text-lg">{tab.icon}</span>
