@@ -1,4 +1,4 @@
-const db = require('../db');
+const { pool } = require('../db');
 const { verifyToken } = require('../middleware/auth');
 
 // Get all custom themes for a user
@@ -21,7 +21,7 @@ const getCustomThemes = async (req, res) => {
       ORDER BY created_at DESC
     `;
     
-    const result = await db.query(query, [employeeId]);
+    const result = await pool.query(query, [employeeId]);
     const themes = result.rows;
     
     res.json({
@@ -56,7 +56,7 @@ const getCustomTheme = async (req, res) => {
       WHERE id = $1 AND (employee_id = $2 OR is_public = TRUE)
     `;
     
-    const result = await db.query(query, [themeId, employeeId]);
+    const result = await pool.query(query, [themeId, employeeId]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -104,7 +104,7 @@ const createCustomTheme = async (req, res) => {
       RETURNING id, name, colors, is_public, created_at
     `;
     
-    const result = await db.query(query, [employeeId, name, JSON.stringify(colors), is_public]);
+    const result = await pool.query(query, [employeeId, name, JSON.stringify(colors), is_public]);
     
     res.status(201).json({
       success: true,
@@ -135,7 +135,7 @@ const updateCustomTheme = async (req, res) => {
     
     // Check if theme exists and belongs to user
     const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND employee_id = $2';
-    const checkResult = await db.query(checkQuery, [themeId, employeeId]);
+    const checkResult = await pool.query(checkQuery, [themeId, employeeId]);
     
     if (checkResult.rows.length === 0) {
       return res.status(404).json({
@@ -208,7 +208,7 @@ const deleteCustomTheme = async (req, res) => {
     
     // Check if theme exists and belongs to user
     const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND employee_id = $2';
-    const checkResult = await db.query(checkQuery, [themeId, employeeId]);
+    const checkResult = await pool.query(checkQuery, [themeId, employeeId]);
     
     if (checkResult.rows.length === 0) {
       return res.status(404).json({
@@ -218,7 +218,7 @@ const deleteCustomTheme = async (req, res) => {
     }
     
     const query = 'DELETE FROM custom_themes WHERE id = $1 AND employee_id = $2';
-    await db.query(query, [themeId, employeeId]);
+    await pool.query(query, [themeId, employeeId]);
     
     res.json({
       success: true,
@@ -259,7 +259,7 @@ const setActiveTheme = async (req, res) => {
       id: themeId
     };
     
-    await db.query(query, [employeeId, JSON.stringify(themeData)]);
+    await pool.query(query, [employeeId, JSON.stringify(themeData)]);
     
     res.json({
       success: true,
@@ -292,7 +292,7 @@ const getActiveTheme = async (req, res) => {
       WHERE employee_id = $1 AND preference_key = 'active_theme'
     `;
     
-    const result = await db.query(query, [employeeId]);
+    const result = await pool.query(query, [employeeId]);
     
     if (result.rows.length === 0) {
       return res.json({
