@@ -9,11 +9,12 @@ const getCustomThemes = async (req, res) => {
     const query = `
       SELECT id, name, colors, is_public, created_at, updated_at
       FROM custom_themes 
-      WHERE user_id = ? OR is_public = TRUE
+      WHERE user_id = $1 OR is_public = TRUE
       ORDER BY created_at DESC
     `;
     
-    const [themes] = await db.execute(query, [userId]);
+    const result = await db.query(query, [userId]);
+    const themes = result.rows;
     
     res.json({
       success: true,
@@ -37,12 +38,12 @@ const getCustomTheme = async (req, res) => {
     const query = `
       SELECT id, name, colors, is_public, created_at, updated_at
       FROM custom_themes 
-      WHERE id = ? AND (user_id = ? OR is_public = TRUE)
+      WHERE id = $1 AND (user_id = $2 OR is_public = TRUE)
     `;
     
-    const [themes] = await db.execute(query, [themeId, userId]);
+    const result = await db.query(query, [themeId, userId]);
     
-    if (themes.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Theme not found'
@@ -51,7 +52,7 @@ const getCustomTheme = async (req, res) => {
     
     res.json({
       success: true,
-      data: themes[0]
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Error fetching custom theme:', error);
@@ -77,20 +78,15 @@ const createCustomTheme = async (req, res) => {
     
     const query = `
       INSERT INTO custom_themes (user_id, name, colors, is_public)
-      VALUES (?, ?, ?, ?)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, name, colors, is_public, created_at
     `;
     
-    const [result] = await db.execute(query, [userId, name, JSON.stringify(colors), is_public]);
+    const result = await db.query(query, [userId, name, JSON.stringify(colors), is_public]);
     
     res.status(201).json({
       success: true,
-      data: {
-        id: result.insertId,
-        name,
-        colors,
-        is_public,
-        created_at: new Date().toISOString()
-      }
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Error creating custom theme:', error);
@@ -109,10 +105,10 @@ const updateCustomTheme = async (req, res) => {
     const { name, colors, is_public } = req.body;
     
     // Check if theme exists and belongs to user
-    const checkQuery = 'SELECT id FROM custom_themes WHERE id = ? AND user_id = ?';
-    const [existing] = await db.execute(checkQuery, [themeId, userId]);
+    const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND user_id = $2';
+    const checkResult = await db.query(checkQuery, [themeId, userId]);
     
-    if (existing.length === 0) {
+    if (checkResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Theme not found or access denied'
@@ -121,19 +117,20 @@ const updateCustomTheme = async (req, res) => {
     
     const updateFields = [];
     const updateValues = [];
+    let paramCount = 1;
     
     if (name !== undefined) {
-      updateFields.push('name = ?');
+      updateFields.push(`name = $${++paramCount}`);
       updateValues.push(name);
     }
     
     if (colors !== undefined) {
-      updateFields.push('colors = ?');
+      updateFields.push(`colors = $${++paramCount}`);
       updateValues.push(JSON.stringify(colors));
     }
     
     if (is_public !== undefined) {
-      updateFields.push('is_public = ?');
+      updateFields.push(`is_public = $${++paramCount}`);
       updateValues.push(is_public);
     }
     
@@ -149,10 +146,10 @@ const updateCustomTheme = async (req, res) => {
     const query = `
       UPDATE custom_themes 
       SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
+      WHERE id = $1
     `;
     
-    await db.execute(query, updateValues);
+    await db.query(query, updateValues);
     
     res.json({
       success: true,
@@ -174,18 +171,18 @@ const deleteCustomTheme = async (req, res) => {
     const userId = req.user.id;
     
     // Check if theme exists and belongs to user
-    const checkQuery = 'SELECT id FROM custom_themes WHERE id = ? AND user_id = ?';
-    const [existing] = await db.execute(checkQuery, [themeId, userId]);
+    const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND user_id = $2';
+    const checkResult = await db.query(checkQuery, [themeId, userId]);
     
-    if (existing.length === 0) {
+    if (checkResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Theme not found or access denied'
       });
     }
     
-    const query = 'DELETE FROM custom_themes WHERE id = ? AND user_id = ?';
-    await db.execute(query, [themeId, userId]);
+    const query = 'DELETE FROM custom_themes WHERE id = $1 AND user_id = $2';
+    await db.query(query, [themeId, userId]);
     
     res.json({
       success: true,
@@ -209,8 +206,9 @@ const setActiveTheme = async (req, res) => {
     // Store active theme preference
     const query = `
       INSERT INTO user_preferences (user_id, preference_key, preference_value, updated_at)
-      VALUES (?, 'active_theme', ?, CURRENT_TIMESTAMP)
-      ON DUPLICATE KEY UPDATE preference_value = VALUES(preference_value), updated_at = CURRENT_TIMESTAMP
+      VALUES ($1, 'active_theme', $2, CURRENT_TIMESTAMP)
+      ON CONFLICT (user_id, preference_key) 
+      DO UPDATE SET preference_value = EXCLUDED.preference_value, updated_at = CURRENT_TIMESTAMP
     `;
     
     const themeData = {
@@ -218,7 +216,7 @@ const setActiveTheme = async (req, res) => {
       id: themeId
     };
     
-    await db.execute(query, [userId, JSON.stringify(themeData)]);
+    await db.query(query, [userId, JSON.stringify(themeData)]);
     
     res.json({
       success: true,
@@ -241,12 +239,12 @@ const getActiveTheme = async (req, res) => {
     const query = `
       SELECT preference_value 
       FROM user_preferences 
-      WHERE user_id = ? AND preference_key = 'active_theme'
+      WHERE user_id = $1 AND preference_key = 'active_theme'
     `;
     
-    const [result] = await db.execute(query, [userId]);
+    const result = await db.query(query, [userId]);
     
-    if (result.length === 0) {
+    if (result.rows.length === 0) {
       return res.json({
         success: true,
         data: {
@@ -258,7 +256,7 @@ const getActiveTheme = async (req, res) => {
     
     res.json({
       success: true,
-      data: JSON.parse(result[0].preference_value)
+      data: JSON.parse(result.rows[0].preference_value)
     });
   } catch (error) {
     console.error('Error getting active theme:', error);
