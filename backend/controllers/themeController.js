@@ -4,16 +4,16 @@ const { verifyToken } = require('../middleware/auth');
 // Get all custom themes for a user
 const getCustomThemes = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     
     const query = `
       SELECT id, name, colors, is_public, created_at, updated_at
       FROM custom_themes 
-      WHERE user_id = $1 OR is_public = TRUE
+      WHERE employee_id = $1 OR is_public = TRUE
       ORDER BY created_at DESC
     `;
     
-    const result = await db.query(query, [userId]);
+    const result = await db.query(query, [employeeId]);
     const themes = result.rows;
     
     res.json({
@@ -33,15 +33,15 @@ const getCustomThemes = async (req, res) => {
 const getCustomTheme = async (req, res) => {
   try {
     const { themeId } = req.params;
-    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     
     const query = `
       SELECT id, name, colors, is_public, created_at, updated_at
       FROM custom_themes 
-      WHERE id = $1 AND (user_id = $2 OR is_public = TRUE)
+      WHERE id = $1 AND (employee_id = $2 OR is_public = TRUE)
     `;
     
-    const result = await db.query(query, [themeId, userId]);
+    const result = await db.query(query, [themeId, employeeId]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -66,7 +66,7 @@ const getCustomTheme = async (req, res) => {
 // Create a new custom theme
 const createCustomTheme = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     const { name, colors, is_public = false } = req.body;
     
     if (!name || !colors) {
@@ -77,12 +77,12 @@ const createCustomTheme = async (req, res) => {
     }
     
     const query = `
-      INSERT INTO custom_themes (user_id, name, colors, is_public)
+      INSERT INTO custom_themes (employee_id, name, colors, is_public)
       VALUES ($1, $2, $3, $4)
       RETURNING id, name, colors, is_public, created_at
     `;
     
-    const result = await db.query(query, [userId, name, JSON.stringify(colors), is_public]);
+    const result = await db.query(query, [employeeId, name, JSON.stringify(colors), is_public]);
     
     res.status(201).json({
       success: true,
@@ -101,12 +101,12 @@ const createCustomTheme = async (req, res) => {
 const updateCustomTheme = async (req, res) => {
   try {
     const { themeId } = req.params;
-    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     const { name, colors, is_public } = req.body;
     
     // Check if theme exists and belongs to user
-    const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND user_id = $2';
-    const checkResult = await db.query(checkQuery, [themeId, userId]);
+    const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND employee_id = $2';
+    const checkResult = await db.query(checkQuery, [themeId, employeeId]);
     
     if (checkResult.rows.length === 0) {
       return res.status(404).json({
@@ -168,11 +168,11 @@ const updateCustomTheme = async (req, res) => {
 const deleteCustomTheme = async (req, res) => {
   try {
     const { themeId } = req.params;
-    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     
     // Check if theme exists and belongs to user
-    const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND user_id = $2';
-    const checkResult = await db.query(checkQuery, [themeId, userId]);
+    const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND employee_id = $2';
+    const checkResult = await db.query(checkQuery, [themeId, employeeId]);
     
     if (checkResult.rows.length === 0) {
       return res.status(404).json({
@@ -181,8 +181,8 @@ const deleteCustomTheme = async (req, res) => {
       });
     }
     
-    const query = 'DELETE FROM custom_themes WHERE id = $1 AND user_id = $2';
-    await db.query(query, [themeId, userId]);
+    const query = 'DELETE FROM custom_themes WHERE id = $1 AND employee_id = $2';
+    await db.query(query, [themeId, employeeId]);
     
     res.json({
       success: true,
@@ -200,14 +200,14 @@ const deleteCustomTheme = async (req, res) => {
 // Set active theme for user
 const setActiveTheme = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     const { themeId, themeType } = req.body; // themeType: 'preset' or 'custom'
     
     // Store active theme preference
     const query = `
-      INSERT INTO user_preferences (user_id, preference_key, preference_value, updated_at)
+      INSERT INTO user_preferences (employee_id, preference_key, preference_value, updated_at)
       VALUES ($1, 'active_theme', $2, CURRENT_TIMESTAMP)
-      ON CONFLICT (user_id, preference_key) 
+      ON CONFLICT (employee_id, preference_key) 
       DO UPDATE SET preference_value = EXCLUDED.preference_value, updated_at = CURRENT_TIMESTAMP
     `;
     
@@ -216,7 +216,7 @@ const setActiveTheme = async (req, res) => {
       id: themeId
     };
     
-    await db.query(query, [userId, JSON.stringify(themeData)]);
+    await db.query(query, [employeeId, JSON.stringify(themeData)]);
     
     res.json({
       success: true,
@@ -234,15 +234,15 @@ const setActiveTheme = async (req, res) => {
 // Get active theme for user
 const getActiveTheme = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     
     const query = `
       SELECT preference_value 
       FROM user_preferences 
-      WHERE user_id = $1 AND preference_key = 'active_theme'
+      WHERE employee_id = $1 AND preference_key = 'active_theme'
     `;
     
-    const result = await db.query(query, [userId]);
+    const result = await db.query(query, [employeeId]);
     
     if (result.rows.length === 0) {
       return res.json({
