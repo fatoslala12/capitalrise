@@ -339,6 +339,10 @@ export const ThemeProvider = ({ children }) => {
             document.body.classList.add(`theme-custom-${customTheme.id}`);
             return;
           }
+        } else if (activeTheme.type === 'preset') {
+          // Apply preset theme immediately
+          setTheme(activeTheme.id);
+          return;
         }
       }
     } catch (error) {
@@ -347,18 +351,24 @@ export const ThemeProvider = ({ children }) => {
     
     // Fallback to regular theme
     applyTheme(theme);
-  }, [theme, applyTheme]);
+  }, [theme, applyTheme, setTheme]);
 
   // Initialize theme on mount
   useEffect(() => {
     const initializeTheme = async () => {
+      // Apply theme immediately from localStorage to prevent flash
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        setTheme(savedTheme);
+      }
+      
       await loadCustomThemes();
       await loadActiveTheme();
       setIsInitialized(true);
     };
     
     initializeTheme();
-  }, [loadCustomThemes, loadActiveTheme]);
+  }, [loadCustomThemes, loadActiveTheme, setTheme]);
 
   // Listen for system theme changes
   useEffect(() => {

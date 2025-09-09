@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useState, Suspense } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { MobileSidebar } from "../components/ui/Layout";
 import NotificationBell from "../components/NotificationBell";
 import LanguageSwitcher from "../components/LanguageSwitcher";
@@ -42,6 +43,7 @@ const userMenu = [
 
 export default function MainLayout() {
   const { user, logout } = useAuth();
+  const { isInitialized } = useTheme();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useTranslation();
@@ -131,6 +133,11 @@ export default function MainLayout() {
       </div>
     </div>
   );
+
+  // Show loading until theme is initialized
+  if (!isInitialized) {
+    return <PageLoader />;
+  }
 
   return (
     <div className="flex h-screen w-full bg-gray-50 overflow-hidden">
