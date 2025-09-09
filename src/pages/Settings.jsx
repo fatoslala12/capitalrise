@@ -48,13 +48,13 @@ const Settings = () => {
   const renderAppearanceTab = () => (
     <div className="space-y-8">
       {/* Theme Selection */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-slate-700">
-        <h3 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-          <span>🎨</span>
-          {t('theme.colorScheme')}
+      <div className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-xl border border-gray-200 dark:border-slate-700">
+        <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+          <span className="text-lg sm:text-xl">🎨</span>
+          {t('settings.colorScheme')}
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
           {themeOptions.map((option) => (
             <button
               key={option.value}
@@ -70,17 +70,17 @@ const Settings = () => {
                   setTheme(option.value);
                 }
               }}
-              className={`rounded-2xl border transition-all duration-200 p-6 text-left hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              className={`rounded-xl sm:rounded-2xl border transition-all duration-200 p-3 sm:p-4 lg:p-6 text-left hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 theme === option.value || (option.value === 'auto' && !localStorage.getItem('theme'))
                   ? 'border-sky-400 ring-2 ring-sky-200 bg-sky-50/60 dark:bg-slate-700/40 text-sky-800 dark:text-sky-200'
                   : 'border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-slate-500'
               }`}
             >
-              <div className="flex items-center gap-4">
-                <div className="text-2xl">{option.icon}</div>
-                <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">{option.label}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{t('theme.switchTheme')}</div>
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+                <div className="text-lg sm:text-xl lg:text-2xl">{option.icon}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">{option.label}</div>
+                  <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t('settings.switchTheme')}</div>
                 </div>
               </div>
             </button>
@@ -89,27 +89,27 @@ const Settings = () => {
       </div>
 
       {/* Theme Preview */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-slate-700">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-          <span>👁️</span>
-          {t('theme.themePreference')}
+      <div className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-xl border border-gray-200 dark:border-slate-700">
+        <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+          <span className="text-lg sm:text-xl">👁️</span>
+          {t('settings.themePreference')}
         </h3>
         
-        <div className="flex items-center justify-between p-5 bg-gray-50 dark:bg-slate-700 rounded-xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 bg-gray-50 dark:bg-slate-700 rounded-xl">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
               {user?.firstName?.charAt(0) || 'U'}
             </div>
-            <div>
-              <div className="font-medium text-gray-900 dark:text-white">
+            <div className="min-w-0 flex-1">
+              <div className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">
                 {user?.firstName} {user?.lastName}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                 {user?.email}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <ThemeToggle variant="minimal" size="sm" showLabel={false} />
           </div>
         </div>
@@ -119,14 +119,14 @@ const Settings = () => {
 
 
   const renderProfileTab = () => (
-    <div className="space-y-6">
-      <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-slate-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl p-4 sm:p-6 shadow-lg border border-gray-200 dark:border-slate-700">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <span>👤</span>
           {t('profile.personalInfo')}
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('profile.firstName')}
@@ -134,7 +134,7 @@ const Settings = () => {
             <input
               type="text"
               defaultValue={user?.firstName || ''}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               readOnly
             />
           </div>
@@ -146,38 +146,38 @@ const Settings = () => {
             <input
               type="text"
               defaultValue={user?.lastName || ''}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               readOnly
             />
           </div>
           
-          <div>
+          <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('profile.email')}
             </label>
             <input
               type="email"
               defaultValue={user?.email || ''}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               readOnly
             />
           </div>
           
-          <div>
+          <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('profile.phone')}
             </label>
             <input
               type="tel"
               defaultValue={user?.phone || ''}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               readOnly
             />
           </div>
         </div>
         
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <p className="text-sm text-blue-700 dark:text-blue-300">
+        <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-300">
             <span className="font-medium">ℹ️ Info:</span> Për të ndryshuar të dhënat e profilit, kontaktoni administratorin e sistemit.
           </p>
         </div>
@@ -306,45 +306,64 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-10">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-4 sm:py-6 lg:py-10">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
         {/* Header */}
-        <div className="mb-10 text-center md:text-left">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
+        <div className="mb-6 sm:mb-8 lg:mb-10 text-center md:text-left">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
             {t('settings.title')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg">
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400">
             {t('settings.description')}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-700 p-6 sticky top-6">
+        {/* Mobile Tab Selector */}
+        <div className="lg:hidden mb-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-4">
+            <select
+              value={activeTab}
+              onChange={(e) => setActiveTab(e.target.value)}
+              className="w-full p-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            >
+              {tabs.map((tab) => (
+                <option key={tab.id} value={tab.id}>
+                  {tab.icon} {tab.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          {/* Sidebar - Hidden on mobile, visible on desktop */}
+          <div className="hidden xl:block xl:col-span-1">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-700 p-4 lg:p-6 sticky top-6">
               <nav className="space-y-2">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200
+                      w-full flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl text-left transition-all duration-200
                       ${activeTab === tab.id
                         ? 'bg-sky-50 dark:bg-slate-700/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-slate-600'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/40'
                       }`}
                   >
-                    <span className="text-lg">{tab.icon}</span>
-                    <span className="font-medium">{tab.label}</span>
+                    <span className="text-base lg:text-lg">{tab.icon}</span>
+                    <span className="font-medium text-sm lg:text-base">{tab.label}</span>
                   </button>
                 ))}
               </nav>
             </div>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            {renderTabContent()}
+          {/* Main Content - Responsive width */}
+          <div className="xl:col-span-3 w-full">
+            <div className="w-full">
+              {renderTabContent()}
+            </div>
           </div>
         </div>
       </div>

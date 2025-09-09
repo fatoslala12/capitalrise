@@ -1152,7 +1152,21 @@
   },
   "settings": {
     "title": "Cilësimet",
-    "description": "Menaxho preferencat dhe cilësimet e llogarisë"
+    "description": "Menaxho preferencat dhe cilësimet e llogarisë",
+    "appearance": "Pamja",
+    "customizeTheme": "Personalizo Temën",
+    "profile": "Profili",
+    "privacy": "Privatësia",
+    "systemSettings": "Cilësimet e Sistemit",
+    "colorScheme": "Skema e Ngjyrave",
+    "themePreference": "Preferenca e Temës",
+    "switchTheme": "Ndrysho Temën",
+    "lightMode": "Modaliteti i Dritës",
+    "darkMode": "Modaliteti i Errët",
+    "greenMode": "Modaliteti i Gjelbërt",
+    "greenDarkMode": "Modaliteti i Gjelbërt i Errët",
+    "automaticMode": "Modaliteti Automatik",
+    "customTheme": "Tema e Personalizuar"
   },
   "profile": {
     "title": "Profili",
