@@ -103,15 +103,27 @@ const createCustomTheme = async (req, res) => {
     
     // Use user_id for admin users, employee_id for regular employees
     // If employeeId exists, use it; otherwise use userId (for admin users)
-    const query = `
-      INSERT INTO custom_themes (user_id, employee_id, name, colors, is_public)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id, name, colors, is_public, created_at
-    `;
+    let query, params;
     
-    // For admin users: employeeId will be null, userId will be used
-    // For employees: both userId and employeeId will be set
-    const result = await pool.query(query, [userId, employeeId || null, name, JSON.stringify(colors), is_public]);
+    if (employeeId) {
+      // For employees: use both user_id and employee_id
+      query = `
+        INSERT INTO custom_themes (user_id, employee_id, name, colors, is_public)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, name, colors, is_public, created_at
+      `;
+      params = [userId, employeeId, name, JSON.stringify(colors), is_public];
+    } else {
+      // For admin users: use only user_id, employee_id as null
+      query = `
+        INSERT INTO custom_themes (user_id, employee_id, name, colors, is_public)
+        VALUES ($1, NULL, $2, $3, $4)
+        RETURNING id, name, colors, is_public, created_at
+      `;
+      params = [userId, name, JSON.stringify(colors), is_public];
+    }
+    
+    const result = await pool.query(query, params);
     
     res.status(201).json({
       success: true,
