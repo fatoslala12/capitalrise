@@ -33,6 +33,56 @@ const ThemeCustomizer = () => {
       'menu-active': 'rgba(255, 255, 255, 0.2)',
       'page-header-bg': 'rgba(255, 255, 255, 0.8)',
       'page-header-border': 'rgba(59, 130, 246, 0.2)',
+      // Interactive colors
+      'button-primary': '#3b82f6',
+      'button-primary-hover': '#2563eb',
+      'button-primary-active': '#1d4ed8',
+      'button-secondary': '#6b7280',
+      'button-secondary-hover': '#4b5563',
+      'button-secondary-active': '#374151',
+      'button-success': '#22c55e',
+      'button-success-hover': '#16a34a',
+      'button-success-active': '#15803d',
+      'button-danger': '#ef4444',
+      'button-danger-hover': '#dc2626',
+      'button-danger-active': '#b91c1c',
+      'button-warning': '#f59e0b',
+      'button-warning-hover': '#d97706',
+      'button-warning-active': '#b45309',
+      // Hover states
+      'hover-primary': 'rgba(59, 130, 246, 0.1)',
+      'hover-secondary': 'rgba(107, 114, 128, 0.1)',
+      'hover-success': 'rgba(34, 197, 94, 0.1)',
+      'hover-danger': 'rgba(239, 68, 68, 0.1)',
+      'hover-warning': 'rgba(245, 158, 11, 0.1)',
+      // Focus states
+      'focus-primary': 'rgba(59, 130, 246, 0.3)',
+      'focus-secondary': 'rgba(107, 114, 128, 0.3)',
+      'focus-success': 'rgba(34, 197, 94, 0.3)',
+      'focus-danger': 'rgba(239, 68, 68, 0.3)',
+      'focus-warning': 'rgba(245, 158, 11, 0.3)',
+      // Active states
+      'active-primary': 'rgba(59, 130, 246, 0.2)',
+      'active-secondary': 'rgba(107, 114, 128, 0.2)',
+      'active-success': 'rgba(34, 197, 94, 0.2)',
+      'active-danger': 'rgba(239, 68, 68, 0.2)',
+      'active-warning': 'rgba(245, 158, 11, 0.2)',
+      // Link colors
+      'link-primary': '#3b82f6',
+      'link-primary-hover': '#2563eb',
+      'link-primary-visited': '#7c3aed',
+      // Input colors
+      'input-bg': '#ffffff',
+      'input-border': '#d1d5db',
+      'input-border-focus': '#3b82f6',
+      'input-border-error': '#ef4444',
+      'input-text': '#1f2937',
+      'input-placeholder': '#9ca3af',
+      // Shadow colors
+      'shadow-sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+      'shadow-md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+      'shadow-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+      'shadow-xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
     }
   });
 
@@ -377,6 +427,127 @@ const ThemeCustomizer = () => {
                   label={t('settings.pageHeaderBorder')}
                   colorKey="page-header-border"
                   description={t('settings.pageHeaderBorderDesc')}
+                />
+              </div>
+            </div>
+
+            {/* Button Colors */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                {t('settings.buttonColors')}
+              </h4>
+              <div className="space-y-4">
+                <ColorInput
+                  label={t('settings.buttonPrimary')}
+                  colorKey="button-primary"
+                  description={t('settings.buttonPrimaryDesc')}
+                />
+                <ColorInput
+                  label={t('settings.buttonPrimaryHover')}
+                  colorKey="button-primary-hover"
+                  description={t('settings.buttonPrimaryHoverDesc')}
+                />
+                <ColorInput
+                  label={t('settings.buttonPrimaryActive')}
+                  colorKey="button-primary-active"
+                  description={t('settings.buttonPrimaryActiveDesc')}
+                />
+                <ColorInput
+                  label={t('settings.buttonSecondary')}
+                  colorKey="button-secondary"
+                  description={t('settings.buttonSecondaryDesc')}
+                />
+                <ColorInput
+                  label={t('settings.buttonSuccess')}
+                  colorKey="button-success"
+                  description={t('settings.buttonSuccessDesc')}
+                />
+                <ColorInput
+                  label={t('settings.buttonDanger')}
+                  colorKey="button-danger"
+                  description={t('settings.buttonDangerDesc')}
+                />
+              </div>
+            </div>
+
+            {/* Interactive States */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                {t('settings.interactiveStates')}
+              </h4>
+              <div className="space-y-4">
+                <ColorInput
+                  label={t('settings.hoverPrimary')}
+                  colorKey="hover-primary"
+                  description={t('settings.hoverPrimaryDesc')}
+                />
+                <ColorInput
+                  label={t('settings.focusPrimary')}
+                  colorKey="focus-primary"
+                  description={t('settings.focusPrimaryDesc')}
+                />
+                <ColorInput
+                  label={t('settings.activePrimary')}
+                  colorKey="active-primary"
+                  description={t('settings.activePrimaryDesc')}
+                />
+              </div>
+            </div>
+
+            {/* Link Colors */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                {t('settings.linkColors')}
+              </h4>
+              <div className="space-y-4">
+                <ColorInput
+                  label={t('settings.linkPrimary')}
+                  colorKey="link-primary"
+                  description={t('settings.linkPrimaryDesc')}
+                />
+                <ColorInput
+                  label={t('settings.linkPrimaryHover')}
+                  colorKey="link-primary-hover"
+                  description={t('settings.linkPrimaryHoverDesc')}
+                />
+                <ColorInput
+                  label={t('settings.linkPrimaryVisited')}
+                  colorKey="link-primary-visited"
+                  description={t('settings.linkPrimaryVisitedDesc')}
+                />
+              </div>
+            </div>
+
+            {/* Input Colors */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                {t('settings.inputColors')}
+              </h4>
+              <div className="space-y-4">
+                <ColorInput
+                  label={t('settings.inputBg')}
+                  colorKey="input-bg"
+                  description={t('settings.inputBgDesc')}
+                />
+                <ColorInput
+                  label={t('settings.inputBorder')}
+                  colorKey="input-border"
+                  description={t('settings.inputBorderDesc')}
+                />
+                <ColorInput
+                  label={t('settings.inputBorderFocus')}
+                  colorKey="input-border-focus"
+                  description={t('settings.inputBorderFocusDesc')}
+                />
+                <ColorInput
+                  label={t('settings.inputText')}
+                  colorKey="input-text"
+                  description={t('settings.inputTextDesc')}
+                />
+                <ColorInput
+                  label={t('settings.inputPlaceholder')}
+                  colorKey="input-placeholder"
+                  description={t('settings.inputPlaceholderDesc')}
                 />
               </div>
             </div>

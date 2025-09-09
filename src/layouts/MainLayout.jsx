@@ -154,7 +154,7 @@ export default function MainLayout() {
       {/* Main Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="header-modern flex-shrink-0 shadow-lg border-b">
+        <header className="header-modern flex-shrink-0 shadow-lg border-b relative z-50">
           <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
             {/* Mobile menu button */}
             <button
@@ -190,12 +190,10 @@ export default function MainLayout() {
             </div>
             
             {/* Actions */}
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2 sm:gap-4">
-                <ThemeToggle variant="minimal" size="sm" showLabel={false} />
-                <LanguageSwitcher />
-                <NotificationBell />
-              </div>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <ThemeToggle variant="minimal" size="sm" showLabel={false} />
+              <LanguageSwitcher />
+              <NotificationBell />
               <button
                 onClick={logout}
                 className="px-3 sm:px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold text-sm transition-all duration-200 hover:shadow-md transform hover:scale-105"

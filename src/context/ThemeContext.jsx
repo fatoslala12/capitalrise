@@ -234,7 +234,30 @@ export const ThemeProvider = ({ children }) => {
 
   // Apply theme to document
   const applyTheme = useCallback((themeName) => {
-    const themeConfig = themes[themeName];
+    let themeConfig;
+    
+    // Check if it's a custom theme
+    if (themeName.startsWith('custom-')) {
+      const customThemeId = themeName.replace('custom-', '');
+      const customThemes = JSON.parse(localStorage.getItem('customThemes') || '[]');
+      const customTheme = customThemes.find(t => t.id === customThemeId);
+      
+      if (customTheme) {
+        themeConfig = customTheme;
+        // Store the custom theme as active
+        localStorage.setItem('activeCustomTheme', JSON.stringify(customTheme));
+      } else {
+        // Fallback to light theme if custom theme not found
+        themeConfig = themes['light'];
+        localStorage.removeItem('activeCustomTheme');
+      }
+    } else {
+      themeConfig = themes[themeName];
+      if (themeName !== 'auto') {
+        localStorage.removeItem('activeCustomTheme');
+      }
+    }
+    
     if (!themeConfig) return;
 
     const root = document.documentElement;
@@ -262,7 +285,24 @@ export const ThemeProvider = ({ children }) => {
 
   // Initialize theme on mount
   useEffect(() => {
-    applyTheme(theme);
+    // Check if there's an active custom theme
+    const activeCustomTheme = localStorage.getItem('activeCustomTheme');
+    if (activeCustomTheme) {
+      try {
+        const customTheme = JSON.parse(activeCustomTheme);
+        const root = document.documentElement;
+        Object.entries(customTheme.colors).forEach(([key, value]) => {
+          root.style.setProperty(`--theme-${key}`, value);
+        });
+        document.body.className = document.body.className.replace(/theme-\w+/g, '');
+        document.body.classList.add(`theme-custom-${customTheme.id}`);
+      } catch (error) {
+        console.error('Error loading custom theme:', error);
+        applyTheme(theme);
+      }
+    } else {
+      applyTheme(theme);
+    }
     localStorage.setItem('theme', theme);
     setIsInitialized(true);
   }, [theme, applyTheme]);
