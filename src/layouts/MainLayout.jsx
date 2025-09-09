@@ -102,10 +102,8 @@ export default function MainLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`group flex items-center gap-4 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ease-in-out transform hover:scale-[1.02] ${
-                isActive 
-                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 border-l-4 border-blue-300" 
-                  : "text-blue-100 hover:bg-white/10 hover:text-white hover:shadow-md"
+              className={`nav-item-modern group flex items-center gap-4 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ease-in-out transform hover:scale-[1.02] ${
+                isActive ? 'active' : ''
               }`}
             >
               <span className={`text-xl flex-shrink-0 transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
