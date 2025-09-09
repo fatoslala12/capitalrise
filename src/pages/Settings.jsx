@@ -79,7 +79,7 @@ const Settings = () => {
           {t('settings.colorScheme')}
         </h3>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
           {themeOptions.map((option) => (
             <button
               key={option.value}
@@ -341,7 +341,7 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-4 sm:py-6 lg:py-10">
-      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+      <div className="w-full px-3 sm:px-4 lg:px-6 xl:px-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8 lg:mb-10 text-center md:text-left">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
@@ -369,7 +369,7 @@ const Settings = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
           {/* Sidebar - Hidden on mobile, visible on desktop */}
           <div className="hidden xl:block xl:col-span-1">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-700 p-4 lg:p-6 sticky top-6">
@@ -394,7 +394,7 @@ const Settings = () => {
           </div>
 
           {/* Main Content - Responsive width */}
-          <div className="xl:col-span-3 w-full">
+          <div className="xl:col-span-4 w-full">
             <div className="w-full">
               {renderTabContent()}
             </div>

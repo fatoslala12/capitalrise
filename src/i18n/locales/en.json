@@ -1697,6 +1697,8 @@
     "systemDefault": "System Default",
     "lightMode": "Light Mode",
     "darkMode": "Dark Mode",
+    "greenMode": "Green Mode",
+    "greenDarkMode": "Green Dark Mode",
     "autoMode": "Auto Mode",
     "themePreference": "Theme Preference",
     "followSystem": "Follow system preference",
@@ -1719,7 +1721,21 @@
   },
   "settings": {
     "title": "Settings",
-    "description": "Manage your preferences and account settings"
+    "description": "Manage your preferences and account settings",
+    "appearance": "Appearance",
+    "customizeTheme": "Customize Theme",
+    "profile": "Profile",
+    "privacy": "Privacy",
+    "systemSettings": "System Settings",
+    "colorScheme": "Color Scheme",
+    "themePreference": "Theme Preference",
+    "switchTheme": "Switch Theme",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "greenMode": "Green Mode",
+    "greenDarkMode": "Green Dark Mode",
+    "automaticMode": "Automatic Mode",
+    "customTheme": "Custom Theme"
   },
   "profile": {
     "title": "Profile",
@@ -1738,6 +1754,7 @@
     "marketingEmailsDesc": "Receive updates about new features and promotions"
   },
   "notifications": {
+    "title": "Notifications",
     "preferences": "Notification Preferences",
     "emailNotifications": "Email Notifications",
     "emailNotificationsDesc": "Receive notifications via email",

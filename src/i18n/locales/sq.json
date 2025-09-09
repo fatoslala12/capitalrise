@@ -1130,6 +1130,8 @@
     "systemDefault": "E Paracaktuar e Sistemit",
     "lightMode": "Modaliteti i Dritës",
     "darkMode": "Modaliteti i Errët",
+    "greenMode": "Modaliteti i Gjelbërt",
+    "greenDarkMode": "Modaliteti i Gjelbërt i Errët",
     "autoMode": "Modaliteti Automatik",
     "themePreference": "Preferenca e Temës",
     "followSystem": "Ndiq preferencën e sistemit",
@@ -1185,6 +1187,7 @@
     "marketingEmailsDesc": "Merr përditësime për veçoritë e reja dhe promovimet"
   },
   "notifications": {
+    "title": "Njoftimet",
     "preferences": "Preferencat e Njoftimeve",
     "emailNotifications": "Njoftimet me Email",
     "emailNotificationsDesc": "Merr njoftime përmes email-it",
