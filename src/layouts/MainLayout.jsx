@@ -46,6 +46,7 @@ export default function MainLayout() {
   const { isInitialized } = useTheme();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const { t } = useTranslation();
 
   const getUserDisplayName = () => {
@@ -78,13 +79,13 @@ export default function MainLayout() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo Section */}
-      <div className="p-6 border-b border-white/10">
+      <div className="p-4 sm:p-6 border-b border-white/10">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-4">
-            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-28 w-28 mx-auto" />
+          <div className="mb-3 sm:mb-4">
+            <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-20 w-20 sm:h-28 sm:w-28 mx-auto" />
           </div>
-          <div className="mb-6">
-            <p className="text-base text-blue-200 capitalize font-semibold tracking-wide">
+          <div className="mb-4 sm:mb-6">
+            <p className="text-sm sm:text-base text-blue-200 capitalize font-semibold tracking-wide">
               {user?.role === 'admin' ? 'Administrator' : 
                user?.role === 'manager' ? 'Manager' : 
                'User'}
@@ -94,7 +95,7 @@ export default function MainLayout() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-2">
+      <nav className="flex-1 px-3 sm:px-4 py-4 sm:py-6 space-y-1 sm:space-y-2">
         {menu.map((item) => {
           const isActive = location.pathname === item.path;
           const icon = item.label.split(" ")[0];
@@ -104,11 +105,11 @@ export default function MainLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`nav-item-modern group flex items-center gap-4 px-4 py-3 rounded-xl font-medium text-base transition-all duration-300 ease-in-out transform hover:scale-[1.02] ${
+              className={`nav-item-modern group flex items-center gap-3 sm:gap-4 px-3 sm:px-4 py-2 sm:py-3 rounded-xl font-medium text-sm sm:text-base transition-all duration-300 ease-in-out transform hover:scale-[1.02] ${
                 isActive ? 'active' : ''
               }`}
             >
-              <span className={`text-xl flex-shrink-0 transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+              <span className={`text-lg sm:text-xl flex-shrink-0 transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
                 {icon}
               </span>
               <span className="whitespace-nowrap font-semibold tracking-wide">{translatedText}</span>
@@ -121,7 +122,7 @@ export default function MainLayout() {
       </nav>
 
       {/* Footer */}
-      <div className="mt-auto p-6 border-t border-white/10">
+      <div className="mt-auto p-4 sm:p-6 border-t border-white/10">
         <div className="text-center">
           <div className="text-xs text-blue-200/60 font-medium tracking-wide">
             © 2025 Capital Rise
@@ -141,8 +142,10 @@ export default function MainLayout() {
 
   return (
     <div className="flex h-screen w-full bg-gray-50 overflow-hidden">
-      {/* Sidebar */}
-      <aside className="hidden lg:flex w-80 sidebar-modern flex-shrink-0 shadow-2xl">
+      {/* Desktop Sidebar */}
+      <aside className={`hidden lg:flex w-80 sidebar-modern flex-shrink-0 shadow-2xl transition-all duration-300 ease-in-out ${
+        isDesktopSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
         <SidebarContent />
       </aside>
 
@@ -151,7 +154,16 @@ export default function MainLayout() {
         isOpen={isMobileMenuOpen} 
         onClose={() => setIsMobileMenuOpen(false)}
       >
-        <div className="h-full sidebar-modern">
+        <div className="h-full sidebar-modern relative">
+          {/* Close button for mobile */}
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute top-4 right-4 z-10 p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors duration-200 lg:hidden"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
           <SidebarContent />
         </div>
       </MobileSidebar>
@@ -161,24 +173,39 @@ export default function MainLayout() {
         {/* Header */}
         <header className="header-modern flex-shrink-0 shadow-lg border-b relative z-50">
           <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-            >
-              <span className="sr-only">Open sidebar</span>
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            
-            {/* Mobile logo */}
-            <div className="lg:hidden flex items-center gap-2">
-              <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-8 w-8" />
+            {/* Menu toggle buttons */}
+            <div className="flex items-center gap-2">
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              >
+                <span className="sr-only">Open sidebar</span>
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
+              {/* Desktop sidebar toggle */}
+              <button
+                onClick={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
+                className="hidden lg:flex p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              >
+                <span className="sr-only">Toggle sidebar</span>
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
+              {/* Mobile logo */}
+              <div className="lg:hidden flex items-center gap-2">
+                <img src="/Capital%20Rise%20logo.png" alt="Capital Rise Logo" className="h-8 w-8" />
+                <span className="text-lg font-bold text-gray-900">Capital Rise</span>
+              </div>
             </div>
             
-            {/* Welcome */}
-            <div className="flex-1 min-w-0">
+            {/* Welcome - Hidden on mobile, shown on desktop */}
+            <div className="hidden lg:flex flex-1 min-w-0">
               <div className="text-left">
                 <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
                   {t('auth.welcome')}, {getUserDisplayName()}
@@ -195,13 +222,13 @@ export default function MainLayout() {
             </div>
             
             {/* Actions */}
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-1 sm:gap-2 lg:gap-4">
               <ThemeToggle variant="minimal" size="sm" showLabel={false} />
               <LanguageSwitcher />
               <NotificationBell />
               <button
                 onClick={logout}
-                className="px-3 sm:px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold text-sm transition-all duration-200 hover:shadow-md transform hover:scale-105"
+                className="px-2 sm:px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 hover:shadow-md transform hover:scale-105"
               >
                 <span className="hidden sm:inline">Logout</span>
                 <span className="sm:hidden">🚪</span>
@@ -211,7 +238,9 @@ export default function MainLayout() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 bg-gray-50 overflow-auto p-4 sm:p-6">
+        <main className={`flex-1 bg-gray-50 overflow-auto p-4 sm:p-6 transition-all duration-300 ease-in-out ${
+          !isDesktopSidebarOpen ? 'lg:ml-0' : ''
+        }`}>
           <Suspense fallback={<PageLoader />}>
             <Outlet />
           </Suspense>

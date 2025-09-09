@@ -141,7 +141,7 @@ export function MobileSidebar({ isOpen, onClose, children }) {
       
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-80 sm:w-96 bg-white shadow-2xl transform transition-all duration-300 ease-in-out lg:hidden
+        fixed inset-y-0 left-0 z-50 w-80 sm:w-96 transform transition-all duration-300 ease-in-out lg:hidden
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {children}
