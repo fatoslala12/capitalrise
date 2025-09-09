@@ -4,24 +4,25 @@ const { verifyToken } = require('../middleware/auth');
 // Get all custom themes for a user
 const getCustomThemes = async (req, res) => {
   try {
-    // Get employee_id from req.user or fallback to user.id
-    const employeeId = req.user.employee_id || req.user.id;
+    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     
-    if (!employeeId) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'User not properly authenticated'
       });
     }
     
+    // Query themes where user is owner (either by user_id or employee_id) or theme is public
     const query = `
       SELECT id, name, colors, is_public, created_at, updated_at
       FROM custom_themes 
-      WHERE employee_id = $1 OR is_public = TRUE
+      WHERE (user_id = $1 OR employee_id = $2 OR is_public = TRUE)
       ORDER BY created_at DESC
     `;
     
-    const result = await pool.query(query, [employeeId]);
+    const result = await pool.query(query, [userId, employeeId]);
     const themes = result.rows;
     
     res.json({
@@ -41,9 +42,10 @@ const getCustomThemes = async (req, res) => {
 const getCustomTheme = async (req, res) => {
   try {
     const { themeId } = req.params;
-    const employeeId = req.user.employee_id || req.user.id;
+    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     
-    if (!employeeId) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'User not properly authenticated'
@@ -53,10 +55,10 @@ const getCustomTheme = async (req, res) => {
     const query = `
       SELECT id, name, colors, is_public, created_at, updated_at
       FROM custom_themes 
-      WHERE id = $1 AND (employee_id = $2 OR is_public = TRUE)
+      WHERE id = $1 AND (user_id = $2 OR employee_id = $3 OR is_public = TRUE)
     `;
     
-    const result = await pool.query(query, [themeId, employeeId]);
+    const result = await pool.query(query, [themeId, userId, employeeId]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -81,10 +83,11 @@ const getCustomTheme = async (req, res) => {
 // Create a new custom theme
 const createCustomTheme = async (req, res) => {
   try {
-    const employeeId = req.user.employee_id || req.user.id;
+    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     const { name, colors, is_public = false } = req.body;
     
-    if (!employeeId) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'User not properly authenticated'
@@ -98,13 +101,14 @@ const createCustomTheme = async (req, res) => {
       });
     }
     
+    // Use user_id for admin users, employee_id for regular employees
     const query = `
-      INSERT INTO custom_themes (employee_id, name, colors, is_public)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO custom_themes (user_id, employee_id, name, colors, is_public)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING id, name, colors, is_public, created_at
     `;
     
-    const result = await pool.query(query, [employeeId, name, JSON.stringify(colors), is_public]);
+    const result = await pool.query(query, [userId, employeeId, name, JSON.stringify(colors), is_public]);
     
     res.status(201).json({
       success: true,
@@ -123,10 +127,11 @@ const createCustomTheme = async (req, res) => {
 const updateCustomTheme = async (req, res) => {
   try {
     const { themeId } = req.params;
-    const employeeId = req.user.employee_id || req.user.id;
+    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     const { name, colors, is_public } = req.body;
     
-    if (!employeeId) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'User not properly authenticated'
@@ -134,8 +139,8 @@ const updateCustomTheme = async (req, res) => {
     }
     
     // Check if theme exists and belongs to user
-    const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND employee_id = $2';
-    const checkResult = await pool.query(checkQuery, [themeId, employeeId]);
+    const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND (user_id = $2 OR employee_id = $3)';
+    const checkResult = await pool.query(checkQuery, [themeId, userId, employeeId]);
     
     if (checkResult.rows.length === 0) {
       return res.status(404).json({
@@ -197,9 +202,10 @@ const updateCustomTheme = async (req, res) => {
 const deleteCustomTheme = async (req, res) => {
   try {
     const { themeId } = req.params;
-    const employeeId = req.user.employee_id || req.user.id;
+    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     
-    if (!employeeId) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'User not properly authenticated'
@@ -207,8 +213,8 @@ const deleteCustomTheme = async (req, res) => {
     }
     
     // Check if theme exists and belongs to user
-    const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND employee_id = $2';
-    const checkResult = await pool.query(checkQuery, [themeId, employeeId]);
+    const checkQuery = 'SELECT id FROM custom_themes WHERE id = $1 AND (user_id = $2 OR employee_id = $3)';
+    const checkResult = await pool.query(checkQuery, [themeId, userId, employeeId]);
     
     if (checkResult.rows.length === 0) {
       return res.status(404).json({
@@ -236,17 +242,18 @@ const deleteCustomTheme = async (req, res) => {
 // Set active theme for user
 const setActiveTheme = async (req, res) => {
   try {
-    const employeeId = req.user.employee_id || req.user.id;
+    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     const { themeId, themeType } = req.body; // themeType: 'preset' or 'custom'
     
-    if (!employeeId) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'User not properly authenticated'
       });
     }
     
-    // Store active theme preference
+    // Store active theme preference using user_id for admin, employee_id for employees
     const query = `
       INSERT INTO user_preferences (employee_id, preference_key, preference_value, updated_at)
       VALUES ($1, 'active_theme', $2, CURRENT_TIMESTAMP)
@@ -259,7 +266,9 @@ const setActiveTheme = async (req, res) => {
       id: themeId
     };
     
-    await pool.query(query, [employeeId, JSON.stringify(themeData)]);
+    // Use employee_id if available, otherwise use user_id
+    const referenceId = employeeId || userId;
+    await pool.query(query, [referenceId, JSON.stringify(themeData)]);
     
     res.json({
       success: true,
@@ -277,14 +286,18 @@ const setActiveTheme = async (req, res) => {
 // Get active theme for user
 const getActiveTheme = async (req, res) => {
   try {
-    const employeeId = req.user.employee_id || req.user.id;
+    const userId = req.user.id;
+    const employeeId = req.user.employee_id;
     
-    if (!employeeId) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'User not properly authenticated'
       });
     }
+    
+    // Use employee_id if available, otherwise use user_id
+    const referenceId = employeeId || userId;
     
     const query = `
       SELECT preference_value 
@@ -292,7 +305,7 @@ const getActiveTheme = async (req, res) => {
       WHERE employee_id = $1 AND preference_key = 'active_theme'
     `;
     
-    const result = await pool.query(query, [employeeId]);
+    const result = await pool.query(query, [referenceId]);
     
     if (result.rows.length === 0) {
       return res.json({
