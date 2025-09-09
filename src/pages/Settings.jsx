@@ -9,7 +9,7 @@ import SystemSettings from '../components/settings/SystemSettings';
 import ThemeCustomizer from '../components/settings/ThemeCustomizer';
 
 const Settings = () => {
-  const { theme, setTheme, currentTheme, isDark, isLight } = useTheme();
+  const { theme, setTheme, currentTheme, isDark, isLight, customThemes, setActiveTheme } = useTheme();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -24,20 +24,6 @@ const Settings = () => {
     ...(user?.role === 'admin' ? [{ id: 'system', label: t('settings.systemSettings'), icon: '⚙️' }] : []),
   ];
 
-  const [savedThemes, setSavedThemes] = useState([]);
-
-  // Load saved themes from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('customThemes');
-    if (saved) {
-      try {
-        setSavedThemes(JSON.parse(saved));
-      } catch (error) {
-        console.error('Error loading saved themes:', error);
-      }
-    }
-  }, []);
-
   const themeOptions = [
     { value: 'light', label: t('theme.lightMode'), icon: '☀️' },
     { value: 'dark', label: t('theme.darkMode'), icon: '🌙' },
@@ -45,12 +31,12 @@ const Settings = () => {
     { value: 'green-dark', label: t('theme.greenDarkMode'), icon: '🌙🌿' },
     { value: 'auto', label: t('theme.autoMode'), icon: '🔄' },
     // Add custom themes
-    ...savedThemes.map(savedTheme => ({
-      value: `custom-${savedTheme.id}`,
-      label: savedTheme.name,
+    ...customThemes.map(customTheme => ({
+      value: `custom-${customTheme.id}`,
+      label: customTheme.name,
       icon: '🎨',
       isCustom: true,
-      themeData: savedTheme
+      themeData: customTheme
     }))
   ];
 
@@ -72,14 +58,14 @@ const Settings = () => {
           {themeOptions.map((option) => (
             <button
               key={option.value}
-              onClick={() => {
+              onClick={async () => {
                 if (option.isCustom) {
-                  // Apply custom theme
-                  const root = document.documentElement;
-                  Object.entries(option.themeData.colors).forEach(([key, value]) => {
-                    root.style.setProperty(`--theme-${key}`, value);
-                  });
-                  localStorage.setItem('customTheme', JSON.stringify(option.themeData));
+                  // Apply custom theme via API
+                  try {
+                    await setActiveTheme('custom', option.themeData.id);
+                  } catch (error) {
+                    console.error('Error applying custom theme:', error);
+                  }
                 } else {
                   setTheme(option.value);
                 }

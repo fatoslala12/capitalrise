@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import api from '../api';
 
 const ThemeContext = createContext();
 
@@ -25,6 +26,8 @@ export const ThemeProvider = ({ children }) => {
   });
 
   const [isInitialized, setIsInitialized] = useState(false);
+  const [customThemes, setCustomThemes] = useState([]);
+  const [activeThemeData, setActiveThemeData] = useState(null);
 
   // Theme configuration
   const themes = useMemo(() => ({
@@ -283,29 +286,59 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [themes]);
 
+  // Load custom themes from API
+  const loadCustomThemes = useCallback(async () => {
+    try {
+      const response = await api.get('/api/themes');
+      if (response.data.success) {
+        setCustomThemes(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading custom themes:', error);
+    }
+  }, []);
+
+  // Load active theme from API
+  const loadActiveTheme = useCallback(async () => {
+    try {
+      const response = await api.get('/api/themes/active/current');
+      if (response.data.success) {
+        const activeTheme = response.data.data;
+        setActiveThemeData(activeTheme);
+        
+        if (activeTheme.type === 'custom') {
+          // Load custom theme data
+          const themeResponse = await api.get(`/api/themes/${activeTheme.id}`);
+          if (themeResponse.data.success) {
+            const customTheme = themeResponse.data.data;
+            const root = document.documentElement;
+            Object.entries(customTheme.colors).forEach(([key, value]) => {
+              root.style.setProperty(`--theme-${key}`, value);
+            });
+            document.body.className = document.body.className.replace(/theme-\w+/g, '');
+            document.body.classList.add(`theme-custom-${customTheme.id}`);
+            return;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading active theme:', error);
+    }
+    
+    // Fallback to regular theme
+    applyTheme(theme);
+  }, [theme, applyTheme]);
+
   // Initialize theme on mount
   useEffect(() => {
-    // Check if there's an active custom theme
-    const activeCustomTheme = localStorage.getItem('activeCustomTheme');
-    if (activeCustomTheme) {
-      try {
-        const customTheme = JSON.parse(activeCustomTheme);
-        const root = document.documentElement;
-        Object.entries(customTheme.colors).forEach(([key, value]) => {
-          root.style.setProperty(`--theme-${key}`, value);
-        });
-        document.body.className = document.body.className.replace(/theme-\w+/g, '');
-        document.body.classList.add(`theme-custom-${customTheme.id}`);
-      } catch (error) {
-        console.error('Error loading custom theme:', error);
-        applyTheme(theme);
-      }
-    } else {
-      applyTheme(theme);
-    }
-    localStorage.setItem('theme', theme);
-    setIsInitialized(true);
-  }, [theme, applyTheme]);
+    const initializeTheme = async () => {
+      await loadCustomThemes();
+      await loadActiveTheme();
+      setIsInitialized(true);
+    };
+    
+    initializeTheme();
+  }, [loadCustomThemes, loadActiveTheme]);
 
   // Listen for system theme changes
   useEffect(() => {
@@ -334,6 +367,69 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [themes]);
 
+  // Save custom theme
+  const saveCustomTheme = useCallback(async (themeData) => {
+    try {
+      const response = await api.post('/api/themes', themeData);
+      if (response.data.success) {
+        await loadCustomThemes(); // Reload themes
+        return response.data.data;
+      }
+      throw new Error(response.data.message || 'Failed to save theme');
+    } catch (error) {
+      console.error('Error saving custom theme:', error);
+      throw error;
+    }
+  }, [loadCustomThemes]);
+
+  // Update custom theme
+  const updateCustomTheme = useCallback(async (themeId, themeData) => {
+    try {
+      const response = await api.put(`/api/themes/${themeId}`, themeData);
+      if (response.data.success) {
+        await loadCustomThemes(); // Reload themes
+        return response.data.data;
+      }
+      throw new Error(response.data.message || 'Failed to update theme');
+    } catch (error) {
+      console.error('Error updating custom theme:', error);
+      throw error;
+    }
+  }, [loadCustomThemes]);
+
+  // Delete custom theme
+  const deleteCustomTheme = useCallback(async (themeId) => {
+    try {
+      const response = await api.delete(`/api/themes/${themeId}`);
+      if (response.data.success) {
+        await loadCustomThemes(); // Reload themes
+        return true;
+      }
+      throw new Error(response.data.message || 'Failed to delete theme');
+    } catch (error) {
+      console.error('Error deleting custom theme:', error);
+      throw error;
+    }
+  }, [loadCustomThemes]);
+
+  // Set active theme
+  const setActiveTheme = useCallback(async (themeType, themeId) => {
+    try {
+      const response = await api.post('/api/themes/active', {
+        themeType,
+        themeId
+      });
+      if (response.data.success) {
+        setActiveThemeData({ type: themeType, id: themeId });
+        return true;
+      }
+      throw new Error(response.data.message || 'Failed to set active theme');
+    } catch (error) {
+      console.error('Error setting active theme:', error);
+      throw error;
+    }
+  }, []);
+
   // Get current theme configuration
   const currentTheme = themes[theme];
   const isDark = theme === 'dark';
@@ -350,7 +446,14 @@ export const ThemeProvider = ({ children }) => {
     isInitialized,
     themes: Object.keys(themes),
     getThemeColor: (colorKey) => currentTheme?.colors[colorKey] || '',
-  }), [theme, setThemeMode, toggleTheme, currentTheme, isDark, isLight, isInitialized, themes]);
+    customThemes,
+    activeThemeData,
+    saveCustomTheme,
+    updateCustomTheme,
+    deleteCustomTheme,
+    setActiveTheme,
+    loadCustomThemes,
+  }), [theme, setThemeMode, toggleTheme, currentTheme, isDark, isLight, isInitialized, themes, customThemes, activeThemeData, saveCustomTheme, updateCustomTheme, deleteCustomTheme, setActiveTheme, loadCustomThemes]);
 
   return (
     <ThemeContext.Provider value={value}>

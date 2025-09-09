@@ -4,7 +4,17 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
 const ThemeCustomizer = () => {
-  const { theme, setTheme, currentTheme, getThemeColor } = useTheme();
+  const { 
+    theme, 
+    setTheme, 
+    currentTheme, 
+    getThemeColor, 
+    customThemes, 
+    saveCustomTheme, 
+    updateCustomTheme, 
+    deleteCustomTheme,
+    setActiveTheme 
+  } = useTheme();
   const { t } = useTranslation();
   
   const [customTheme, setCustomTheme] = useState({
@@ -87,19 +97,7 @@ const ThemeCustomizer = () => {
   });
 
   const [previewMode, setPreviewMode] = useState(false);
-  const [savedThemes, setSavedThemes] = useState([]);
-
-  // Load saved themes from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('customThemes');
-    if (saved) {
-      try {
-        setSavedThemes(JSON.parse(saved));
-      } catch (error) {
-        console.error('Error loading saved themes:', error);
-      }
-    }
-  }, []);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Color input component
   const ColorInput = ({ label, colorKey, description }) => (
@@ -162,37 +160,59 @@ const ThemeCustomizer = () => {
   }, [previewMode, customTheme, currentTheme]);
 
   // Save custom theme
-  const saveCustomTheme = () => {
+  const handleSaveCustomTheme = async () => {
     if (!customTheme.name.trim()) {
       toast.error(t('settings.themeNameRequired'));
       return;
     }
 
-    const newTheme = {
-      ...customTheme,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
-    };
-
-    const updatedThemes = [...savedThemes, newTheme];
-    setSavedThemes(updatedThemes);
-    localStorage.setItem('customThemes', JSON.stringify(updatedThemes));
-    
-    toast.success(t('settings.themeSaved'));
+    setIsSaving(true);
+    try {
+      const savedTheme = await saveCustomTheme({
+        name: customTheme.name,
+        colors: customTheme.colors,
+        is_public: false
+      });
+      
+      toast.success(t('settings.themeSaved'));
+      
+      // Apply the saved theme
+      await setActiveTheme('custom', savedTheme.id);
+      
+    } catch (error) {
+      toast.error(error.message || t('settings.errorSavingTheme'));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Load saved theme
   const loadSavedTheme = (savedTheme) => {
-    setCustomTheme(savedTheme);
+    setCustomTheme({
+      name: savedTheme.name,
+      colors: savedTheme.colors
+    });
     toast.success(t('settings.themeLoaded'));
   };
 
   // Delete saved theme
-  const deleteSavedTheme = (themeId) => {
-    const updatedThemes = savedThemes.filter(t => t.id !== themeId);
-    setSavedThemes(updatedThemes);
-    localStorage.setItem('customThemes', JSON.stringify(updatedThemes));
-    toast.success(t('settings.themeDeleted'));
+  const handleDeleteSavedTheme = async (themeId) => {
+    try {
+      await deleteCustomTheme(themeId);
+      toast.success(t('settings.themeDeleted'));
+    } catch (error) {
+      toast.error(error.message || t('settings.errorDeletingTheme'));
+    }
+  };
+
+  // Apply custom theme
+  const applyCustomTheme = async (themeId) => {
+    try {
+      await setActiveTheme('custom', themeId);
+      toast.success(t('settings.themeApplied'));
+    } catch (error) {
+      toast.error(error.message || t('settings.errorApplyingTheme'));
+    }
   };
 
   // Export theme
@@ -268,10 +288,18 @@ const ThemeCustomizer = () => {
           </div>
           <div className="flex items-end gap-2">
             <button
-              onClick={saveCustomTheme}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors duration-200"
+              onClick={handleSaveCustomTheme}
+              disabled={isSaving}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
             >
-              {t('common.save')}
+              {isSaving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  {t('common.saving')}
+                </>
+              ) : (
+                t('common.save')
+              )}
             </button>
             <button
               onClick={exportTheme}
@@ -611,7 +639,7 @@ const ThemeCustomizer = () => {
       </div>
 
       {/* Saved Themes */}
-      {savedThemes.length > 0 && (
+      {customThemes.length > 0 && (
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <span>💾</span>
@@ -619,7 +647,7 @@ const ThemeCustomizer = () => {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {savedThemes.map((savedTheme) => (
+            {customThemes.map((savedTheme) => (
               <div
                 key={savedTheme.id}
                 className="p-4 rounded-lg border border-gray-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-600 transition-colors duration-200"
@@ -637,7 +665,14 @@ const ThemeCustomizer = () => {
                       📁
                     </button>
                     <button
-                      onClick={() => deleteSavedTheme(savedTheme.id)}
+                      onClick={() => applyCustomTheme(savedTheme.id)}
+                      className="p-1 text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                      title={t('settings.applyTheme')}
+                    >
+                      ▶️
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSavedTheme(savedTheme.id)}
                       className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                       title={t('settings.deleteTheme')}
                     >
@@ -660,7 +695,7 @@ const ThemeCustomizer = () => {
                   ></div>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  {new Date(savedTheme.createdAt).toLocaleDateString()}
+                  {new Date(savedTheme.created_at).toLocaleDateString()}
                 </p>
               </div>
             ))}

@@ -166,7 +166,9 @@ const taskDeadlineRoutes = require('./routes/taskDeadlines');
 app.use('/api/task-deadlines', taskDeadlineRoutes);
 
 const settingsRoutes = require('./routes/settings');
+const themeRoutes = require('./routes/themes');
 app.use('/api/settings', settingsRoutes);
+app.use('/api/themes', themeRoutes);
 
 
 
