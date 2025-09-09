@@ -168,11 +168,11 @@ export default function MainLayout() {
         </div>
       </MobileSidebar>
 
-      {/* Main Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header className="header-modern flex-shrink-0 shadow-lg border-b relative z-50">
-          <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      {/* Main Area - Always full width */}
+      <div className="flex-1 flex flex-col min-w-0 w-full">
+        {/* Header - Always full width */}
+        <header className="header-modern flex-shrink-0 shadow-lg border-b relative z-50 w-full">
+          <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between w-full">
             {/* Menu toggle buttons */}
             <div className="flex items-center gap-2">
               {/* Mobile menu button */}
@@ -237,9 +237,9 @@ export default function MainLayout() {
           </div>
         </header>
 
-        {/* Content */}
-        <main className={`flex-1 bg-gray-50 overflow-auto p-4 sm:p-6 transition-all duration-300 ease-in-out ${
-          !isDesktopSidebarOpen ? 'lg:ml-0' : ''
+        {/* Content - Full width when sidebar is hidden on desktop */}
+        <main className={`flex-1 bg-gray-50 overflow-auto p-4 sm:p-6 transition-all duration-300 ease-in-out w-full ${
+          !isDesktopSidebarOpen ? 'main-content-full-width' : 'main-content-with-sidebar'
         }`}>
           <Suspense fallback={<PageLoader />}>
             <Outlet />

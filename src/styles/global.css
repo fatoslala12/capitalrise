@@ -700,6 +700,29 @@ p {
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+/* ===== RESPONSIVE LAYOUT BEHAVIOR ===== */
+/* Desktop/Laptop: Menu open by default, content stretches when hidden */
+@media (min-width: 1024px) {
+  .main-content-full-width {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  .main-content-with-sidebar {
+    margin-left: 0;
+    width: calc(100% - 20rem); /* 20rem = w-80 sidebar width */
+  }
+}
+
+/* Mobile: Menu hidden by default */
+@media (max-width: 1023px) {
+  .main-content-full-width {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
 }
 
 .nav-item-modern {
