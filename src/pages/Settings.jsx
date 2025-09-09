@@ -9,7 +9,7 @@ import SystemSettings from '../components/settings/SystemSettings';
 import ThemeCustomizer from '../components/settings/ThemeCustomizer';
 
 const Settings = () => {
-  const { theme, setTheme, currentTheme, isDark, isLight, customThemes, setActiveTheme } = useTheme();
+  const { theme, setTheme, currentTheme, isDark, isLight, customThemes, setActiveTheme, activeThemeData } = useTheme();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -45,6 +45,31 @@ const Settings = () => {
     { value: 'en', label: 'English', flag: '🇬🇧' },
   ];
 
+  // Get current theme info
+  const getCurrentThemeInfo = () => {
+    if (activeThemeData?.type === 'preset') {
+      const themeMap = {
+        'light': { icon: '☀️', label: t('theme.lightMode') },
+        'dark': { icon: '🌙', label: t('theme.darkMode') },
+        'green': { icon: '🌿', label: t('theme.greenMode') },
+        'green-dark': { icon: '🌙🌿', label: t('theme.greenDarkMode') },
+        'auto': { icon: '🔄', label: t('theme.autoMode') }
+      };
+      return themeMap[activeThemeData.id] || { icon: '🎨', label: activeThemeData.id };
+    } else if (activeThemeData?.type === 'custom') {
+      return { icon: '🎨', label: activeThemeData.name };
+    } else {
+      const themeMap = {
+        'light': { icon: '☀️', label: t('theme.lightMode') },
+        'dark': { icon: '🌙', label: t('theme.darkMode') },
+        'green': { icon: '🌿', label: t('theme.greenMode') },
+        'green-dark': { icon: '🌙🌿', label: t('theme.greenDarkMode') },
+        'auto': { icon: '🔄', label: t('theme.autoMode') }
+      };
+      return themeMap[theme] || { icon: '🎨', label: theme };
+    }
+  };
+
   const renderAppearanceTab = () => (
     <div className="space-y-8">
       {/* Theme Selection */}
@@ -71,7 +96,10 @@ const Settings = () => {
                 }
               }}
               className={`rounded-xl sm:rounded-2xl border transition-all duration-200 p-3 sm:p-4 lg:p-6 text-left hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                theme === option.value || (option.value === 'auto' && !localStorage.getItem('theme'))
+                (activeThemeData?.type === 'preset' && activeThemeData?.id === option.value) ||
+                (activeThemeData?.type === 'custom' && option.isCustom && activeThemeData?.id === option.themeData?.id) ||
+                (!activeThemeData && theme === option.value) ||
+                (option.value === 'auto' && !localStorage.getItem('theme') && !activeThemeData)
                   ? 'border-sky-400 ring-2 ring-sky-200 bg-sky-50/60 dark:bg-slate-700/40 text-sky-800 dark:text-sky-200'
                   : 'border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-slate-500'
               }`}
@@ -110,6 +138,12 @@ const Settings = () => {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-600 rounded-lg border border-gray-200 dark:border-slate-500">
+              <span className="text-sm">{getCurrentThemeInfo().icon}</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {getCurrentThemeInfo().label}
+              </span>
+            </div>
             <ThemeToggle variant="minimal" size="sm" showLabel={false} />
           </div>
         </div>
