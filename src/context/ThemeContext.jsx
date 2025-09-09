@@ -131,27 +131,27 @@ export const ThemeProvider = ({ children }) => {
         'page-header-border': 'rgba(255, 255, 255, 0.1)',
       }
     },
-    // Green theme preset
+    // Green Magic UI Palette - Modaliteti i Gjelbërt 🌿
     green: {
-      name: 'Green',
+      name: 'Modaliteti i Gjelbërt',
       colors: {
-        // Background colors
-        'bg-primary': '#ffffff',
-        'bg-secondary': '#f0fdf4',
-        'bg-tertiary': '#dcfce7',
-        'bg-card': '#ffffff',
+        // Background colors - Ngjyrat e Sfondit
+        'bg-primary': '#fdfdfc', // i bardhë i ngrohtë → shmang të bardhën e ftohtë
+        'bg-secondary': '#f6f9f8', // e bardhë me nuancë jeshile → airy & moderne
+        'bg-tertiary': '#f1f5f9',
+        'bg-card': '#ffffff', // për contrast të pastër
         'bg-overlay': 'rgba(0, 0, 0, 0.5)',
         
-        // Text colors
-        'text-primary': '#1e293b',
-        'text-secondary': '#475569',
-        'text-tertiary': '#64748b',
+        // Text colors - Ngjyrat e Tekstit
+        'text-primary': '#1a1f1d', // neutral black-green → lexueshmëri perfekte
+        'text-secondary': '#2e423f', // gri-jeshile e errët për tituj sekondarë
+        'text-tertiary': '#6b7f7b', // muted green-gray për përshkrime
         'text-inverse': '#ffffff',
         
         // Border colors
-        'border-primary': '#e2e8f0',
+        'border-primary': '#cbd5d1', // soft gray-green
         'border-secondary': '#cbd5e1',
-        'border-focus': '#22c55e',
+        'border-focus': '#349490', // highlight turquoise 🌿
         
         // Shadow colors
         'shadow-sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
@@ -159,27 +159,47 @@ export const ThemeProvider = ({ children }) => {
         'shadow-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
         'shadow-xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
         
-        // Status colors
-        'success': '#22c55e',
-        'warning': '#f59e0b',
-        'error': '#ef4444',
-        'info': '#22c55e',
+        // Status colors - Ngjyrat e Statusit
+        'success': '#16a34a', // green vibrant & friendly
+        'warning': '#eab308', // amber elegant
+        'error': '#dc2626', // red deep & profesional
+        'info': '#0ea5e9', // cyan clean & modern
         
-        // Interactive colors
-        'hover': 'rgba(34, 197, 94, 0.1)',
-        'active': 'rgba(34, 197, 94, 0.2)',
-        'focus': 'rgba(34, 197, 94, 0.3)',
+        // Interactive colors - Ngjyrat e Butonave
+        'button-primary': '#349490', // turquoise green 🌿
+        'button-primary-hover': '#2e7c78',
+        'button-primary-active': '#25635f',
+        'button-secondary': '#6b7280', // neutral gray → balance
+        'button-success': '#16a34a',
+        'button-danger': '#dc2626',
         
-        // Menu and page colors - Beautiful green theme
-        'menu-primary': '#16a34a',
-        'menu-secondary': '#15803d',
-        'menu-gradient-start': '#16a34a',
-        'menu-gradient-end': '#15803d',
-        'menu-text': '#ffffff',
+        // Interactive states - Interactive States
+        'hover-primary': 'rgba(52, 148, 144, 0.12)',
+        'focus-primary': 'rgba(52, 148, 144, 0.35)',
+        'active-primary': 'rgba(52, 148, 144, 0.25)',
+        
+        // Link colors - Ngjyrat e Linkeve
+        'link-primary': '#349490', // turquoise green 🌿
+        'link-primary-hover': '#27736f',
+        'link-primary-visited': '#7c3aed', // accent violet → modern
+        
+        // Input colors - Ngjyrat e Inputeve
+        'input-bg': '#ffffff',
+        'input-border': '#cbd5d1', // soft gray-green
+        'input-border-focus': '#349490', // highlight turquoise 🌿
+        'input-text': '#1a1f1d',
+        'input-placeholder': '#94a3a3', // muted gray-green → modern UX
+        
+        // Menu and page colors - Ngjyrat e Menusë & Faqes
+        'menu-primary': '#349490', // turquoise green 🌿
+        'menu-secondary': '#27736f', // më e errët për contrast & depth
+        'menu-gradient-start': '#349490', // fresh turquoise
+        'menu-gradient-end': '#1e5a57', // deep teal, super modern
+        'menu-text': '#ffffff', // contrast perfekt
         'menu-hover': 'rgba(255, 255, 255, 0.1)',
         'menu-active': 'rgba(255, 255, 255, 0.2)',
-        'page-header-bg': 'rgba(255, 255, 255, 0.8)',
-        'page-header-border': 'rgba(34, 197, 94, 0.2)',
+        'page-header-bg': 'rgba(255, 255, 255, 0.85)', // semi-transparent → elegant
+        'page-header-border': 'rgba(52, 148, 144, 0.35)', // turquoise border → premium
       }
     },
     // Green dark theme preset
