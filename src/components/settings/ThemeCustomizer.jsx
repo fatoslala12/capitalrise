@@ -93,6 +93,39 @@ const ThemeCustomizer = () => {
       'shadow-md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
       'shadow-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
       'shadow-xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+      // Additional comprehensive colors
+      'accent-1': '#8b5cf6', // Purple
+      'accent-2': '#06b6d4', // Cyan
+      'accent-3': '#10b981', // Emerald
+      'accent-4': '#f59e0b', // Amber
+      'accent-5': '#ef4444', // Red
+      'accent-6': '#ec4899', // Pink
+      'accent-7': '#84cc16', // Lime
+      'accent-8': '#f97316', // Orange
+      // Background variations
+      'bg-accent': '#f8fafc',
+      'bg-muted': '#f1f5f9',
+      'bg-subtle': '#e2e8f0',
+      'bg-emphasis': '#cbd5e1',
+      // Text variations
+      'text-muted': '#64748b',
+      'text-subtle': '#94a3b8',
+      'text-disabled': '#cbd5e1',
+      'text-inverse': '#ffffff',
+      // Border variations
+      'border-muted': '#e2e8f0',
+      'border-subtle': '#cbd5e1',
+      'border-strong': '#94a3b8',
+      'border-emphasis': '#64748b',
+      // Status colors with variations
+      'success-light': '#dcfce7',
+      'success-dark': '#15803d',
+      'warning-light': '#fef3c7',
+      'warning-dark': '#d97706',
+      'error-light': '#fecaca',
+      'error-dark': '#dc2626',
+      'info-light': '#dbeafe',
+      'info-dark': '#2563eb',
     }
   });
 
@@ -576,6 +609,191 @@ const ThemeCustomizer = () => {
                   label={t('settings.inputPlaceholder')}
                   colorKey="input-placeholder"
                   description={t('settings.inputPlaceholderDesc')}
+                />
+              </div>
+            </div>
+
+            {/* Accent Colors */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                {t('settings.accentColors')}
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <ColorInput
+                  label={t('settings.accent1')}
+                  colorKey="accent-1"
+                  description={t('settings.accent1Desc')}
+                />
+                <ColorInput
+                  label={t('settings.accent2')}
+                  colorKey="accent-2"
+                  description={t('settings.accent2Desc')}
+                />
+                <ColorInput
+                  label={t('settings.accent3')}
+                  colorKey="accent-3"
+                  description={t('settings.accent3Desc')}
+                />
+                <ColorInput
+                  label={t('settings.accent4')}
+                  colorKey="accent-4"
+                  description={t('settings.accent4Desc')}
+                />
+                <ColorInput
+                  label={t('settings.accent5')}
+                  colorKey="accent-5"
+                  description={t('settings.accent5Desc')}
+                />
+                <ColorInput
+                  label={t('settings.accent6')}
+                  colorKey="accent-6"
+                  description={t('settings.accent6Desc')}
+                />
+                <ColorInput
+                  label={t('settings.accent7')}
+                  colorKey="accent-7"
+                  description={t('settings.accent7Desc')}
+                />
+                <ColorInput
+                  label={t('settings.accent8')}
+                  colorKey="accent-8"
+                  description={t('settings.accent8Desc')}
+                />
+              </div>
+            </div>
+
+            {/* Background Variations */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                {t('settings.backgroundVariations')}
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <ColorInput
+                  label={t('settings.bgAccent')}
+                  colorKey="bg-accent"
+                  description={t('settings.bgAccentDesc')}
+                />
+                <ColorInput
+                  label={t('settings.bgMuted')}
+                  colorKey="bg-muted"
+                  description={t('settings.bgMutedDesc')}
+                />
+                <ColorInput
+                  label={t('settings.bgSubtle')}
+                  colorKey="bg-subtle"
+                  description={t('settings.bgSubtleDesc')}
+                />
+                <ColorInput
+                  label={t('settings.bgEmphasis')}
+                  colorKey="bg-emphasis"
+                  description={t('settings.bgEmphasisDesc')}
+                />
+              </div>
+            </div>
+
+            {/* Text Variations */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                {t('settings.textVariations')}
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <ColorInput
+                  label={t('settings.textMuted')}
+                  colorKey="text-muted"
+                  description={t('settings.textMutedDesc')}
+                />
+                <ColorInput
+                  label={t('settings.textSubtle')}
+                  colorKey="text-subtle"
+                  description={t('settings.textSubtleDesc')}
+                />
+                <ColorInput
+                  label={t('settings.textDisabled')}
+                  colorKey="text-disabled"
+                  description={t('settings.textDisabledDesc')}
+                />
+                <ColorInput
+                  label={t('settings.textInverse')}
+                  colorKey="text-inverse"
+                  description={t('settings.textInverseDesc')}
+                />
+              </div>
+            </div>
+
+            {/* Border Variations */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                {t('settings.borderVariations')}
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <ColorInput
+                  label={t('settings.borderMuted')}
+                  colorKey="border-muted"
+                  description={t('settings.borderMutedDesc')}
+                />
+                <ColorInput
+                  label={t('settings.borderSubtle')}
+                  colorKey="border-subtle"
+                  description={t('settings.borderSubtleDesc')}
+                />
+                <ColorInput
+                  label={t('settings.borderStrong')}
+                  colorKey="border-strong"
+                  description={t('settings.borderStrongDesc')}
+                />
+                <ColorInput
+                  label={t('settings.borderEmphasis')}
+                  colorKey="border-emphasis"
+                  description={t('settings.borderEmphasisDesc')}
+                />
+              </div>
+            </div>
+
+            {/* Status Color Variations */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                {t('settings.statusVariations')}
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <ColorInput
+                  label={t('settings.successLight')}
+                  colorKey="success-light"
+                  description={t('settings.successLightDesc')}
+                />
+                <ColorInput
+                  label={t('settings.successDark')}
+                  colorKey="success-dark"
+                  description={t('settings.successDarkDesc')}
+                />
+                <ColorInput
+                  label={t('settings.warningLight')}
+                  colorKey="warning-light"
+                  description={t('settings.warningLightDesc')}
+                />
+                <ColorInput
+                  label={t('settings.warningDark')}
+                  colorKey="warning-dark"
+                  description={t('settings.warningDarkDesc')}
+                />
+                <ColorInput
+                  label={t('settings.errorLight')}
+                  colorKey="error-light"
+                  description={t('settings.errorLightDesc')}
+                />
+                <ColorInput
+                  label={t('settings.errorDark')}
+                  colorKey="error-dark"
+                  description={t('settings.errorDarkDesc')}
+                />
+                <ColorInput
+                  label={t('settings.infoLight')}
+                  colorKey="info-light"
+                  description={t('settings.infoLightDesc')}
+                />
+                <ColorInput
+                  label={t('settings.infoDark')}
+                  colorKey="info-dark"
+                  description={t('settings.infoDarkDesc')}
                 />
               </div>
             </div>
