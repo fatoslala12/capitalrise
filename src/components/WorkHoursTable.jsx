@@ -406,7 +406,7 @@ export default function WorkHoursTable({
       {/* Desktop Table */}
       <div className="hidden lg:block">
         {/* Table Header */}
-        <div className="grid grid-cols-9 gap-4 bg-gradient-to-r from-[#1c514f] to-[#2a6b66] text-white p-4 rounded-t-xl font-bold text-sm">
+        <div className="grid grid-cols-9 gap-4 bg-[#32938b] text-white p-4 rounded-t-xl font-bold text-sm">
           <div className="col-span-2 text-center">👤 {safeT('workHours.employeeHeader', 'Employee')}</div>
           <div className="text-center">💰 {safeT('workHours.rateHeader', 'Rate')}</div>
           <div className="text-center">⏰ {safeT('workHours.hoursHeader', 'Hours')}</div>
@@ -434,7 +434,7 @@ export default function WorkHoursTable({
                 <div className="col-span-2 flex items-center gap-3">
                   <button
                     onClick={() => toggleRowExpansion(calc.emp.id)}
-                    className="text-blue-600 hover:text-blue-800 transition-colors"
+                    className="text-green-600 hover:text-green-800 transition-colors"
                   >
                     {expandedRows.has(calc.emp.id) ? '▼' : '▶'}
                   </button>
@@ -522,14 +522,14 @@ export default function WorkHoursTable({
                     )}
                     <div>
                       <h4 className="font-bold text-sm text-gray-900">{calc.firstName} {calc.lastName}</h4>
-                      <span className="text-xs font-semibold text-white bg-gradient-to-r from-[#1c514f] to-[#2a6b66] px-2 py-1 rounded-full shadow uppercase tracking-wide">
+                      <span className="text-xs font-semibold text-white bg-[#32938b] px-2 py-1 rounded-full shadow uppercase tracking-wide">
                         {calc.emp.role || calc.emp.role_type || ''}
                       </span>
                     </div>
                   </div>
                   <button
                     onClick={() => toggleRowExpansion(calc.emp.id)}
-                    className="text-blue-600 hover:text-blue-800 transition-colors p-2"
+                    className="text-green-600 hover:text-green-800 transition-colors p-2"
                   >
                     {expandedRows.has(calc.emp.id) ? '▼' : '▶'}
                   </button>
@@ -574,7 +574,7 @@ export default function WorkHoursTable({
               {/* Detajet e zgjeruara */}
               {expandedRows.has(calc.emp.id) && (
                 <div className="border-t border-green-200 bg-gray-50 p-4">
-                  <h4 className="font-semibold text-blue-600 mb-3">{safeT('workHours.dailyDetails', 'Daily Details')}</h4>
+                  <h4 className="font-semibold text-green-600 mb-3">{safeT('workHours.dailyDetails', 'Daily Details')}</h4>
                   <div className="grid grid-cols-7 gap-2">
                     {dayLabels.map((dayLabel, dayIndex) => {
                       const day = days[dayIndex];

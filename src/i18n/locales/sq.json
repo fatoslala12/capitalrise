@@ -1027,7 +1027,23 @@
     "thursday": "E enjte",
     "friday": "E premte",
     "saturday": "E shtunë",
-    "sunday": "E diel"
+    "sunday": "E diel",
+    "viewAll": "Të gjithë",
+    "viewBySite": "Sipas Site",
+    "employeeHeader": "Punonjësi",
+    "rateHeader": "Rate",
+    "hoursHeader": "Orët",
+    "grossHeader": "Bruto",
+    "vatHeader": "TVSH",
+    "netHeader": "Neto",
+    "actionsHeader": "Veprimet",
+    "statusHeader": "Statusi",
+    "employeeList": "Lista e Punonjësve",
+    "markAsPaid": "Shëno si të Paguar",
+    "markAsUnpaid": "Shëno si të Papaguar",
+    "dailyDetails": "Detajet Ditore",
+    "weekTotal": "Totali i Javës",
+    "photo": "Foto"
   }
   ,
   "contractDetails": {
