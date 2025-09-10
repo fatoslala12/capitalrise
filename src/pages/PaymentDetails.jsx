@@ -81,6 +81,43 @@ export default function PaymentDetails() {
     return statusMap[status] || status;
   };
 
+  // Function to translate labels based on language
+  const translateLabel = (albanianText) => {
+    const userLanguage = localStorage.getItem('language') || 'en';
+    
+    if (userLanguage === 'sq') {
+      return albanianText;
+    }
+    
+    const translations = {
+      'Projekti': 'Project',
+      'Kompania': 'Company',
+      'Data Fillimit': 'Start Date',
+      'Data Fundit': 'End Date',
+      'Vlera': 'Value',
+      'Statusi': 'Status',
+      'Shto Shpenzim të Ri': 'Add New Expense',
+      'Lloji i Shpenzimit': 'Expense Type',
+      'Shkruaj llojin e shpenzimit': 'Enter expense type',
+      'Data': 'Date',
+      'Shuma Bruto (£)': 'Gross Amount (£)',
+      'Shuma Neto (£)': 'Net Amount (£)',
+      'Taksa (£)': 'Tax (£)',
+      'E paguar': 'Paid',
+      'Anulo': 'Cancel',
+      'Ruaj Shpenzimin': 'Save Expense',
+      'Ngarko Faturën': 'Upload Invoice',
+      'Formate të lejuara: PDF, JPG, PNG, DOC, DOCX': 'Allowed formats: PDF, JPG, PNG, DOC, DOCX',
+      'Paratë e Mbetura': 'Remaining Money',
+      'Vlera e Kontratës': 'Contract Value',
+      'Shpenzimet Totale': 'Total Expenses',
+      'Shpenzime': 'Expenses',
+      'Orë Punë': 'Work Hours'
+    };
+    
+    return translations[albanianText] || albanianText;
+  };
+
   // Merr të dhënat nga backend
   useEffect(() => {
     const fetchData = async () => {
@@ -308,7 +345,7 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <span className="text-lg">📌</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Projekti</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">{translateLabel('Projekti')}</div>
                   <div className="font-semibold text-gray-900">{contract.site_name}</div>
                 </div>
               </div>
@@ -316,7 +353,7 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <span className="text-lg">🏢</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Kompania</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">{translateLabel('Kompania')}</div>
                   <div className="font-semibold text-gray-900">{contract.company}</div>
                 </div>
               </div>
@@ -324,7 +361,7 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <span className="text-lg">🗓</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Data Fillimit</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">{translateLabel('Data Fillimit')}</div>
                   <div className="font-semibold text-gray-900">{formatContractDate(contract.start_date)}</div>
                 </div>
               </div>
@@ -332,7 +369,7 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <span className="text-lg">📅</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Data Fundit</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">{translateLabel('Data Fundit')}</div>
                   <div className="font-semibold text-gray-900">{formatContractDate(contract.finish_date)}</div>
                 </div>
               </div>
@@ -340,7 +377,7 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
                 <span className="text-lg">💰</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Vlera</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">{translateLabel('Vlera')}</div>
                   <div className="font-bold text-emerald-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</div>
                 </div>
               </div>
@@ -348,7 +385,7 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-[#32938b]/5 rounded-lg">
                 <span className="text-lg">📊</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Statusi</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">{translateLabel('Statusi')}</div>
                   <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                     contract.status === 'Ne progres' ? 'bg-[#32938b]/10 text-[#32938b]' :
                     contract.status === 'Draft' ? 'bg-gray-100 text-gray-700' :
@@ -531,21 +568,27 @@ export default function PaymentDetails() {
       <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
         <div className="p-4 sm:p-6 lg:p-8">
           <h4 className="text-xl sm:text-2xl font-bold text-[#32938b] mb-6 flex items-center gap-2">
-            💰 Paratë e Mbetura
+            💰 {translateLabel('Paratë e Mbetura')}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
-              <div className="text-sm text-emerald-600 font-medium">Vlera e Kontratës</div>
+              <div className="text-sm text-emerald-600 font-medium">{translateLabel('Vlera e Kontratës')}</div>
               <div className="text-2xl font-bold text-emerald-700">£{parseFloat(contract?.contract_value || 0).toLocaleString()}</div>
             </div>
             <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-              <div className="text-sm text-red-600 font-medium">Shpenzimet Totale</div>
-              <div className="text-2xl font-bold text-red-700">£{filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0).toFixed(2)}</div>
+              <div className="text-sm text-red-600 font-medium">{translateLabel('Shpenzimet Totale')}</div>
+              <div className="text-2xl font-bold text-red-700">
+                £{(filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0) + filteredWorkHoursRows.reduce((sum, r) => sum + r.bruto, 0)).toFixed(2)}
+              </div>
+              <div className="text-xs text-red-500 mt-1">
+                {translateLabel('Shpenzime')}: £{filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0).toFixed(2)} + 
+                {translateLabel('Orë Punë')}: £{filteredWorkHoursRows.reduce((sum, r) => sum + r.bruto, 0).toFixed(2)}
+              </div>
             </div>
             <div className="bg-[#32938b]/10 p-4 rounded-lg border border-[#32938b]/20">
-              <div className="text-sm text-[#32938b] font-medium">Paratë e Mbetura</div>
+              <div className="text-sm text-[#32938b] font-medium">{translateLabel('Paratë e Mbetura')}</div>
               <div className="text-2xl font-bold text-[#32938b]">
-                £{(parseFloat(contract?.contract_value || 0) - filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0)).toFixed(2)}
+                £{(parseFloat(contract?.contract_value || 0) - (filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0) + filteredWorkHoursRows.reduce((sum, r) => sum + r.bruto, 0))).toFixed(2)}
               </div>
             </div>
           </div>
@@ -574,7 +617,7 @@ export default function PaymentDetails() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-[#32938b]">Shto Shpenzim të Ri</h3>
+                <h3 className="text-2xl font-bold text-[#32938b]">{translateLabel('Shto Shpenzim të Ri')}</h3>
                 <button
                   onClick={closeAddModal}
                   className="text-gray-400 hover:text-gray-600 text-2xl"
@@ -586,19 +629,19 @@ export default function PaymentDetails() {
               <form className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Lloji i Shpenzimit</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{translateLabel('Lloji i Shpenzimit')}</label>
                     <input
                       type="text"
                       name="expense_type"
                       value={newExpenseInvoice.expense_type}
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b]"
-                      placeholder="Shkruaj llojin e shpenzimit"
+                      placeholder={translateLabel('Shkruaj llojin e shpenzimit')}
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Data</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{translateLabel('Data')}</label>
                     <input
                       type="date"
                       name="date"
@@ -610,7 +653,7 @@ export default function PaymentDetails() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Shuma Bruto (£)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{translateLabel('Shuma Bruto (£)')}</label>
                   <input
                     type="number"
                     name="gross"
@@ -624,7 +667,7 @@ export default function PaymentDetails() {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Shuma Neto (£)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{translateLabel('Shuma Neto (£)')}</label>
                     <input
                       type="number"
                       name="net"
@@ -637,7 +680,7 @@ export default function PaymentDetails() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Taksa (£)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{translateLabel('Taksa (£)')}</label>
                     <input
                       type="number"
                       name="tax"
@@ -658,7 +701,19 @@ export default function PaymentDetails() {
                     onChange={handleChange}
                     className="h-4 w-4 text-[#32938b] focus:ring-[#32938b] border-gray-300 rounded"
                   />
-                  <label className="ml-2 block text-sm text-gray-700">E paguar</label>
+                  <label className="ml-2 block text-sm text-gray-700">{translateLabel('E paguar')}</label>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{translateLabel('Ngarko Faturën')}</label>
+                  <input
+                    type="file"
+                    name="file"
+                    onChange={handleChange}
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#32938b] file:text-white hover:file:bg-[#2a6b66]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">{translateLabel('Formate të lejuara: PDF, JPG, PNG, DOC, DOCX')}</p>
                 </div>
                 
                 <div className="flex justify-end gap-3 pt-4">
@@ -667,13 +722,13 @@ export default function PaymentDetails() {
                     onClick={closeAddModal}
                     className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    Anulo
+                    {translateLabel('Anulo')}
                   </button>
                   <button
                     type="button"
                     className="px-4 py-2 bg-[#32938b] text-white rounded-lg hover:bg-[#2a6b66] transition-colors"
                   >
-                    Ruaj Shpenzimin
+                    {translateLabel('Ruaj Shpenzimin')}
                   </button>
                 </div>
               </form>
