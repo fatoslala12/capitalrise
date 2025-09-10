@@ -171,14 +171,14 @@ export default function MainLayout() {
       </div>
 
       {/* Main Area - Full width, positioned relative to sidebar state */}
-      <div className={`flex flex-col min-w-0 w-full h-full transition-all duration-300 ease-in-out ${
-        isDesktopSidebarOpen ? 'lg:ml-80' : 'lg:ml-0'
-      }`}>
+      <div className={`flex flex-col min-w-0 h-full transition-all duration-300 ease-in-out ${
+        isDesktopSidebarOpen ? 'lg:ml-80 lg:w-[calc(100%-20rem)]' : 'lg:ml-0 lg:w-full'
+      } w-full`}>
         {/* Header - Always full width */}
         <header className="header-modern flex-shrink-0 shadow-lg border-b relative z-50 w-full">
           <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between w-full">
             {/* Menu toggle buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               {/* Mobile menu button */}
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
@@ -226,23 +226,25 @@ export default function MainLayout() {
             </div>
             
             {/* Actions */}
-            <div className="flex items-center gap-1 sm:gap-2 lg:gap-4">
+            <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 mobile-header-actions">
               <ThemeToggle variant="minimal" size="sm" showLabel={false} />
               <LanguageSwitcher />
               <NotificationBell />
               <button
                 onClick={logout}
-                className="px-2 sm:px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 hover:shadow-md transform hover:scale-105"
+                className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold text-sm transition-all duration-200 hover:shadow-md transform hover:scale-105 min-w-[80px] mobile-logout-button"
               >
                 <span className="hidden sm:inline">Logout</span>
-                <span className="sm:hidden">🚪</span>
+                <span className="sm:hidden text-xs">Logout</span>
               </button>
             </div>
           </div>
         </header>
 
         {/* Content - Full width when sidebar is hidden on desktop */}
-        <main className="flex-1 bg-gray-50 overflow-auto p-4 sm:p-6 w-full">
+        <main className={`flex-1 bg-gray-50 overflow-auto p-4 sm:p-6 w-full ${
+          isDesktopSidebarOpen ? 'main-content-constrained' : ''
+        }`}>
           <Suspense fallback={<PageLoader />}>
             <Outlet />
           </Suspense>

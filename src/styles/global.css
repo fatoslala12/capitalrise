@@ -724,6 +724,12 @@ p {
   .mobile-sidebar {
     display: none !important;
   }
+  
+  /* Ensure content doesn't overflow when sidebar is open */
+  .main-content-constrained {
+    max-width: calc(100vw - 20rem);
+    overflow-x: hidden;
+  }
 }
 
 /* Mobile: Menu hidden by default */
@@ -736,6 +742,17 @@ p {
   /* Ensure desktop sidebar is completely hidden on mobile */
   .desktop-sidebar {
     display: none !important;
+  }
+  
+  /* Mobile header improvements */
+  .mobile-header-actions {
+    gap: 0.5rem;
+  }
+  
+  .mobile-logout-button {
+    min-width: 70px;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
   }
 }
 
