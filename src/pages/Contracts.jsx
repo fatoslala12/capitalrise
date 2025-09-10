@@ -709,7 +709,7 @@ export default function Contracts() {
     const colors = {
       'Draft': 'bg-gray-100 text-gray-800',
       'Anulluar': 'bg-red-100 text-red-800',
-      'Ne progres': 'bg-blue-100 text-blue-800',
+      'Ne progres': 'bg-[#32938b]/10 text-[#32938b]',
       'Pezulluar': 'bg-yellow-100 text-yellow-800',
       'Mbyllur': 'bg-green-100 text-green-800',
               [t('contracts.closedWithDelay')]: 'bg-orange-100 text-orange-800'
@@ -846,7 +846,7 @@ export default function Contracts() {
           <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {t('contracts.errorLoadingContracts')}</h2>
           <button 
             onClick={refetchContracts}
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
+            className="bg-[#32938b] text-white px-6 py-3 rounded-lg hover:bg-[#2a6b66] transition"
           >
             🔄 {t('contracts.tryAgain')}
           </button>
@@ -898,34 +898,34 @@ export default function Contracts() {
       )}
 
       {/* HEADER SIMPLIFIED */}
-      <div className="flex items-center gap-4 bg-white rounded-lg shadow-sm px-6 py-4 mb-6 border border-gray-200">
-        <div className="flex-shrink-0 bg-blue-50 rounded-lg p-2">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#3b82f6" className="w-8 h-8">
+      <div className="flex items-center gap-4 bg-white rounded-xl shadow-lg px-6 py-6 mb-8 border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+        <div className="flex-shrink-0 bg-gradient-to-br from-[#32938b]/10 to-[#2a6b66]/20 rounded-xl p-3 shadow-md">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#32938b" className="w-8 h-8">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
           </svg>
         </div>
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-1">{t('contracts.title')}</h2>
-          <div className="text-sm text-gray-600">{t('contracts.subtitle')}</div>
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] mb-2">{t('contracts.title')}</h2>
+          <div className="text-sm text-gray-600 font-medium">{t('contracts.subtitle')}</div>
         </div>
       </div>
 
       {/* Butoni për shtim kontrate */}
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-end mb-8">
         <button
           onClick={openAddModal}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2"
+          className="bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 transform hover:scale-105"
         >
-          <span className="text-lg">+</span> {t('contracts.addNewContract')}
+          <span className="text-xl">➕</span> {t('contracts.addNewContract')}
         </button>
       </div>
 
       {/* LISTA E KONTRAVE */}
-      <div className="bg-white px-6 py-6 rounded-lg shadow-sm border border-gray-200 w-full">
+      <div className="bg-white px-8 py-8 rounded-2xl shadow-lg border border-gray-200 w-full hover:shadow-xl transition-shadow duration-300">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-            {t('contracts.contractsList')}
-            <span className="text-sm text-gray-500">({filteredAndSortedContracts.length} kontrata)</span>
+          <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] flex items-center gap-3">
+            📋 {t('contracts.contractsList')}
+            <span className="text-sm text-gray-500 font-normal">({filteredAndSortedContracts.length} kontrata)</span>
           </h3>
           
           <div className="flex items-center gap-4">
@@ -973,7 +973,7 @@ export default function Contracts() {
                 <button
                   onClick={() => handleExport('pdf')}
                   disabled={loadingStates.export}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
+                  className="bg-[#32938b] text-white px-4 py-2 rounded-lg hover:bg-[#2a6b66] transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
                 >
                   {loadingStates.export ? (
                     <>
@@ -997,7 +997,7 @@ export default function Contracts() {
               placeholder={t('contracts.searchContracts')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32938b]/50 focus:border-[#32938b]"
             />
           </div>
           
@@ -1005,7 +1005,7 @@ export default function Contracts() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32938b]/50 focus:border-[#32938b]"
             >
               <option value="all">{t('contracts.allStatuses')}</option>
               <option value="Draft">Draft</option>
@@ -1021,7 +1021,7 @@ export default function Contracts() {
             <select
               value={filterContractType}
               onChange={(e) => setFilterContractType(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32938b]/50 focus:border-[#32938b]"
             >
               <option value="all">{t('contracts.allTypes')}</option>
               <option value="day_work">Day Work</option>
@@ -1037,7 +1037,7 @@ export default function Contracts() {
                 setSortBy(field);
                 setSortOrder(order);
               }}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32938b]/50 focus:border-[#32938b]"
             >
               <option value="start_date-desc">{t('contracts.startDateNewest')}</option>
               <option value="start_date-asc">{t('contracts.startDateOldest')}</option>
@@ -1059,17 +1059,17 @@ export default function Contracts() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50"
+              className="px-3 py-1 border border-[#32938b]/30 rounded hover:bg-[#32938b]/10 disabled:opacity-50"
             >
                               ← {t('contracts.previous')}
             </button>
-            <span className="px-3 py-1 bg-blue-500 text-white rounded">
+            <span className="px-3 py-1 bg-[#32938b] text-white rounded">
               {currentPage}
             </span>
             <button
               onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredAndSortedContracts.length / 10), prev + 1))}
               disabled={currentPage >= Math.ceil(filteredAndSortedContracts.length / 10)}
-              className="px-3 py-1 border border-blue-300 rounded hover:bg-blue-50 disabled:opacity-50"
+              className="px-3 py-1 border border-[#32938b]/30 rounded hover:bg-[#32938b]/10 disabled:opacity-50"
             >
                               {t('contracts.next')} →
             </button>
@@ -1077,8 +1077,8 @@ export default function Contracts() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-            <thead className="bg-gray-50 text-gray-900 text-sm font-semibold">
+          <table className="min-w-full bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+            <thead className="bg-gradient-to-r from-[#32938b]/5 to-[#2a6b66]/10 text-gray-900 text-sm font-bold">
               <tr>
                                     <th className="py-4 px-4 text-center">{t('contracts.select')}</th>
                     <th className="py-4 px-4 text-center">{t('contracts.contractNumberHeader')}</th>
@@ -1101,7 +1101,7 @@ export default function Contracts() {
                 const profitMargin = vlera > 0 ? (fitimi / vlera) * 100 : 0;
                 const progres = calculateProgress(c.start_date, c.finish_date);
                 return (
-                  <tr key={c.id || index} className="text-center hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100">
+                  <tr key={c.id || index} className="text-center hover:bg-gradient-to-r hover:from-[#32938b]/5 hover:to-[#2a6b66]/5 transition-all duration-300 border-b border-gray-100 hover:shadow-md">
                     <td className="py-4 px-4 align-middle">
                       <input
                         type="checkbox"
@@ -1110,22 +1110,22 @@ export default function Contracts() {
                         className="w-4 h-4"
                       />
                     </td>
-                    <td className="py-4 px-4 align-middle font-medium text-blue-600">
-                      <Link to={`/admin/contracts/${c.contract_number}`} className="hover:text-blue-800 transition-colors">{c.contract_number}</Link>
+                    <td className="py-4 px-4 align-middle font-medium text-[#32938b]">
+                      <Link to={`/admin/contracts/${c.contract_number}`} className="hover:text-[#2a6b66] transition-colors">{c.contract_number}</Link>
                     </td>
                     <td className="py-4 px-4 align-middle">
                       <div className="flex items-center justify-center gap-1">
                         <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                           (c.contract_type || 'day_work') === 'price_work' 
                             ? 'bg-orange-100 text-orange-700 border border-orange-200' 
-                            : 'bg-blue-100 text-blue-700 border border-blue-200'
+                            : 'bg-[#32938b]/10 text-[#32938b] border border-[#32938b]/20'
                         }`}>
                           {(c.contract_type || 'day_work') === 'price_work' ? '🏗️ Price Work' : '👷 Day Work'}
                         </span>
                       </div>
                     </td>
                     <td className="py-4 px-4 align-middle font-medium text-gray-700">
-                      <Link to={`/admin/contracts/${c.contract_number}`} className="hover:text-blue-600 transition-colors">{c.site_name}</Link>
+                      <Link to={`/admin/contracts/${c.contract_number}`} className="hover:text-[#32938b] transition-colors">{c.site_name}</Link>
                     </td>
                     <td className="py-4 px-4 align-middle font-medium text-gray-800">{c.company}</td>
                     <td className="py-4 px-4 align-middle font-semibold text-gray-900">£{vlera.toFixed(2)}</td>
@@ -1143,21 +1143,21 @@ export default function Contracts() {
                           value={c.status}
                           onChange={e => handleStatusChange(c.id, e.target.value)}
                           disabled={loadingStates.statusChange[c.id]}
-                          className="px-3 py-1 rounded-full text-sm font-medium border border-blue-200 bg-white disabled:opacity-50"
+                          className="px-3 py-1 rounded-full text-sm font-medium border border-[#32938b]/20 bg-white disabled:opacity-50"
                         >
                           {CONTRACT_STATUSES.map(status => (
                             <option key={status} value={status}>{translateStatus(status)}</option>
                           ))}
                         </select>
                         {loadingStates.statusChange[c.id] && (
-                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                          <div className="w-4 h-4 border-2 border-[#32938b] border-t-transparent rounded-full animate-spin"></div>
                         )}
                       </div>
                     </td>
                     <td className="py-4 px-4 align-middle">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
-                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                          className="bg-[#32938b] h-2 rounded-full transition-all duration-300"
                           style={{ width: `${Math.min(100, Math.max(0, progres))}%` }}
                         ></div>
                       </div>
@@ -1167,7 +1167,7 @@ export default function Contracts() {
                       <div className="flex gap-2 justify-center">
                         <button
                           onClick={() => navigate(`/admin/contracts/${c.contract_number}`)}
-                          className="text-blue-600 hover:text-blue-800 transition-colors p-1"
+                          className="text-[#32938b] hover:text-[#2a6b66] transition-colors p-1"
                           title="Shiko"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1220,33 +1220,33 @@ export default function Contracts() {
           onClick={closeAddModal}
         >
           <div 
-            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto border border-gray-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 sm:p-6">
-              <div className="flex justify-between items-center mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight flex items-center gap-2">
+            <div className="p-6 sm:p-8">
+              <div className="flex justify-between items-center mb-6 sm:mb-8">
+                <h3 className="text-lg sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] tracking-tight flex items-center gap-2">
                   <span className="text-xl sm:text-3xl">➕</span> 
                   <span className="hidden sm:inline">{t('contracts.addNewContract')}</span>
                   <span className="sm:hidden">Kontratë e Re</span>
                 </h3>
                 <button
                   onClick={closeAddModal}
-                  className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl font-bold p-1"
+                  className="text-gray-500 hover:text-red-600 text-2xl sm:text-3xl font-bold p-2 rounded-full hover:bg-red-50 transition-all duration-200"
                 >
                   ✕
                 </button>
               </div>
               
-              <form className="space-y-6" onSubmit={handleSubmit}>
+              <form className="space-y-8" onSubmit={handleSubmit}>
                 {/* Contract Number and Type Section */}
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border border-blue-200">
+                <div className="bg-gradient-to-r from-[#32938b]/5 to-[#2a6b66]/5 p-6 rounded-2xl border border-[#32938b]/20 shadow-sm">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">{t('contracts.contractNumber')}</label>
-                      <div className="flex items-center p-3 bg-blue-100 rounded-lg border-2 border-blue-300">
-                        <span className="text-2xl mr-2">📋</span>
-                        <span className="text-xl font-bold text-blue-800">#{newContract.contract_number}</span>
+                      <div className="flex items-center p-4 bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/20 rounded-xl border-2 border-[#32938b]/30 shadow-sm">
+                        <span className="text-3xl mr-3">📋</span>
+                        <span className="text-2xl font-bold text-[#32938b]">#{newContract.contract_number}</span>
                       </div>
                     </div>
                     <div>
@@ -1255,7 +1255,7 @@ export default function Contracts() {
                         name="contract_type" 
                         value={newContract.contract_type} 
                         onChange={handleChange} 
-                        className="w-full p-3 border-2 border-purple-200 rounded-lg text-base focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all shadow-sm bg-white"
+                        className="w-full p-3 border-2 border-[#32938b]/20 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b]/40 transition-all shadow-sm bg-white"
                       >
                         <option value="day_work">👷 Day Work</option>
                         <option value="price_work">🏗️ Price Work</option>
@@ -1278,7 +1278,7 @@ export default function Contracts() {
                         value={newContract.company} 
                         onChange={handleChange} 
                         className={`w-full p-3 border-2 rounded-lg text-base focus:ring-2 transition-all shadow-sm ${
-                          formErrors.company ? 'border-red-400 focus:ring-red-200 focus:border-red-500' : 'border-gray-300 focus:ring-blue-200 focus:border-blue-400'
+                          formErrors.company ? 'border-red-400 focus:ring-red-200 focus:border-red-500' : 'border-gray-300 focus:ring-[#32938b]/20 focus:border-[#32938b]/40'
                         }`}
                       />
                       {formErrors.company && <p className="text-red-500 text-sm mt-1 flex items-center gap-1"><span>⚠️</span>{formErrors.company}</p>}
@@ -1292,7 +1292,7 @@ export default function Contracts() {
                         value={newContract.company_email} 
                         onChange={handleChange} 
                         type="email"
-                        className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all shadow-sm"
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/20 focus:border-[#32938b]/40 transition-all shadow-sm"
                       />
                     </div>
                   </div>
@@ -1406,7 +1406,7 @@ export default function Contracts() {
                   <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="flex-1 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg"
+                    className="flex-1 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] text-white px-6 py-4 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg"
                   >
                     {isSubmitting ? (
                       <>
