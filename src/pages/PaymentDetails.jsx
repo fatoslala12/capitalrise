@@ -238,9 +238,9 @@ export default function PaymentDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#32938b]/10 via-white to-[#32938b]/5">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#32938b] mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-700">{t('paymentDetails.loadingDetails')}</h2>
         </div>
       </div>
@@ -249,13 +249,13 @@ export default function PaymentDetails() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#32938b]/10 via-white to-[#32938b]/5">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {t('paymentDetails.error')}</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+            className="bg-[#32938b] text-white px-4 py-2 rounded-lg hover:bg-[#2a6b66] transition-colors"
           >
             {t('paymentDetails.tryAgain')}
           </button>
@@ -266,7 +266,7 @@ export default function PaymentDetails() {
 
   if (contract === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#32938b]/10 via-white to-[#32938b]/5">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">❌ {t('paymentDetails.contractNotFound')}</h2>
           <p className="text-gray-600">{t('paymentDetails.contractNotFoundError')}</p>
@@ -276,19 +276,19 @@ export default function PaymentDetails() {
   }
 
   return (
-    <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-4 sm:space-y-6 lg:space-y-8 bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-4 sm:space-y-6 lg:space-y-8 bg-gradient-to-br from-slate-50 via-white to-[#32938b]/5 min-h-screen">
       {/* HEADER SECTION */}
       <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
         <div className="p-4 sm:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="flex-shrink-0 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-xl p-3 shadow-lg">
+              <div className="flex-shrink-0 bg-gradient-to-br from-emerald-500 to-[#32938b] rounded-xl p-3 shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6 sm:w-8 sm:h-8">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H4.5m2.25 0v3m0 0v.375c0 .621-.504 1.125-1.125 1.125H4.5m2.25 0a9 9 0 013.75-6.75m0 0h3.75m0 0v3.75m0 0a9 9 0 013.75-6.75" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-blue-700 tracking-tight mb-1">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-[#32938b] tracking-tight mb-1">
                   {t('paymentDetails.title')}
                 </h1>
                 <div className="text-base sm:text-lg font-semibold text-slate-600">
@@ -308,7 +308,7 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <span className="text-lg">📌</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Project</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Projekti</div>
                   <div className="font-semibold text-gray-900">{contract.site_name}</div>
                 </div>
               </div>
@@ -316,7 +316,7 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <span className="text-lg">🏢</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Company</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Kompania</div>
                   <div className="font-semibold text-gray-900">{contract.company}</div>
                 </div>
               </div>
@@ -324,7 +324,7 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <span className="text-lg">🗓</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Start Date</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Data Fillimit</div>
                   <div className="font-semibold text-gray-900">{formatContractDate(contract.start_date)}</div>
                 </div>
               </div>
@@ -332,7 +332,7 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <span className="text-lg">📅</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">End Date</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Data Fundit</div>
                   <div className="font-semibold text-gray-900">{formatContractDate(contract.finish_date)}</div>
                 </div>
               </div>
@@ -340,17 +340,17 @@ export default function PaymentDetails() {
               <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
                 <span className="text-lg">💰</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Value</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Vlera</div>
                   <div className="font-bold text-emerald-600">£{parseFloat(contract.contract_value || 0).toLocaleString()}</div>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-center gap-3 p-3 bg-[#32938b]/5 rounded-lg">
                 <span className="text-lg">📊</span>
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Status</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Statusi</div>
                   <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                    contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-700' :
+                    contract.status === 'Ne progres' ? 'bg-[#32938b]/10 text-[#32938b]' :
                     contract.status === 'Draft' ? 'bg-gray-100 text-gray-700' :
                     contract.status === 'Anulluar' ? 'bg-red-100 text-red-700' :
                     contract.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700' :
@@ -367,17 +367,19 @@ export default function PaymentDetails() {
         </div>
       )}
 
-      {/* WORK HOURS SECTION */}
-      <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
-        <div className="p-4 sm:p-6 lg:p-8">
-          <h4 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
-            👷‍♂️ {t('paymentDetails.workHoursAndPayments')}
-          </h4>
+      {/* WORK HOURS AND EXPENSES SECTIONS - SIDE BY SIDE */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        {/* WORK HOURS SECTION */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <h4 className="text-xl sm:text-2xl font-bold text-emerald-700 mb-6 flex items-center gap-2">
+              👷‍♂️ {t('paymentDetails.workHoursAndPayments')}
+            </h4>
           
           {filteredWorkHoursRows.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
-                <thead className="bg-gradient-to-r from-emerald-100 to-blue-100">
+                <thead className="bg-gradient-to-r from-emerald-100 to-[#32938b]/20">
                   <tr>
                     <th className="py-3 px-2 text-left font-semibold text-emerald-800">{t('paymentDetails.employee')}</th>
                     <th className="py-3 px-2 text-center font-semibold text-emerald-800 hidden sm:table-cell">{t('paymentDetails.week')}</th>
@@ -396,7 +398,7 @@ export default function PaymentDetails() {
                         </div>
                       </td>
                       <td className="py-3 px-2 text-center text-slate-600 hidden sm:table-cell">{r.week}</td>
-                      <td className="py-3 px-2 text-center font-bold text-blue-600">{r.hours}</td>
+                      <td className="py-3 px-2 text-center font-bold text-[#32938b]">{r.hours}</td>
                       <td className="py-3 px-2 text-center font-bold text-orange-600">£{r.bruto.toFixed(2)}</td>
                       <td className="py-3 px-2 text-center font-bold text-emerald-600">£{r.neto.toFixed(2)}</td>
                     </tr>
@@ -423,23 +425,31 @@ export default function PaymentDetails() {
               <p className="text-slate-400 text-sm">për këtë kontratë akoma</p>
             </div>
           )}
+          </div>
         </div>
-      </div>
 
-      {/* EXPENSES SECTION */}
-      <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
-        <div className="p-4 sm:p-6 lg:p-8">
-          <h4 className="text-xl sm:text-2xl font-bold text-blue-700 flex items-center gap-2">
-            🧾 {t('paymentDetails.expensesAndInvoices')} 
-            <span className="text-sm sm:text-base font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
-              {filteredExpenses.length}
-            </span>
-          </h4>
+        {/* EXPENSES SECTION */}
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h4 className="text-xl sm:text-2xl font-bold text-[#32938b] flex items-center gap-2">
+                🧾 {t('paymentDetails.expensesAndInvoices')} 
+                <span className="text-sm sm:text-base font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+                  {filteredExpenses.length}
+                </span>
+              </h4>
+              <button
+                onClick={openAddModal}
+                className="bg-[#32938b] text-white px-4 py-2 rounded-lg hover:bg-[#2a6b66] transition-colors flex items-center gap-2 text-sm font-semibold"
+              >
+                ➕ Shto Shpenzim
+              </button>
+            </div>
           
           {filteredExpenses.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="w-full text-base text-blue-900">
-                <thead className="bg-gradient-to-r from-purple-100 to-blue-100">
+              <table className="w-full text-base text-[#32938b]">
+                <thead className="bg-gradient-to-r from-purple-100 to-[#32938b]/20">
                   <tr>
                     <th className="py-3 px-3 text-left">{t('paymentDetails.type')}</th>
                     <th className="py-3 px-3 text-center">{t('paymentDetails.date')}</th>
@@ -462,7 +472,7 @@ export default function PaymentDetails() {
                               link.download = `${inv.expense_type}_${inv.date}.pdf`;
                               link.click();
                             }}
-                            className="text-blue-600 hover:text-blue-800 underline cursor-pointer transition-colors"
+                            className="text-[#32938b] hover:text-[#2a6b66] underline cursor-pointer transition-colors"
                             title={t('paymentDetails.attachDocument')}
                           >
                             {inv.expense_type}
@@ -472,7 +482,7 @@ export default function PaymentDetails() {
                         )}
                       </td>
                       <td className="py-2 px-3 text-center">{formatDate(inv.date)}</td>
-                      <td className="py-2 px-3 text-center font-bold text-blue-700">£{Number(inv.gross || 0).toFixed(2)}</td>
+                      <td className="py-2 px-3 text-center font-bold text-[#32938b]">£{Number(inv.gross || 0).toFixed(2)}</td>
                       <td className="py-2 px-3 text-center font-bold text-green-700">£{Number(inv.net || 0).toFixed(2)}</td>
                       <td className="py-2 px-3 text-center font-bold text-purple-700">£{Number(inv.tax || 0).toFixed(2)}</td>
                       <td className="py-2 px-3 text-center">
@@ -501,7 +511,7 @@ export default function PaymentDetails() {
                 <tfoot>
                   <tr className="bg-purple-50 font-bold">
                     <td colSpan={2} className="py-2 px-3 text-right">{t('paymentDetails.totals')}:</td>
-                    <td className="py-2 px-3 text-center text-blue-700">£{filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0).toFixed(2)}</td>
+                    <td className="py-2 px-3 text-center text-[#32938b]">£{filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0).toFixed(2)}</td>
                     <td className="py-2 px-3 text-center text-green-700">£{filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.net || 0), 0).toFixed(2)}</td>
                     <td colSpan={3}></td>
                   </tr>
@@ -513,13 +523,39 @@ export default function PaymentDetails() {
               {t('paymentDetails.noExpenseData')}
             </div>
           )}
+          </div>
+        </div>
+      </div>
+
+      {/* REMAINING MONEY SECTION */}
+      <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8">
+          <h4 className="text-xl sm:text-2xl font-bold text-[#32938b] mb-6 flex items-center gap-2">
+            💰 Paratë e Mbetura
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+              <div className="text-sm text-emerald-600 font-medium">Vlera e Kontratës</div>
+              <div className="text-2xl font-bold text-emerald-700">£{parseFloat(contract?.contract_value || 0).toLocaleString()}</div>
+            </div>
+            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+              <div className="text-sm text-red-600 font-medium">Shpenzimet Totale</div>
+              <div className="text-2xl font-bold text-red-700">£{filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0).toFixed(2)}</div>
+            </div>
+            <div className="bg-[#32938b]/10 p-4 rounded-lg border border-[#32938b]/20">
+              <div className="text-sm text-[#32938b] font-medium">Paratë e Mbetura</div>
+              <div className="text-2xl font-bold text-[#32938b]">
+                £{(parseFloat(contract?.contract_value || 0) - filteredExpenses.reduce((sum, inv) => sum + parseFloat(inv.gross || 0), 0)).toFixed(2)}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* CHART SECTION */}
       {chartData.length > 0 && (
-        <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-blue-100 space-y-4 mt-10">
-          <h4 className="text-xl font-bold text-blue-800 mb-2">📊 {t('paymentDetails.expensesTrend')}</h4>
+        <div className="bg-white/80 p-6 rounded-2xl shadow-xl border border-[#32938b]/20 space-y-4 mt-10">
+          <h4 className="text-xl font-bold text-[#32938b] mb-2">📊 {t('paymentDetails.expensesTrend')}</h4>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -529,6 +565,120 @@ export default function PaymentDetails() {
               <Line type="monotone" dataKey="amount" stroke="#8884d8" strokeWidth={2} dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* ADD EXPENSE MODAL */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-[#32938b]">Shto Shpenzim të Ri</h3>
+                <button
+                  onClick={closeAddModal}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <form className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Lloji i Shpenzimit</label>
+                    <input
+                      type="text"
+                      name="expense_type"
+                      value={newExpenseInvoice.expense_type}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b]"
+                      placeholder="Shkruaj llojin e shpenzimit"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Data</label>
+                    <input
+                      type="date"
+                      name="date"
+                      value={newExpenseInvoice.date}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b]"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Shuma Bruto (£)</label>
+                  <input
+                    type="number"
+                    name="gross"
+                    value={newExpenseInvoice.gross}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b]"
+                    placeholder="0.00"
+                    step="0.01"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Shuma Neto (£)</label>
+                    <input
+                      type="number"
+                      name="net"
+                      value={newExpenseInvoice.net}
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                      placeholder="0.00"
+                      step="0.01"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Taksa (£)</label>
+                    <input
+                      type="number"
+                      name="tax"
+                      value={newExpenseInvoice.tax}
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                      placeholder="0.00"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="paid"
+                    checked={newExpenseInvoice.paid}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-[#32938b] focus:ring-[#32938b] border-gray-300 rounded"
+                  />
+                  <label className="ml-2 block text-sm text-gray-700">E paguar</label>
+                </div>
+                
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeAddModal}
+                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Anulo
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 bg-[#32938b] text-white rounded-lg hover:bg-[#2a6b66] transition-colors"
+                  >
+                    Ruaj Shpenzimin
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       )}
     </div>
