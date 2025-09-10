@@ -100,7 +100,7 @@ const Settings = () => {
                 (activeThemeData?.type === 'custom' && option.isCustom && activeThemeData?.id === option.themeData?.id) ||
                 (!activeThemeData && theme === option.value) ||
                 (option.value === 'auto' && !localStorage.getItem('theme') && !activeThemeData)
-                  ? 'border-sky-400 ring-2 ring-sky-200 bg-sky-50/60 dark:bg-slate-700/40 text-sky-800 dark:text-sky-200'
+                  ? 'border-green-400 ring-2 ring-green-200 bg-green-50/60 dark:bg-slate-700/40 text-green-800 dark:text-green-200'
                   : 'border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-slate-500'
               }`}
             >
@@ -125,7 +125,7 @@ const Settings = () => {
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 bg-gray-50 dark:bg-slate-700 rounded-xl">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
               {user?.firstName?.charAt(0) || 'U'}
             </div>
             <div className="min-w-0 flex-1">
@@ -358,7 +358,7 @@ const Settings = () => {
             <select
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
-              className="w-full p-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+              className="w-full p-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
             >
               {tabs.map((tab) => (
                 <option key={tab.id} value={tab.id}>
@@ -381,7 +381,7 @@ const Settings = () => {
                     className={`
                       w-full flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl text-left transition-all duration-200
                       ${activeTab === tab.id
-                        ? 'bg-sky-50 dark:bg-slate-700/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-slate-600'
+                        ? 'bg-green-50 dark:bg-slate-700/40 text-green-700 dark:text-green-300 border border-green-200 dark:border-slate-600'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/40'
                       }`}
                   >

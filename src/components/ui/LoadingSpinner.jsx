@@ -21,7 +21,7 @@ const LoadingSpinner = ({
   };
 
   const variantClasses = {
-    primary: 'from-blue-500 to-purple-600',
+    primary: 'from-green-500 to-emerald-600',
     secondary: 'from-gray-500 to-gray-700',
     success: 'from-green-500 to-emerald-600',
     warning: 'from-yellow-500 to-orange-600',
@@ -34,14 +34,14 @@ const LoadingSpinner = ({
       {/* Outer rotating ring */}
       <div className={`${sizeClasses[size]} border-4 border-transparent rounded-full animate-spin`} 
            style={{
-             background: `conic-gradient(from 0deg, transparent, ${variant === 'primary' ? '#3b82f6' : variant === 'success' ? '#10b981' : variant === 'warning' ? '#f59e0b' : variant === 'danger' ? '#ef4444' : '#6b7280'}, transparent)`
+             background: `conic-gradient(from 0deg, transparent, ${variant === 'primary' ? '#10b981' : variant === 'success' ? '#10b981' : variant === 'warning' ? '#f59e0b' : variant === 'danger' ? '#ef4444' : '#6b7280'}, transparent)`
            }}>
       </div>
       
       {/* Inner pulsing ring */}
       <div className={`absolute inset-2 border-2 border-transparent rounded-full animate-pulse`}
            style={{
-             background: `conic-gradient(from 180deg, transparent, ${variant === 'primary' ? '#8b5cf6' : variant === 'success' ? '#34d399' : variant === 'warning' ? '#fbbf24' : variant === 'danger' ? '#f87171' : '#9ca3af'}, transparent)`
+             background: `conic-gradient(from 180deg, transparent, ${variant === 'primary' ? '#34d399' : variant === 'success' ? '#34d399' : variant === 'warning' ? '#fbbf24' : variant === 'danger' ? '#f87171' : '#9ca3af'}, transparent)`
            }}>
       </div>
       
@@ -76,22 +76,22 @@ const LoadingSpinner = ({
               {/* Outer rotating ring */}
               <div className="h-32 w-32 border-4 border-transparent rounded-full animate-spin mx-auto" 
                    style={{
-                     background: `conic-gradient(from 0deg, transparent, #3b82f6, #8b5cf6, #3b82f6, transparent)`
+                     background: `conic-gradient(from 0deg, transparent, #10b981, #34d399, #10b981, transparent)`
                    }}>
               </div>
               
               {/* Inner pulsing ring */}
               <div className="absolute inset-4 border-2 border-transparent rounded-full animate-pulse mx-auto"
                    style={{
-                     background: `conic-gradient(from 180deg, transparent, #8b5cf6, #a855f7, #8b5cf6, transparent)`
+                     background: `conic-gradient(from 180deg, transparent, #34d399, #10b981, #34d399, transparent)`
                    }}>
               </div>
               
               {/* Center dot with breathing effect */}
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 animate-pulse"></div>
               
               {/* Glowing aura effect */}
-              <div className="absolute inset-0 h-32 w-32 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 opacity-10 animate-ping mx-auto"></div>
+              <div className="absolute inset-0 h-32 w-32 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 opacity-10 animate-ping mx-auto"></div>
               
               {/* Enhanced sparkle effects */}
               <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
@@ -103,13 +103,13 @@ const LoadingSpinner = ({
           
           {displayText && (
             <div className="animate-pulse">
-              <p className="text-gray-700 font-semibold text-xl mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <p className="text-gray-700 font-semibold text-xl mb-2 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 {displayText}
               </p>
               <div className="flex justify-center space-x-1">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
             </div>
           )}
