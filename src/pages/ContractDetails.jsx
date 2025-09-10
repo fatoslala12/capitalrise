@@ -502,12 +502,12 @@ export default function ContractDetails() {
 
   if (!contract || Object.keys(contract).length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#32938b]/10 via-white to-[#2a6b66]/10">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Kontrata nuk u gjet</h2>
           <button 
             onClick={() => navigate('/admin/contracts')} 
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
+            className="bg-[#32938b]/50 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
           >
             🔙 Kthehu tek Kontratat
           </button>
@@ -564,7 +564,7 @@ export default function ContractDetails() {
   });
 
   return (
-    <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-12 bg-gradient-to-br from-blue-100 via-white to-purple-100 min-h-screen">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-12 bg-gradient-to-br from-[#32938b]/10 via-white to-[#2a6b66]/10 min-h-screen">
       {/* Confirmation Dialog */}
       {confirmDialog.show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -597,27 +597,27 @@ export default function ContractDetails() {
       )}
 
       {loading ? (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#32938b]/10 via-white to-[#2a6b66]/10">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#32938b] mx-auto mb-4"></div>
             <h2 className="text-xl font-semibold text-gray-700">{t('contracts.details.loading')}</h2>
           </div>
         </div>
       ) : (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-[#32938b]/5">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
             {/* HEADER SECTION - MOBILE RESPONSIVE */}
             <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
               <div className="p-4 sm:p-6 lg:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
                   <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="flex-shrink-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-3 shadow-lg">
+                    <div className="flex-shrink-0 bg-gradient-to-br from-[#32938b] to-[#2a6b66] rounded-xl p-3 shadow-lg">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6 sm:w-8 sm:h-8">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h4.125m-5.25 0V9.375c0-.621.504-1.125 1.125-1.125h2.25" />
                       </svg>
                     </div>
                     <div>
-                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1">
+                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] tracking-tight mb-1">
                         {t('contractDetails.pageTitle')}
                       </h1>
                       <div className="text-base sm:text-lg font-semibold text-slate-600">
@@ -630,7 +630,7 @@ export default function ContractDetails() {
                   <button
                     onClick={handleSendContractEmail}
                     disabled={loadingStates.sendContractEmail || !contract.company_email}
-                    className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-xl hover:scale-105"
+                    className="w-full sm:w-auto bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] disabled:from-gray-400 disabled:to-gray-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-xl hover:scale-105"
                     title={!contract.company_email ? "Kompania nuk ka email të konfiguruar" : "Dërgo detajet e kontratës në email"}
                   >
                     {loadingStates.sendContractEmail ? (
@@ -673,7 +673,7 @@ export default function ContractDetails() {
                       <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold ${
                         (contract.contract_type || 'day_work') === 'price_work' 
                           ? 'bg-orange-100 text-orange-700 border border-orange-200' 
-                          : 'bg-blue-100 text-blue-700 border border-blue-200'
+                          : 'bg-[#32938b]/10 text-[#32938b] border border-[#32938b]/20'
                       }`}>
                         {(contract.contract_type || 'day_work') === 'price_work' ? t('contractDetails.priceWork') : t('contractDetails.dayWork')}
                       </span>
@@ -693,7 +693,7 @@ export default function ContractDetails() {
                       <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">📊 {t('contractDetails.status')}</span>
                       <span className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold border ${
                         contract.status === "Mbyllur" || contract.status === "Mbyllur me vonese" ? "bg-red-100 text-red-700 border-red-200" : 
-                        contract.status === "Ne progres" ? "bg-blue-100 text-blue-700 border-blue-200" : 
+                        contract.status === "Ne progres" ? "bg-[#32938b]/10 text-[#32938b] border-[#32938b]/20" : 
                         contract.status === "Draft" ? "bg-gray-100 text-gray-700 border-gray-200" : 
                         contract.status === "Anulluar" ? "bg-red-100 text-red-700 border-red-200" : 
                         contract.status === "Pezulluar" ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-green-100 text-green-700 border-green-200"
@@ -713,8 +713,8 @@ export default function ContractDetails() {
             </div>
 
           {/* Chart */}
-          <div className="bg-white/70 p-10 shadow-2xl rounded-3xl border-2 border-purple-200 animate-fade-in">
-            <h3 className="text-2xl font-bold mb-6 text-purple-800 flex items-center gap-2"><span>📈</span> {t('contracts.progressHeader')}</h3>
+          <div className="bg-white/70 p-10 shadow-2xl rounded-3xl border-2 border-[#32938b]/20 animate-fade-in">
+            <h3 className="text-2xl font-bold mb-6 text-[#32938b] flex items-center gap-2"><span>📈</span> {t('contracts.progressHeader')}</h3>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={getProgressChartData()}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -727,20 +727,20 @@ export default function ContractDetails() {
           </div>
 
           {/* Dokumente */}
-          <div className="bg-white/70 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
-            <h3 className="text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2">📎 {t('contractDetails.documents')}</h3>
+          <div className="bg-white/70 p-10 rounded-3xl shadow-2xl border-2 border-[#32938b]/20 animate-fade-in">
+            <h3 className="text-2xl font-bold mb-4 text-[#32938b] flex items-center gap-2">📎 {t('contractDetails.documents')}</h3>
             <input 
               type="file" 
               accept="application/pdf" 
               onChange={handleDocumentUpload} 
               disabled={loadingStates.documentUpload}
-              className="mb-6 text-base file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-base file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition-all duration-200 disabled:opacity-50" 
+              className="mb-6 text-base file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-base file:font-semibold file:bg-[#32938b]/10 file:text-[#32938b] hover:file:bg-[#32938b]/20 transition-all duration-200 disabled:opacity-50" 
             />
-            <ul className="list-none pl-0 text-base text-blue-700 space-y-2">
+            <ul className="list-none pl-0 text-base text-[#32938b] space-y-2">
               {(contract.documents || []).map((doc, idx) => (
-                <li key={idx} className="flex items-center gap-3 bg-blue-50 rounded-xl px-4 py-2 shadow hover:bg-purple-50 transition-all">
-                  <span className="bg-gradient-to-br from-blue-200 to-purple-200 rounded-full p-2"><svg xmlns='http://www.w3.org/2000/svg' className='w-6 h-6' fill='none' viewBox='0 0 24 24' stroke='#6366f1'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.586-6.586a2 2 0 10-2.828-2.828z' /></svg></span>
-                  <a href={doc.content} download={doc.name} className="underline hover:text-purple-700 transition-colors duration-200 font-semibold">{doc.name}</a>
+                <li key={idx} className="flex items-center gap-3 bg-[#32938b]/5 rounded-xl px-4 py-2 shadow hover:bg-[#2a6b66]/10 transition-all">
+                  <span className="bg-gradient-to-br from-[#32938b]/20 to-[#2a6b66]/20 rounded-full p-2"><svg xmlns='http://www.w3.org/2000/svg' className='w-6 h-6' fill='none' viewBox='0 0 24 24' stroke='#6366f1'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.586-6.586a2 2 0 10-2.828-2.828z' /></svg></span>
+                  <a href={doc.content} download={doc.name} className="underline hover:text-[#2a6b66] transition-colors duration-200 font-semibold">{doc.name}</a>
                   <button 
                     onClick={() => handleDocumentDelete(idx)} 
                     disabled={loadingStates.documentDelete}
@@ -757,7 +757,7 @@ export default function ContractDetails() {
           <div className="flex justify-end mb-6">
             <button
               onClick={openAddModal}
-              className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
+              className="bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"
             >
               <span className="text-xl">🧾</span> {t('contractDetails.addInvoice')}
             </button>
@@ -765,8 +765,8 @@ export default function ContractDetails() {
 
 
           {/* Lista Faturave + Print */}
-          <div className="bg-white/80 p-10 rounded-3xl shadow-2xl border-2 border-blue-200 animate-fade-in">
-            <h3 className="font-bold mb-6 text-2xl text-blue-900 flex items-center gap-3">📋 {t('contractDetails.invoicesList')}</h3>
+          <div className="bg-white/80 p-10 rounded-3xl shadow-2xl border-2 border-[#32938b]/20 animate-fade-in">
+            <h3 className="font-bold mb-6 text-2xl text-[#32938b] flex items-center gap-3">📋 {t('contractDetails.invoicesList')}</h3>
             
             {/* Search and Filter for Invoices */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -776,14 +776,14 @@ export default function ContractDetails() {
                   placeholder={t('contractDetails.searchInvoicesPlaceholder')}
                   value={invoicesSearch}
                   onChange={(e) => setInvoicesSearch(e.target.value)}
-                  className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
+                  className="w-full p-3 border border-[#32938b]/20 rounded-lg focus:ring-2 focus:ring-[#32938b]/30 shadow-sm"
                 />
               </div>
               <div>
                 <select
                   value={invoicesFilter}
                   onChange={(e) => setInvoicesFilter(e.target.value)}
-                  className="w-full p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 shadow-sm"
+                  className="w-full p-3 border border-[#32938b]/20 rounded-lg focus:ring-2 focus:ring-[#32938b]/30 shadow-sm"
                 >
                   <option value="all">{t('contractDetails.allInvoices')}</option>
                   <option value="paid">{t('contractDetails.paid')}</option>
@@ -797,7 +797,7 @@ export default function ContractDetails() {
             <div className="overflow-x-auto">
               {filteredInvoices.length > 0 ? (
                 <table className="w-full text-base bg-white shadow rounded-xl">
-                  <thead className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-900">
+                  <thead className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 text-[#32938b]">
                     <tr>
                       <th className="py-4 px-2 text-center align-middle font-semibold">Nr</th>
                       <th className="py-4 px-2 text-center align-middle font-semibold">{t('paymentDetails.date')}</th>
@@ -831,10 +831,10 @@ export default function ContractDetails() {
                           unpaidText: t('payments.unpaidText')
                         });
                         return (
-                          <tr key={inv.id} className="text-center hover:bg-purple-50 transition-all">
+                          <tr key={inv.id} className="text-center hover:bg-[#2a6b66]/10 transition-all">
                             <td className="py-3 px-2 align-middle font-semibold">{inv.invoice_number}</td>
                             <td className="py-3 px-2 align-middle">{formatDate(inv.date)}</td>
-                            <td className="py-3 px-2 align-middle font-bold text-purple-700">£{total.toFixed(2)}</td>
+                            <td className="py-3 px-2 align-middle font-bold text-[#32938b]">£{total.toFixed(2)}</td>
                             <td className="py-3 px-2 align-middle">
                               <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-md ${status === t('payments.unpaidText') ? "bg-red-100 text-red-600" : status === t('payments.paidOnTime') ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{status}</span>
                             </td>
@@ -850,7 +850,7 @@ export default function ContractDetails() {
                             <td className="py-3 px-2 align-middle flex justify-center gap-2">
                               <button 
                                 onClick={() => setInvoiceToPrint(inv)} 
-                                className="text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-xl"
+                                className="text-[#32938b] hover:text-[#32938b] hover:scale-110 transition-all text-xl"
                                 title={t('contractDetails.viewPrint')}
                               >
                                 🖨
@@ -860,7 +860,7 @@ export default function ContractDetails() {
                                 disabled={loadingStates.sendEmail[inv.id]}
                                 className={`hover:scale-110 transition-all text-xl disabled:opacity-50 ${
                                   inv.emailed 
-                                    ? 'text-blue-600 hover:text-blue-800' 
+                                    ? 'text-[#32938b] hover:text-[#32938b]' 
                                     : 'text-green-600 hover:text-green-800'
                                 }`}
                                 title={inv.emailed 
@@ -876,7 +876,7 @@ export default function ContractDetails() {
                                   <div className="relative">
                                     {inv.emailed ? '✅' : '📧'}
                                     {inv.emailed && (
-                                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#32938b]/50 rounded-full animate-pulse"></div>
                                     )}
                                   </div>
                                 )}
@@ -1055,12 +1055,12 @@ export default function ContractDetails() {
                                 <td className="py-3 px-2 text-center font-medium">
                                   {wh.employee_name || `Employee #${wh.employee_id}`}
                                   <span className={`text-xs ml-2 px-2 py-1 rounded-full font-bold ${
-                                    labelType === 'NI' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
+                                    labelType === 'NI' ? 'bg-blue-100 text-[#32938b]' : 'bg-orange-100 text-orange-700'
                                   }`}>
                                     {labelType}
                                   </span>
                                 </td>
-                                <td className="py-3 px-2 text-center font-bold text-blue-600">{hours}</td>
+                                <td className="py-3 px-2 text-center font-bold text-[#32938b]">{hours}</td>
                                 <td className="py-3 px-2 text-center font-bold text-purple-600">£{rate.toFixed(2)}</td>
                                 <td className="py-3 px-2 text-center font-bold text-orange-600">£{gross.toFixed(2)}</td>
                                 <td className="py-3 px-2 text-center font-bold text-emerald-600">£{net.toFixed(2)}</td>
@@ -1071,7 +1071,7 @@ export default function ContractDetails() {
                         <tfoot className="bg-emerald-100">
                           <tr>
                             <td colSpan="2" className="py-4 px-2 text-center font-bold text-emerald-800">{t('contractDetails.totals')}</td>
-                            <td className="py-4 px-2 text-center font-bold text-blue-700">
+                            <td className="py-4 px-2 text-center font-bold text-[#32938b]">
                               {filteredWorkHours.reduce((sum, wh) => sum + parseFloat(wh.hours || 0), 0).toFixed(1)} orë
                             </td>
                             <td className="py-4 px-2 text-center">-</td>
@@ -1116,7 +1116,7 @@ export default function ContractDetails() {
             {/* KOMENTE - SEKSIONI I FUNDIT SIPAS KËRKESËS */}
             <div className="bg-white/90 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
               <div className="p-4 sm:p-6 lg:p-8">
-                <h3 className="text-xl sm:text-2xl font-bold text-purple-700 mb-6 flex items-center gap-2">
+                <h3 className="text-xl sm:text-2xl font-bold text-[#32938b] mb-6 flex items-center gap-2">
                   💬 {t('contractDetails.comments')}
                 </h3>
                 <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -1124,7 +1124,7 @@ export default function ContractDetails() {
                     value={newComment} 
                     onChange={(e) => setNewComment(e.target.value)} 
                     disabled={loadingStates.addComment}
-                    className="flex-1 border-2 border-purple-200 rounded-xl p-3 text-base bg-purple-50/50 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm disabled:opacity-50 min-h-[100px] resize-none" 
+                    className="flex-1 border-2 border-[#32938b]/20 rounded-xl p-3 text-base bg-purple-50/50 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm disabled:opacity-50 min-h-[100px] resize-none" 
                     placeholder={t('contractDetails.writeComment')} 
                   />
                   <button 
@@ -1268,7 +1268,7 @@ export default function ContractDetails() {
                     
                     <button 
                       onClick={handleAddItem} 
-                      className="w-full bg-blue-50 hover:bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg p-3 text-blue-600 font-semibold transition-all flex items-center justify-center gap-2"
+                      className="w-full bg-[#32938b]/5 hover:bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg p-3 text-[#32938b] font-semibold transition-all flex items-center justify-center gap-2"
                     >
                       <span className="text-xl">➕</span> {t('contractDetails.addNewRow')}
                     </button>
@@ -1291,7 +1291,7 @@ export default function ContractDetails() {
                         onChange={(e) => setNewInvoice({ ...newInvoice, other: e.target.value })} 
                       />
                     </div>
-                    <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg p-4 border-2 border-blue-200">
+                    <div className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 rounded-lg p-4 border-2 border-[#32938b]/20">
                       <div className="text-center">
                         <div className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">{t('contractDetails.invoiceTotal')}</div>
                         <div className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
@@ -1306,7 +1306,7 @@ export default function ContractDetails() {
                 <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <button 
                     onClick={handleSaveInvoice} 
-                    className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:scale-105" 
+                    className="flex-1 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:scale-105" 
                     disabled={loadingStates.saveInvoice}
                   >
                     {loadingStates.saveInvoice ? (
