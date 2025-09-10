@@ -53,18 +53,18 @@ export default function Payments() {
   }
 
   return (
-    <div className="w-full px-4 md:px-6 py-4 md:py-8 min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100">
-      <div className="bg-gradient-to-br from-purple-100 via-white to-blue-100 rounded-xl md:rounded-3xl shadow-2xl border border-blue-100 p-4 md:p-8 lg:p-12 mb-8 md:mb-12 animate-fade-in">
-        <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-6 md:mb-8 text-center drop-shadow-lg flex items-center justify-center gap-2 md:gap-3">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 min-h-screen bg-gradient-to-br from-[#32938b]/10 via-white to-[#32938b]/5">
+      <div className="bg-gradient-to-br from-[#32938b]/5 via-white to-[#32938b]/10 rounded-xl md:rounded-3xl shadow-2xl border border-[#32938b]/20 p-4 md:p-8 lg:p-12 mb-8 md:mb-12 animate-fade-in">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] tracking-tight mb-6 md:mb-8 text-center drop-shadow-lg flex items-center justify-center gap-2 md:gap-3">
           <span className="text-3xl md:text-4xl lg:text-5xl">💳</span> {t('payments.title')}
         </h2>
         {/* Filtri i statusit */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-2 md:gap-4 mb-6 md:mb-10">
-          <label className="text-sm md:text-lg font-semibold text-blue-800">{t('payments.filterByStatus')}</label>
+          <label className="text-sm md:text-lg font-semibold text-[#32938b]">{t('payments.filterByStatus')}</label>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="border-2 border-blue-200 p-2 md:p-3 rounded-xl shadow focus:ring-2 focus:ring-blue-300 text-sm md:text-lg text-blue-800 bg-white/80"
+            className="border-2 border-[#32938b]/30 p-2 md:p-3 rounded-xl shadow focus:ring-2 focus:ring-[#32938b]/50 text-sm md:text-lg text-[#32938b] bg-white/80"
           >
             <option value="All">{t('payments.allContracts')}</option>
             <option value="Draft">{t('payments.draft')}</option>
@@ -81,11 +81,11 @@ export default function Payments() {
             <Link
               key={c.contract_number}
               to={`/admin/payments/details/${c.contract_number}`}
-              className="bg-white/70 backdrop-blur-md rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 lg:p-7 flex flex-col gap-3 md:gap-4 hover:scale-[1.02] md:hover:scale-[1.04] hover:shadow-2xl hover:border-blue-300 transition-all duration-300 group"
+              className="bg-white/70 backdrop-blur-md rounded-xl md:rounded-2xl shadow-xl border border-[#32938b]/20 p-4 md:p-6 lg:p-7 flex flex-col gap-3 md:gap-4 hover:scale-[1.02] md:hover:scale-[1.04] hover:shadow-2xl hover:border-[#32938b]/40 transition-all duration-300 group"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-lg md:text-xl lg:text-2xl font-extrabold text-blue-700 flex items-center gap-2 group-hover:text-purple-700 transition-all">
+                  <h3 className="text-lg md:text-xl lg:text-2xl font-extrabold text-[#32938b] flex items-center gap-2 group-hover:text-[#2a6b66] transition-all">
                     <FaHashtag /> {c.contract_number}
                   </h3>
                   <p className="text-sm md:text-base text-gray-500 flex items-center gap-2 mt-1">
@@ -93,7 +93,7 @@ export default function Payments() {
                   </p>
                 </div>
                 <span className={`text-xs md:text-sm lg:text-base font-bold px-2 md:px-4 py-1 md:py-2 rounded-full shadow-md border
-                  ${c.status === 'Ne progres' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                  ${c.status === 'Ne progres' ? 'bg-[#32938b]/10 text-[#32938b] border-[#32938b]/20' :
                     c.status === 'Draft' ? 'bg-gray-100 text-gray-700 border-gray-200' :
                     c.status === 'Anulluar' ? 'bg-red-100 text-red-700 border-red-200' :
                     c.status === 'Pezulluar' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
@@ -104,10 +104,10 @@ export default function Payments() {
                   {translateStatus(c.status)}
                 </span>
               </div>
-              <div className="space-y-2 text-blue-900 text-sm md:text-base lg:text-lg">
-                <p className="flex items-center gap-2 font-bold"><FaMapMarkerAlt className="text-blue-400" /> {c.site_name}</p>
-                <p className="flex items-center gap-2"><FaCalendarAlt className="text-blue-400" /> {t('payments.start')}: {c.start_date ? new Date(c.start_date).toLocaleDateString() : '-'}</p>
-                <p className="flex items-center gap-2"><FaCalendarAlt className="text-blue-400" /> {t('payments.end')}: {c.finish_date ? new Date(c.finish_date).toLocaleDateString() : '-'}</p>
+              <div className="space-y-2 text-[#32938b] text-sm md:text-base lg:text-lg">
+                <p className="flex items-center gap-2 font-bold"><FaMapMarkerAlt className="text-[#32938b]/60" /> {c.site_name}</p>
+                <p className="flex items-center gap-2"><FaCalendarAlt className="text-[#32938b]/60" /> {t('payments.start')}: {c.start_date ? new Date(c.start_date).toLocaleDateString() : '-'}</p>
+                <p className="flex items-center gap-2"><FaCalendarAlt className="text-[#32938b]/60" /> {t('payments.end')}: {c.finish_date ? new Date(c.finish_date).toLocaleDateString() : '-'}</p>
               </div>
             </Link>
           ))}
