@@ -141,35 +141,39 @@ export default function MainLayout() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-gray-50 overflow-hidden">
+    <div className="relative h-screen w-full bg-gray-50 overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className={`hidden lg:flex w-80 sidebar-modern flex-shrink-0 shadow-2xl transition-all duration-300 ease-in-out ${
+      <aside className={`desktop-sidebar hidden lg:flex w-80 sidebar-modern flex-shrink-0 shadow-2xl transition-all duration-300 ease-in-out fixed left-0 top-0 h-full z-40 ${
         isDesktopSidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <SidebarContent />
       </aside>
 
       {/* Mobile Sidebar */}
-      <MobileSidebar 
-        isOpen={isMobileMenuOpen} 
-        onClose={() => setIsMobileMenuOpen(false)}
-      >
-        <div className="h-full sidebar-modern relative">
-          {/* Close button for mobile */}
-          <button
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="absolute top-4 right-4 z-10 p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors duration-200 lg:hidden"
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          <SidebarContent />
-        </div>
-      </MobileSidebar>
+      <div className="mobile-sidebar lg:hidden">
+        <MobileSidebar 
+          isOpen={isMobileMenuOpen} 
+          onClose={() => setIsMobileMenuOpen(false)}
+        >
+          <div className="h-full sidebar-modern relative">
+            {/* Close button for mobile */}
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute top-4 right-4 z-10 p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors duration-200"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <SidebarContent />
+          </div>
+        </MobileSidebar>
+      </div>
 
-      {/* Main Area - Always full width */}
-      <div className="flex-1 flex flex-col min-w-0 w-full">
+      {/* Main Area - Full width, positioned relative to sidebar state */}
+      <div className={`flex flex-col min-w-0 w-full h-full transition-all duration-300 ease-in-out ${
+        isDesktopSidebarOpen ? 'lg:ml-80' : 'lg:ml-0'
+      }`}>
         {/* Header - Always full width */}
         <header className="header-modern flex-shrink-0 shadow-lg border-b relative z-50 w-full">
           <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between w-full">
@@ -238,9 +242,7 @@ export default function MainLayout() {
         </header>
 
         {/* Content - Full width when sidebar is hidden on desktop */}
-        <main className={`flex-1 bg-gray-50 overflow-auto p-4 sm:p-6 transition-all duration-300 ease-in-out w-full ${
-          !isDesktopSidebarOpen ? 'main-content-full-width' : 'main-content-with-sidebar'
-        }`}>
+        <main className="flex-1 bg-gray-50 overflow-auto p-4 sm:p-6 w-full">
           <Suspense fallback={<PageLoader />}>
             <Outlet />
           </Suspense>

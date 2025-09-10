@@ -715,6 +715,15 @@ p {
     margin-left: 0;
     width: calc(100% - 20rem); /* 20rem = w-80 sidebar width */
   }
+  
+  /* Ensure mobile sidebar is completely hidden on desktop */
+  .mobile-sidebar-overlay {
+    display: none !important;
+  }
+  
+  .mobile-sidebar {
+    display: none !important;
+  }
 }
 
 /* Mobile: Menu hidden by default */
@@ -722,6 +731,11 @@ p {
   .main-content-full-width {
     margin-left: 0 !important;
     width: 100% !important;
+  }
+  
+  /* Ensure desktop sidebar is completely hidden on mobile */
+  .desktop-sidebar {
+    display: none !important;
   }
 }
 
