@@ -112,7 +112,10 @@ export default function PaymentDetails() {
       'Vlera e Kontratës': 'Contract Value',
       'Shpenzimet Totale': 'Total Expenses',
       'Shpenzime': 'Expenses',
-      'Orë Punë': 'Work Hours'
+      'Orë Punë': 'Work Hours',
+      'Shto Shpenzim': 'Add Expense',
+      'Kliko për të shënuar si të papaguar': 'Click to mark as unpaid',
+      'Kliko për të shënuar si të paguar': 'Click to mark as paid'
     };
     
     return translations[albanianText] || albanianText;
@@ -216,6 +219,32 @@ export default function PaymentDetails() {
   const closeAddModal = () => {
     setShowAddModal(false);
     resetForm();
+  };
+
+  // Function to toggle expense paid status
+  const toggleExpenseStatus = async (expenseId, currentStatus) => {
+    try {
+      const newStatus = !currentStatus;
+      const response = await axios.put(
+        `https://capitalrise-cwcq.onrender.com/api/expenses/${expenseId}`,
+        { paid: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (response.status === 200) {
+        // Update the local state
+        setExpensesInvoices(prev => 
+          prev.map(expense => 
+            expense.id === expenseId 
+              ? { ...expense, paid: newStatus }
+              : expense
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error updating expense status:', error);
+      alert('Gabim gjatë përditësimit të statusit!');
+    }
   };
 
   // Përllogaritjet e orëve të punës
@@ -479,7 +508,7 @@ export default function PaymentDetails() {
                 onClick={openAddModal}
                 className="bg-[#32938b] text-white px-4 py-2 rounded-lg hover:bg-[#2a6b66] transition-colors flex items-center gap-2 text-sm font-semibold"
               >
-                ➕ Shto Shpenzim
+                ➕ {translateLabel('Shto Shpenzim')}
               </button>
             </div>
           
@@ -523,11 +552,17 @@ export default function PaymentDetails() {
                       <td className="py-2 px-3 text-center font-bold text-green-700">£{Number(inv.net || 0).toFixed(2)}</td>
                       <td className="py-2 px-3 text-center font-bold text-purple-700">£{Number(inv.tax || 0).toFixed(2)}</td>
                       <td className="py-2 px-3 text-center">
-                        <span className={`px-3 py-1 rounded-full border text-xs font-bold ${
-                          inv.paid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'
-                        }`}>
+                        <button
+                          onClick={() => toggleExpenseStatus(inv.id, inv.paid)}
+                          className={`px-3 py-1 rounded-full border text-xs font-bold cursor-pointer transition-all hover:scale-105 ${
+                            inv.paid 
+                              ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200' 
+                              : 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200'
+                          }`}
+                          title={inv.paid ? translateLabel('Kliko për të shënuar si të papaguar') : translateLabel('Kliko për të shënuar si të paguar')}
+                        >
                           {inv.paid ? t('paymentDetails.paid') : t('paymentDetails.unpaid')}
-                        </span>
+                        </button>
                       </td>
                       <td className="py-2 px-3 text-center">
                         <button
