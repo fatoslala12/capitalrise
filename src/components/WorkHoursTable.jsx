@@ -406,7 +406,7 @@ export default function WorkHoursTable({
       {/* Desktop Table */}
       <div className="hidden lg:block">
         {/* Table Header */}
-        <div className="grid grid-cols-9 gap-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white p-4 rounded-t-xl font-bold text-sm">
+        <div className="grid grid-cols-9 gap-4 bg-gradient-to-r from-[#1c514f] to-[#2a6b66] text-white p-4 rounded-t-xl font-bold text-sm">
           <div className="col-span-2 text-center">👤 {safeT('workHours.employeeHeader', 'Employee')}</div>
           <div className="text-center">💰 {safeT('workHours.rateHeader', 'Rate')}</div>
           <div className="text-center">⏰ {safeT('workHours.hoursHeader', 'Hours')}</div>
@@ -447,7 +447,7 @@ export default function WorkHoursTable({
                   )}
                   <div className="flex flex-col">
                     <span className="font-bold text-lg">{calc.firstName} {calc.lastName}</span>
-                    <span className="text-xs font-semibold text-white bg-gradient-to-r from-green-400 to-emerald-400 px-2 py-1 rounded-full shadow uppercase tracking-wide">
+                    <span className="text-xs font-semibold text-white bg-gradient-to-r from-[#1c514f] to-[#2a6b66] px-2 py-1 rounded-full shadow uppercase tracking-wide">
                       {calc.emp.role || calc.emp.role_type || ''}
                     </span>
                   </div>
@@ -493,7 +493,7 @@ export default function WorkHoursTable({
                   {showPaymentControl && (
                     <button
                       onClick={() => handlePaymentToggle(calc.emp.id)}
-                      className="px-2 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg text-xs font-bold hover:from-green-600 hover:to-emerald-600 transition-all duration-300 whitespace-nowrap"
+                      className="px-2 py-1 text-[#1c514f] border border-[#1c514f] rounded-lg text-xs font-bold hover:bg-[#1c514f] hover:text-white transition-all duration-300 whitespace-nowrap"
                     >
                       {calc.paid ? `❌ ${safeT('workHours.markAsUnpaid', 'Mark as Unpaid')}` : `✅ ${safeT('workHours.markAsPaid', 'Mark as Paid')}`}
                     </button>
@@ -522,7 +522,7 @@ export default function WorkHoursTable({
                     )}
                     <div>
                       <h4 className="font-bold text-sm text-gray-900">{calc.firstName} {calc.lastName}</h4>
-                      <span className="text-xs font-semibold text-white bg-gradient-to-r from-green-400 to-emerald-400 px-2 py-1 rounded-full shadow uppercase tracking-wide">
+                      <span className="text-xs font-semibold text-white bg-gradient-to-r from-[#1c514f] to-[#2a6b66] px-2 py-1 rounded-full shadow uppercase tracking-wide">
                         {calc.emp.role || calc.emp.role_type || ''}
                       </span>
                     </div>
@@ -560,7 +560,7 @@ export default function WorkHoursTable({
                   {showPaymentControl && (
                     <button
                       onClick={() => handlePaymentToggle(calc.emp.id)}
-                      className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg text-xs font-bold hover:from-green-600 hover:to-emerald-600 transition-all duration-300"
+                      className="px-3 py-2 text-[#1c514f] border border-[#1c514f] rounded-lg text-xs font-bold hover:bg-[#1c514f] hover:text-white transition-all duration-300"
                     >
                       {calc.paid ? `❌ ${safeT('workHours.markAsUnpaid', 'Mark as Unpaid')}` : `✅ ${safeT('workHours.markAsPaid', 'Mark as Paid')}`}
                     </button>
@@ -574,7 +574,7 @@ export default function WorkHoursTable({
               {/* Detajet e zgjeruara */}
               {expandedRows.has(calc.emp.id) && (
                 <div className="border-t border-green-200 bg-gray-50 p-4">
-                  <h4 className="font-semibold text-blue-800 mb-3">{safeT('workHours.dailyDetails', 'Daily Details')}</h4>
+                  <h4 className="font-semibold text-blue-600 mb-3">{safeT('workHours.dailyDetails', 'Daily Details')}</h4>
                   <div className="grid grid-cols-7 gap-2">
                     {dayLabels.map((dayLabel, dayIndex) => {
                       const day = days[dayIndex];
@@ -649,7 +649,7 @@ export default function WorkHoursTable({
                   )}
                   <div>
                     <h4 className="font-bold text-lg text-gray-900">{calc.firstName} {calc.lastName}</h4>
-                    <span className="text-xs font-semibold text-white bg-gradient-to-r from-green-400 to-emerald-400 px-2 py-1 rounded-full shadow uppercase tracking-wide">
+                    <span className="text-xs font-semibold text-white bg-gradient-to-r from-[#1c514f] to-[#2a6b66] px-2 py-1 rounded-full shadow uppercase tracking-wide">
                       {calc.emp.role || calc.emp.role_type || ''}
                     </span>
                   </div>
@@ -695,7 +695,7 @@ export default function WorkHoursTable({
                 <div className="text-center mb-4">
                   <button
                     onClick={() => handlePaymentToggle(calc.emp.id)}
-                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg text-sm font-bold hover:from-green-600 hover:to-emerald-600 transition-all duration-300"
+                    className="px-4 py-2 text-[#1c514f] border border-[#1c514f] rounded-lg text-sm font-bold hover:bg-[#1c514f] hover:text-white transition-all duration-300"
                   >
                     {calc.paid ? `❌ ${safeT('workHours.markAsUnpaid', 'Mark as Unpaid')}` : `✅ ${safeT('workHours.markAsPaid', 'Mark as Paid')}`}
                   </button>

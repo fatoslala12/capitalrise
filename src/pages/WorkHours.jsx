@@ -506,12 +506,12 @@ export default function WorkHours() {
         {/* Header Section */}
         <div className="text-center space-y-3 sm:space-y-4">
           <div className="flex items-center justify-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl sm:rounded-2xl shadow-lg">
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-[#1c514f] to-[#2a6b66] rounded-xl sm:rounded-2xl shadow-lg">
               <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-emerald-700">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#1c514f] to-[#2a6b66]">
               {isManager ? t('workHours.managementTitle') : 
                isAdmin ? t('workHours.adminPanelTitle') : 
                t('workHours.myWorkHoursTitle')}
@@ -528,24 +528,24 @@ export default function WorkHours() {
         {isManager && employees.length > 0 && (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-100 p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl">
+              <div className="p-2 bg-gradient-to-r from-[#1c514f] to-[#2a6b66] rounded-xl">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-emerald-700">
+              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#1c514f] to-[#2a6b66]">
                 {t('workHours.title')} - {t('workHours.week')}
               </h2>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="bg-gradient-to-br from-[#1c514f] to-[#2a6b66] text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="text-xl sm:text-2xl font-bold">
                   {employees.length}
                 </div>
                 <div className="text-xs sm:text-sm opacity-90 font-medium">{t('workHours.employee')}</div>
               </div>
               
-              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="bg-gradient-to-br from-[#1c514f] to-[#2a6b66] text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="text-xl sm:text-2xl font-bold">
                   {(() => {
                     try {
@@ -602,12 +602,12 @@ export default function WorkHours() {
         {isManager && (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-100 p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl">
+              <div className="p-2 bg-gradient-to-r from-[#1c514f] to-[#2a6b66] rounded-xl">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 0V4a2 2 0 00-2-2H8a2 2 0 00-2 2v3m2 0h4m-4 0v1m4-1v1m-4 3h4" />
                 </svg>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-emerald-700">
+              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#1c514f] to-[#2a6b66]">
                 {t('workHours.saveWorkHours')}
               </h2>
             </div>
@@ -615,7 +615,7 @@ export default function WorkHours() {
               <button
                 onClick={handleSubmit}
                 disabled={saved}
-                className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base hover:from-green-600 hover:to-emerald-600 transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto bg-gradient-to-r from-[#1c514f] to-[#2a6b66] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base hover:from-[#2a6b66] hover:to-[#1c514f] transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
               >
                 {saved ? (
                   <>
@@ -639,7 +639,7 @@ export default function WorkHours() {
 
         {/* Read-only view për user */}
         {isUser && (
-          <div className="bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-2xl p-4 sm:p-6">
+          <div className="bg-green-50/80 backdrop-blur-sm border border-[#1c514f] rounded-2xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 bg-green-500 rounded-xl">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -688,8 +688,8 @@ export default function WorkHours() {
               onClick={() => setViewMode('all')} 
               className={`px-4 py-2 rounded-lg border font-semibold transition-all ${
                 viewMode === 'all' 
-                  ? 'bg-green-600 text-white border-blue-600 shadow-md' 
-                  : 'bg-white text-green-600 border-green-200 hover:bg-green-50'
+                  ? 'bg-[#1c514f] text-white border-blue-600 shadow-md' 
+                  : 'bg-white text-[#1c514f] border-[#1c514f] hover:bg-[#1c514f]/10'
               }`}
             >
               👥 {t('workHours.viewAll')}
@@ -698,8 +698,8 @@ export default function WorkHours() {
               onClick={() => setViewMode('bySite')} 
               className={`px-4 py-2 rounded-lg border font-semibold transition-all ${
                 viewMode === 'bySite' 
-                  ? 'bg-green-600 text-white border-blue-600 shadow-md' 
-                  : 'bg-white text-green-600 border-green-200 hover:bg-green-50'
+                  ? 'bg-[#1c514f] text-white border-blue-600 shadow-md' 
+                  : 'bg-white text-[#1c514f] border-[#1c514f] hover:bg-[#1c514f]/10'
               }`}
             >
               🏗️ {t('workHours.viewBySite')}
@@ -709,8 +709,8 @@ export default function WorkHours() {
 
         {/* Java aktuale */}
         {loading ? (
-          <div className="bg-blue-50 border border-green-200 rounded-lg p-6 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-4 border-green-200 border-t-blue-600 mx-auto mb-4"></div>
+          <div className="bg-blue-50 border border-[#1c514f] rounded-lg p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-[#1c514f] border-t-blue-600 mx-auto mb-4"></div>
             <h4 className="text-lg font-semibold text-green-800 mb-2">Duke ngarkuar të dhënat...</h4>
             <p className="text-green-700">Ju lutem prisni ndërsa po ngarkojmë orët e punës.</p>
           </div>
@@ -739,12 +739,12 @@ export default function WorkHours() {
             />
           ) : (
             Object.entries(employeesBySite).sort(([a],[b])=>a.localeCompare(b)).map(([site, list]) => (
-              <div key={site} className="mt-6 bg-white/80 rounded-2xl shadow-xl border border-green-200">
+              <div key={site} className="mt-6 bg-white/80 rounded-2xl shadow-xl border border-[#1c514f]">
                 <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-2xl">
                   <h3 className="font-bold text-green-800 text-lg flex items-center gap-2">
                     🏗️ Site: <span className="text-emerald-700">{site}</span>
                   </h3>
-                  <div className="text-sm text-green-600 font-medium">
+                  <div className="text-sm text-[#1c514f] font-medium">
                     {list.length} punonjës
                   </div>
                 </div>
@@ -828,7 +828,7 @@ export default function WorkHours() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg">
+                          <div className="p-2 bg-gradient-to-r from-[#1c514f] to-[#2a6b66] rounded-lg">
                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
