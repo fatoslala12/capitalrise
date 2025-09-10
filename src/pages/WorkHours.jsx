@@ -497,7 +497,7 @@ export default function WorkHours() {
           <div className={`fixed top-16 sm:top-20 right-2 sm:right-4 z-50 px-4 sm:px-6 py-3 sm:py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 text-sm sm:text-base ${
             toast.type === 'success' ? 'bg-green-500' : 
             toast.type === 'error' ? 'bg-red-500' : 
-            'bg-blue-500'
+            'bg-green-500'
           }`}>
             {toast.message}
           </div>
@@ -506,12 +506,12 @@ export default function WorkHours() {
         {/* Header Section */}
         <div className="text-center space-y-3 sm:space-y-4">
           <div className="flex items-center justify-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl sm:rounded-2xl shadow-lg">
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl sm:rounded-2xl shadow-lg">
               <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-emerald-700">
               {isManager ? t('workHours.managementTitle') : 
                isAdmin ? t('workHours.adminPanelTitle') : 
                t('workHours.myWorkHoursTitle')}
@@ -526,19 +526,19 @@ export default function WorkHours() {
 
         {/* Përmbledhje për Menaxherin */}
         {isManager && employees.length > 0 && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100 p-4 sm:p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-100 p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl">
+              <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-emerald-700">
                 {t('workHours.title')} - {t('workHours.week')}
               </h2>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <div className="text-xl sm:text-2xl font-bold">
                   {employees.length}
                 </div>
@@ -602,12 +602,12 @@ export default function WorkHours() {
         {isManager && (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-100 p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl">
+              <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 0V4a2 2 0 00-2-2H8a2 2 0 00-2 2v3m2 0h4m-4 0v1m4-1v1m-4 3h4" />
                 </svg>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-blue-700">
+              <h2 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-emerald-700">
                 {t('workHours.saveWorkHours')}
               </h2>
             </div>
@@ -615,7 +615,7 @@ export default function WorkHours() {
               <button
                 onClick={handleSubmit}
                 disabled={saved}
-                className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base hover:from-green-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base hover:from-green-600 hover:to-emerald-600 transition-all duration-300 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
               >
                 {saved ? (
                   <>
@@ -639,16 +639,16 @@ export default function WorkHours() {
 
         {/* Read-only view për user */}
         {isUser && (
-          <div className="bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-2xl p-4 sm:p-6">
+          <div className="bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-2xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-blue-500 rounded-xl">
+              <div className="p-2 bg-green-500 rounded-xl">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-blue-800">{t('workHours.info')}</h2>
+              <h2 className="text-base sm:text-lg font-bold text-green-800">{t('workHours.info')}</h2>
             </div>
-            <p className="text-sm sm:text-base text-blue-700">
+            <p className="text-sm sm:text-base text-green-700">
               {t('workHours.userReadOnlyInfo')}
             </p>
           </div>
@@ -688,8 +688,8 @@ export default function WorkHours() {
               onClick={() => setViewMode('all')} 
               className={`px-4 py-2 rounded-lg border font-semibold transition-all ${
                 viewMode === 'all' 
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
-                  : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'
+                  ? 'bg-green-600 text-white border-blue-600 shadow-md' 
+                  : 'bg-white text-green-600 border-green-200 hover:bg-green-50'
               }`}
             >
               👥 {t('workHours.viewAll')}
@@ -698,8 +698,8 @@ export default function WorkHours() {
               onClick={() => setViewMode('bySite')} 
               className={`px-4 py-2 rounded-lg border font-semibold transition-all ${
                 viewMode === 'bySite' 
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
-                  : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'
+                  ? 'bg-green-600 text-white border-blue-600 shadow-md' 
+                  : 'bg-white text-green-600 border-green-200 hover:bg-green-50'
               }`}
             >
               🏗️ {t('workHours.viewBySite')}
@@ -709,10 +709,10 @@ export default function WorkHours() {
 
         {/* Java aktuale */}
         {loading ? (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-            <h4 className="text-lg font-semibold text-blue-800 mb-2">Duke ngarkuar të dhënat...</h4>
-            <p className="text-blue-700">Ju lutem prisni ndërsa po ngarkojmë orët e punës.</p>
+          <div className="bg-blue-50 border border-green-200 rounded-lg p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-green-200 border-t-blue-600 mx-auto mb-4"></div>
+            <h4 className="text-lg font-semibold text-green-800 mb-2">Duke ngarkuar të dhënat...</h4>
+            <p className="text-green-700">Ju lutem prisni ndërsa po ngarkojmë orët e punës.</p>
           </div>
         ) : Array.isArray(employees) && employees.length > 0 ? (
           viewMode === 'all' ? (
@@ -739,12 +739,12 @@ export default function WorkHours() {
             />
           ) : (
             Object.entries(employeesBySite).sort(([a],[b])=>a.localeCompare(b)).map(([site, list]) => (
-              <div key={site} className="mt-6 bg-white/80 rounded-2xl shadow-xl border border-blue-200">
-                <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-2xl">
-                  <h3 className="font-bold text-blue-800 text-lg flex items-center gap-2">
-                    🏗️ Site: <span className="text-purple-700">{site}</span>
+              <div key={site} className="mt-6 bg-white/80 rounded-2xl shadow-xl border border-green-200">
+                <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-2xl">
+                  <h3 className="font-bold text-green-800 text-lg flex items-center gap-2">
+                    🏗️ Site: <span className="text-emerald-700">{site}</span>
                   </h3>
-                  <div className="text-sm text-blue-600 font-medium">
+                  <div className="text-sm text-green-600 font-medium">
                     {list.length} punonjës
                   </div>
                 </div>
@@ -828,7 +828,7 @@ export default function WorkHours() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
+                          <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg">
                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
