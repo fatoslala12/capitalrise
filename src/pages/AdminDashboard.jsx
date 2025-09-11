@@ -1214,7 +1214,11 @@ function StatusiKontrataveChart({ contracts }) {
             status === 'pezulluar' ? 'Të pezulluara' :
             status === 'mbyllur me vonese' ? 'Mbyllur me vonesë' :
             status === 'anulluar' ? 'Të anuluara' :
-                        status === 'mbyllur' ? 'Të mbyllura' : status;
+            status === 'mbyllur' ? 'Të mbyllura' :
+            status === 'closed with delay' ? 'Mbyllur me vonesë' :
+            status === 'in progress' ? 'Në progres' :
+            status === 'closed' ? 'Të mbyllura' :
+            status === 'cancelled' ? 'Të anuluara' : status;
       } else {
         // English translations
         translatedName = status === 'active' ? 'Active' : 
@@ -1226,7 +1230,11 @@ function StatusiKontrataveChart({ contracts }) {
                         status === 'pezulluar' ? 'Suspended' :
                         status === 'mbyllur me vonese' ? 'Closed with Delay' :
                         status === 'anulluar' ? 'Cancelled' :
-                        status === 'mbyllur' ? 'Closed' : status;
+                        status === 'mbyllur' ? 'Closed' :
+                        status === 'closed with delay' ? 'Closed with Delay' :
+                        status === 'in progress' ? 'In Progress' :
+                        status === 'closed' ? 'Closed' :
+                        status === 'cancelled' ? 'Cancelled' : status;
       }
       
       return {
