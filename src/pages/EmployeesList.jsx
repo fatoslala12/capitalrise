@@ -545,9 +545,9 @@ export default function EmployeesList() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-purple-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#32938b]/10 via-white to-[#2a6b66]/10">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#32938b] mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar punonjësit...</h2>
         </div>
       </div>
@@ -555,7 +555,7 @@ export default function EmployeesList() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-[#32938b]/5">
       <div className="w-full max-w-none mx-auto px-2 sm:px-4 lg:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
         
         {/* HEADER SECTION - MOBILE RESPONSIVE */}
@@ -563,13 +563,13 @@ export default function EmployeesList() {
           <div className="p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
               <div className="flex items-center gap-3 sm:gap-4">
-                <div className="flex-shrink-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-3 shadow-lg">
+                <div className="flex-shrink-0 bg-gradient-to-br from-[#32938b] to-[#2a6b66] rounded-xl p-3 shadow-lg">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6 sm:w-8 sm:h-8">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] tracking-tight mb-1">
                     {t('employeesList.title')}
                   </h1>
                   <div className="text-base sm:text-lg font-semibold text-slate-600">
@@ -579,7 +579,7 @@ export default function EmployeesList() {
               </div>
         <button
           onClick={openAddModal}
-                className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all flex items-center gap-2 justify-center text-sm sm:text-base hover:shadow-xl hover:scale-105"
+                className="w-full sm:w-auto bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg transition-all flex items-center gap-2 justify-center text-sm sm:text-base hover:shadow-xl hover:scale-105"
         >
                 <span className="text-lg sm:text-xl">➕</span>
                 <span className="hidden sm:inline">{t('employeesList.addNewEmployee')}</span>
@@ -600,7 +600,7 @@ export default function EmployeesList() {
             onClick={(e) => e.stopPropagation()}
           >
               {/* MODAL HEADER */}
-              <div className="bg-gradient-to-r from-blue-400 to-purple-500 px-6 py-4">
+              <div className="bg-gradient-to-r from-[#32938b] to-[#2a6b66] px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="bg-white/20 rounded-lg p-2">
@@ -639,7 +639,7 @@ export default function EmployeesList() {
                           required 
                           value={newEmployee.firstName} 
                           onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                         />
                 </div>
                 <div>
@@ -651,7 +651,7 @@ export default function EmployeesList() {
                           required 
                           value={newEmployee.lastName} 
                           onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                         />
                 </div>
                       <div>
@@ -663,7 +663,7 @@ export default function EmployeesList() {
                           required 
                           value={newEmployee.email} 
                           onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                         />
                       </div>
                       <div>
@@ -675,7 +675,7 @@ export default function EmployeesList() {
                           required 
                           value={newEmployee.nid} 
                           onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                         />
                       </div>
                       <div>
@@ -686,7 +686,7 @@ export default function EmployeesList() {
                           required 
                           value={newEmployee.startDate} 
                           onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                         />
                       </div>
                       <div>
@@ -696,7 +696,7 @@ export default function EmployeesList() {
                           name="dob" 
                           value={newEmployee.dob} 
                           onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                         />
                       </div>
                 <div>
@@ -707,7 +707,7 @@ export default function EmployeesList() {
                           placeholder="Vendi i lindjes" 
                           value={newEmployee.pob} 
                           onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                         />
                 </div>
                 <div>
@@ -718,28 +718,28 @@ export default function EmployeesList() {
                           placeholder="Adresa e banimit" 
                           value={newEmployee.residence} 
                           onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                         />
                       </div>
                     </div>
                 </div>
                   
                   {/* WORKPLACE SECTION */}
-                  <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-200">
+                  <div className="bg-[#32938b]/5 rounded-xl p-4 border border-[#32938b]/20">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
                       🏢 {t('employeesList.workplacesSection')} *
                     </label>
                     <div className="flex flex-wrap gap-3">
                       {siteOptions.length > 0 ? (
                         siteOptions.map((siteName) => (
-                          <label key={siteName} className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-blue-200 shadow-sm cursor-pointer hover:bg-blue-50 transition-all">
+                          <label key={siteName} className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-[#32938b]/20 shadow-sm cursor-pointer hover:bg-[#32938b]/5 transition-all">
                             <input
                               type="checkbox"
                               name="workplace"
                               value={siteName}
                               onChange={handleChange}
                               checked={newEmployee.workplace.includes(siteName)}
-                              className="accent-blue-500 w-4 h-4"
+                              className="accent-[#32938b] w-4 h-4"
                             /> 
                             <span className="text-sm font-medium text-slate-700">{siteName}</span>
                           </label>
@@ -753,7 +753,7 @@ export default function EmployeesList() {
                   </div>
 
                   {/* CONTACT SECTION */}
-                  <div className="bg-purple-50/50 rounded-xl p-4 border border-purple-200">
+                  <div className="bg-[#2a6b66]/5 rounded-xl p-4 border border-[#2a6b66]/20">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
                       📞 {t('employeesList.contactInfo')}
                     </label>
@@ -767,7 +767,7 @@ export default function EmployeesList() {
                           required 
                           value={newEmployee.phone} 
                     onChange={handleChange}
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#2a6b66]/30 focus:border-[#2a6b66] transition-all" 
                         />
                 </div>
                       <div>
@@ -778,7 +778,7 @@ export default function EmployeesList() {
                           placeholder="Kontakti i ngushtë" 
                           value={newEmployee.nextOfKin || ""} 
                           onChange={handleChange} 
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#2a6b66]/30 focus:border-[#2a6b66] transition-all" 
                         />
                       </div>
                 <div>
@@ -789,7 +789,7 @@ export default function EmployeesList() {
                           placeholder="Telefoni i kontaktit" 
                           value={newEmployee.nextOfKinPhone || ""} 
                     onChange={handleChange}
-                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
+                          className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#2a6b66]/30 focus:border-[#2a6b66] transition-all" 
                         />
                       </div>
                     </div>
@@ -898,7 +898,7 @@ export default function EmployeesList() {
                   <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <button 
                     type="submit" 
-                      className="flex-1 bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
+                      className="flex-1 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
                       <span className="text-xl">➕</span>
                       <span className="hidden sm:inline">Shto Punonjës</span>
@@ -930,7 +930,7 @@ export default function EmployeesList() {
               <select 
                 value={filterStatus} 
                 onChange={(e) => setFilterStatus(e.target.value)} 
-                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#32938b]/30 transition-all"
               >
             <option value="All">{t('employeesList.allStatuses')}</option>
             <option value="Aktiv">Aktiv</option>
@@ -939,7 +939,7 @@ export default function EmployeesList() {
               <select 
                 value={filterWorkplace} 
                 onChange={(e) => setFilterWorkplace(e.target.value)} 
-                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#32938b]/30 transition-all"
               >
             <option value="All">{t('employeesList.allWorkplaces')}</option>
             {siteOptions.map(site => <option key={site} value={site}>{site}</option>)}
@@ -947,7 +947,7 @@ export default function EmployeesList() {
               <select 
                 value={filterRole} 
                 onChange={(e) => setFilterRole(e.target.value)} 
-                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#32938b]/30 transition-all"
               >
             <option value="All">{t('employeesList.allRoles')}</option>
             <option value="user">Punonjës</option>
@@ -956,7 +956,7 @@ export default function EmployeesList() {
               <select 
                 value={filterTax} 
                 onChange={(e) => setFilterTax(e.target.value)} 
-                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#32938b]/30 transition-all"
               >
             <option value="All">{t('employeesList.allTaxTypes')}</option>
             <option value="NI">NI</option>
@@ -965,7 +965,7 @@ export default function EmployeesList() {
               <select 
                 value={sortBy} 
                 onChange={(e) => setSortBy(e.target.value)} 
-                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all"
+                className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#32938b]/30 transition-all"
               >
             <option value="default">{t('employeesList.noSorting')}</option>
             <option value="salaryHigh">{t('employeesList.salaryHigh')}</option>
