@@ -1182,7 +1182,7 @@ export default function ContractDetails() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* MODAL HEADER */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+            <div className="bg-gradient-to-r from-[#32938b] to-[#2a6b66] px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="bg-white/20 rounded-lg p-2">
@@ -1211,7 +1211,7 @@ export default function ContractDetails() {
                   </label>
                   <input
                     placeholder={t('contractDetails.writeInvoiceDescription')}
-                    className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all"
                     value={newInvoice.description}
                     onChange={e => setNewInvoice({ ...newInvoice, description: e.target.value })}
                   />
@@ -1229,7 +1229,7 @@ export default function ContractDetails() {
                           <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('contractDetails.description')}</label>
                           <input 
                             placeholder={t('contractDetails.workDescription')} 
-                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                             value={item.description} 
                             onChange={(e) => handleItemChange(index, "description", e.target.value)} 
                           />
@@ -1239,7 +1239,7 @@ export default function ContractDetails() {
                           <input 
                             type="number" 
                             placeholder="0" 
-                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                             value={item.shifts} 
                             onChange={(e) => handleItemChange(index, "shifts", e.target.value)} 
                           />
@@ -1250,7 +1250,7 @@ export default function ContractDetails() {
                             type="number" 
                             placeholder="0.00" 
                             step="0.01"
-                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                            className="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                             value={item.rate} 
                             onChange={(e) => handleItemChange(index, "rate", e.target.value)} 
                           />
@@ -1268,7 +1268,7 @@ export default function ContractDetails() {
                     
                     <button 
                       onClick={handleAddItem} 
-                      className="w-full bg-[#32938b]/5 hover:bg-blue-100 border-2 border-dashed border-blue-300 rounded-lg p-3 text-[#32938b] font-semibold transition-all flex items-center justify-center gap-2"
+                      className="w-full bg-[#32938b]/5 hover:bg-[#32938b]/10 border-2 border-dashed border-[#32938b]/30 rounded-lg p-3 text-[#32938b] font-semibold transition-all flex items-center justify-center gap-2"
                     >
                       <span className="text-xl">➕</span> {t('contractDetails.addNewRow')}
                     </button>
@@ -1286,7 +1286,7 @@ export default function ContractDetails() {
                         type="number" 
                         placeholder="0.00" 
                         step="0.01"
-                        className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" 
+                        className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all" 
                         value={newInvoice.other} 
                         onChange={(e) => setNewInvoice({ ...newInvoice, other: e.target.value })} 
                       />
@@ -1294,7 +1294,7 @@ export default function ContractDetails() {
                     <div className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 rounded-lg p-4 border-2 border-[#32938b]/20">
                       <div className="text-center">
                         <div className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-1">{t('contractDetails.invoiceTotal')}</div>
-                        <div className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                        <div className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66]">
                           £{grandTotal.toFixed(2)}
                         </div>
                       </div>
