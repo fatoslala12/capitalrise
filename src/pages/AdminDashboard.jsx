@@ -874,8 +874,8 @@ function VonesaFaturashChart() {
         
         // Get user language for translations
         const userLanguage = localStorage.getItem('language') || 'en';
-        const paidLabel = t('payments.paid');
-        const unpaidLabel = t('payments.unpaid');
+        const paidLabel = userLanguage === 'sq' ? 'E paguar' : 'Paid';
+        const unpaidLabel = userLanguage === 'sq' ? 'E papaguar' : 'Unpaid';
         
         const result = { [paidLabel]: 0, [unpaidLabel]: 0 };
         
@@ -899,8 +899,8 @@ function VonesaFaturashChart() {
         console.error('[ERROR] Failed to fetch invoices:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: `${t('payments.paid')}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[0] },
-          { name: `${t('payments.unpaid')}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[1] }
+          { name: `${userLanguage === 'sq' ? 'E paguar' : 'Paid'}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[0] },
+          { name: `${userLanguage === 'sq' ? 'E papaguar' : 'Unpaid'}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
@@ -965,8 +965,8 @@ function StatusiShpenzimeveChart() {
         
         // Get user language for translations
         const userLanguage = localStorage.getItem('language') || 'en';
-        const paidLabel = t('payments.paid');
-        const unpaidLabel = t('payments.unpaid');
+        const paidLabel = userLanguage === 'sq' ? 'E paguar' : 'Paid';
+        const unpaidLabel = userLanguage === 'sq' ? 'E papaguar' : 'Unpaid';
         
         // Llogarit statusin e pagesës për shpenzimet
         const result = { [paidLabel]: 0, [unpaidLabel]: 0 };
@@ -991,8 +991,8 @@ function StatusiShpenzimeveChart() {
         console.error('[ERROR] Failed to fetch expenses:', error);
         // Nëse ka error, vendos të dhëna bosh
         setData([
-          { name: `${t('payments.paid')}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[0] },
-          { name: `${t('payments.unpaid')}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[1] }
+          { name: `${userLanguage === 'sq' ? 'E paguar' : 'Paid'}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[0] },
+          { name: `${userLanguage === 'sq' ? 'E papaguar' : 'Unpaid'}: 0 (0%)`, value: 0, color: STATUS_CHART_COLORS[1] }
         ]);
       } finally {
         setLoading(false);
@@ -1173,6 +1173,7 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
 
 function StatusiKontrataveChart({ contracts }) {
   const [data, setData] = useState([]);
+  const { t } = useTranslation();
   
   // Ngjyra të ndryshme për çdo status
   const statusColors = {
