@@ -325,24 +325,24 @@ export default function EmployeeDetails() {
 
   if (!employee) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#32938b]/5 to-[#2a6b66]/5 flex items-center justify-center">
         <div className="text-center">
           <div className="relative">
-            <div className="animate-spin rounded-full h-32 w-32 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
+            <div className="animate-spin rounded-full h-32 w-32 border-4 border-[#32938b]/20 border-t-[#32938b] mx-auto mb-6"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
+              <div className="w-16 h-16 bg-gradient-to-r from-[#32938b] to-[#2a6b66] rounded-full animate-pulse"></div>
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] mb-4">
             {t('employeeDetails.loadingMessage')}
           </h2>
           <p className="text-gray-600 text-lg max-w-md mx-auto">
             {t('employeeDetails.loadingDescription')}
           </p>
           <div className="mt-6 flex justify-center space-x-2">
-            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"></div>
-            <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-3 h-3 bg-[#32938b] rounded-full animate-bounce"></div>
+            <div className="w-3 h-3 bg-[#2a6b66] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-3 h-3 bg-[#32938b] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
           </div>
         </div>
       </div>
@@ -685,7 +685,7 @@ export default function EmployeeDetails() {
         <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 ${
           toast.type === 'success' ? 'bg-green-500' : 
           toast.type === 'error' ? 'bg-red-500' : 
-          'bg-blue-500'
+          'bg-[#32938b]'
         }`}>
           {toast.message}
         </div>
@@ -694,10 +694,10 @@ export default function EmployeeDetails() {
       <div className="w-full px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-10 min-h-screen">
         {/* Quick Stats Cards - Mobile Optimized */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-6 mb-4 sm:mb-6 lg:mb-10">
-          <div className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-blue-200">
+          <div className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 text-[#32938b] rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-[#32938b]/20">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-blue-700 text-xs sm:text-sm lg:text-base font-medium truncate">{t('employeeDetails.totalHours')}</p>
+                <p className="text-[#32938b] text-xs sm:text-sm lg:text-base font-medium truncate">{t('employeeDetails.totalHours')}</p>
                 <p className="text-base sm:text-lg lg:text-3xl font-bold truncate">
                   {Object.values(workHistory).reduce((total, days) => {
                     return total + Object.values(days).reduce((dayTotal, val) => {
@@ -726,10 +726,10 @@ export default function EmployeeDetails() {
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-purple-200">
+          <div className="bg-gradient-to-r from-[#2a6b66]/10 to-[#1c514f]/10 text-[#2a6b66] rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-3 lg:p-6 shadow-md lg:shadow-lg border border-[#2a6b66]/20">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-purple-700 text-xs sm:text-sm lg:text-base font-medium truncate">{t('employeeDetails.sites')}</p>
+                <p className="text-[#2a6b66] text-xs sm:text-sm lg:text-base font-medium truncate">{t('employeeDetails.sites')}</p>
                 <p className="text-base sm:text-lg lg:text-3xl font-bold truncate">{employeeSites.length}</p>
               </div>
               <div className="text-lg sm:text-2xl lg:text-4xl ml-2 flex-shrink-0">🏗️</div>
@@ -749,7 +749,7 @@ export default function EmployeeDetails() {
           </div>
         </div>
         {/* Seksioni i detajeve të punonjësit me imazh klikueshëm */}
-        <div className="bg-white/80 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl border border-blue-100 p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-10">
+        <div className="bg-white/80 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl border border-[#32938b]/20 p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-10">
           <div className="flex flex-col md:flex-row items-center gap-3 sm:gap-4 lg:gap-8">
             {/* Avatar me iniciale ose foto - clickable për ndryshim */}
             <div 
@@ -787,11 +787,11 @@ export default function EmployeeDetails() {
                 <img
                   src={photo}
                   alt="Foto"
-                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full object-cover border-2 sm:border-4 border-blue-200 shadow-md lg:shadow-xl"
+                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full object-cover border-2 sm:border-4 border-[#32938b]/20 shadow-md lg:shadow-xl"
                 />
               ) : (
                 <div
-                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full flex items-center justify-center text-lg sm:text-xl md:text-2xl lg:text-4xl font-extrabold shadow-md lg:shadow-xl border-2 sm:border-4 border-blue-200"
+                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full flex items-center justify-center text-lg sm:text-xl md:text-2xl lg:text-4xl font-extrabold shadow-md lg:shadow-xl border-2 sm:border-4 border-[#32938b]/20"
                   style={{ background: getColorFromName(first_name + last_name), color: '#2d3748' }}
                 >
                   {getInitials(first_name, last_name)}
@@ -800,21 +800,21 @@ export default function EmployeeDetails() {
             </div>
             
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2 sm:mb-3 md:mb-4">
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] mb-2 sm:mb-3 md:mb-4">
                 {editing ? (
                   <div className="flex flex-col md:flex-row gap-2 md:gap-4">
                     <input
                       name="first_name"
                       value={employee.first_name}
                       onChange={handleChange}
-                      className="p-2 md:p-3 border-2 border-blue-200 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-full md:w-1/2 text-gray-800"
+                      className="p-2 md:p-3 border-2 border-[#32938b]/20 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-[#32938b]/30 w-full md:w-1/2 text-gray-800"
                       placeholder={t('employeeDetails.firstName')}
                     />
                     <input
                       name="last_name"
                       value={employee.last_name}
                       onChange={handleChange}
-                      className="p-2 md:p-3 border-2 border-blue-200 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-blue-300 w-full md:w-1/2 text-gray-800"
+                      className="p-2 md:p-3 border-2 border-[#32938b]/20 rounded-xl text-lg md:text-2xl font-bold focus:ring-2 focus:ring-[#32938b]/30 w-full md:w-1/2 text-gray-800"
                       placeholder={t('employeeDetails.lastName')}
                     />
                   </div>
@@ -824,14 +824,14 @@ export default function EmployeeDetails() {
               </h2>
               <div className="flex flex-wrap gap-1 sm:gap-2 md:gap-3 lg:gap-4 mb-3 sm:mb-4 md:mb-6 lg:mb-8 justify-center md:justify-start">
                 <span className={`px-2 sm:px-3 md:px-4 py-1 rounded-full border text-xs sm:text-sm md:text-base font-bold shadow-md ${statusColor}`}>{status}</span>
-                <span className="text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-blue-300 to-purple-300 px-2 sm:px-3 md:px-4 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
-                <span className="text-xs sm:text-sm font-semibold text-blue-600 bg-blue-50 px-2 sm:px-3 md:px-4 py-1 rounded-full border border-blue-100">{label_type}</span>
-                <span className="text-xs sm:text-sm font-semibold text-purple-600 bg-purple-50 px-2 sm:px-3 md:px-4 py-1 rounded-full border border-purple-100">{qualification}</span>
+                <span className="text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-[#32938b] to-[#2a6b66] px-2 sm:px-3 md:px-4 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
+                <span className="text-xs sm:text-sm font-semibold text-[#32938b] bg-[#32938b]/5 px-2 sm:px-3 md:px-4 py-1 rounded-full border border-[#32938b]/20">{label_type}</span>
+                <span className="text-xs sm:text-sm font-semibold text-[#2a6b66] bg-[#2a6b66]/5 px-2 sm:px-3 md:px-4 py-1 rounded-full border border-[#2a6b66]/20">{qualification}</span>
               </div>
               {editing ? (
                 /* Modern Edit Form */
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg sm:rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 border-2 border-blue-200 shadow-lg lg:shadow-xl mb-6 sm:mb-8">
-                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-800 mb-4 sm:mb-6 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-[#32938b]/5 to-[#2a6b66]/5 rounded-lg sm:rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 border-2 border-[#32938b]/20 shadow-lg lg:shadow-xl mb-6 sm:mb-8">
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#32938b] mb-4 sm:mb-6 flex items-center gap-2">
                     ✏️ {t('employeeDetails.editEmployeeData')}
                   </h3>
                   
@@ -847,7 +847,7 @@ export default function EmployeeDetails() {
                             name="email"
                             value={employee.email || ""}
                             onChange={handleChange}
-                            className="w-full p-2 sm:p-3 border-2 border-blue-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all text-sm sm:text-base"
+                            className="w-full p-2 sm:p-3 border-2 border-[#32938b]/20 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all text-sm sm:text-base"
                             placeholder={t('employeeDetails.emailAddress')}
                           />
                         </div>
@@ -857,7 +857,7 @@ export default function EmployeeDetails() {
                             name="phone"
                             value={employee.phone || ""}
                             onChange={handleChange}
-                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            className="w-full p-3 border-2 border-[#32938b]/20 rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all"
                             placeholder={t('employeeDetails.phoneNumber')}
                           />
                         </div>
@@ -870,7 +870,7 @@ export default function EmployeeDetails() {
                             name="nid"
                             value={employee.nid || ""}
                             onChange={handleChange}
-                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            className="w-full p-3 border-2 border-[#32938b]/20 rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all"
                             placeholder={t('employeeDetails.identityNumber')}
                           />
                         </div>
@@ -881,7 +881,7 @@ export default function EmployeeDetails() {
                             type="date"
                             value={employee.dob ? employee.dob.slice(0, 10) : ""}
                             onChange={handleChange}
-                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            className="w-full p-3 border-2 border-[#32938b]/20 rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all"
                           />
                         </div>
                       </div>
@@ -892,7 +892,7 @@ export default function EmployeeDetails() {
                           name="residence"
                           value={employee.residence || ""}
                           onChange={handleChange}
-                          className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                          className="w-full p-3 border-2 border-[#32938b]/20 rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all"
                                                       placeholder={t('employeeDetails.address')}
                         />
                       </div>
@@ -904,7 +904,7 @@ export default function EmployeeDetails() {
                             name="next_of_kin"
                             value={employee.next_of_kin || ""}
                             onChange={handleChange}
-                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            className="w-full p-3 border-2 border-[#32938b]/20 rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all"
                             placeholder={t('employeeDetails.closestPerson')}
                           />
                         </div>
@@ -914,7 +914,7 @@ export default function EmployeeDetails() {
                             name="next_of_kin_phone"
                             value={employee.next_of_kin_phone || ""}
                             onChange={handleChange}
-                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            className="w-full p-3 border-2 border-[#32938b]/20 rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all"
                             placeholder={t('employeeDetails.closestPersonPhone')}
                           />
                         </div>
@@ -934,7 +934,7 @@ export default function EmployeeDetails() {
                             step="0.01"
                             value={employee.hourly_rate || ""}
                             onChange={handleChange}
-                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            className="w-full p-3 border-2 border-[#32938b]/20 rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all"
                             placeholder="0.00"
                           />
                         </div>
@@ -944,7 +944,7 @@ export default function EmployeeDetails() {
                             name="qualification"
                             value={employee.qualification || ""}
                             onChange={handleChange}
-                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all"
+                            className="w-full p-3 border-2 border-[#32938b]/20 rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all"
                             placeholder={t('employeeDetails.professionalQualification')}
                           />
                         </div>
@@ -957,7 +957,7 @@ export default function EmployeeDetails() {
                             name="status"
                             value={employee.status || "Aktiv"}
                             onChange={handleChange}
-                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white"
+                            className="w-full p-3 border-2 border-[#32938b]/20 rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all bg-white"
                           >
                             <option value="Aktiv">✅ {t('employeeDetails.active')}</option>
                             <option value="Pasiv">❌ {t('employeeDetails.passive')}</option>
@@ -969,7 +969,7 @@ export default function EmployeeDetails() {
                             name="label_type"
                             value={employee.label_type || "UTR"}
                             onChange={handleChange}
-                            className="w-full p-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white"
+                            className="w-full p-3 border-2 border-[#32938b]/20 rounded-xl focus:ring-2 focus:ring-[#32938b]/30 focus:border-[#32938b] transition-all bg-white"
                           >
                             <option value="UTR">🏢 {t('employeeDetails.UTR')}</option>
                             <option value="NI">👷 {t('employeeDetails.NI')}</option>
@@ -980,7 +980,7 @@ export default function EmployeeDetails() {
                       {/* Site Management */}
                       <div>
                         <label className="block text-sm font-medium text-gray-600 mb-2">🏗️ {t('employeeDetails.workplaces')}</label>
-                        <div className="bg-white rounded-xl border-2 border-blue-200 p-4 max-h-40 overflow-y-auto">
+                        <div className="bg-white rounded-xl border-2 border-[#32938b]/20 p-4 max-h-40 overflow-y-auto">
                           <div className="space-y-2">
                             {availableSites.map(site => (
                               <label key={site} className="flex items-center gap-3 p-2 hover:bg-blue-50 rounded-lg cursor-pointer transition-all">
@@ -1005,12 +1005,12 @@ export default function EmployeeDetails() {
                                 {selectedWorkplaces.map(site => (
                                   <span
                                     key={site}
-                                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full border border-blue-200"
+                                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-[#32938b] text-xs rounded-full border border-[#32938b]/20"
                                   >
                                     {site}
                                     <button
                                       onClick={() => toggleWorkplace(site)}
-                                      className="text-blue-600 hover:text-blue-800 font-bold"
+                                      className="text-blue-600 hover:text-[#32938b] font-bold"
                                     >
                                       ×
                                     </button>
@@ -1100,19 +1100,19 @@ export default function EmployeeDetails() {
           </div>
         </div>
 
-        <div className="bg-white/80 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl border border-blue-100 p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-10">
-          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-blue-800 mb-3 sm:mb-4 flex items-center gap-2">📄 {t('employeeDetailsExtended.documents')}</h3>
+        <div className="bg-white/80 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl border border-[#32938b]/20 p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-10">
+          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-[#32938b] mb-3 sm:mb-4 flex items-center gap-2">📄 {t('employeeDetailsExtended.documents')}</h3>
           <div className="flex flex-col md:flex-row flex-wrap gap-2 sm:gap-3 lg:gap-4 mb-3 sm:mb-4 items-center">
             <input
               type="text"
               value={searchDoc}
               onChange={e => setSearchDoc(e.target.value)}
               placeholder={t('employeeDetailsExtended.searchDocument')}
-              className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl border-2 border-blue-200 w-full md:w-auto text-sm sm:text-base"
+              className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl border-2 border-[#32938b]/20 w-full md:w-auto text-sm sm:text-base"
             />
             <button
               onClick={exportProfileToPDF}
-              className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold shadow hover:from-purple-200 hover:to-blue-200 transition text-xs sm:text-sm lg:text-base border border-purple-200"
+              className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold shadow hover:from-purple-200 hover:to-blue-200 transition text-xs sm:text-sm lg:text-base border border-[#2a6b66]/20"
             >
               ⬇️ {t('employeeDetailsExtended.exportPDF')}
             </button>
@@ -1126,7 +1126,7 @@ export default function EmployeeDetails() {
           <input type="file" onChange={handleDocumentUpload} className="mb-4 w-full" />
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
-              <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-3 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+              <div className="bg-gradient-to-r from-[#32938b] to-[#2a6b66] h-3 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
             </div>
           )}
           <ul className="space-y-2">
@@ -1138,7 +1138,7 @@ export default function EmployeeDetails() {
                     download={doc.file_name}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-700 underline font-semibold flex items-center gap-2 text-sm md:text-base"
+                    className="text-[#32938b] underline font-semibold flex items-center gap-2 text-sm md:text-base"
                   >
                     <span>⬇️</span>{doc.file_name}
                   </a>
@@ -1166,19 +1166,19 @@ export default function EmployeeDetails() {
           </ul>
         </div>
 
-        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10">
-          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 {t('employeeDetailsExtended.workHoursHistory')}</h3>
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-[#32938b]/20 p-4 md:p-6 mb-6 md:mb-10">
+          <h3 className="text-lg md:text-xl font-bold text-[#32938b] mb-4 flex items-center gap-2">🕒 {t('employeeDetailsExtended.workHoursHistory')}</h3>
           <div className="overflow-x-auto">
                             <EmployeeWorkHistory workHistory={workHistory} paidStatus={paidStatus} employee={employee} t={t} />
           </div>
         </div>
 
         {/* Seksioni i kalendarit të orëve të punës */}
-        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-2xl border-2 border-blue-200 p-4 md:p-8 mb-6 md:mb-10 mt-6 md:mt-10">
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-2xl border-2 border-[#32938b]/20 p-4 md:p-8 mb-6 md:mb-10 mt-6 md:mt-10">
           <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📅 {t('employeeDetailsExtended.workHoursCalendar')}</h3>
           <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 mb-4 items-center">
-            <label className="font-semibold text-blue-700 text-sm md:text-base">{t('employeeDetailsExtended.filterBySite')}</label>
-            <select value={filterSite} onChange={e => setFilterSite(e.target.value)} className="p-2 rounded-xl border-2 border-blue-200 text-sm md:text-base">
+            <label className="font-semibold text-[#32938b] text-sm md:text-base">{t('employeeDetailsExtended.filterBySite')}</label>
+            <select value={filterSite} onChange={e => setFilterSite(e.target.value)} className="p-2 rounded-xl border-2 border-[#32938b]/20 text-sm md:text-base">
               <option value="">{t('employeeDetailsExtended.all')}</option>
               {employeeSites.map(site => (
                 <option key={site} value={site}>{site}</option>
@@ -1215,13 +1215,13 @@ export default function EmployeeDetails() {
               }
               return null;
             }}
-            className="border-2 border-blue-200 rounded-xl md:rounded-2xl shadow-xl w-full text-sm md:text-lg"
+            className="border-2 border-[#32938b]/20 rounded-xl md:rounded-2xl shadow-xl w-full text-sm md:text-lg"
           />
           <div className="flex gap-2 md:gap-4 mt-4 md:mt-6 flex-wrap justify-center">
             {employeeSites.map((site) => (
-              <div key={site} className="flex items-center gap-2 bg-white/80 rounded-xl px-3 md:px-4 py-2 shadow-md border border-blue-100">
+              <div key={site} className="flex items-center gap-2 bg-white/80 rounded-xl px-3 md:px-4 py-2 shadow-md border border-[#32938b]/20">
                 <span className="inline-block w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-white shadow-md" style={{ background: currentSiteColors[site] }}></span>
-                <span className="text-sm md:text-lg font-bold text-blue-800">{site}</span>
+                <span className="text-sm md:text-lg font-bold text-[#32938b]">{site}</span>
               </div>
             ))}
           </div>
@@ -1230,7 +1230,7 @@ export default function EmployeeDetails() {
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
               <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8 min-w-[280px] md:min-w-[320px] max-w-md relative animate-fade-in">
                 <button onClick={() => setSelectedDate(null)} className="absolute top-2 right-2 text-xl md:text-2xl text-gray-400 hover:text-red-500">&times;</button>
-                <h4 className="text-lg md:text-xl font-bold mb-3 md:mb-4 text-blue-700">Detajet për {selectedDate.toLocaleDateString()}</h4>
+                <h4 className="text-lg md:text-xl font-bold mb-3 md:mb-4 text-[#32938b]">Detajet për {selectedDate.toLocaleDateString()}</h4>
                 {filteredWorkDays[selectedDate.toISOString().slice(0, 10)]?.length ? (
                   <ul className="space-y-2 md:space-y-3">
                     {filteredWorkDays[selectedDate.toISOString().slice(0, 10)].map((entry, idx) => (
@@ -1250,9 +1250,9 @@ export default function EmployeeDetails() {
         </div>
 
         {/* Timeline vertikal poshtë kalendarit */}
-        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10 mt-6 md:mt-10">
-          <h3 className="text-lg md:text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">🕒 {t('employeeDetailsExtended.workHoursTimeline')}</h3>
-          <div className="border-l-4 border-blue-200 pl-4 md:pl-6 space-y-4 md:space-y-8">
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-[#32938b]/20 p-4 md:p-6 mb-6 md:mb-10 mt-6 md:mt-10">
+          <h3 className="text-lg md:text-xl font-bold text-[#32938b] mb-4 flex items-center gap-2">🕒 {t('employeeDetailsExtended.workHoursTimeline')}</h3>
+          <div className="border-l-4 border-[#32938b]/20 pl-4 md:pl-6 space-y-4 md:space-y-8">
             {Object.entries(workHistory).map(([weekLabel, days], idx) => {
               let totalHours = 0;
               let siteMap = {};
@@ -1266,8 +1266,8 @@ export default function EmployeeDetails() {
               return (
                 <div key={weekLabel} className="relative">
                   <div className="absolute -left-5 md:-left-7 top-2 w-3 h-3 md:w-4 md:h-4 rounded-full border-2" style={{ background: isPaid ? '#bbf7d0' : '#fecaca', borderColor: isPaid ? '#22c55e' : '#ef4444' }}></div>
-                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 bg-blue-50 rounded-xl p-3 md:p-4 shadow border border-blue-100">
-                    <div className="font-bold text-blue-700 text-sm md:text-base min-w-[140px] md:min-w-[160px]">{weekLabel}</div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 bg-blue-50 rounded-xl p-3 md:p-4 shadow border border-[#32938b]/20">
+                    <div className="font-bold text-[#32938b] text-sm md:text-base min-w-[140px] md:min-w-[160px]">{weekLabel}</div>
                     <div className="text-base md:text-lg font-semibold">{t('employeeDetailsExtended.totalHoursLabel')} <span className="text-blue-900">{totalHours}</span></div>
                     <div className="flex flex-wrap gap-1 md:gap-2 items-center">
                       {Object.entries(siteMap).map(([site, hours]) => (
@@ -1289,7 +1289,7 @@ export default function EmployeeDetails() {
                           value={weekNotes[weekLabel] || ''}
                           onChange={e => setWeekNotes(prev => ({ ...prev, [weekLabel]: e.target.value }))}
                           placeholder={t('employeeDetailsExtended.writeCommentForWeek')}
-                          className="p-2 rounded-xl border-2 border-blue-200 text-xs md:text-sm flex-1"
+                          className="p-2 rounded-xl border-2 border-[#32938b]/20 text-xs md:text-sm flex-1"
                         />
                         <button
                           onClick={() => saveWeekNote(weekLabel, weekNotes[weekLabel] || '')}
@@ -1300,7 +1300,7 @@ export default function EmployeeDetails() {
                         </button>
                       </div>
                       {weekNotes[weekLabel] && (
-                        <span className="text-xs text-blue-700 italic">{weekNotes[weekLabel]}</span>
+                        <span className="text-xs text-[#32938b] italic">{weekNotes[weekLabel]}</span>
                       )}
                     </div>
                   </div>
@@ -1311,7 +1311,7 @@ export default function EmployeeDetails() {
         </div>
 
         {/* Pie chart për ndarjen e orëve sipas site-ve */}
-        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-6 mb-6 md:mb-10 mt-6 md:mt-10 flex flex-col items-center">
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-[#32938b]/20 p-4 md:p-6 mb-6 md:mb-10 mt-6 md:mt-10 flex flex-col items-center">
           <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📊 {t('employeeDetailsExtended.hoursDistributionBySite')}</h3>
           <div className="w-full max-w-sm md:max-w-md">
             <Pie data={pieData} options={{
@@ -1332,16 +1332,16 @@ export default function EmployeeDetails() {
         </div>
 
         {/* Seksioni i Detyrave */}
-        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-blue-100 p-4 md:p-8 mb-6 md:mb-10 mt-6 md:mt-10">
+        <div className="w-full bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-[#32938b]/20 p-4 md:p-8 mb-6 md:mb-10 mt-6 md:mt-10">
           <h3 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 mb-4 md:mb-6 flex items-center gap-2">📋 {t('employeeDetailsExtended.myTasks')}</h3>
           
           {/* Filtra për detyrat */}
           <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 mb-4 md:mb-6 items-center">
-            <label className="font-semibold text-blue-700 text-sm md:text-lg">{t('employeeDetailsExtended.filterByStatus')}</label>
+            <label className="font-semibold text-[#32938b] text-sm md:text-lg">{t('employeeDetailsExtended.filterByStatus')}</label>
             <select 
               value={taskStatusFilter} 
               onChange={e => setTaskStatusFilter(e.target.value)} 
-              className="p-2 md:p-3 rounded-xl border-2 border-blue-200 text-sm md:text-lg"
+              className="p-2 md:p-3 rounded-xl border-2 border-[#32938b]/20 text-sm md:text-lg"
             >
               <option value="all">{t('employeeDetailsExtended.all')}</option>
               <option value="pending">⏳ Në pritje</option>
@@ -1350,11 +1350,11 @@ export default function EmployeeDetails() {
               <option value="cancelled">❌ Anuluar</option>
             </select>
             
-            <label className="font-semibold text-blue-700 text-sm md:text-lg md:ml-4">{t('employeeDetailsExtended.filterByPriority')}</label>
+            <label className="font-semibold text-[#32938b] text-sm md:text-lg md:ml-4">{t('employeeDetailsExtended.filterByPriority')}</label>
             <select 
               value={taskPriorityFilter} 
               onChange={e => setTaskPriorityFilter(e.target.value)} 
-              className="p-2 md:p-3 rounded-xl border-2 border-blue-200 text-sm md:text-lg"
+              className="p-2 md:p-3 rounded-xl border-2 border-[#32938b]/20 text-sm md:text-lg"
             >
               <option value="all">{t('employeeDetailsExtended.all')}</option>
               <option value="high">🔴 E lartë</option>
@@ -1370,7 +1370,7 @@ export default function EmployeeDetails() {
               .filter(task => taskStatusFilter === "all" || task.status === taskStatusFilter)
               .filter(task => taskPriorityFilter === "all" || task.priority === taskPriorityFilter)
               .map((task, index) => (
-                <div key={task.id || index} className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 md:p-6 shadow-lg border border-blue-200 hover:shadow-xl transition-all duration-300">
+                <div key={task.id || index} className="bg-gradient-to-r from-[#32938b]/5 to-[#2a6b66]/5 rounded-xl p-4 md:p-6 shadow-lg border border-[#32938b]/20 hover:shadow-xl transition-all duration-300">
                   <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-4">
                     {/* Prioriteti dhe statusi */}
                     <div className="flex flex-col gap-2 min-w-[180px] md:min-w-[200px]">
@@ -1382,7 +1382,7 @@ export default function EmployeeDetails() {
                       </div>
                       <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold border ${
                         task.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' :
-                        task.status === 'in_progress' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                        task.status === 'in_progress' ? 'bg-blue-100 text-[#32938b] border-[#32938b]/20' :
                         task.status === 'cancelled' ? 'bg-red-100 text-red-700 border-red-200' :
                         'bg-yellow-100 text-yellow-700 border-yellow-200'
                       }`}>
@@ -1394,7 +1394,7 @@ export default function EmployeeDetails() {
 
                     {/* Detajet kryesore */}
                     <div className="flex-1">
-                      <h4 className="text-lg md:text-xl font-bold text-blue-800 mb-2">{task.title}</h4>
+                      <h4 className="text-lg md:text-xl font-bold text-[#32938b] mb-2">{task.title}</h4>
                       <p className="text-gray-700 mb-3 text-sm md:text-lg">{task.description}</p>
                       
                       <div className="flex flex-col md:flex-row flex-wrap gap-2 md:gap-4 text-sm md:text-base">
@@ -1426,7 +1426,7 @@ export default function EmployeeDetails() {
                     <div className="flex flex-col gap-2 min-w-[100px] md:min-w-[120px]">
                       <button 
                         onClick={() => navigate(`/tasks/${task.id}`)}
-                        className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-200 hover:to-purple-200 transition-all duration-300 text-xs md:text-sm border border-blue-200"
+                        className="bg-gradient-to-r from-blue-100 to-purple-100 text-[#32938b] px-3 md:px-4 py-2 rounded-xl font-bold shadow hover:from-blue-200 hover:to-purple-200 transition-all duration-300 text-xs md:text-sm border border-[#32938b]/20"
                       >
                         👁️ {t('employeeDetailsExtended.view')}
                       </button>
@@ -1448,7 +1448,7 @@ export default function EmployeeDetails() {
                 <p className="text-gray-500 text-sm md:text-lg">{t('employeeDetails.noTasksAssignedDescription')}</p>
                 <button 
                   onClick={() => navigate('/tasks')}
-                  className="mt-4 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow hover:from-blue-200 hover:to-purple-200 transition-all duration-300 text-sm md:text-base border border-blue-200"
+                  className="mt-4 bg-gradient-to-r from-blue-100 to-purple-100 text-[#32938b] px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow hover:from-blue-200 hover:to-purple-200 transition-all duration-300 text-sm md:text-base border border-[#32938b]/20"
                 >
                   📋 {t('employeeDetailsExtended.viewAllTasks')}
                 </button>
@@ -1503,7 +1503,7 @@ function EmployeeWorkHistory({ workHistory, paidStatus, employee, t }) {
               <td className="p-2 border text-xs md:text-sm">{weekLabel}</td>
               <td className="p-2 border text-xs md:text-sm">{totalHours}</td>
               <td className="p-2 border text-green-700 font-bold text-xs md:text-sm">£{gross.toFixed(2)}</td>
-              <td className="p-2 border text-blue-700 font-bold text-xs md:text-sm">£{net.toFixed(2)}</td>
+              <td className="p-2 border text-[#32938b] font-bold text-xs md:text-sm">£{net.toFixed(2)}</td>
               <td className="p-2 border text-xs md:text-sm">{siteBreakdown}</td>
               <td className="p-2 border">
                 <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold shadow-md ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
