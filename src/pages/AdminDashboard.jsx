@@ -913,7 +913,7 @@ function VonesaFaturashChart() {
     return <div className="text-center py-8">{tr('adminDashboard.loading')}</div>;
   }
 
-  if (data.length === 0) {
+  if (data.length === 0 || data.every(item => item.value === 0)) {
     return <div className="text-center text-gray-400 py-8">{tr('adminDashboard.noInvoiceStatusData')}</div>;
   }
 
@@ -1004,7 +1004,7 @@ function StatusiShpenzimeveChart() {
     return <div className="text-center py-8">{tr('adminDashboard.loading')}</div>;
   }
 
-  if (data.length === 0) {
+  if (data.length === 0 || data.every(item => item.value === 0)) {
     return <div className="text-center text-gray-400 py-8">{tr('adminDashboard.noExpenseStatusData')}</div>;
   }
 
