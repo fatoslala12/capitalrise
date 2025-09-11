@@ -986,7 +986,7 @@ export default function EmployeesList() {
             {/* DESKTOP TABLE */}
             <div className="hidden lg:block overflow-x-auto">
               <table className="w-full text-sm bg-white shadow-lg rounded-xl overflow-hidden">
-                <thead className="bg-gradient-to-r from-blue-100 to-purple-100">
+                <thead className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10">
                   <tr>
                     <th className="py-3 px-2 text-left font-semibold text-slate-800">{t('employeesList.photo')}</th>
                     <th className="py-3 px-2 text-left font-semibold text-slate-800">{t('employeesList.id')}</th>
@@ -1013,13 +1013,13 @@ export default function EmployeesList() {
                       {emp.photo ? (
                             <img src={emp.photo} alt="Foto" className="w-10 h-10 rounded-full object-cover border-2 border-slate-200 shadow" />
                       ) : (
-                            <span className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-700 text-sm font-bold">{firstName[0]}{lastName[0]}</span>
+                            <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#32938b]/10 text-[#32938b] text-sm font-bold">{firstName[0]}{lastName[0]}</span>
                       )}
                     </td>
                         <td className="py-3 px-2 font-bold text-slate-700">{emp.id || ""}</td>
                         <td className="py-3 px-2 font-semibold text-slate-800">{firstName} {lastName}</td>
                         <td className="py-3 px-2 text-center">
-                          <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-2 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
+                          <span className="text-xs font-semibold text-white bg-gradient-to-r from-[#32938b] to-[#2a6b66] px-2 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
                     </td>
                         <td className="py-3 px-2 text-center text-xs text-slate-600">
                       {Array.isArray(emp.workplace) ? emp.workplace.join(", ") : (emp.workplace || "")}
@@ -1029,10 +1029,10 @@ export default function EmployeesList() {
                         <td className="py-3 px-2 text-center">
                           <span className={`px-3 py-1 rounded-full border text-xs font-bold shadow-md ${statusColor}`}>{status}</span>
                     </td>
-                        <td className="py-3 px-2 text-center font-semibold text-blue-600">{emp.labelType || emp.label_type || ""}</td>
+                        <td className="py-3 px-2 text-center font-semibold text-[#32938b]">{emp.labelType || emp.label_type || ""}</td>
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-1 justify-center">
-                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-1.5 text-blue-600 hover:text-blue-800 hover:scale-110 transition-all text-sm" title={t('employeesList.viewDetails')}>
+                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-1.5 text-[#32938b] hover:text-[#2a6b66] hover:scale-110 transition-all text-sm" title={t('employeesList.viewDetails')}>
                         <FaEye />
                       </button>
                       <button
@@ -1069,7 +1069,7 @@ export default function EmployeesList() {
                         {emp.photo ? (
                           <img src={emp.photo} alt="Foto" className="w-12 h-12 rounded-full object-cover border-2 border-slate-200 shadow" />
                         ) : (
-                          <span className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-700 text-sm font-bold">{firstName[0]}{lastName[0]}</span>
+                          <span className="flex items-center justify-center w-12 h-12 rounded-full bg-[#32938b]/10 text-[#32938b] text-sm font-bold">{firstName[0]}{lastName[0]}</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -1080,7 +1080,7 @@ export default function EmployeesList() {
                         <div className="grid grid-cols-2 gap-2 text-sm text-slate-600 mb-3">
                           <div><span className="font-medium">ID:</span> {emp.id}</div>
                           <div><span className="font-medium">Tel:</span> {emp.phone || "N/A"}</div>
-                          <div><span className="font-medium">Roli:</span> <span className="text-xs font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 px-2 py-0.5 rounded-full">{role}</span></div>
+                          <div><span className="font-medium">Roli:</span> <span className="text-xs font-semibold text-white bg-gradient-to-r from-[#32938b] to-[#2a6b66] px-2 py-0.5 rounded-full">{role}</span></div>
                           <div><span className="font-medium">Paga:</span> {emp.hourlyRate !== undefined && emp.hourlyRate !== null && emp.hourlyRate !== "" ? `£${emp.hourlyRate}` : (emp.hourly_rate !== undefined && emp.hourly_rate !== null && emp.hourly_rate !== "" ? `£${emp.hourly_rate}` : "N/A")}</div>
                         </div>
                         <div className="text-xs text-slate-500 mb-3">
@@ -1091,7 +1091,7 @@ export default function EmployeesList() {
                             <span className="font-medium">Taksimi:</span> {emp.labelType || emp.label_type || "N/A"}
                           </div>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 text-blue-600 hover:text-blue-800 hover:scale-110 transition-all" title="Shiko Detaje">
+                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 text-[#32938b] hover:text-[#2a6b66] hover:scale-110 transition-all" title="Shiko Detaje">
                               <FaEye />
                             </button>
                             <button
@@ -1119,7 +1119,7 @@ export default function EmployeesList() {
         <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg border border-slate-200/50 p-4 sm:p-6 text-center">
         <button
           onClick={exportToCSV}
-            className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 mx-auto hover:shadow-xl hover:scale-105"
+            className="bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 mx-auto hover:shadow-xl hover:scale-105"
         >
             <span className="text-xl">📤</span> 
             <span className="hidden sm:inline">{t('employeesList.exportEmployeesCSV')}</span>
