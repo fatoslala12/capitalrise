@@ -19,8 +19,6 @@ const adminMenu = [
   { path: "/admin/reports", label: "📈 Raportet" },
   { path: "/admin/backup", label: "💾 Backup" },
   { path: "/admin/audit-trail", label: "🔍 Audit Trail" },
-  { path: "/admin/notifications", label: "🔔 Njoftimet" },
-  { path: "/admin/notifications/analytics", label: "📊 Analytics" },
   { path: "/admin/settings", label: "⚙️ Cilësimet" },
 ];
 

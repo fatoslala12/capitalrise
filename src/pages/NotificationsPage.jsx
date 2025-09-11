@@ -262,167 +262,176 @@ const NotificationsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          🔔 {safeT('notifications.title', 'Njoftimet')}
-        </h1>
-        <p className="text-gray-600">
-          {safeT('notifications.subtitle', 'Menaxhoni të gjitha njoftimet e sistemit')}
-        </p>
-      </div>
-
-      {/* Controls */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex flex-wrap gap-4 items-center justify-between">
-          {/* Search */}
-          <div className="flex-1 min-w-64">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder={safeT('notifications.searchPlaceholder', 'Kërko njoftime...')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+    <div className="min-h-screen bg-gradient-to-br from-[#32938b]/5 via-white to-[#2a6b66]/5">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 rounded-2xl shadow-lg p-8 mb-8 border border-[#32938b]/20">
+          <div className="flex items-center gap-4">
+            <div className="bg-[#32938b]/10 rounded-xl p-3 shadow-sm">
+              <span className="text-3xl">🔔</span>
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] mb-2">
+                {safeT('notifications.title', 'Njoftimet')}
+              </h1>
+              <p className="text-lg text-[#2a6b66]/80">
+                {safeT('notifications.subtitle', 'Menaxhoni të gjitha njoftimet e sistemit')}
+              </p>
             </div>
           </div>
-
-          {/* Filters */}
-          <div className="flex gap-4">
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">{safeT('notifications.allTypes', 'Të gjitha tipet')}</option>
-              <option value="info">{safeT('notifications.types.info', 'Informacion')}</option>
-              <option value="success">{safeT('notifications.types.success', 'Sukses')}</option>
-              <option value="warning">{safeT('notifications.types.warning', 'Paralajmërim')}</option>
-              <option value="error">{safeT('notifications.types.error', 'Gabim')}</option>
-              <option value="payment">{safeT('notifications.types.payment', 'Pagesë')}</option>
-              <option value="task">{safeT('notifications.types.task', 'Detyrë')}</option>
-              <option value="contract">{safeT('notifications.types.contract', 'Kontratë')}</option>
-              <option value="employee">{safeT('notifications.types.employee', 'Punonjës')}</option>
-            </select>
-
-            <select
-              value={filterRead}
-              onChange={(e) => setFilterRead(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">{safeT('notifications.all', 'Të gjitha')}</option>
-              <option value="read">{safeT('notifications.read', 'E lexuara')}</option>
-              <option value="unread">{safeT('notifications.unread', 'E palexuara')}</option>
-            </select>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-2">
-            {selectedNotifications.length > 0 && (
-              <>
-                <button
-                  onClick={deleteSelected}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  <Trash2 size={16} />
-                  {safeT('notifications.deleteSelected', 'Fshi të zgjedhurat')} ({selectedNotifications.length})
-                </button>
-                <button
-                  onClick={exportToCSV}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  <Download size={16} />
-                  {safeT('notifications.exportCSV', 'Eksporto CSV')}
-                </button>
-              </>
-            )}
-            <button
-              onClick={exportToPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <FileText size={16} />
-                                {safeT('notifications.exportPDF', 'Eksporto PDF')}
-            </button>
-            <button
-              onClick={testEmailNotification}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              <Bell size={16} />
-                                {safeT('notifications.testEmail', 'Test Email')}
-            </button>
-          </div>
         </div>
-      </div>
 
-      {/* Notifications List */}
-      <div className="bg-white rounded-lg shadow-md">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {safeT('notifications.notifications', 'Njoftimet')} ({filteredNotifications.length})
-            </h2>
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2">
+        {/* Controls */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-[#32938b]/20">
+          <div className="flex flex-wrap gap-4 items-center justify-between">
+            {/* Search */}
+            <div className="flex-1 min-w-64">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#32938b]" size={20} />
                 <input
-                  type="checkbox"
-                  checked={selectAll}
-                  onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  type="text"
+                  placeholder={safeT('notifications.searchPlaceholder', 'Kërko njoftime...')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-[#32938b]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b] transition-colors"
                 />
-                <span className="text-sm text-gray-600">{safeT('notifications.selectAll', 'Zgjidh të gjitha')}</span>
-              </label>
-              <button
-                onClick={markAllAsRead}
-                className="flex items-center gap-2 px-3 py-1 text-sm bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors"
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="flex gap-4">
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="px-4 py-3 border border-[#32938b]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b] transition-colors"
               >
-                <CheckCheck size={16} />
-                                  {safeT('notifications.markAllAsRead', 'Shëno të gjitha si të lexuara')}
+                <option value="all">{safeT('notifications.allTypes', 'Të gjitha tipet')}</option>
+                <option value="info">{safeT('notifications.types.info', 'Informacion')}</option>
+                <option value="success">{safeT('notifications.types.success', 'Sukses')}</option>
+                <option value="warning">{safeT('notifications.types.warning', 'Paralajmërim')}</option>
+                <option value="error">{safeT('notifications.types.error', 'Gabim')}</option>
+                <option value="payment">{safeT('notifications.types.payment', 'Pagesë')}</option>
+                <option value="task">{safeT('notifications.types.task', 'Detyrë')}</option>
+                <option value="contract">{safeT('notifications.types.contract', 'Kontratë')}</option>
+                <option value="employee">{safeT('notifications.types.employee', 'Punonjës')}</option>
+              </select>
+
+              <select
+                value={filterRead}
+                onChange={(e) => setFilterRead(e.target.value)}
+                className="px-4 py-3 border border-[#32938b]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b] transition-colors"
+              >
+                <option value="all">{safeT('notifications.all', 'Të gjitha')}</option>
+                <option value="read">{safeT('notifications.read', 'E lexuara')}</option>
+                <option value="unread">{safeT('notifications.unread', 'E palexuara')}</option>
+              </select>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              {selectedNotifications.length > 0 && (
+                <>
+                  <button
+                    onClick={deleteSelected}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                    {safeT('notifications.deleteSelected', 'Fshi të zgjedhurat')} ({selectedNotifications.length})
+                  </button>
+                  <button
+                    onClick={exportToCSV}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#32938b] text-white rounded-lg hover:bg-[#2a6b66] transition-colors"
+                  >
+                    <Download size={16} />
+                    {safeT('notifications.exportCSV', 'Eksporto CSV')}
+                  </button>
+                </>
+              )}
+              <button
+                onClick={exportToPDF}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                <FileText size={16} />
+                {safeT('notifications.exportPDF', 'Eksporto PDF')}
+              </button>
+              <button
+                onClick={testEmailNotification}
+                className="flex items-center gap-2 px-4 py-2 bg-[#2a6b66] text-white rounded-lg hover:bg-[#1c514f] transition-colors"
+              >
+                <Bell size={16} />
+                {safeT('notifications.testEmail', 'Test Email')}
               </button>
             </div>
-          </div>
         </div>
+      </div>
 
-        <div className="divide-y divide-gray-200">
-          {filteredNotifications.length === 0 ? (
-            <div className="p-8 text-center">
-              <Bell className="mx-auto text-gray-400 mb-4" size={48} />
-              <p className="text-gray-500">{safeT('notifications.noNotifications', 'Nuk ka njoftime për të shfaqur')}</p>
+        {/* Notifications List */}
+        <div className="bg-white rounded-xl shadow-lg border border-[#32938b]/20">
+          <div className="p-6 border-b border-[#32938b]/20 bg-gradient-to-r from-[#32938b]/5 to-[#2a6b66]/5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-[#32938b]">
+                {safeT('notifications.notifications', 'Njoftimet')} ({filteredNotifications.length})
+              </h2>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={handleSelectAll}
+                    className="rounded border-[#32938b]/30 text-[#32938b] focus:ring-[#32938b]"
+                  />
+                  <span className="text-sm text-[#2a6b66]">{safeT('notifications.selectAll', 'Zgjidh të gjitha')}</span>
+                </label>
+                <button
+                  onClick={markAllAsRead}
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-[#32938b]/10 text-[#32938b] rounded-lg hover:bg-[#32938b]/20 transition-colors"
+                >
+                  <CheckCheck size={16} />
+                  {safeT('notifications.markAllAsRead', 'Shëno të gjitha si të lexuara')}
+                </button>
+              </div>
             </div>
-          ) : (
-            filteredNotifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`p-6 hover:bg-gray-50 transition-colors ${
-                  !notification.isRead ? 'bg-blue-50' : ''
-                }`}
-              >
+          </div>
+
+          <div className="divide-y divide-[#32938b]/10">
+            {filteredNotifications.length === 0 ? (
+              <div className="p-8 text-center">
+                <Bell className="mx-auto text-[#32938b]/40 mb-4" size={48} />
+                <p className="text-[#2a6b66]/60">{safeT('notifications.noNotifications', 'Nuk ka njoftime për të shfaqur')}</p>
+              </div>
+            ) : (
+              filteredNotifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-6 hover:bg-[#32938b]/5 transition-colors ${
+                    !notification.isRead ? 'bg-[#32938b]/10' : ''
+                  }`}
+                >
                 <div className="flex items-start gap-4">
                   <div className="flex items-center gap-3 flex-1">
                     <input
                       type="checkbox"
                       checked={selectedNotifications.includes(notification.id)}
                       onChange={() => handleSelectNotification(notification.id)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-[#32938b]/30 text-[#32938b] focus:ring-[#32938b]"
                     />
                     <span className="text-2xl">{getNotificationIcon(notification.type)}</span>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium text-gray-900">{notification.title}</h3>
+                        <h3 className="font-medium text-[#2a6b66]">{notification.title}</h3>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           notification.isRead 
-                            ? 'bg-green-100 text-green-800' 
+                            ? 'bg-emerald-100 text-emerald-800' 
                             : 'bg-red-100 text-red-800'
                         }`}>
                           {notification.isRead ? safeT('notifications.status.read', 'E lexuar') : safeT('notifications.status.unread', 'E palexuar')}
                         </span>
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#32938b]/10 text-[#32938b]">
                           {getNotificationTypeLabel(notification.type)}
                         </span>
                       </div>
-                      <p className="text-gray-600 mb-2">{notification.message}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <p className="text-[#2a6b66]/80 mb-2">{notification.message}</p>
+                      <div className="flex items-center gap-4 text-sm text-[#32938b]/60">
                         <span>{formatTimeAgo(notification.createdAt)}</span>
                         {notification.category && (
                           <span>{safeT('notifications.category', 'Kategoria')}: {notification.category}</span>
@@ -434,7 +443,7 @@ const NotificationsPage = () => {
                     {!notification.isRead && (
                       <button
                         onClick={() => markAsRead(notification.id)}
-                        className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors"
+                        className="flex items-center gap-1 px-3 py-1 text-sm bg-[#32938b]/10 text-[#32938b] rounded-lg hover:bg-[#32938b]/20 transition-colors"
                       >
                         <Check size={16} />
                         {safeT('notifications.markAsRead', 'Shëno si të lexuar')}
@@ -452,6 +461,7 @@ const NotificationsPage = () => {
               </div>
             ))
           )}
+          </div>
         </div>
       </div>
     </div>
