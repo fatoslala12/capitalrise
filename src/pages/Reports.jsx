@@ -356,58 +356,58 @@ export default function Reports() {
           <div id="overview-section">
             {/* Key Metrics */}
             <Grid cols={1} md:cols={2} lg:cols={4} gap={4} md:gap={6} className="mb-6 md:mb-8">
-              <Card className="bg-gradient-to-br from-[#32938b]/10 to-[#32938b]/20 border-[#32938b]/20 hover:shadow-lg transition-all duration-300">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-[#32938b]">{t('reportsPage.totalHours')}</p>
-                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-[#32938b]">
+                      <p className="text-xs md:text-sm font-medium text-blue-600">{t('reportsPage.totalHours')}</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-blue-900">
                         {(financialData?.workHours?.total || 0).toFixed(1)}
                       </p>
                     </div>
-                    <Clock className="w-6 h-6 md:w-8 md:h-8 text-[#32938b]" />
+                    <Clock className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-emerald-100 to-emerald-200 border-emerald-200 hover:shadow-lg transition-all duration-300">
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-emerald-600">{t('reportsPage.totalProfit')}</p>
-                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-emerald-900">
+                      <p className="text-xs md:text-sm font-medium text-green-600">{t('reportsPage.totalProfit')}</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-green-900">
                         £{(financialData?.profit?.total || 0).toFixed(2)}
                       </p>
                     </div>
-                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
+                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-[#2a6b66]/10 to-[#2a6b66]/20 border-[#2a6b66]/20 hover:shadow-lg transition-all duration-300">
+              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-[#2a6b66]">{t('reportsPage.activeContracts')}</p>
-                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-[#2a6b66]">
+                      <p className="text-xs md:text-sm font-medium text-purple-600">{t('reportsPage.activeContracts')}</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-purple-900">
                         {financialData?.revenue?.active || '0'}
                       </p>
                     </div>
-                    <Target className="w-6 h-6 md:w-8 md:h-8 text-[#2a6b66]" />
+                    <Target className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-amber-100 to-amber-200 border-amber-200 hover:shadow-lg transition-all duration-300">
+              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-amber-600">{t('reportsPage.activeEmployees')}</p>
-                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-amber-900">
+                      <p className="text-xs md:text-sm font-medium text-orange-600">{t('reportsPage.activeEmployees')}</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-orange-900">
                         {financialData?.workHours?.employees || '0'}
                       </p>
                     </div>
-                    <Users className="w-6 h-6 md:w-8 md:h-8 text-amber-600" />
+                    <Users className="w-6 h-6 md:w-8 md:h-8 text-orange-600" />
                   </div>
                 </CardContent>
               </Card>
