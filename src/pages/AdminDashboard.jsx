@@ -863,6 +863,7 @@ export default function AdminDashboard() {
 function VonesaFaturashChart() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
   
   useEffect(() => {
     async function fetchInvoices() {
@@ -952,6 +953,7 @@ function VonesaFaturashChart() {
 function StatusiShpenzimeveChart() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
   
   useEffect(() => {
     async function fetchExpensesInvoices() {
