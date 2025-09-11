@@ -11,11 +11,11 @@ export default function StatCard({
 }) {
   const colorClasses = {
     blue: {
-      bg: 'bg-gradient-to-br from-blue-50 to-blue-100',
-      border: 'border-blue-200',
-      icon: 'text-blue-600 bg-blue-100',
-      value: 'text-blue-900',
-      title: 'text-blue-700'
+      bg: 'bg-gradient-to-br from-[#32938b]/10 to-[#32938b]/20',
+      border: 'border-[#32938b]/20',
+      icon: 'text-[#32938b] bg-[#32938b]/10',
+      value: 'text-[#32938b]',
+      title: 'text-[#32938b]'
     },
     green: {
       bg: 'bg-gradient-to-br from-green-50 to-green-100',
@@ -25,11 +25,11 @@ export default function StatCard({
       title: 'text-green-700'
     },
     purple: {
-      bg: 'bg-gradient-to-br from-purple-50 to-purple-100',
-      border: 'border-purple-200',
-      icon: 'text-purple-600 bg-purple-100',
-      value: 'text-purple-900',
-      title: 'text-purple-700'
+      bg: 'bg-gradient-to-br from-[#2a6b66]/10 to-[#2a6b66]/20',
+      border: 'border-[#2a6b66]/20',
+      icon: 'text-[#2a6b66] bg-[#2a6b66]/10',
+      value: 'text-[#2a6b66]',
+      title: 'text-[#2a6b66]'
     },
     amber: {
       bg: 'bg-gradient-to-br from-amber-50 to-amber-100',

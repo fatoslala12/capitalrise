@@ -530,19 +530,19 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="w-full px-4 md:px-6 py-4 md:py-8 lg:py-10 space-y-6 md:space-y-8 lg:space-y-12 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 lg:py-10 space-y-6 md:space-y-8 lg:space-y-12 bg-gradient-to-br from-[#32938b]/5 via-white to-[#2a6b66]/5 min-h-screen">
       {/* HEADER MODERN */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl md:rounded-2xl shadow-lg px-6 md:px-10 py-6 md:py-8 mb-6 md:mb-8 border-b-2 border-blue-200 animate-fade-in w-full">
-        <div className="flex-shrink-0 bg-blue-100 rounded-xl p-3 md:p-4 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 rounded-xl md:rounded-2xl shadow-lg px-6 md:px-10 py-6 md:py-8 mb-6 md:mb-8 border-b-2 border-[#32938b]/20 animate-fade-in w-full">
+        <div className="flex-shrink-0 bg-[#32938b]/10 rounded-xl p-3 md:p-4 shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#7c3aed" className="w-10 h-10 md:w-12 md:h-12">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 7.5h16.5M4.5 21h15a.75.75 0 00.75-.75V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75v12.75c0 .414.336.75.75.75z" />
           </svg>
         </div>
         <div className="text-center sm:text-left">
-          <div className="text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-2 drop-shadow">
+          <div className="text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] tracking-tight mb-2 drop-shadow">
             {localStorage.getItem('language') === 'sq' ? 'Paneli i Administrimit' : 'Admin Panel'}
           </div>
-          <div className="text-base md:text-lg font-medium text-purple-700">
+          <div className="text-base md:text-lg font-medium text-[#2a6b66]">
             {localStorage.getItem('language') === 'sq' ? 'Statistika, detyra, pagesa dhe më shumë' : 'Statistics, tasks, payments and more'}
           </div>
         </div>
@@ -590,21 +590,21 @@ export default function AdminDashboard() {
           </select>
         </div>
         <div className="mb-6 flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
-          <div className="bg-blue-100 px-4 md:px-6 py-3 md:py-4 rounded-xl text-blue-800 font-bold shadow text-sm md:text-base">{tr('adminDashboard.total')}: {allTasks.length}</div>
+          <div className="bg-[#32938b]/10 px-4 md:px-6 py-3 md:py-4 rounded-xl text-[#32938b] font-bold shadow text-sm md:text-base">{tr('adminDashboard.total')}: {allTasks.length}</div>
           <div className="bg-green-100 px-4 md:px-6 py-3 md:py-4 rounded-xl text-green-800 font-bold shadow text-sm md:text-base">✅ {tr('adminDashboard.completed')}: {allTasks.filter(t => t.status === 'completed').length}</div>
           <div className="bg-yellow-100 px-4 md:px-6 py-3 md:py-4 rounded-xl text-yellow-800 font-bold shadow text-sm md:text-base">🕒 {tr('adminDashboard.ongoing')}: {allTasks.filter(t => t.status === 'ongoing').length}</div>
         </div>
         {filteredTasks.length > 0 ? (
           <ul className="space-y-4">
             {filteredTasks.map((t, idx) => (
-              <li key={t.id || idx} className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-6 bg-white rounded-xl p-4 md:p-6 shadow border border-blue-100">
+              <li key={t.id || idx} className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-6 bg-white rounded-xl p-4 md:p-6 shadow border border-[#32938b]/20">
                 <div className="flex items-center gap-3">
                   <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
                   <span className="font-semibold flex-1 text-sm md:text-lg">{t.description || t.title || ''}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row lg:items-center gap-2 lg:gap-4 text-sm md:text-base">
-                  <span className="text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
-                  <span className="text-purple-700 font-bold">{tr('adminDashboard.deadline')}: {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : tr('adminDashboard.noDeadline')}</span>
+                  <span className="text-[#32938b] font-bold">{t.site_name || t.siteName || ''}</span>
+                  <span className="text-[#2a6b66] font-bold">{tr('adminDashboard.deadline')}: {t.due_date || t.dueDate ? new Date(t.due_date || t.dueDate).toLocaleDateString() : tr('adminDashboard.noDeadline')}</span>
                   <span className="text-gray-500">{tr('adminDashboard.by')}: {t.assigned_by || t.assignedBy || ''}</span>
                 </div>
               </li>
@@ -621,7 +621,7 @@ export default function AdminDashboard() {
             📊 {tr('adminDashboard.hoursBySiteThisWeek')}
           </h3>
         <div className="mb-4 text-sm md:text-lg font-semibold text-gray-700">
-          {tr('adminDashboard.totalHoursWorked')} <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> {tr('adminDashboard.hours')}
+          {tr('adminDashboard.totalHoursWorked')} <span className="text-[#32938b]">{dashboardStats.totalWorkHours}</span> {tr('adminDashboard.hours')}
         </div>
         {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
           <ResponsiveContainer width="100%" height={450}>
@@ -710,13 +710,13 @@ export default function AdminDashboard() {
                 : '/placeholder.png';
               
               return (
-                <li key={e.id} className="flex items-center gap-6 bg-blue-50 p-5 rounded-2xl shadow-md border border-blue-200">
+                <li key={e.id} className="flex items-center gap-6 bg-[#32938b]/5 p-5 rounded-2xl shadow-md border border-[#32938b]/20">
                   <div className="relative w-14 h-14">
                     {employeeData?.photo ? (
                       <img 
                         src={photoSrc} 
                         alt={displayName} 
-                        className="w-full h-full rounded-full object-cover border-2 border-blue-300 shadow"
+                        className="w-full h-full rounded-full object-cover border-2 border-[#32938b]/30 shadow"
                         onError={(e) => {
                           e.target.style.display = 'none';
                           e.target.nextSibling.style.display = 'flex';
@@ -724,7 +724,7 @@ export default function AdminDashboard() {
                       />
                     ) : null}
                     <div 
-                      className={`w-full h-full rounded-full border-2 border-blue-300 shadow flex items-center justify-center text-blue-600 font-bold text-lg ${employeeData?.photo ? 'hidden' : 'flex'}`}
+                      className={`w-full h-full rounded-full border-2 border-[#32938b]/30 shadow flex items-center justify-center text-[#32938b] font-bold text-lg ${employeeData?.photo ? 'hidden' : 'flex'}`}
                       style={{
                         background: '#e0e7ef',
                         display: employeeData?.photo ? 'none' : 'flex'
@@ -736,7 +736,7 @@ export default function AdminDashboard() {
                         .join("")
                         .toUpperCase()}
                     </div>
-                    <span className="absolute -top-2 -left-2 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">{i + 1}</span>
+                    <span className="absolute -top-2 -left-2 bg-[#32938b] text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">{i + 1}</span>
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-lg">
@@ -746,7 +746,7 @@ export default function AdminDashboard() {
                       {e.isPaid ? `✅ ${tr('adminDashboard.paid')}` : `⏳ ${tr('adminDashboard.unpaid')}`}
                     </p>
                   </div>
-                  <div className="text-blue-700 font-extrabold text-xl">£{Number(amount).toFixed(2)}</div>
+                  <div className="text-[#32938b] font-extrabold text-xl">£{Number(amount).toFixed(2)}</div>
                 </li>
               );
             })}
@@ -814,7 +814,7 @@ export default function AdminDashboard() {
                   🔴 {tr('adminDashboard.contract')} #{item.contractNumber || ''}
                 </a>
                                   <span className="font-bold text-black">{tr('adminDashboard.invoiceNumber')}: <b>{item.invoiceNumber || ''}</b></span>
-                                  <span className="font-bold text-blue-700 flex items-center gap-1">🏢 {tr('adminDashboard.site')}: {(() => {
+                                  <span className="font-bold text-[#32938b] flex items-center gap-1">🏢 {tr('adminDashboard.site')}: {(() => {
                   let c = null;
                   if (item.contract_id && contracts.length) {
                     c = contracts.find(c => String(c.id) === String(item.contract_id));
@@ -843,7 +843,7 @@ export default function AdminDashboard() {
                 <span className="font-bold flex items-center gap-1">📅 {item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
                 <span className="font-bold text-lg">{item.type || ''}</span>
                 <span className="font-bold text-lg flex items-center gap-1">💷 {item.gross !== undefined ? `£${Number(item.gross).toFixed(2)}` : ''}</span>
-                <span className="font-bold text-blue-700 flex items-center gap-1">
+                <span className="font-bold text-[#32938b] flex items-center gap-1">
                   🏢 {tr('adminDashboard.site')}: {(() => {
                     if (!item.contract_id || !contracts.length) return '';
                     const c = contracts.find(c => String(c.id) === String(item.contract_id));
@@ -1142,9 +1142,9 @@ function ShpenzimePerSiteChart({ allExpenses, contracts, structuredWorkHours, al
   
   return (
     <div>
-      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <div className="mb-4 p-4 bg-[#32938b]/5 rounded-lg border border-[#32938b]/20">
         <h4 className="font-semibold text-blue-800 mb-2">📊 {tr('adminDashboard.calculationExplanation')}</h4>
-        <div className="text-sm text-blue-700 space-y-1">
+        <div className="text-sm text-[#32938b] space-y-1">
           <p><strong>{tr('adminDashboard.expenses')}:</strong> {tr('adminDashboard.expensesFromTable')}</p>
           <p><strong>{tr('adminDashboard.workHours')}:</strong> {tr('adminDashboard.workHoursCalculation')}</p>
           <p><strong>{tr('adminDashboard.total')}:</strong> {tr('adminDashboard.totalCalculation')}</p>
