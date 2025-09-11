@@ -23,8 +23,8 @@ import {
   XCircle, CheckCircle, AlertCircle, Info
 } from "lucide-react";
 
-// Global color palette for charts
-const CHART_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#f97316", "#ec4899"];
+// Global color palette for charts - Green theme
+const CHART_COLORS = ["#32938b", "#2a6b66", "#1c514f", "#ef4444", "#8b5cf6", "#06b6d4", "#f97316", "#ec4899"];
 
 export default function AuditTrail() {
   const { user } = useAuth();
@@ -276,73 +276,73 @@ export default function AuditTrail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#32938b]/5 via-white to-[#2a6b66]/5">
       <Container>
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">🔍 {safeT('auditTrail.title', 'Audit Trail')}</h1>
-          <p className="text-gray-600 text-lg">{safeT('auditTrail.subtitle', 'Monitorimi i të gjitha aktiviteteve në sistem')}</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] mb-2">🔍 {safeT('auditTrail.title', 'Audit Trail')}</h1>
+          <p className="text-[#2a6b66]/80 text-lg">{safeT('auditTrail.subtitle', 'Monitorimi i të gjitha aktiviteteve në sistem')}</p>
         </div>
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <Card className="bg-gradient-to-br from-[#32938b]/10 to-[#32938b]/20 border-[#32938b]/30">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600 mb-1">{safeT('auditTrail.totalActivities', 'Total Aktivitetet')}</p>
-                  <p className="text-3xl font-bold text-blue-900">{stats.totalLogs || 0}</p>
-                  <p className="text-xs text-blue-600 mt-1">{safeT('auditTrail.total', 'Gjithsej')}</p>
+                  <p className="text-sm font-medium text-[#32938b] mb-1">{safeT('auditTrail.totalActivities', 'Total Aktivitetet')}</p>
+                  <p className="text-3xl font-bold text-[#2a6b66]">{stats.totalLogs || 0}</p>
+                  <p className="text-xs text-[#32938b] mt-1">{safeT('auditTrail.total', 'Gjithsej')}</p>
                 </div>
-                <div className="p-3 bg-blue-200 rounded-full">
-                  <Activity className="w-6 h-6 text-blue-700" />
+                <div className="p-3 bg-[#32938b]/20 rounded-full">
+                  <Activity className="w-6 h-6 text-[#32938b]" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600 mb-1">{safeT('auditTrail.todayActivities', 'Aktivitetet Sot')}</p>
-                  <p className="text-3xl font-bold text-green-900">{stats.todayLogs || 0}</p>
-                  <p className="text-xs text-green-600 mt-1">{safeT('auditTrail.today', 'Këtë ditë')}</p>
+                  <p className="text-sm font-medium text-emerald-600 mb-1">{safeT('auditTrail.todayActivities', 'Aktivitetet Sot')}</p>
+                  <p className="text-3xl font-bold text-emerald-900">{stats.todayLogs || 0}</p>
+                  <p className="text-xs text-emerald-600 mt-1">{safeT('auditTrail.today', 'Këtë ditë')}</p>
                 </div>
-                <div className="p-3 bg-green-200 rounded-full">
-                  <Calendar className="w-6 h-6 text-green-700" />
+                <div className="p-3 bg-emerald-200 rounded-full">
+                  <Calendar className="w-6 h-6 text-emerald-700" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+          <Card className="bg-gradient-to-br from-[#2a6b66]/10 to-[#2a6b66]/20 border-[#2a6b66]/30">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-yellow-600 mb-1">{safeT('auditTrail.failedLogins', 'Kyçje të Dështuara')}</p>
-                  <p className="text-3xl font-bold text-yellow-900">
+                  <p className="text-sm font-medium text-[#2a6b66] mb-1">{safeT('auditTrail.failedLogins', 'Kyçje të Dështuara')}</p>
+                  <p className="text-3xl font-bold text-[#1c514f]">
                     {stats.actionStats?.find(s => s.action === 'LOGIN_FAILED')?.count || 0}
                   </p>
-                  <p className="text-xs text-yellow-600 mt-1">{safeT('auditTrail.thisWeek', 'Këtë javë')}</p>
+                  <p className="text-xs text-[#2a6b66] mt-1">{safeT('auditTrail.thisWeek', 'Këtë javë')}</p>
                 </div>
-                <div className="p-3 bg-yellow-200 rounded-full">
-                  <XCircle className="w-6 h-6 text-yellow-700" />
+                <div className="p-3 bg-[#2a6b66]/20 rounded-full">
+                  <XCircle className="w-6 h-6 text-[#2a6b66]" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <Card className="bg-gradient-to-br from-[#1c514f]/10 to-[#1c514f]/20 border-[#1c514f]/30">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600 mb-1">{safeT('auditTrail.activeUsers', 'Përdorues Aktivë')}</p>
-                  <p className="text-3xl font-bold text-purple-900">{stats.activeUsers || 0}</p>
-                  <p className="text-xs text-purple-600 mt-1">{safeT('auditTrail.thisWeek', 'Këtë javë')}</p>
+                  <p className="text-sm font-medium text-[#1c514f] mb-1">{safeT('auditTrail.activeUsers', 'Përdorues Aktivë')}</p>
+                  <p className="text-3xl font-bold text-[#1c514f]">{stats.activeUsers || 0}</p>
+                  <p className="text-xs text-[#1c514f] mt-1">{safeT('auditTrail.thisWeek', 'Këtë javë')}</p>
                 </div>
-                <div className="p-3 bg-purple-200 rounded-full">
-                  <Users className="w-6 h-6 text-purple-700" />
+                <div className="p-3 bg-[#1c514f]/20 rounded-full">
+                  <Users className="w-6 h-6 text-[#1c514f]" />
                 </div>
               </div>
             </CardContent>
@@ -352,9 +352,9 @@ export default function AuditTrail() {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Activity Distribution Chart */}
-          <Card className="border-2 border-gray-100 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100">
-              <CardTitle className="flex items-center gap-2 text-indigo-800">
+          <Card className="border-2 border-[#32938b]/20 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10">
+              <CardTitle className="flex items-center gap-2 text-[#32938b]">
                 <PieChart className="w-5 h-5" />
                 {safeT('auditTrail.activityDistribution', 'Shpërndarja e Aktiviteteve')}
               </CardTitle>
@@ -388,9 +388,9 @@ export default function AuditTrail() {
           </Card>
 
           {/* Daily Activity Chart */}
-          <Card className="border-2 border-gray-100 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
-              <CardTitle className="flex items-center gap-2 text-green-800">
+          <Card className="border-2 border-[#32938b]/20 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-[#32938b]/10">
+              <CardTitle className="flex items-center gap-2 text-[#32938b]">
                 <TrendingUp className="w-5 h-5" />
                 {safeT('auditTrail.dailyActivities', 'Aktivitetet Sipas Ditëve')}
               </CardTitle>
@@ -408,7 +408,7 @@ export default function AuditTrail() {
                       borderRadius: '8px'
                     }}
                   />
-                  <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" fill="#32938b" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -416,9 +416,9 @@ export default function AuditTrail() {
         </div>
 
         {/* Enhanced Filters */}
-        <Card className="mb-8 border-2 border-gray-100 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
-            <CardTitle className="flex items-center gap-2 text-gray-800">
+        <Card className="mb-8 border-2 border-[#32938b]/20 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10">
+            <CardTitle className="flex items-center gap-2 text-[#32938b]">
               <Filter className="w-5 h-5" />
               {safeT('auditTrail.filterActivities', 'Filtro Aktivitetet')}
             </CardTitle>
@@ -432,7 +432,7 @@ export default function AuditTrail() {
                 <select
                   value={filters.action}
                   onChange={(e) => setFilters({...filters, action: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b] transition-colors"
                 >
                   <option value="">{safeT('auditTrail.allActions', 'Të gjitha veprimet')}</option>
                   <option value="CREATE">{safeT('auditTrail.actions.CREATE', 'Krijo')}</option>
@@ -455,7 +455,7 @@ export default function AuditTrail() {
                 <select
                   value={filters.module}
                   onChange={(e) => setFilters({...filters, module: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b] transition-colors"
                 >
                   <option value="">{safeT('auditTrail.allModules', 'Të gjitha modulet')}</option>
                   <option value="CONTRACTS">{safeT('auditTrail.modules.CONTRACTS', 'Kontratat')}</option>
@@ -479,7 +479,7 @@ export default function AuditTrail() {
                     value={filters.user}
                     onChange={(e) => setFilters({...filters, user: e.target.value})}
                     placeholder={safeT('auditTrail.searchUser', 'Kërko përdorues...')}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b] transition-colors"
                   />
                 </div>
               </div>
@@ -494,7 +494,7 @@ export default function AuditTrail() {
                   type="date"
                   value={filters.dateFrom}
                   onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b] transition-colors"
                 />
               </div>
               <div>
@@ -505,13 +505,13 @@ export default function AuditTrail() {
                   type="date"
                   value={filters.dateTo}
                   onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#32938b] focus:border-[#32938b] transition-colors"
                 />
               </div>
               <div className="flex items-end space-x-2">
                 <Button
                   onClick={applyFilters}
-                  className="bg-blue-600 hover:bg-blue-700 px-6 py-2"
+                  className="bg-[#32938b] hover:bg-[#2a6b66] px-6 py-2"
                 >
                   <Filter className="w-4 h-4 mr-2" />
                   {safeT('auditTrail.apply', 'Apliko')}
@@ -530,9 +530,9 @@ export default function AuditTrail() {
         </Card>
 
         {/* Enhanced Audit Logs List */}
-        <Card className="border-2 border-gray-100 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100">
-            <CardTitle className="flex items-center gap-2 text-purple-800">
+        <Card className="border-2 border-[#32938b]/20 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-[#2a6b66]/10 to-[#1c514f]/10">
+            <CardTitle className="flex items-center gap-2 text-[#32938b]">
               <Eye className="w-5 h-5" />
               {safeT('auditTrail.activities', 'Aktivitetet')} ({filteredLogs.length} {safeT('auditTrail.results', 'rezultate')})
             </CardTitle>
