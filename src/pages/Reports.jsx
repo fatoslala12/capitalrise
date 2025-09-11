@@ -95,19 +95,19 @@ export default function Reports() {
 
   // Chart colors
   const chartColors = {
-    primary: '#3B82F6',
-    secondary: '#10B981',
-    accent: '#F59E0B',
+    primary: '#32938b',
+    secondary: '#2a6b66',
+    accent: '#1c514f',
     danger: '#EF4444',
     success: '#22C55E',
     warning: '#F97316',
     info: '#06B6D4',
     purple: '#8B5CF6',
     gradient: {
-      blue: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      green: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      purple: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      orange: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+      blue: 'linear-gradient(135deg, #32938b 0%, #2a6b66 100%)',
+      green: 'linear-gradient(135deg, #2a6b66 0%, #1c514f 100%)',
+      purple: 'linear-gradient(135deg, #32938b 0%, #1c514f 100%)',
+      orange: 'linear-gradient(135deg, #2a6b66 0%, #32938b 100%)'
     }
   };
 
@@ -231,14 +231,14 @@ export default function Reports() {
   }
 
   return (
-    <div className="w-full px-4 md:px-6 py-4 md:py-8">
+    <div className="w-full px-4 md:px-6 py-4 md:py-8 bg-gradient-to-br from-[#32938b]/5 via-white to-[#2a6b66]/5 min-h-screen">
       <div className="mb-6 md:mb-8">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4 md:p-6 text-white mb-6">
+        <div className="bg-gradient-to-r from-[#32938b] to-[#2a6b66] rounded-xl p-4 md:p-6 text-white mb-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="text-center md:text-left">
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">📊 {t('reportsPage.adminReports')}</h1>
-              <p className="text-blue-100 text-sm md:text-base">{t('reportsPage.fullPerformanceAnalysis')}</p>
+              <p className="text-[#2a6b66]/80 text-sm md:text-base">{t('reportsPage.fullPerformanceAnalysis')}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3 w-full md:w-auto">
                               <Button 
@@ -323,7 +323,7 @@ export default function Reports() {
         )}
 
         {/* Navigation Tabs */}
-        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6 overflow-x-auto scrollbar-hide">
+        <div className="flex space-x-1 bg-[#32938b]/10 p-1 rounded-lg mb-6 overflow-x-auto scrollbar-hide">
           {[
             { id: 'overview', label: t('reportsPage.overview'), icon: BarChart3 },
             { id: 'financial', label: t('reportsPage.financial'), icon: DollarSign },
@@ -339,8 +339,8 @@ export default function Reports() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 rounded-md font-medium transition-all whitespace-nowrap text-xs md:text-sm ${
                   activeTab === tab.id
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    ? 'bg-white text-[#32938b] shadow-sm'
+                    : 'text-[#32938b]/70 hover:text-[#32938b] hover:bg-[#32938b]/5'
                 }`}
               >
                 <Icon className="w-3 h-3 md:w-4 md:h-4" />
@@ -356,58 +356,58 @@ export default function Reports() {
           <div id="overview-section">
             {/* Key Metrics */}
             <Grid cols={1} md:cols={2} lg:cols={4} gap={4} md:gap={6} className="mb-6 md:mb-8">
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
+              <Card className="bg-gradient-to-br from-[#32938b]/10 to-[#32938b]/20 border-[#32938b]/20 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-blue-600">{t('reportsPage.totalHours')}</p>
-                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-blue-900">
+                      <p className="text-xs md:text-sm font-medium text-[#32938b]">{t('reportsPage.totalHours')}</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-[#32938b]">
                         {(financialData?.workHours?.total || 0).toFixed(1)}
                       </p>
                     </div>
-                    <Clock className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
+                    <Clock className="w-6 h-6 md:w-8 md:h-8 text-[#32938b]" />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
+              <Card className="bg-gradient-to-br from-emerald-100 to-emerald-200 border-emerald-200 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-green-600">{t('reportsPage.totalProfit')}</p>
-                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-green-900">
+                      <p className="text-xs md:text-sm font-medium text-emerald-600">{t('reportsPage.totalProfit')}</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-emerald-900">
                         £{(financialData?.profit?.total || 0).toFixed(2)}
                       </p>
                     </div>
-                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
+                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300">
+              <Card className="bg-gradient-to-br from-[#2a6b66]/10 to-[#2a6b66]/20 border-[#2a6b66]/20 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-purple-600">{t('reportsPage.activeContracts')}</p>
-                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-purple-900">
+                      <p className="text-xs md:text-sm font-medium text-[#2a6b66]">{t('reportsPage.activeContracts')}</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-[#2a6b66]">
                         {financialData?.revenue?.active || '0'}
                       </p>
                     </div>
-                    <Target className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
+                    <Target className="w-6 h-6 md:w-8 md:h-8 text-[#2a6b66]" />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-300">
+              <Card className="bg-gradient-to-br from-amber-100 to-amber-200 border-amber-200 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs md:text-sm font-medium text-orange-600">{t('reportsPage.activeEmployees')}</p>
-                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-orange-900">
+                      <p className="text-xs md:text-sm font-medium text-amber-600">{t('reportsPage.activeEmployees')}</p>
+                      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-amber-900">
                         {financialData?.workHours?.employees || '0'}
                       </p>
                     </div>
-                    <Users className="w-6 h-6 md:w-8 md:h-8 text-orange-600" />
+                    <Users className="w-6 h-6 md:w-8 md:h-8 text-amber-600" />
                   </div>
                 </CardContent>
               </Card>
@@ -523,12 +523,12 @@ export default function Reports() {
               </CardHeader>
               <CardContent>
                 <Grid cols={1} md:cols={3} gap={4} md:gap={6}>
-                  <div className="text-center p-4 md:p-6 bg-green-50 rounded-lg border border-green-200 hover:shadow-md transition-all duration-300">
-                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-green-600 mx-auto mb-2" />
-                    <div className="text-xl md:text-2xl font-bold text-green-600">
+                  <div className="text-center p-4 md:p-6 bg-emerald-50 rounded-lg border border-emerald-200 hover:shadow-md transition-all duration-300">
+                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-emerald-600 mx-auto mb-2" />
+                    <div className="text-xl md:text-2xl font-bold text-emerald-600">
                       £{(financialData?.revenue?.total || 0).toFixed(2)}
                     </div>
-                    <div className="text-xs md:text-sm text-green-600">{t('reportsPage.totalRevenue')}</div>
+                    <div className="text-xs md:text-sm text-emerald-600">{t('reportsPage.totalRevenue')}</div>
                   </div>
                   
                   <div className="text-center p-4 md:p-6 bg-red-50 rounded-lg border border-red-200 hover:shadow-md transition-all duration-300">
@@ -539,19 +539,19 @@ export default function Reports() {
                     <div className="text-xs md:text-sm text-red-600">{t('reportsPage.totalExpenses')}</div>
                   </div>
                   
-                  <div className="text-center p-4 md:p-6 bg-blue-50 rounded-lg border border-blue-200 hover:shadow-md transition-all duration-300">
-                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-blue-600 mx-auto mb-2" />
-                    <div className="text-xl md:text-2xl font-bold text-blue-600">
+                  <div className="text-center p-4 md:p-6 bg-[#32938b]/10 rounded-lg border border-[#32938b]/20 hover:shadow-md transition-all duration-300">
+                    <DollarSign className="w-6 h-6 md:w-8 md:h-8 text-[#32938b] mx-auto mb-2" />
+                    <div className="text-xl md:text-2xl font-bold text-[#32938b]">
                       £{(financialData?.profit?.total || 0).toFixed(2)}
                     </div>
-                    <div className="text-xs md:text-sm text-blue-600">{t('reportsPage.totalProfit')}</div>
+                    <div className="text-xs md:text-sm text-[#32938b]">{t('reportsPage.totalProfit')}</div>
                   </div>
                 </Grid>
                 
                 <div className="mt-4 md:mt-6 p-3 md:p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between">
                     <span className="text-xs md:text-sm font-medium text-gray-600">{t('reportsPage.profitMargin')}:</span>
-                    <span className="text-base md:text-lg font-bold text-green-600">
+                    <span className="text-base md:text-lg font-bold text-[#32938b]">
                       {financialData?.profit?.percentage || '0'}%
                     </span>
                   </div>
@@ -641,21 +641,21 @@ export default function Reports() {
                         <tr key={emp.id} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="p-2 md:p-3">
                             <div className="flex items-center gap-2 md:gap-3">
-                              <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm">
+                              <div className="w-6 h-6 md:w-8 md:h-8 bg-[#32938b]/10 text-[#32938b] rounded-full flex items-center justify-center font-semibold text-xs md:text-sm">
                                 {emp.name.charAt(0)}
                               </div>
                               <span className="font-medium text-xs md:text-sm">{emp.name}</span>
                             </div>
                           </td>
                           <td className="p-2 md:p-3 hidden md:table-cell text-xs md:text-sm">{(emp.totalHours || 0).toFixed(1)}h</td>
-                          <td className="p-2 md:p-3 font-medium text-green-600 hidden md:table-cell text-xs md:text-sm">£{(emp.totalEarnings || 0).toFixed(2)}</td>
+                          <td className="p-2 md:p-3 font-medium text-emerald-600 hidden md:table-cell text-xs md:text-sm">£{(emp.totalEarnings || 0).toFixed(2)}</td>
                           <td className="p-2 md:p-3 hidden sm:table-cell text-xs md:text-sm">{emp.workingDays || 0}</td>
                           <td className="p-2 md:p-3 hidden lg:table-cell text-xs md:text-sm">{(emp.avgHoursPerDay || 0).toFixed(1)}h</td>
                           <td className="p-2 md:p-3">
                             <div className="flex items-center gap-2">
                               <div className="w-16 md:w-20 bg-gray-200 rounded-full h-2">
                                 <div 
-                                  className="bg-blue-600 h-2 rounded-full" 
+                                  className="bg-[#32938b] h-2 rounded-full" 
                                   style={{ width: `${Math.min(emp.efficiency || 0, 100)}%` }}
                                 ></div>
                               </div>
@@ -702,7 +702,7 @@ export default function Reports() {
                 <Card key={index} className="hover:shadow-lg transition-all duration-300">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                      <Building2 className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                      <Building2 className="w-4 h-4 md:w-5 md:h-5 text-[#32938b]" />
                       {site.site}
                     </CardTitle>
                   </CardHeader>
@@ -714,7 +714,7 @@ export default function Reports() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-xs md:text-sm text-gray-600">{t('reportsPage.laborCost')}:</span>
-                        <span className="font-medium text-blue-600 text-xs md:text-sm">£{(site.totalLaborCost || 0).toFixed(2)}</span>
+                        <span className="font-medium text-[#32938b] text-xs md:text-sm">£{(site.totalLaborCost || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-xs md:text-sm text-gray-600">{t('reportsPage.expenses')}:</span>
@@ -727,7 +727,7 @@ export default function Reports() {
                       <div className="pt-2 border-t border-gray-100">
                         <div className="flex justify-between">
                           <span className="text-xs md:text-sm text-gray-600">{t('reportsPage.efficiency')}:</span>
-                          <span className="font-medium text-green-600 text-xs md:text-sm">{(site.efficiency || 0).toFixed(1)}%</span>
+                          <span className="font-medium text-emerald-600 text-xs md:text-sm">{(site.efficiency || 0).toFixed(1)}%</span>
                         </div>
                       </div>
                     </div>
@@ -784,8 +784,8 @@ export default function Reports() {
                             })()}</td>
                             <td className="p-2 md:p-3">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                contract.status === 'Mbyllur' ? 'bg-green-100 text-green-800' :
-                                contract.status === 'Ne progres' ? 'bg-blue-100 text-blue-800' :
+                                contract.status === 'Mbyllur' ? 'bg-emerald-100 text-emerald-800' :
+                                contract.status === 'Ne progres' ? 'bg-[#32938b]/10 text-[#32938b]' :
                                 'bg-gray-100 text-gray-800'
                               }`}>
                                 {contract.status || 'Aktive'}
@@ -793,13 +793,13 @@ export default function Reports() {
                             </td>
                             <td className="p-2 md:p-3 hidden lg:table-cell text-xs md:text-sm">£{(contract.totalSpent || 0).toFixed(2)}</td>
                             <td className={`p-2 md:p-3 font-medium text-xs md:text-sm ${
-                              (contract.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                              (contract.profit || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'
                             }`}>
                               £{(contract.profit || 0).toFixed(2)}
                             </td>
                             <td className="p-2 md:p-3 hidden xl:table-cell">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                (contract.profitMargin || 0) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                (contract.profitMargin || 0) >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
                               }`}>
                                 {(contract.profitMargin || 0).toFixed(1)}%
                               </span>
@@ -808,7 +808,7 @@ export default function Reports() {
                               <div className="flex items-center gap-2">
                                 <div className="w-12 md:w-16 bg-gray-200 rounded-full h-2">
                                   <div 
-                                    className="bg-blue-600 h-2 rounded-full" 
+                                    className="bg-[#32938b] h-2 rounded-full" 
                                     style={{ width: `${contract.completion || 0}%` }}
                                   ></div>
                                 </div>
