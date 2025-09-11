@@ -336,16 +336,16 @@ export default function BackupManagement() {
   return (
     <div className="w-full px-4 md:px-6 py-4 md:py-8 space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl shadow-lg p-8 border border-blue-200">
+      <div className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 rounded-2xl shadow-lg p-8 border border-[#32938b]/20">
         <div className="flex items-center gap-4">
-          <div className="bg-blue-100 rounded-xl p-3 shadow-sm">
+          <div className="bg-[#32938b]/10 rounded-xl p-3 shadow-sm">
             <span className="text-3xl">💾</span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66]">
               {safeT('backup.title', 'Menaxhimi i Backup-ve')}
             </h1>
-            <p className="text-lg text-purple-700 mt-1">
+            <p className="text-lg text-[#2a6b66]/80 mt-1">
               {safeT('backup.subtitle', 'Siguroni dhe menaxhoni të dhënat e sistemit')}
             </p>
           </div>
@@ -362,23 +362,23 @@ export default function BackupManagement() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
+              <div className="text-center p-4 bg-[#32938b]/10 rounded-lg">
+                <div className="text-2xl font-bold text-[#32938b]">
                   {databaseStatus.database?.name || 'N/A'}
                 </div>
-                <div className="text-sm text-blue-800">{safeT('backup.databaseName', 'Emri i Databazës')}</div>
+                <div className="text-sm text-[#2a6b66]">{safeT('backup.databaseName', 'Emri i Databazës')}</div>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
+              <div className="text-center p-4 bg-emerald-50 rounded-lg">
+                <div className="text-2xl font-bold text-emerald-600">
                   {databaseStatus.database?.status || 'N/A'}
                 </div>
-                <div className="text-sm text-green-800">{safeT('backup.status', 'Statusi')}</div>
+                <div className="text-sm text-emerald-800">{safeT('backup.status', 'Statusi')}</div>
               </div>
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">
+              <div className="text-center p-4 bg-[#2a6b66]/10 rounded-lg">
+                <div className="text-2xl font-bold text-[#2a6b66]">
                   {databaseStatus.backup?.exists ? '✅' : '❌'}
                 </div>
-                <div className="text-sm text-purple-800">{safeT('backup.backupDirectory', 'Direktoria e Backup-ve')}</div>
+                <div className="text-sm text-[#1c514f]">{safeT('backup.backupDirectory', 'Direktoria e Backup-ve')}</div>
               </div>
             </div>
             
@@ -407,16 +407,16 @@ export default function BackupManagement() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {availableTables.map((table) => (
               <div key={table.name} className="group relative">
-                <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 rounded-xl border border-blue-200 hover:border-blue-400 transition-all duration-300 hover:shadow-lg cursor-pointer">
+                <div className="bg-gradient-to-br from-[#32938b]/10 via-white to-[#2a6b66]/10 p-4 rounded-xl border border-[#32938b]/20 hover:border-[#32938b]/40 transition-all duration-300 hover:shadow-lg cursor-pointer">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-2xl">{table.icon}</span>
-                    <div className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-1 rounded-full">
+                    <div className="text-xs text-[#32938b] font-medium bg-[#32938b]/10 px-2 py-1 rounded-full">
                       {table.name}
                     </div>
                   </div>
                   
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-700 mb-1">
+                    <div className="text-3xl font-bold text-[#32938b] mb-1">
                       {table.count !== undefined ? table.count : '...'}
                     </div>
                     <div className="text-sm text-gray-600 font-medium">
@@ -425,7 +425,7 @@ export default function BackupManagement() {
                   </div>
                   
                   {/* Hover effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#32938b]/10 to-[#2a6b66]/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
               </div>
             ))}
@@ -434,7 +434,7 @@ export default function BackupManagement() {
           {/* Loading state for table counts */}
           {availableTables.some(table => table.count === 0) && (
             <div className="text-center py-6">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#32938b] mx-auto mb-2"></div>
               <p className="text-gray-500">{safeT('backup.loadingRecordCount', 'Duke ngarkuar numrin e regjistrimeve...')}</p>
             </div>
           )}
@@ -451,20 +451,20 @@ export default function BackupManagement() {
         <CardContent>
           <div className="space-y-4">
             {/* Backup i Plotë */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-200">
-              <h3 className="text-xl font-bold text-blue-800 mb-4">{safeT('backup.fullBackup', 'Backup i Plotë')}</h3>
+            <div className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 p-6 rounded-xl border border-[#32938b]/20">
+              <h3 className="text-xl font-bold text-[#32938b] mb-4">{safeT('backup.fullBackup', 'Backup i Plotë')}</h3>
               <div className="flex flex-col sm:flex-row gap-4">
                 <input
                   type="text"
                                       placeholder={safeT('backup.backupDescription', 'Përshkrimi i backup (opsional)')}
                   value={backupDescription}
                   onChange={(e) => setBackupDescription(e.target.value)}
-                  className="flex-1 p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 p-3 border border-[#32938b]/30 rounded-lg focus:ring-2 focus:ring-[#32938b] focus:border-transparent"
                 />
                 <Button
                   onClick={createFullBackup}
                   disabled={creatingBackup}
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:from-blue-600 hover:to-purple-600 transition-all disabled:opacity-50"
+                  className="bg-gradient-to-r from-[#32938b] to-[#2a6b66] text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:from-[#2a6b66] hover:to-[#1c514f] transition-all disabled:opacity-50"
                 >
                   {creatingBackup ? (
                     <>
@@ -479,12 +479,12 @@ export default function BackupManagement() {
             </div>
 
             {/* Backup i Pjesshëm */}
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border border-green-200">
-              <h3 className="text-xl font-bold text-green-800 mb-4">{safeT('backup.partialBackup', 'Backup i Pjesshëm')}</h3>
+            <div className="bg-gradient-to-r from-emerald-50 to-[#32938b]/10 p-6 rounded-xl border border-emerald-200">
+              <h3 className="text-xl font-bold text-emerald-800 mb-4">{safeT('backup.partialBackup', 'Backup i Pjesshëm')}</h3>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   onClick={() => setShowPartialBackupModal(true)}
-                  className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:from-green-600 hover:to-blue-600 transition-all"
+                  className="bg-gradient-to-r from-emerald-500 to-[#32938b] text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:from-emerald-600 hover:to-[#2a6b66] transition-all"
                 >
                   {safeT('backup.createPartialBackup', '📋 Krijo Backup të Pjesshëm')}
                 </Button>
@@ -540,7 +540,7 @@ export default function BackupManagement() {
                     <div className="flex flex-col sm:flex-row gap-2">
                       <Button
                         onClick={() => downloadBackup(backup.filename)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                        className="bg-[#32938b] text-white px-4 py-2 rounded-lg hover:bg-[#2a6b66] transition-colors"
                       >
                         {safeT('backup.download', '⬇️ Shkarko')}
                       </Button>
@@ -549,7 +549,7 @@ export default function BackupManagement() {
                           <Button
                             onClick={() => restoreBackup(backup.filename)}
                             disabled={restoringBackup === backup.filename}
-                            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
+                            className="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
                           >
                             {restoringBackup === backup.filename ? (
                               <>
@@ -618,7 +618,7 @@ export default function BackupManagement() {
                 value={backupDescription}
                 onChange={(e) => setBackupDescription(e.target.value)}
                                   placeholder={safeT('backup.partialBackupDescription', 'Përshkrimi i backup të pjesshëm')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32938b] focus:border-transparent"
               />
             </div>
 
@@ -626,7 +626,7 @@ export default function BackupManagement() {
               <Button
                 onClick={createPartialBackup}
                 disabled={creatingBackup || selectedTables.length === 0}
-                className="bg-green-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-600 transition-colors disabled:opacity-50"
+                className="bg-[#32938b] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#2a6b66] transition-colors disabled:opacity-50"
               >
                                   {creatingBackup ? safeT('backup.creating', 'Duke krijuar...') : safeT('backup.createBackup', 'Krijo Backup')}
               </Button>
