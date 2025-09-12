@@ -150,6 +150,9 @@ app.use('/api/audit', auditRoutes);
 const settingsRoutes = require('./routes/settings');
 app.use('/api/settings', settingsRoutes);
 
+const systemRoutes = require('./routes/system');
+app.use('/api/system', systemRoutes);
+
 const realTimeAlertRoutes = require('./routes/realTimeAlerts');
 app.use('/api/real-time-alerts', realTimeAlertRoutes);
 

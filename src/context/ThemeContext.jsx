@@ -13,12 +13,12 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    // Get theme from localStorage or default to 'green' (test1 theme)
+    // Get theme from localStorage or default to 'test1' theme
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) return savedTheme;
     
-    // Default to green theme (test1) for all users
-    return 'green';
+    // Default to test1 theme for all users
+    return 'test1';
   });
 
   const [isInitialized, setIsInitialized] = useState(false);
@@ -247,6 +247,60 @@ export const ThemeProvider = ({ children }) => {
         'menu-active': 'rgba(255, 255, 255, 0.2)',
         'page-header-bg': 'rgba(15, 23, 42, 0.8)',
         'page-header-border': 'rgba(34, 197, 94, 0.2)',
+      }
+    },
+    // Test1 Theme - Custom Green Theme
+    'test1': {
+      name: 'Test1 - Custom Green',
+      colors: {
+        // Background colors
+        'bg-primary': '#fdfdfc',
+        'bg-secondary': '#f6f9f8',
+        'bg-tertiary': '#f1f5f9',
+        'bg-card': '#ffffff',
+        'bg-overlay': 'rgba(0, 0, 0, 0.5)',
+        
+        // Text colors
+        'text-primary': '#1a1f1d',
+        'text-secondary': '#2e423f',
+        'text-tertiary': '#6b7f7b',
+        'text-inverse': '#ffffff',
+        
+        // Border colors
+        'border-primary': '#e2e8f0',
+        'border-secondary': '#cbd5e1',
+        'border-focus': '#3b82f6',
+        
+        // Status colors
+        'success': '#16a34a',
+        'warning': '#eab308',
+        'error': '#dc2626',
+        'info': '#0ea5e9',
+        
+        // Menu and page colors
+        'menu-primary': '#349490',
+        'menu-secondary': '#27736f',
+        'menu-gradient-start': '#349490',
+        'menu-gradient-end': '#1e5a57',
+        'menu-text': '#ffffff',
+        'menu-hover': 'rgba(255, 255, 255, 0.1)',
+        'menu-active': 'rgba(255, 255, 255, 0.2)',
+        'page-header-bg': 'rgba(255, 255, 255, 0.85)',
+        'page-header-border': 'rgba(52, 148, 144, 0.35)',
+        
+        // Button colors
+        'button-primary': '#349490',
+        'button-primary-hover': '#2e7c78',
+        'button-primary-active': '#25635f',
+        'button-secondary': '#6b7280',
+        'button-secondary-hover': '#4b5563',
+        'button-secondary-active': '#374151',
+        'button-success': '#16a34a',
+        'button-success-hover': '#16a34a',
+        'button-success-active': '#15803d',
+        'button-danger': '#dc2626',
+        'button-danger-hover': '#dc2626',
+        'button-danger-active': '#b91c1c',
       }
     }
   }), []);

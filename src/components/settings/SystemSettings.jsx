@@ -9,6 +9,7 @@ const SystemSettings = () => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [quickActionLoading, setQuickActionLoading] = useState(null);
 
   // Company Information State
   const [companyInfo, setCompanyInfo] = useState({
@@ -177,6 +178,74 @@ const SystemSettings = () => {
 
   const handleMaintenanceSettingsSave = () => {
     saveSettings('maintenance', maintenanceSettings);
+  };
+
+  // Quick Actions Functions
+  const handleRestartSystem = async () => {
+    try {
+      setQuickActionLoading('restart');
+      const response = await api.post('/api/system/restart');
+      toast.success('System restart initiated successfully!');
+    } catch (error) {
+      console.error('Error restarting system:', error);
+      toast.error('Failed to restart system');
+    } finally {
+      setQuickActionLoading(null);
+    }
+  };
+
+  const handleCreateBackup = async () => {
+    try {
+      setQuickActionLoading('backup');
+      const response = await api.post('/api/backup/create');
+      toast.success('Backup created successfully!');
+    } catch (error) {
+      console.error('Error creating backup:', error);
+      toast.error('Failed to create backup');
+    } finally {
+      setQuickActionLoading(null);
+    }
+  };
+
+  const handleViewLogs = async () => {
+    try {
+      setQuickActionLoading('logs');
+      const response = await api.get('/api/system/logs');
+      // Open logs in new window or modal
+      const logsWindow = window.open('', '_blank');
+      logsWindow.document.write(`
+        <html>
+          <head><title>System Logs</title></head>
+          <body style="font-family: monospace; padding: 20px; background: #f5f5f5;">
+            <h2>System Logs</h2>
+            <pre style="background: white; padding: 15px; border-radius: 5px; overflow-x: auto;">${response.data.logs}</pre>
+          </body>
+        </html>
+      `);
+      toast.success('Logs opened in new window');
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      toast.error('Failed to fetch logs');
+    } finally {
+      setQuickActionLoading(null);
+    }
+  };
+
+  const handleMaintenance = async () => {
+    try {
+      setQuickActionLoading('maintenance');
+      const response = await api.post('/api/system/maintenance', {
+        action: maintenanceSettings.maintenanceMode ? 'disable' : 'enable'
+      });
+      toast.success(`Maintenance mode ${maintenanceSettings.maintenanceMode ? 'disabled' : 'enabled'} successfully!`);
+      // Refresh maintenance settings
+      loadSettings();
+    } catch (error) {
+      console.error('Error toggling maintenance:', error);
+      toast.error('Failed to toggle maintenance mode');
+    } finally {
+      setQuickActionLoading(null);
+    }
   };
 
   // Check if user has admin permissions
@@ -935,28 +1004,68 @@ const SystemSettings = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <button className="p-4 bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 hover:from-[#32938b]/20 hover:to-[#2a6b66]/20 rounded-lg border border-[#32938b]/20 transition-all duration-300 hover:scale-105">
-                <div className="text-2xl mb-2">🔄</div>
+              <button 
+                onClick={handleRestartSystem}
+                disabled={quickActionLoading === 'restart'}
+                className="p-4 bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 hover:from-[#32938b]/20 hover:to-[#2a6b66]/20 rounded-lg border border-[#32938b]/20 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+              >
+                <div className="text-2xl mb-2">
+                  {quickActionLoading === 'restart' ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#32938b] mx-auto"></div>
+                  ) : (
+                    '🔄'
+                  )}
+                </div>
                 <div className="font-medium text-[#32938b]">Restart System</div>
-                <div className="text-sm text-gray-600">Restart all services</div>
+                <div className="text-sm text-[#2a6b66]/80">Restart all services</div>
               </button>
               
-              <button className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 rounded-lg border border-emerald-200 transition-all duration-300 hover:scale-105">
-                <div className="text-2xl mb-2">💾</div>
-                <div className="font-medium text-emerald-800">Create Backup</div>
-                <div className="text-sm text-emerald-600">Manual backup now</div>
+              <button 
+                onClick={handleCreateBackup}
+                disabled={quickActionLoading === 'backup'}
+                className="p-4 bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 hover:from-[#32938b]/20 hover:to-[#2a6b66]/20 rounded-lg border border-[#32938b]/20 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+              >
+                <div className="text-2xl mb-2">
+                  {quickActionLoading === 'backup' ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#32938b] mx-auto"></div>
+                  ) : (
+                    '💾'
+                  )}
+                </div>
+                <div className="font-medium text-[#32938b]">Create Backup</div>
+                <div className="text-sm text-[#2a6b66]/80">Manual backup now</div>
               </button>
               
-              <button className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg border border-blue-200 transition-all duration-300 hover:scale-105">
-                <div className="text-2xl mb-2">📊</div>
-                <div className="font-medium text-blue-800">View Logs</div>
-                <div className="text-sm text-blue-600">System logs</div>
+              <button 
+                onClick={handleViewLogs}
+                disabled={quickActionLoading === 'logs'}
+                className="p-4 bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 hover:from-[#32938b]/20 hover:to-[#2a6b66]/20 rounded-lg border border-[#32938b]/20 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+              >
+                <div className="text-2xl mb-2">
+                  {quickActionLoading === 'logs' ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#32938b] mx-auto"></div>
+                  ) : (
+                    '📊'
+                  )}
+                </div>
+                <div className="font-medium text-[#32938b]">View Logs</div>
+                <div className="text-sm text-[#2a6b66]/80">System logs</div>
               </button>
               
-              <button className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 rounded-lg border border-orange-200 transition-all duration-300 hover:scale-105">
-                <div className="text-2xl mb-2">🔧</div>
-                <div className="font-medium text-orange-800">Maintenance</div>
-                <div className="text-sm text-orange-600">System maintenance</div>
+              <button 
+                onClick={handleMaintenance}
+                disabled={quickActionLoading === 'maintenance'}
+                className="p-4 bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 hover:from-[#32938b]/20 hover:to-[#2a6b66]/20 rounded-lg border border-[#32938b]/20 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+              >
+                <div className="text-2xl mb-2">
+                  {quickActionLoading === 'maintenance' ? (
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#32938b] mx-auto"></div>
+                  ) : (
+                    '🔧'
+                  )}
+                </div>
+                <div className="font-medium text-[#32938b]">Maintenance</div>
+                <div className="text-sm text-[#2a6b66]/80">System maintenance</div>
               </button>
             </div>
           </div>
