@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+const { pool } = require('../db');
 
 // Merr të gjitha system settings
 exports.getSystemSettings = async (req, res) => {
