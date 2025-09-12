@@ -1,30 +1,30 @@
 const express = require('express');
 const router = express.Router();
-const {
-  getSystemSettings,
-  updateCompanyInfo,
-  updateWorkHoursRules,
-  updateSecuritySettings,
-  updateBackupSettings
-} = require('../controllers/settingsController');
+const settingsController = require('../controllers/settingsController');
 const { verifyToken, requireRole } = require('../middleware/auth');
 
-// Apply authentication middleware to all routes
-router.use(verifyToken);
+// Merr të gjitha system settings
+router.get('/system', verifyToken, requireRole('admin'), settingsController.getSystemSettings);
 
-// Get system settings
-router.get('/system', getSystemSettings);
+// Ruaj company info
+router.put('/system/company', verifyToken, requireRole('admin'), settingsController.updateCompanyInfo);
 
-// Update company information
-router.put('/system/company', updateCompanyInfo);
+// Ruaj work hours rules
+router.put('/system/workhours', verifyToken, requireRole('admin'), settingsController.updateWorkHoursRules);
 
-// Update work hours rules
-router.put('/system/workhours', updateWorkHoursRules);
+// Ruaj security settings
+router.put('/system/security', verifyToken, requireRole('admin'), settingsController.updateSecuritySettings);
 
-// Update security settings
-router.put('/system/security', updateSecuritySettings);
+// Ruaj backup settings
+router.put('/system/backup', verifyToken, requireRole('admin'), settingsController.updateBackupSettings);
 
-// Update backup settings
-router.put('/system/backup', updateBackupSettings);
+// Ruaj performance settings
+router.put('/system/performance', verifyToken, requireRole('admin'), settingsController.updatePerformanceSettings);
+
+// Ruaj email settings
+router.put('/system/email', verifyToken, requireRole('admin'), settingsController.updateEmailSettings);
+
+// Ruaj maintenance settings
+router.put('/system/maintenance', verifyToken, requireRole('admin'), settingsController.updateMaintenanceSettings);
 
 module.exports = router;

@@ -147,6 +147,9 @@ app.use('/api/backup', backupRoutes);
 const auditRoutes = require('./routes/audit');
 app.use('/api/audit', auditRoutes);
 
+const settingsRoutes = require('./routes/settings');
+app.use('/api/settings', settingsRoutes);
+
 const realTimeAlertRoutes = require('./routes/realTimeAlerts');
 app.use('/api/real-time-alerts', realTimeAlertRoutes);
 

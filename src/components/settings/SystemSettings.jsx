@@ -208,21 +208,49 @@ const SystemSettings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#32938b]/5 via-white to-[#2a6b66]/5 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {t('settings.systemSettings')}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t('settings.systemSettingsDescription')}
-          </p>
+          <div className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 rounded-2xl p-6 sm:p-8 border border-[#32938b]/20">
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#32938b] to-[#2a6b66] mb-2">
+              {t('settings.systemSettings')}
+            </h1>
+            <p className="text-[#2a6b66]/80 dark:text-gray-300">
+              {t('settings.systemSettingsDescription')}
+            </p>
+          </div>
         </div>
 
         <div className="space-y-8">
+          {/* System Status Overview */}
+          <div className="bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 rounded-xl p-6 border border-[#32938b]/20">
+            <h2 className="text-xl font-semibold text-[#32938b] mb-4 flex items-center gap-2">
+              <span>📊</span>
+              System Status Overview
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-white rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-[#32938b]">99.9%</div>
+                <div className="text-sm text-gray-600">Uptime</div>
+              </div>
+              <div className="bg-white rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-emerald-600">45ms</div>
+                <div className="text-sm text-gray-600">Response Time</div>
+              </div>
+              <div className="bg-white rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-blue-600">1.2GB</div>
+                <div className="text-sm text-gray-600">Memory Usage</div>
+              </div>
+              <div className="bg-white rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-orange-600">23%</div>
+                <div className="text-sm text-gray-600">CPU Usage</div>
+              </div>
+            </div>
+          </div>
+
           {/* Company Information */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-[#32938b]/20 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <span>🏢</span>
@@ -231,9 +259,19 @@ const SystemSettings = () => {
               <button
                 onClick={handleCompanyInfoSave}
                 disabled={saving}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200"
+                className="px-6 py-3 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:hover:scale-100"
               >
-                {saving ? t('common.saving') : t('common.save')}
+                {saving ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    {t('common.saving')}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>💾</span>
+                    {t('common.save')}
+                  </div>
+                )}
               </button>
             </div>
 
@@ -246,7 +284,7 @@ const SystemSettings = () => {
                   type="text"
                   value={companyInfo.name}
                   onChange={(e) => setCompanyInfo({...companyInfo, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   placeholder={t('settings.enterCompanyName')}
                 />
               </div>
@@ -259,7 +297,7 @@ const SystemSettings = () => {
                   type="text"
                   value={companyInfo.taxNumber}
                   onChange={(e) => setCompanyInfo({...companyInfo, taxNumber: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   placeholder={t('settings.enterTaxNumber')}
                 />
               </div>
@@ -272,7 +310,7 @@ const SystemSettings = () => {
                   type="email"
                   value={companyInfo.email}
                   onChange={(e) => setCompanyInfo({...companyInfo, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   placeholder={t('settings.enterEmail')}
                 />
               </div>
@@ -285,7 +323,7 @@ const SystemSettings = () => {
                   type="tel"
                   value={companyInfo.phone}
                   onChange={(e) => setCompanyInfo({...companyInfo, phone: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   placeholder={t('settings.enterPhone')}
                 />
               </div>
@@ -298,7 +336,7 @@ const SystemSettings = () => {
                   type="text"
                   value={companyInfo.address}
                   onChange={(e) => setCompanyInfo({...companyInfo, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   placeholder={t('settings.enterAddress')}
                 />
               </div>
@@ -311,7 +349,7 @@ const SystemSettings = () => {
                   type="text"
                   value={companyInfo.city}
                   onChange={(e) => setCompanyInfo({...companyInfo, city: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   placeholder={t('settings.enterCity')}
                 />
               </div>
@@ -324,7 +362,7 @@ const SystemSettings = () => {
                   type="text"
                   value={companyInfo.country}
                   onChange={(e) => setCompanyInfo({...companyInfo, country: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   placeholder={t('settings.enterCountry')}
                 />
               </div>
@@ -332,7 +370,7 @@ const SystemSettings = () => {
           </div>
 
           {/* Work Hours Rules */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-[#32938b]/20 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <span>🕒</span>
@@ -341,7 +379,7 @@ const SystemSettings = () => {
               <button
                 onClick={handleWorkHoursRulesSave}
                 disabled={saving}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200"
+                className="px-6 py-3 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:hover:scale-100"
               >
                 {saving ? t('common.saving') : t('common.save')}
               </button>
@@ -358,7 +396,7 @@ const SystemSettings = () => {
                   max="24"
                   value={workHoursRules.standardHoursPerDay}
                   onChange={(e) => setWorkHoursRules({...workHoursRules, standardHoursPerDay: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -372,7 +410,7 @@ const SystemSettings = () => {
                   max="168"
                   value={workHoursRules.standardHoursPerWeek}
                   onChange={(e) => setWorkHoursRules({...workHoursRules, standardHoursPerWeek: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -386,7 +424,7 @@ const SystemSettings = () => {
                   max="168"
                   value={workHoursRules.overtimeThreshold}
                   onChange={(e) => setWorkHoursRules({...workHoursRules, overtimeThreshold: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -401,7 +439,7 @@ const SystemSettings = () => {
                   step="0.1"
                   value={workHoursRules.overtimeMultiplier}
                   onChange={(e) => setWorkHoursRules({...workHoursRules, overtimeMultiplier: parseFloat(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -415,7 +453,7 @@ const SystemSettings = () => {
                   max="480"
                   value={workHoursRules.breakTimeMinutes}
                   onChange={(e) => setWorkHoursRules({...workHoursRules, breakTimeMinutes: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -429,7 +467,7 @@ const SystemSettings = () => {
                   max="24"
                   value={workHoursRules.maxHoursPerDay}
                   onChange={(e) => setWorkHoursRules({...workHoursRules, maxHoursPerDay: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -451,7 +489,7 @@ const SystemSettings = () => {
                         onChange={(e) => setWorkHoursRules({...workHoursRules, weekendWorkAllowed: e.target.checked})}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#32938b]/30 dark:peer-focus:ring-[#32938b]/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#32938b]"></div>
                     </label>
                   </div>
 
@@ -471,7 +509,7 @@ const SystemSettings = () => {
                         onChange={(e) => setWorkHoursRules({...workHoursRules, holidayWorkAllowed: e.target.checked})}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#32938b]/30 dark:peer-focus:ring-[#32938b]/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#32938b]"></div>
                     </label>
                   </div>
                 </div>
@@ -480,7 +518,7 @@ const SystemSettings = () => {
           </div>
 
           {/* Security Settings */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-[#32938b]/20 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <span>🔒</span>
@@ -489,7 +527,7 @@ const SystemSettings = () => {
               <button
                 onClick={handleSecuritySettingsSave}
                 disabled={saving}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200"
+                className="px-6 py-3 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:hover:scale-100"
               >
                 {saving ? t('common.saving') : t('common.save')}
               </button>
@@ -506,7 +544,7 @@ const SystemSettings = () => {
                   max="32"
                   value={securitySettings.passwordMinLength}
                   onChange={(e) => setSecuritySettings({...securitySettings, passwordMinLength: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -520,7 +558,7 @@ const SystemSettings = () => {
                   max="480"
                   value={securitySettings.sessionTimeoutMinutes}
                   onChange={(e) => setSecuritySettings({...securitySettings, sessionTimeoutMinutes: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -534,7 +572,7 @@ const SystemSettings = () => {
                   max="20"
                   value={securitySettings.maxLoginAttempts}
                   onChange={(e) => setSecuritySettings({...securitySettings, maxLoginAttempts: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -556,7 +594,7 @@ const SystemSettings = () => {
                         onChange={(e) => setSecuritySettings({...securitySettings, passwordRequireUppercase: e.target.checked})}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#32938b]/30 dark:peer-focus:ring-[#32938b]/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#32938b]"></div>
                     </label>
                   </div>
 
@@ -576,7 +614,7 @@ const SystemSettings = () => {
                         onChange={(e) => setSecuritySettings({...securitySettings, twoFactorAuthRequired: e.target.checked})}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#32938b]/30 dark:peer-focus:ring-[#32938b]/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#32938b]"></div>
                     </label>
                   </div>
                 </div>
@@ -585,7 +623,7 @@ const SystemSettings = () => {
           </div>
 
           {/* Backup Settings */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-[#32938b]/20 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <span>💾</span>
@@ -594,7 +632,7 @@ const SystemSettings = () => {
               <button
                 onClick={handleBackupSettingsSave}
                 disabled={saving}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200"
+                className="px-6 py-3 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:hover:scale-100"
               >
                 {saving ? t('common.saving') : t('common.save')}
               </button>
@@ -608,7 +646,7 @@ const SystemSettings = () => {
                 <select
                   value={backupSettings.backupFrequency}
                   onChange={(e) => setBackupSettings({...backupSettings, backupFrequency: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 >
                   <option value="daily">{t('settings.daily')}</option>
                   <option value="weekly">{t('settings.weekly')}</option>
@@ -624,7 +662,7 @@ const SystemSettings = () => {
                   type="time"
                   value={backupSettings.backupTime}
                   onChange={(e) => setBackupSettings({...backupSettings, backupTime: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -638,7 +676,7 @@ const SystemSettings = () => {
                   max="365"
                   value={backupSettings.backupRetentionDays}
                   onChange={(e) => setBackupSettings({...backupSettings, backupRetentionDays: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -660,7 +698,7 @@ const SystemSettings = () => {
                         onChange={(e) => setBackupSettings({...backupSettings, autoBackupEnabled: e.target.checked})}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#32938b]/30 dark:peer-focus:ring-[#32938b]/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#32938b]"></div>
                     </label>
                   </div>
 
@@ -680,7 +718,7 @@ const SystemSettings = () => {
                         onChange={(e) => setBackupSettings({...backupSettings, backupCompression: e.target.checked})}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#32938b]/30 dark:peer-focus:ring-[#32938b]/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#32938b]"></div>
                     </label>
                   </div>
                 </div>
@@ -689,7 +727,7 @@ const SystemSettings = () => {
           </div>
 
           {/* Performance Settings */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-[#32938b]/20 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <span>⚡</span>
@@ -698,7 +736,7 @@ const SystemSettings = () => {
               <button
                 onClick={handlePerformanceSettingsSave}
                 disabled={saving}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200"
+                className="px-6 py-3 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:hover:scale-100"
               >
                 {saving ? t('common.saving') : t('common.save')}
               </button>
@@ -715,7 +753,7 @@ const SystemSettings = () => {
                   max="1000"
                   value={performanceSettings.maxConcurrentUsers}
                   onChange={(e) => setPerformanceSettings({...performanceSettings, maxConcurrentUsers: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -729,7 +767,7 @@ const SystemSettings = () => {
                   max="1440"
                   value={performanceSettings.cacheExpirationMinutes}
                   onChange={(e) => setPerformanceSettings({...performanceSettings, cacheExpirationMinutes: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -743,7 +781,7 @@ const SystemSettings = () => {
                   max="4096"
                   value={performanceSettings.memoryLimit}
                   onChange={(e) => setPerformanceSettings({...performanceSettings, memoryLimit: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -765,7 +803,7 @@ const SystemSettings = () => {
                         onChange={(e) => setPerformanceSettings({...performanceSettings, cacheEnabled: e.target.checked})}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#32938b]/30 dark:peer-focus:ring-[#32938b]/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#32938b]"></div>
                     </label>
                   </div>
 
@@ -785,7 +823,7 @@ const SystemSettings = () => {
                         onChange={(e) => setPerformanceSettings({...performanceSettings, enableDebugMode: e.target.checked})}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#32938b]/30 dark:peer-focus:ring-[#32938b]/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#32938b]"></div>
                     </label>
                   </div>
                 </div>
@@ -794,7 +832,7 @@ const SystemSettings = () => {
           </div>
 
           {/* Email Settings */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-[#32938b]/20 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <span>📧</span>
@@ -803,7 +841,7 @@ const SystemSettings = () => {
               <button
                 onClick={handleEmailSettingsSave}
                 disabled={saving}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200"
+                className="px-6 py-3 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:hover:scale-100"
               >
                 {saving ? t('common.saving') : t('common.save')}
               </button>
@@ -818,7 +856,7 @@ const SystemSettings = () => {
                   type="text"
                   value={emailSettings.smtpHost}
                   onChange={(e) => setEmailSettings({...emailSettings, smtpHost: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   placeholder="smtp.gmail.com"
                 />
               </div>
@@ -833,7 +871,7 @@ const SystemSettings = () => {
                   max="65535"
                   value={emailSettings.smtpPort}
                   onChange={(e) => setEmailSettings({...emailSettings, smtpPort: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -845,7 +883,7 @@ const SystemSettings = () => {
                   type="text"
                   value={emailSettings.smtpUsername}
                   onChange={(e) => setEmailSettings({...emailSettings, smtpUsername: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -857,7 +895,7 @@ const SystemSettings = () => {
                   type="password"
                   value={emailSettings.smtpPassword}
                   onChange={(e) => setEmailSettings({...emailSettings, smtpPassword: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -869,7 +907,7 @@ const SystemSettings = () => {
                   type="email"
                   value={emailSettings.fromEmail}
                   onChange={(e) => setEmailSettings({...emailSettings, fromEmail: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
@@ -881,14 +919,50 @@ const SystemSettings = () => {
                   type="text"
                   value={emailSettings.fromName}
                   onChange={(e) => setEmailSettings({...emailSettings, fromName: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                 />
               </div>
             </div>
           </div>
 
+          {/* Quick Actions */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-[#32938b]/20 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-[#32938b] dark:text-[#32938b] flex items-center gap-2">
+                <span>⚡</span>
+                Quick Actions
+              </h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <button className="p-4 bg-gradient-to-r from-[#32938b]/10 to-[#2a6b66]/10 hover:from-[#32938b]/20 hover:to-[#2a6b66]/20 rounded-lg border border-[#32938b]/20 transition-all duration-300 hover:scale-105">
+                <div className="text-2xl mb-2">🔄</div>
+                <div className="font-medium text-[#32938b]">Restart System</div>
+                <div className="text-sm text-gray-600">Restart all services</div>
+              </button>
+              
+              <button className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 rounded-lg border border-emerald-200 transition-all duration-300 hover:scale-105">
+                <div className="text-2xl mb-2">💾</div>
+                <div className="font-medium text-emerald-800">Create Backup</div>
+                <div className="text-sm text-emerald-600">Manual backup now</div>
+              </button>
+              
+              <button className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg border border-blue-200 transition-all duration-300 hover:scale-105">
+                <div className="text-2xl mb-2">📊</div>
+                <div className="font-medium text-blue-800">View Logs</div>
+                <div className="text-sm text-blue-600">System logs</div>
+              </button>
+              
+              <button className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 rounded-lg border border-orange-200 transition-all duration-300 hover:scale-105">
+                <div className="text-2xl mb-2">🔧</div>
+                <div className="font-medium text-orange-800">Maintenance</div>
+                <div className="text-sm text-orange-600">System maintenance</div>
+              </button>
+            </div>
+          </div>
+
           {/* System Maintenance */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-[#32938b]/20 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <span>🔧</span>
@@ -897,7 +971,7 @@ const SystemSettings = () => {
               <button
                 onClick={handleMaintenanceSettingsSave}
                 disabled={saving}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors duration-200"
+                className="px-6 py-3 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:hover:scale-100"
               >
                 {saving ? t('common.saving') : t('common.save')}
               </button>
@@ -933,7 +1007,7 @@ const SystemSettings = () => {
                     value={maintenanceSettings.maintenanceMessage}
                     onChange={(e) => setMaintenanceSettings({...maintenanceSettings, maintenanceMessage: e.target.value})}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   />
                 </div>
 
@@ -947,7 +1021,7 @@ const SystemSettings = () => {
                     max="60"
                     value={maintenanceSettings.healthCheckInterval}
                     onChange={(e) => setMaintenanceSettings({...maintenanceSettings, healthCheckInterval: parseInt(e.target.value)})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   />
                 </div>
               </div>
@@ -966,7 +1040,7 @@ const SystemSettings = () => {
                       ...maintenanceSettings, 
                       alertThresholds: {...maintenanceSettings.alertThresholds, cpuUsage: parseInt(e.target.value)}
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   />
                 </div>
 
@@ -983,7 +1057,7 @@ const SystemSettings = () => {
                       ...maintenanceSettings, 
                       alertThresholds: {...maintenanceSettings.alertThresholds, memoryUsage: parseInt(e.target.value)}
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   />
                 </div>
 
@@ -1000,7 +1074,7 @@ const SystemSettings = () => {
                       ...maintenanceSettings, 
                       alertThresholds: {...maintenanceSettings.alertThresholds, diskUsage: parseInt(e.target.value)}
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[#32938b]/30 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#32938b] focus:border-transparent transition-all duration-300"
                   />
                 </div>
               </div>
