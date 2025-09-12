@@ -118,19 +118,35 @@ const SystemSettings = () => {
   useEffect(() => {
     if (hasPermission('manage_system')) {
       loadSettings();
+      loadSystemStatus();
     }
   }, [hasPermission]);
+
+  // Load system status
+  const loadSystemStatus = async () => {
+    try {
+      const response = await api.get('/api/system/status');
+      const status = response.data.data;
+      // Update system status display if needed
+      console.log('System status loaded:', status);
+    } catch (error) {
+      console.error('Error loading system status:', error);
+    }
+  };
 
   const loadSettings = async () => {
     try {
       setLoading(true);
       const response = await api.get('/api/settings/system');
-      const data = response.data;
+      const data = response.data.data || response.data;
       
       setCompanyInfo(data.companyInfo || companyInfo);
       setWorkHoursRules(data.workHoursRules || workHoursRules);
       setSecuritySettings(data.securitySettings || securitySettings);
       setBackupSettings(data.backupSettings || backupSettings);
+      setPerformanceSettings(data.performanceSettings || performanceSettings);
+      setEmailSettings(data.emailSettings || emailSettings);
+      setMaintenanceSettings(data.maintenanceSettings || maintenanceSettings);
     } catch (error) {
       console.error('Error loading system settings:', error);
       toast.error(t('settings.errorLoadingSettings'));
@@ -213,12 +229,31 @@ const SystemSettings = () => {
       const response = await api.get('/api/system/logs');
       // Open logs in new window or modal
       const logsWindow = window.open('', '_blank');
+      const logs = response.data.data?.logs || response.data.logs || 'No logs available';
       logsWindow.document.write(`
         <html>
-          <head><title>System Logs</title></head>
-          <body style="font-family: monospace; padding: 20px; background: #f5f5f5;">
-            <h2>System Logs</h2>
-            <pre style="background: white; padding: 15px; border-radius: 5px; overflow-x: auto;">${response.data.logs}</pre>
+          <head>
+            <title>System Logs</title>
+            <style>
+              body { font-family: 'Courier New', monospace; padding: 20px; background: #f5f5f5; margin: 0; }
+              h2 { color: #333; margin-bottom: 20px; }
+              pre { 
+                background: white; 
+                padding: 15px; 
+                border-radius: 5px; 
+                overflow-x: auto; 
+                border: 1px solid #ddd;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+              }
+              .header { background: #349490; color: white; padding: 10px; margin: -20px -20px 20px -20px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h2>System Logs</h2>
+            </div>
+            <pre>${logs}</pre>
           </body>
         </html>
       `);

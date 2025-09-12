@@ -133,6 +133,9 @@ router.get('/table-counts', async (req, res) => {
 // Të gjitha routes kërkojnë autentikim
 router.use(verifyToken);
 
+// Create backup - Quick Action endpoint
+router.post('/create', verifyToken, requireRole('admin'), backupController.createFullBackup);
+
 // Backup i plotë - vetëm admin
 router.post('/full', requireRole('admin'), backupController.createFullBackup);
 
