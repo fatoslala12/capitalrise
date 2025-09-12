@@ -374,50 +374,50 @@ const NotificationAnalytics = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="bg-gradient-to-br from-[#32938b]/10 to-[#32938b]/20 border-[#32938b]/30">
+        <Card className="bg-gradient-to-br from-[#32938b]/10 to-[#32938b]/20 border-[#32938b]/30 hover:shadow-lg transition-all duration-300 transform hover:scale-105">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-[#32938b]">{safeT('analytics.totalNotifications', 'Njoftime Total')}</p>
-                <p className="text-2xl font-bold text-[#2a6b66]">{formatNumber(analytics?.totalNotifications || 156)}</p>
+                <p className="text-2xl font-bold text-[#2a6b66] animate-pulse">{formatNumber(analytics?.totalNotifications || 156)}</p>
               </div>
-              <Bell className="h-8 w-8 text-[#32938b]" />
+              <Bell className="h-8 w-8 text-[#32938b] animate-bounce" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 hover:shadow-lg transition-all duration-300 transform hover:scale-105">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-emerald-600">{safeT('analytics.engagementRate', 'Engagement Rate')}</p>
-                <p className="text-2xl font-bold text-emerald-900">{analytics?.engagementRate || 85.3}%</p>
+                <p className="text-2xl font-bold text-emerald-900 animate-pulse">{analytics?.engagementRate || 85.3}%</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-emerald-500" />
+              <TrendingUp className="h-8 w-8 text-emerald-500 animate-bounce" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-[#2a6b66]/10 to-[#2a6b66]/20 border-[#2a6b66]/30">
+        <Card className="bg-gradient-to-br from-[#2a6b66]/10 to-[#2a6b66]/20 border-[#2a6b66]/30 hover:shadow-lg transition-all duration-300 transform hover:scale-105">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-[#2a6b66]">{safeT('analytics.unreadNotifications', 'Njoftime të Palexuara')}</p>
-                <p className="text-2xl font-bold text-[#1c514f]">{formatNumber(analytics?.unreadNotifications || 23)}</p>
+                <p className="text-2xl font-bold text-[#1c514f] animate-pulse">{formatNumber(analytics?.unreadNotifications || 23)}</p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-[#2a6b66]" />
+              <AlertTriangle className="h-8 w-8 text-[#2a6b66] animate-bounce" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-[#1c514f]/10 to-[#1c514f]/20 border-[#1c514f]/30">
+        <Card className="bg-gradient-to-br from-[#1c514f]/10 to-[#1c514f]/20 border-[#1c514f]/30 hover:shadow-lg transition-all duration-300 transform hover:scale-105">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-[#1c514f]">{safeT('analytics.averageResponseTime', 'Koha Mesatare e Përgjigjes')}</p>
-                <p className="text-2xl font-bold text-[#1c514f]">{analytics?.averageResponseTime || 12}h</p>
+                <p className="text-2xl font-bold text-[#1c514f] animate-pulse">{analytics?.averageResponseTime || 12}h</p>
               </div>
-              <Clock className="h-8 w-8 text-[#1c514f]" />
+              <Clock className="h-8 w-8 text-[#1c514f] animate-bounce" />
             </div>
           </CardContent>
         </Card>
@@ -426,10 +426,10 @@ const NotificationAnalytics = () => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Daily Notifications Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
+        <Card className="hover:shadow-lg transition-all duration-300">
+          <CardHeader className="bg-gradient-to-r from-[#32938b]/5 to-[#2a6b66]/5">
+            <CardTitle className="flex items-center gap-2 text-[#32938b]">
+              <Activity className="h-5 w-5 animate-pulse" />
               {safeT('analytics.dailyNotifications', 'Njoftime Ditore')}
             </CardTitle>
           </CardHeader>
@@ -437,17 +437,31 @@ const NotificationAnalytics = () => {
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={dailyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#32938b" opacity={0.3} />
+                  <XAxis dataKey="date" stroke="#2a6b66" />
+                  <YAxis stroke="#2a6b66" />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#f8fafc',
+                      border: '1px solid #32938b',
+                      borderRadius: '8px',
+                      color: '#2a6b66'
+                    }}
+                  />
                   <Area
                     type="monotone"
                     dataKey="notifications"
                     stroke="#32938b"
-                    fill="#32938b"
-                    fillOpacity={0.3}
+                    fill="url(#colorGradient)"
+                    fillOpacity={0.6}
+                    strokeWidth={3}
                   />
+                  <defs>
+                    <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#32938b" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#2a6b66" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -512,34 +526,61 @@ const NotificationAnalytics = () => {
       </Card>
 
       {/* Insights Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Info className="h-5 w-5" />
-            {safeT('analytics.insights', 'Insights')}
+      <Card className="hover:shadow-lg transition-all duration-300">
+        <CardHeader className="bg-gradient-to-r from-[#32938b]/5 to-[#2a6b66]/5">
+          <CardTitle className="flex items-center gap-2 text-[#32938b]">
+            <Info className="h-5 w-5 animate-pulse" />
+            {safeT('analytics.insights', 'Insights dhe Rekomandime')}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="p-3 bg-[#32938b]/10 rounded-lg">
-              <p className="text-sm text-[#32938b]">
-                <strong>📊</strong> {analytics?.topNotificationTypes && analytics.topNotificationTypes.length > 0 ? 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-gradient-to-r from-[#32938b]/10 to-[#32938b]/5 rounded-lg border border-[#32938b]/20 hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-2xl">📊</span>
+                <h4 className="font-semibold text-[#32938b]">Lloji Më i Popullarizuar</h4>
+              </div>
+              <p className="text-sm text-[#2a6b66]">
+                {analytics?.topNotificationTypes && analytics.topNotificationTypes.length > 0 ? 
                   `${getNotificationTypeLabel(analytics.topNotificationTypes[0].name)} ${safeT('analytics.insights.mostPopular', 'është lloji më i popullarizuar')}` : 
                   safeT('analytics.insights.systemWorkingWell', 'Sistemi po funksionon mirë')}
               </p>
             </div>
-            <div className="p-3 bg-emerald-50 rounded-lg">
-              <p className="text-sm text-emerald-800">
-                <strong>✅</strong> {safeT('analytics.insights.engagementRate', 'Engagement rate është')} {analytics?.engagementRate || 0}%
+            
+            <div className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-lg border border-emerald-200 hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-2xl">✅</span>
+                <h4 className="font-semibold text-emerald-800">Performance</h4>
+              </div>
+              <p className="text-sm text-emerald-700">
+                <strong>Engagement Rate:</strong> {analytics?.engagementRate || 85.3}%
+              </p>
+              <p className="text-sm text-emerald-700">
+                <strong>Response Time:</strong> {analytics?.averageResponseTime || 12}h
               </p>
             </div>
-            {analytics?.unreadNotifications > 0 && (
-              <div className="p-3 bg-[#2a6b66]/10 rounded-lg">
-                <p className="text-sm text-[#2a6b66]">
-                  <strong>⚠️</strong> {analytics.unreadNotifications} {safeT('analytics.insights.notificationsUnread', 'njoftime janë ende të palexuara')}
-                </p>
+            
+            <div className="p-4 bg-gradient-to-r from-[#2a6b66]/10 to-[#2a6b66]/5 rounded-lg border border-[#2a6b66]/20 hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-2xl">⚠️</span>
+                <h4 className="font-semibold text-[#2a6b66]">Njoftime të Palexuara</h4>
               </div>
-            )}
+              <p className="text-sm text-[#1c514f]">
+                {analytics?.unreadNotifications || 23} {safeT('analytics.insights.notificationsUnread', 'njoftime janë ende të palexuara')}
+              </p>
+            </div>
+            
+            <div className="p-4 bg-gradient-to-r from-[#1c514f]/10 to-[#1c514f]/5 rounded-lg border border-[#1c514f]/20 hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-2xl">💡</span>
+                <h4 className="font-semibold text-[#1c514f]">Rekomandime</h4>
+              </div>
+              <p className="text-sm text-[#1c514f]">
+                {analytics?.unreadNotifications > 20 ? 
+                  'Konsideroni të rritni frekuencën e njoftimeve' : 
+                  'Sistemi po funksionon optimalisht'}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
