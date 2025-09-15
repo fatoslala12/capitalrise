@@ -10,6 +10,24 @@ const SystemSettings = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [quickActionLoading, setQuickActionLoading] = useState(null);
+  // System Logs panel state
+  const [showLogsPanel, setShowLogsPanel] = useState(false);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsError, setLogsError] = useState('');
+  const [logsData, setLogsData] = useState({ page: 1, totalPages: 1, total: 0, logs: [] });
+  const [logFilters, setLogFilters] = useState({
+    q: '',
+    severity: '',
+    action: '',
+    entityType: '',
+    userEmail: '',
+    startDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
+    endDate: new Date().toISOString().slice(0, 16),
+    limit: 20,
+    page: 1,
+    sortBy: 'timestamp',
+    sortOrder: 'DESC'
+  });
 
   // Company Information State
   const [companyInfo, setCompanyInfo] = useState({
