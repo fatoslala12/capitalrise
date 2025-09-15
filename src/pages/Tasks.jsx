@@ -773,22 +773,22 @@ export default function Tasks() {
                 </tr>
               </thead>
               <tbody>
-                {filteredAndSortedTasks.map((t) => {
-                  const isOverdue = t.due_date && new Date(t.due_date) < new Date() && t.status !== "completed";
+                {filteredAndSortedTasks.map((task) => {
+                  const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== "completed";
                   return (
-                    <tr key={t.id} className={`text-center hover:bg-purple-50 transition-all duration-200 ${isOverdue ? 'bg-red-50 border-l-4 border-red-500' : ''}`}>
+                    <tr key={task.id} className={`text-center hover:bg-purple-50 transition-all duration-200 ${isOverdue ? 'bg-red-50 border-l-4 border-red-500' : ''}`}>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle">
                         <div className="flex flex-col items-center gap-1 sm:gap-2">
                           <span className={`px-2 sm:px-3 py-1 rounded-full font-bold text-xs sm:text-sm ${
-                            t.status === "ongoing" 
+                            task.status === "ongoing" 
                               ? "bg-yellow-100 text-yellow-700 border border-yellow-200" 
                               : "bg-green-100 text-green-700 border border-green-200"
                           }`}>
-                            {t.status === "ongoing" ? `🕒 ${t('tasks.ongoing')}` : `✅ ${t('tasks.completedStatus')}`}
+                            {task.status === "ongoing" ? `🕒 ${t('tasks.ongoing')}` : `✅ ${t('tasks.completedStatus')}`}
                           </span>
-                          {t.status === "ongoing" && (
+                          {task.status === "ongoing" && (
                             <button
-                              onClick={() => handleStatusChange(t.id, "completed")}
+                              onClick={() => handleStatusChange(task.id, "completed")}
                               className="px-2 sm:px-3 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all transform hover:scale-105"
                             >
                               ✅ {t('tasks.finish')}
@@ -797,34 +797,34 @@ export default function Tasks() {
                         </div>
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle text-left">
-                        <div className="font-semibold text-blue-800 text-xs sm:text-sm">{t.description || t.title}</div>
-                        {t.category && (
+                        <div className="font-semibold text-blue-800 text-xs sm:text-sm">{task.description || task.title}</div>
+                        {task.category && (
                           <div className="text-xs text-gray-500 mt-1">
-                            📂 {t.category}
+                            📂 {task.category}
                           </div>
                         )}
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle font-semibold text-purple-700 hidden sm:table-cell">
-                        <span className="text-xs sm:text-sm">{getEmployeeName(t.assigned_to)}</span>
+                        <span className="text-xs sm:text-sm">{getEmployeeName(task.assigned_to)}</span>
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle hidden lg:table-cell">
                         <span className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-                          {t.site_name || "-"}
+                          {task.site_name || "-"}
                         </span>
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle">
-                        <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(t.priority)}`}>
-                          {getPriorityIcon(t.priority)} {t.priority === 'high' ? t('tasks.high') : t.priority === 'medium' ? t('tasks.medium') : t('tasks.low')}
+                        <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(task.priority)}`}>
+                          {getPriorityIcon(task.priority)} {task.priority === 'high' ? t('tasks.high') : task.priority === 'medium' ? t('tasks.medium') : t('tasks.low')}
                         </span>
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle">
-                        {t.due_date ? (
+                        {task.due_date ? (
                           <div className={`px-2 sm:px-3 py-1 rounded-lg text-xs font-semibold ${
                             isOverdue 
                               ? "bg-red-100 text-red-700 border border-red-200" 
                               : "bg-green-100 text-green-700 border border-green-200"
                           }`}>
-                            {format(new Date(t.due_date), "dd/MM/yyyy")}
+                            {format(new Date(task.due_date), "dd/MM/yyyy")}
                             {isOverdue && <div className="text-xs">⚠️ {t('tasks.overdueWarningShort')}</div>}
                           </div>
                         ) : (
@@ -832,15 +832,15 @@ export default function Tasks() {
                         )}
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle text-xs sm:text-sm text-gray-600 hidden lg:table-cell">
-                        {t.assigned_by || "-"}
+                        {task.assigned_by || "-"}
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle text-xs sm:text-sm text-gray-600 hidden md:table-cell">
-                        {t.created_at ? format(new Date(t.created_at), "dd/MM/yyyy") : "-"}
+                        {task.created_at ? format(new Date(task.created_at), "dd/MM/yyyy") : "-"}
                       </td>
                       <td className="py-2 sm:py-4 px-2 sm:px-4 align-middle">
                         <div className="flex gap-1 sm:gap-2 justify-center">
                           <button
-                            onClick={() => handleDelete(t.id)}
+                            onClick={() => handleDelete(task.id)}
                             className="px-2 sm:px-3 py-1 sm:py-2 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded text-xs font-semibold shadow-sm hover:from-pink-600 hover:to-red-600 transition-all transform hover:scale-105"
                           >
                             🗑️ Fshi
@@ -866,34 +866,34 @@ export default function Tasks() {
               </h4>
               <div className="space-y-2 sm:space-y-3">
                 {filteredAndSortedTasks
-                  .filter(t => t.status === "ongoing")
-                  .map((t) => (
-                    <div key={t.id} className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-yellow-200">
+                  .filter(task => task.status === "ongoing")
+                  .map((task) => (
+                    <div key={task.id} className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-yellow-200">
                       <div className="flex items-start justify-between mb-2">
-                        <h5 className="font-semibold text-gray-900 text-xs sm:text-sm">{t.description || t.title}</h5>
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(t.priority)}`}>
-                          {getPriorityIcon(t.priority)}
+                        <h5 className="font-semibold text-gray-900 text-xs sm:text-sm">{task.description || task.title}</h5>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(task.priority)}`}>
+                          {getPriorityIcon(task.priority)}
                         </span>
                       </div>
                       <div className="text-xs text-gray-600 space-y-1">
-                        <div>👤 {getEmployeeName(t.assigned_to)}</div>
-                        {t.site_name && <div>🏗️ {t.site_name}</div>}
-                        {t.due_date && (
-                          <div className={new Date(t.due_date) < new Date() ? "text-red-600 font-semibold" : ""}>
-                            ⏰ {format(new Date(t.due_date), "dd/MM/yyyy")}
-                                                    {new Date(t.due_date) < new Date() && ` ⚠️ ${t('tasks.overdueWarningShort')}`}
+                        <div>👤 {getEmployeeName(task.assigned_to)}</div>
+                        {task.site_name && <div>🏗️ {task.site_name}</div>}
+                        {task.due_date && (
+                          <div className={new Date(task.due_date) < new Date() ? "text-red-600 font-semibold" : ""}>
+                            ⏰ {format(new Date(task.due_date), "dd/MM/yyyy")}
+                                                    {new Date(task.due_date) < new Date() && ` ⚠️ ${t('tasks.overdueWarningShort')}`}
                       </div>
                     )}
                   </div>
                   <div className="flex gap-2 mt-3">
                     <button
-                      onClick={() => handleStatusChange(t.id, "completed")}
+                      onClick={() => handleStatusChange(task.id, "completed")}
                       className="flex-1 px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all"
                     >
                       ✅ {t('tasks.finish')}
                     </button>
                         <button
-                          onClick={() => handleDelete(t.id)}
+                          onClick={() => handleDelete(task.id)}
                           className="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold hover:bg-red-600 transition-all"
                         >
                           🗑️
@@ -914,23 +914,23 @@ export default function Tasks() {
               </h4>
               <div className="space-y-2 sm:space-y-3">
                 {filteredAndSortedTasks
-                  .filter(t => t.status === "completed")
-                  .map((t) => (
-                    <div key={t.id} className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-green-200 opacity-75">
+                  .filter(task => task.status === "completed")
+                  .map((task) => (
+                    <div key={task.id} className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-green-200 opacity-75">
                       <div className="flex items-start justify-between mb-2">
-                        <h5 className="font-semibold text-gray-900 text-xs sm:text-sm line-through">{t.description || t.title}</h5>
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(t.priority)}`}>
-                          {getPriorityIcon(t.priority)}
+                        <h5 className="font-semibold text-gray-900 text-xs sm:text-sm line-through">{task.description || task.title}</h5>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(task.priority)}`}>
+                          {getPriorityIcon(task.priority)}
                         </span>
                       </div>
                       <div className="text-xs text-gray-600 space-y-1">
-                        <div>👤 {getEmployeeName(t.assigned_to)}</div>
-                        {t.site_name && <div>🏗️ {t.site_name}</div>}
-                        {t.due_date && <div>⏰ {format(new Date(t.due_date), "dd/MM/yyyy")}</div>}
+                        <div>👤 {getEmployeeName(task.assigned_to)}</div>
+                        {task.site_name && <div>🏗️ {task.site_name}</div>}
+                        {task.due_date && <div>⏰ {format(new Date(task.due_date), "dd/MM/yyyy")}</div>}
                       </div>
                       <div className="mt-3">
                         <button
-                          onClick={() => handleDelete(t.id)}
+                          onClick={() => handleDelete(task.id)}
                           className="w-full px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold hover:bg-red-600 transition-all"
                         >
                           🗑️ Fshi
@@ -953,31 +953,31 @@ export default function Tasks() {
               </h4>
               <div className="space-y-2 sm:space-y-3">
                 {filteredAndSortedTasks
-                  .filter(t => t.due_date && new Date(t.due_date) < new Date() && t.status !== "completed")
-                  .map((t) => (
-                    <div key={t.id} className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-red-200">
+                  .filter(task => task.due_date && new Date(task.due_date) < new Date() && task.status !== "completed")
+                  .map((task) => (
+                    <div key={task.id} className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-red-200">
                       <div className="flex items-start justify-between mb-2">
-                        <h5 className="font-semibold text-gray-900 text-xs sm:text-sm">{t.description || t.title}</h5>
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(t.priority)}`}>
-                          {getPriorityIcon(t.priority)}
+                        <h5 className="font-semibold text-gray-900 text-xs sm:text-sm">{task.description || task.title}</h5>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(task.priority)}`}>
+                          {getPriorityIcon(task.priority)}
                         </span>
                       </div>
                       <div className="text-xs text-red-600 space-y-1">
-                        <div>👤 {getEmployeeName(t.assigned_to)}</div>
-                        {t.site_name && <div>🏗️ {t.site_name}</div>}
+                        <div>👤 {getEmployeeName(task.assigned_to)}</div>
+                        {task.site_name && <div>🏗️ {task.site_name}</div>}
                         <div className="font-semibold">
-                          ⏰ {format(new Date(t.due_date), "dd/MM/yyyy")} ⚠️ {t('tasks.overdueWarningShort')}
+                          ⏰ {format(new Date(task.due_date), "dd/MM/yyyy")} ⚠️ {t('tasks.overdueWarningShort')}
                         </div>
                       </div>
                       <div className="flex gap-2 mt-3">
                         <button
-                          onClick={() => handleStatusChange(t.id, "completed")}
+                          onClick={() => handleStatusChange(task.id, "completed")}
                           className="flex-1 px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold hover:bg-green-600 transition-all"
                         >
                           ✅ {t('tasks.finish')}
                         </button>
                         <button
-                          onClick={() => handleDelete(t.id)}
+                          onClick={() => handleDelete(task.id)}
                           className="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold hover:bg-red-600 transition-all"
                         >
                           🗑️
