@@ -226,37 +226,52 @@ const SystemSettings = () => {
   const handleViewLogs = async () => {
     try {
       setQuickActionLoading('logs');
-      const response = await api.get('/api/system/logs');
-      // Open logs in new window or modal
+
+      // Fetch last 200 logs from the past 24h, newest first
+      const params = new URLSearchParams({
+        startDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        limit: '200',
+        sortBy: 'timestamp',
+        sortOrder: 'DESC'
+      }).toString();
+
+      const { data } = await api.get(`/api/system/logs?${params}`);
+      const payload = data?.data || {};
+      const rows = Array.isArray(payload.logs) ? payload.logs : [];
+
+      const formatRow = (r) => {
+        const ts = r.timestamp ? new Date(r.timestamp).toISOString() : '-';
+        const sev = (r.severity || 'info').toUpperCase();
+        const act = r.action || '-';
+        const ent = r.entity_type ? `${r.entity_type}${r.entity_id ? `#${r.entity_id}` : ''}` : '';
+        const userLine = r.user_email || 'system';
+        const ip = r.ip_address || '';
+        const desc = r.description || '';
+        const meta = r.metadata ? `\n  meta: ${JSON.stringify(r.metadata, null, 2)}` : '';
+        return `[${ts}] ${sev}: ${act}${ent ? ` @ ${ent}` : ''} — ${desc} — ${userLine}${ip ? ` (${ip})` : ''}${meta}`;
+      };
+
+      const header = `System Logs\nTotal: ${payload.total ?? rows.length} | Page: ${payload.page ?? 1}/${payload.totalPages ?? 1}\n`;
+      const body = rows.length ? rows.map(formatRow).join('\n') : 'No logs available in selected window.';
+
       const logsWindow = window.open('', '_blank');
-      const logs = response.data.data?.logs || response.data.logs || 'No logs available';
       logsWindow.document.write(`
         <html>
           <head>
             <title>System Logs</title>
             <style>
               body { font-family: 'Courier New', monospace; padding: 20px; background: #f5f5f5; margin: 0; }
-              h2 { color: #333; margin-bottom: 20px; }
-              pre { 
-                background: white; 
-                padding: 15px; 
-                border-radius: 5px; 
-                overflow-x: auto; 
-                border: 1px solid #ddd;
-                white-space: pre-wrap;
-                word-wrap: break-word;
-              }
-              .header { background: #349490; color: white; padding: 10px; margin: -20px -20px 20px -20px; }
+              .header { background: #349490; color: #fff; padding: 12px 16px; margin: -20px -20px 20px -20px; font-weight: 700; }
+              pre { background: #fff; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; }
             </style>
           </head>
           <body>
-            <div class="header">
-              <h2>System Logs</h2>
-            </div>
-            <pre>${logs}</pre>
+            <div class="header">System Logs</div>
+            <pre>${header}${body}</pre>
           </body>
         </html>
       `);
+
       toast.success('Logs opened in new window');
     } catch (error) {
       console.error('Error fetching logs:', error);
