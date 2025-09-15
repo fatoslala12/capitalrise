@@ -28,51 +28,81 @@ exports.restartSystem = async (req, res) => {
   }
 };
 
-// Get system logs
+// Get system logs (paginated + filters) from audit_trail
 exports.getSystemLogs = async (req, res) => {
   try {
     const { user } = req;
-    
-    console.log(`[SYSTEM] Përdoruesi ${user.email} po shikon system logs`);
+    console.log(`[SYSTEM] ${user?.email} po shikon system logs me filtra`, req.query);
 
-    // Mock system logs (in real app, this would read from log files)
-    const mockLogs = `
-[2025-01-11 12:30:15] INFO: System started successfully
-[2025-01-11 12:30:16] INFO: Database connection established
-[2025-01-11 12:30:17] INFO: Redis cache initialized
-[2025-01-11 12:30:18] INFO: API server listening on port 5000
-[2025-01-11 12:30:19] INFO: WebSocket server started
-[2025-01-11 12:30:20] INFO: Background jobs scheduler started
-[2025-01-11 12:30:21] INFO: File upload service initialized
-[2025-01-11 12:30:22] INFO: Email service configured
-[2025-01-11 12:30:23] INFO: Notification service started
-[2025-01-11 12:30:24] INFO: All services running normally
-[2025-01-11 12:35:10] INFO: User ${user.email} logged in
-[2025-01-11 12:35:15] INFO: User ${user.email} accessed system settings
-[2025-01-11 12:35:20] INFO: System performance: CPU 23%, Memory 1.2GB, Disk 45%
-[2025-01-11 12:40:00] INFO: Scheduled backup completed successfully
-[2025-01-11 12:45:00] INFO: Database optimization completed
-[2025-01-11 12:50:00] INFO: Cache cleanup completed
-[2025-01-11 12:55:00] INFO: System health check passed
-[2025-01-11 13:00:00] INFO: All systems operational
-    `.trim();
+    // Filters
+    const {
+      q = '',
+      severity = '', // info | warning | error | high
+      action = '',   // LOGIN_SUCCESS, CREATE, UPDATE, DELETE, ERROR_CRITICAL, etc
+      entityType = '', // contracts, invoices, system, auth, etc
+      userEmail = '',
+      startDate = '',
+      endDate = '',
+      page = 1,
+      limit = 50,
+      sortBy = 'timestamp',
+      sortOrder = 'DESC'
+    } = req.query;
+
+    const safeSortBy = ['timestamp','severity','action','entity_type','user_email'].includes(sortBy) ? sortBy : 'timestamp';
+    const safeSortOrder = (String(sortOrder).toUpperCase() === 'ASC') ? 'ASC' : 'DESC';
+
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const pageSize = Math.min(Math.max(parseInt(limit) || 50, 1), 500);
+    const offset = (pageNum - 1) * pageSize;
+
+    let where = 'WHERE 1=1';
+    const params = [];
+    let i = 1;
+
+    if (severity) { where += ` AND severity = $${i++}`; params.push(severity); }
+    if (action)   { where += ` AND action = $${i++}`; params.push(action); }
+    if (entityType){ where += ` AND entity_type = $${i++}`; params.push(entityType); }
+    if (userEmail){ where += ` AND user_email ILIKE $${i++}`; params.push(`%${userEmail}%`); }
+    if (startDate){ where += ` AND timestamp >= $${i++}`; params.push(startDate); }
+    if (endDate)  { where += ` AND timestamp <= $${i++}`; params.push(endDate); }
+    if (q) {
+      where += ` AND (
+        COALESCE(description,'') ILIKE $${i} OR 
+        COALESCE(entity_type,'') ILIKE $${i} OR
+        COALESCE(action,'') ILIKE $${i} OR
+        COALESCE(user_email,'') ILIKE $${i}
+      )`;
+      params.push(`%${q}%`); i++;
+    }
+
+    // Count
+    const countResult = await pool.query(`SELECT COUNT(*)::int as total FROM audit_trail ${where}`, params);
+    const total = countResult.rows[0]?.total || 0;
+
+    // Data
+    const dataResult = await pool.query(
+      `SELECT id, timestamp, user_email, user_role, action, entity_type, entity_id, severity, description, ip_address, user_agent, metadata
+       FROM audit_trail
+       ${where}
+       ORDER BY ${safeSortBy} ${safeSortOrder}
+       LIMIT $${i++} OFFSET $${i++}`,
+      [...params, pageSize, offset]
+    );
 
     res.json({
       success: true,
       data: {
-        logs: mockLogs,
-        lastUpdated: new Date().toISOString(),
-        totalLines: mockLogs.split('\n').length
+        page: pageNum,
+        limit: pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+        logs: dataResult.rows
       }
     });
-
   } catch (error) {
     console.error('[ERROR] Gabim në marrjen e system logs:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Gabim gjatë marrjes së system logs',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Gabim gjatë marrjes së system logs', error: error.message });
   }
 };
 
