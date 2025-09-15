@@ -245,7 +245,6 @@ const SystemSettings = () => {
     try {
       setQuickActionLoading('logs');
 
-      // Fetch last 200 logs from the past 24h, newest first
       const params = new URLSearchParams({
         startDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         limit: '200',
@@ -257,35 +256,59 @@ const SystemSettings = () => {
       const payload = data?.data || {};
       const rows = Array.isArray(payload.logs) ? payload.logs : [];
 
-      const formatRow = (r) => {
-        const ts = r.timestamp ? new Date(r.timestamp).toISOString() : '-';
+      const colorFor = (sev) => {
+        const s = String(sev || 'info').toLowerCase();
+        if (s.includes('error')) return { chip:'#ef4444', bg:'#fef2f2', text:'#991b1b' };
+        if (s.includes('warn') || s.includes('high')) return { chip:'#f59e0b', bg:'#fff7ed', text:'#92400e' };
+        return { chip:'#06b6d4', bg:'#ecfeff', text:'#0e7490' };
+      };
+
+      const card = (r, i) => {
+        const ts = r.timestamp ? new Date(r.timestamp).toLocaleString() : '-';
         const sev = (r.severity || 'info').toUpperCase();
         const act = r.action || '-';
         const ent = r.entity_type ? `${r.entity_type}${r.entity_id ? `#${r.entity_id}` : ''}` : '';
-        const userLine = r.user_email || 'system';
+        const user = r.user_email || 'system';
         const ip = r.ip_address || '';
         const desc = r.description || '';
-        const meta = r.metadata ? `\n  meta: ${JSON.stringify(r.metadata, null, 2)}` : '';
-        return `[${ts}] ${sev}: ${act}${ent ? ` @ ${ent}` : ''} — ${desc} — ${userLine}${ip ? ` (${ip})` : ''}${meta}`;
+        const meta = r.metadata ? JSON.stringify(r.metadata, null, 2) : '';
+        const c = colorFor(sev);
+        const id = `meta_${i}`;
+        return `
+          <div style=\"background:${c.bg};border:1px solid #e5e7eb;border-left:6px solid ${c.chip};border-radius:10px;padding:14px;margin-bottom:12px;\">\n
+            <div style=\"display:flex;align-items:center;gap:8px;margin-bottom:6px;\">\n
+              <span style=\"font-weight:700;color:${c.text};padding:2px 8px;background:#fff;border:1px solid #e5e7eb;border-radius:999px;\">${sev}</span>\n
+              <span style=\"font-weight:600;color:#111827;\">${act}${ent ? ` · <span style=\\\"color:#374151\\\">${ent}</span>` : ''}</span>\n
+              <span style=\"margin-left:auto;color:#374151;font-size:12px;\">${ts}</span>\n
+            </div>\n
+            <div style=\"color:#1f2937;margin-bottom:6px;\">${desc}</div>\n
+            <div style=\"color:#334155;font-size:13px;\">${user}${ip ? ` · <span style=\\\"color:#64748b\\\">${ip}</span>` : ''}</div>\n
+            ${meta ? `\n
+              <button onclick=\"(function(){var el=document.getElementById('${id}'); el.style.display = el.style.display==='none'?'block':'none';})()\" style=\"margin-top:8px;background:${c.chip};color:#fff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;\">Toggle meta</button>\n
+              <pre id=\"${id}\" style=\"display:none;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px;margin-top:8px;white-space:pre-wrap;\">${meta}</pre>\n
+            ` : ''}\n
+          </div>\n
+        `;
       };
 
-      const header = `System Logs\nTotal: ${payload.total ?? rows.length} | Page: ${payload.page ?? 1}/${payload.totalPages ?? 1}\n`;
-      const body = rows.length ? rows.map(formatRow).join('\n') : 'No logs available in selected window.';
+      const header = `Total: ${payload.total ?? rows.length} | Page: ${payload.page ?? 1}/${payload.totalPages ?? 1}`;
+      const body = rows.length ? rows.map(card).join('') : '<div style=\"color:#334155\">No logs available in selected window.</div>';
 
-      const logsWindow = window.open('', '_blank');
-      logsWindow.document.write(`
+      const w = window.open('', '_blank');
+      w.document.write(`
         <html>
           <head>
             <title>System Logs</title>
             <style>
-              body { font-family: 'Courier New', monospace; padding: 20px; background: #f5f5f5; margin: 0; }
-              .header { background: #349490; color: #fff; padding: 12px 16px; margin: -20px -20px 20px -20px; font-weight: 700; }
-              pre { background: #fff; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; }
+              body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;padding:20px;background:#f5f7fa;margin:0}
+              .header{background:linear-gradient(90deg,#349490,#2a6b66);color:#fff;padding:14px 18px;margin:-20px -20px 16px -20px;font-weight:700;position:sticky;top:0}
+              .toolbar{background:#fff;border:1px solid #e5e7eb;padding:10px 12px;border-radius:10px;margin-bottom:12px;color:#334155}
             </style>
           </head>
           <body>
-            <div class="header">System Logs</div>
-            <pre>${header}${body}</pre>
+            <div class=\"header\">System Logs</div>
+            <div class=\"toolbar\">${header}</div>
+            ${body}
           </body>
         </html>
       `);
