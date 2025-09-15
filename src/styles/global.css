@@ -746,7 +746,6 @@ p {
     max-width: calc(100vw - 20rem);
     overflow-x: hidden;
   }
-}
 
 /* Mobile: Menu hidden by default */
 @media (max-width: 1023px) {
