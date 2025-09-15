@@ -320,8 +320,8 @@ export const ThemeProvider = ({ children }) => {
         // Store the custom theme as active
         localStorage.setItem('activeCustomTheme', JSON.stringify(customTheme));
       } else {
-        // Fallback to light theme if custom theme not found
-        themeConfig = themes['light'];
+        // Fallback to test1 theme if custom theme not found
+        themeConfig = themes['test1'];
         localStorage.removeItem('activeCustomTheme');
       }
     } else {
@@ -331,7 +331,10 @@ export const ThemeProvider = ({ children }) => {
       }
     }
     
-    if (!themeConfig) return;
+    if (!themeConfig) {
+      // Fallback to test1 theme if theme not found
+      themeConfig = themes['test1'];
+    }
 
     const root = document.documentElement;
     
@@ -410,15 +413,33 @@ export const ThemeProvider = ({ children }) => {
       const savedTheme = localStorage.getItem('theme');
       if (savedTheme) {
         setTheme(savedTheme);
+        applyTheme(savedTheme);
+      } else {
+        // Apply default test1 theme immediately
+        setTheme('test1');
+        applyTheme('test1');
       }
       
-      await loadCustomThemes();
-      await loadActiveTheme();
+      // Load custom themes and active theme in background
+      try {
+        await loadCustomThemes();
+        await loadActiveTheme();
+      } catch (error) {
+        console.warn('Could not load themes from API, using defaults:', error);
+      }
+      
       setIsInitialized(true);
     };
     
     initializeTheme();
-  }, [loadCustomThemes, loadActiveTheme, setTheme]);
+  }, [loadCustomThemes, loadActiveTheme, setTheme, applyTheme]);
+
+  // Apply theme when it changes
+  useEffect(() => {
+    if (theme) {
+      applyTheme(theme);
+    }
+  }, [theme, applyTheme]);
 
   // Listen for system theme changes
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { MobileSidebar } from "../components/ui/Layout";
@@ -45,8 +45,17 @@ export default function MainLayout() {
   const { isInitialized } = useTheme();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(() => {
+    // Load sidebar state from localStorage, default to true
+    const saved = localStorage.getItem('sidebarOpen');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const { t } = useTranslation();
+
+  // Save sidebar state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('sidebarOpen', JSON.stringify(isDesktopSidebarOpen));
+  }, [isDesktopSidebarOpen]);
 
   const getUserDisplayName = () => {
     if (user?.firstName && user?.lastName) {
@@ -140,9 +149,9 @@ export default function MainLayout() {
   }
 
   return (
-    <div className="relative h-screen w-full bg-gray-50 overflow-hidden">
-      {/* Desktop Sidebar */}
-      <aside className={`desktop-sidebar hidden lg:flex w-80 sidebar-modern flex-shrink-0 shadow-2xl transition-all duration-300 ease-in-out fixed left-0 top-0 h-full z-40 ${
+    <div className="flex h-screen w-full bg-gray-50 overflow-hidden">
+      {/* Desktop Sidebar - Always visible on desktop */}
+      <aside className={`desktop-sidebar hidden lg:flex w-80 sidebar-modern flex-shrink-0 shadow-2xl transition-all duration-300 ease-in-out ${
         isDesktopSidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <SidebarContent />
@@ -169,11 +178,9 @@ export default function MainLayout() {
         </MobileSidebar>
       </div>
 
-      {/* Main Area - Full width, positioned relative to sidebar state */}
-      <div className={`flex flex-col min-w-0 h-full transition-all duration-300 ease-in-out ${
-        isDesktopSidebarOpen ? 'lg:ml-80 lg:w-[calc(100%-20rem)]' : 'lg:ml-0 lg:w-full'
-      } w-full`}>
-        {/* Header - Always full width */}
+      {/* Main Area - Always takes remaining space */}
+      <div className="flex flex-col flex-1 min-w-0 h-full">
+        {/* Header - Always visible */}
         <header className="header-modern flex-shrink-0 shadow-lg border-b relative z-50 w-full">
           <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between w-full">
             {/* Menu toggle buttons */}
@@ -240,10 +247,8 @@ export default function MainLayout() {
           </div>
         </header>
 
-        {/* Content - Full width when sidebar is hidden on desktop */}
-        <main className={`flex-1 bg-gray-50 overflow-auto p-4 sm:p-6 w-full ${
-          isDesktopSidebarOpen ? 'main-content-constrained' : ''
-        }`}>
+        {/* Content - Always fills remaining space */}
+        <main className="flex-1 bg-gray-50 overflow-auto p-4 sm:p-6 w-full">
           <Suspense fallback={<PageLoader />}>
             <Outlet />
           </Suspense>
