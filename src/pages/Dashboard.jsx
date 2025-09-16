@@ -167,7 +167,8 @@ function TopContractsBarChart({ contracts }) {
 }
 
 export default function Dashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const tr = (sq, en) => (i18n?.language === 'en' ? en : sq);
   const { user } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [hourData, setHourData] = useState({});
@@ -309,7 +310,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <PageLoader text="Duke ngarkuar dashboard-in..." />;
+    return <PageLoader text={tr('Duke ngarkuar dashboard-in...','Loading dashboard...')} />;
   }
 
   return (
@@ -729,7 +730,7 @@ export default function Dashboard() {
                       <span className="font-semibold text-emerald-700">{site}</span>
                     </div>
                     <div className="mt-2 text-sm text-emerald-700">
-                      Punonjës aktivë: {employees.filter(emp => 
+                      {tr('Punonjës aktivë:','Active employees:')} {employees.filter(emp => 
                         emp.workplace && Array.isArray(emp.workplace) && 
                         emp.workplace.includes(site) && emp.status === 'Aktiv'
                       ).length}
@@ -797,7 +798,7 @@ export default function Dashboard() {
           <section className="bg-gradient-to-br from-emerald-50 to-white rounded-xl shadow-sm border border-emerald-100 p-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <span className="text-emerald-600 text-lg">⚡</span>
-              Aksione të Shpejta
+              {tr('Aksione të Shpejta','Quick Actions')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Link
@@ -805,8 +806,8 @@ export default function Dashboard() {
                 className="bg-gradient-to-br from-emerald-100 to-green-200 border border-green-300 text-green-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-emerald-200 hover:to-green-300 transition-all duration-300 text-center group"
               >
                 <div className="text-2xl mb-2 text-emerald-600 group-hover:scale-110 transition-transform">👷</div>
-                <div className="font-semibold">Menaxho Punonjësit</div>
-                <div className="text-sm opacity-80">Shto, edito dhe menaxho punonjësit</div>
+                <div className="font-semibold">{tr('Menaxho Punonjësit','Manage Employees')}</div>
+                <div className="text-sm opacity-80">{tr('Shto, edito dhe menaxho punonjësit','Add, edit and manage employees')}</div>
               </Link>
 
               <Link
@@ -814,8 +815,8 @@ export default function Dashboard() {
                 className="bg-gradient-to-br from-teal-100 to-teal-200 border border-teal-300 text-teal-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-teal-200 hover:to-teal-300 transition-all duration-300 text-center group"
               >
                 <div className="text-2xl mb-2 text-teal-600 group-hover:scale-110 transition-transform">🕒</div>
-                <div className="font-semibold">Orët e Punës</div>
-                <div className="text-sm opacity-80">Regjistro dhe menaxho orët e punës</div>
+                <div className="font-semibold">{tr('Orët e Punës','Work Hours')}</div>
+                <div className="text-sm opacity-80">{tr('Regjistro dhe menaxho orët e punës','Log and manage work hours')}</div>
               </Link>
 
               <Link
@@ -832,8 +833,8 @@ export default function Dashboard() {
                 className="bg-gradient-to-br from-green-100 to-green-200 border border-green-300 text-green-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-green-200 hover:to-green-300 transition-all duration-300 text-center group"
               >
                 <div className="text-2xl mb-2 text-green-600 group-hover:scale-110 transition-transform">📋</div>
-                <div className="font-semibold">Detyrat e Mia</div>
-                <div className="text-sm opacity-80">Menaxho detyrat tuaja</div>
+                <div className="font-semibold">{tr('Detyrat e Mia','My Tasks')}</div>
+                <div className="text-sm opacity-80">{tr('Menaxho detyrat tuaja','Manage your tasks')}</div>
               </Link>
             </div>
           </section>
