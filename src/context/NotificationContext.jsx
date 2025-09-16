@@ -124,11 +124,11 @@ export const NotificationProvider = ({ children }) => {
 
     console.log('[DEBUG] Setting up polling for user:', user.id);
     
-    // Poll çdo 5 sekonda për updates
+    // Poll më rrallë për të shmangur 429 (Too Many Requests)
     const pollingInterval = setInterval(() => {
       console.log('[DEBUG] Polling for notifications...');
       fetchNotifications();
-    }, 5000); // Poll çdo 5 sekonda
+    }, 30000); // çdo 30 sekonda
 
     return () => {
       console.log('[DEBUG] Cleaning up polling');

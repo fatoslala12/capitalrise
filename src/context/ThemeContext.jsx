@@ -371,8 +371,14 @@ export const ThemeProvider = ({ children }) => {
     }
   }, []);
 
-  // Load active theme from API
+  // Load active theme from API (opt-in only)
   const loadActiveTheme = useCallback(async () => {
+    const shouldUseDbTheme = localStorage.getItem('useDbTheme') === 'true';
+    if (!shouldUseDbTheme) {
+      // Keep current theme from code/localStorage; do not override from DB
+      applyTheme(theme);
+      return;
+    }
     try {
       const response = await api.get('/api/themes/active/current');
       if (response.data.success) {
@@ -423,6 +429,7 @@ export const ThemeProvider = ({ children }) => {
       // Load custom themes and active theme in background
       try {
         await loadCustomThemes();
+        // Only load active theme from DB if user opted-in via localStorage
         await loadActiveTheme();
       } catch (error) {
         console.warn('Could not load themes from API, using defaults:', error);
