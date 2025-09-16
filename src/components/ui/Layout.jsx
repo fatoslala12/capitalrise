@@ -1,4 +1,5 @@
 // Layout components for responsive design
+import React from 'react';
 
 export function Container({ children, size = 'full', className = '' }) {
   const sizeClasses = {
@@ -129,6 +130,20 @@ export function ResponsiveTable({ children, className = '' }) {
 
 // Mobile-friendly sidebar
 export function MobileSidebar({ isOpen, onClose, children }) {
+  // Prevent body scroll when mobile menu is open
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    // Cleanup function to restore scroll when component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   return (
     <>
       {/* Overlay */}
@@ -136,6 +151,7 @@ export function MobileSidebar({ isOpen, onClose, children }) {
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden backdrop-blur-sm"
           onClick={onClose}
+          style={{ touchAction: 'none' }}
         />
       )}
       

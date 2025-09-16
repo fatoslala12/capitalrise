@@ -45,6 +45,7 @@ export default function MainLayout() {
   const { isInitialized } = useTheme();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(() => {
     // Load sidebar state from localStorage, default to true
     const saved = localStorage.getItem('sidebarOpen');
@@ -166,8 +167,14 @@ export default function MainLayout() {
           <div className="h-full sidebar-modern relative">
             {/* Close button for mobile */}
             <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="absolute top-4 right-4 z-10 p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors duration-200"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsMobileMenuOpen(false);
+              }}
+              className="absolute top-4 right-4 z-10 p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors duration-200 touch-manipulation"
+              type="button"
+              aria-label="Close mobile menu"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -187,8 +194,14 @@ export default function MainLayout() {
             <div className="flex items-center gap-4">
               {/* Mobile menu button */}
               <button
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsMobileMenuOpen(true);
+                }}
+                className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200 touch-manipulation"
+                type="button"
+                aria-label="Open mobile menu"
               >
                 <span className="sr-only">Open sidebar</span>
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

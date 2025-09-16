@@ -731,7 +731,9 @@ p {
   top: 0;
   z-index: 50;
 }
-  
+
+/* Desktop: Hide mobile sidebar */
+@media (min-width: 1024px) {
   /* Ensure mobile sidebar is completely hidden on desktop */
   .mobile-sidebar-overlay {
     display: none !important;
@@ -746,6 +748,7 @@ p {
     max-width: calc(100vw - 20rem);
     overflow-x: hidden;
   }
+}
 
 /* Mobile: Menu hidden by default */
 @media (max-width: 1023px) {
@@ -759,6 +762,11 @@ p {
     display: none !important;
   }
   
+  /* Ensure mobile sidebar is visible on mobile */
+  .mobile-sidebar {
+    display: block !important;
+  }
+  
   /* Mobile header improvements */
   .mobile-header-actions {
     gap: 0.5rem;
@@ -768,6 +776,18 @@ p {
     min-width: 70px;
     font-size: 0.75rem;
     padding: 0.5rem 0.75rem;
+  }
+  
+  /* Mobile menu button improvements */
+  .lg\\:hidden button {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Ensure mobile sidebar overlay works */
+  .mobile-sidebar .fixed {
+    pointer-events: auto;
   }
 }
 
