@@ -676,7 +676,7 @@ export default function Dashboard() {
             <div className="bg-gradient-to-br from-emerald-50 to-green-100 border border-emerald-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-emerald-600 text-sm font-medium">Punonjësit</p>
+                  <p className="text-emerald-600 text-sm font-medium">Employees</p>
                   <p className="text-2xl font-bold text-emerald-800">{managerStats.totalEmployees}</p>
                 </div>
                 <div className="text-3xl text-emerald-500">👷</div>
@@ -686,7 +686,7 @@ export default function Dashboard() {
             <div className="bg-gradient-to-br from-emerald-50 to-teal-100 border border-teal-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-teal-600 text-sm font-medium">Orët e Javës</p>
+                  <p className="text-teal-600 text-sm font-medium">Hours This Week</p>
                   <p className="text-2xl font-bold text-teal-800">{managerStats.totalHoursThisWeek}</p>
                 </div>
                 <div className="text-3xl text-teal-500">⏰</div>
@@ -696,7 +696,7 @@ export default function Dashboard() {
             <div className="bg-gradient-to-br from-emerald-50 to-green-100 border border-green-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-700 text-sm font-medium">Paga e Javës</p>
+                  <p className="text-green-700 text-sm font-medium">Pay This Week</p>
                   <p className="text-2xl font-bold text-green-800">£{managerStats.totalPayThisWeek.toFixed(2)}</p>
                 </div>
                 <div className="text-3xl text-green-600">💰</div>
@@ -706,7 +706,7 @@ export default function Dashboard() {
             <div className="bg-gradient-to-br from-emerald-50 to-green-100 border border-emerald-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-emerald-600 text-sm font-medium">Detyrat</p>
+                  <p className="text-emerald-600 text-sm font-medium">Tasks</p>
                   <p className="text-2xl font-bold text-emerald-800">{managerStats.pendingTasks}</p>
                 </div>
                 <div className="text-3xl text-emerald-500">📋</div>
@@ -718,7 +718,7 @@ export default function Dashboard() {
           <section className="bg-gradient-to-br from-emerald-50 to-white rounded-xl shadow-sm border border-emerald-100 p-6 mb-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <span className="text-emerald-600 text-lg">🏗️</span>
-              Site-t që Menaxhoni
+              Sites You Manage
             </h3>
             {managerStats.mySites.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -738,7 +738,7 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-emerald-700 italic">Nuk keni site të caktuar për momentin.</p>
+              <p className="text-emerald-700 italic">You don't have assigned sites at the moment.</p>
             )}
           </section>
 
@@ -746,11 +746,11 @@ export default function Dashboard() {
           <section className="space-y-4">
             <h3 className="text-xl font-semibold flex items-center gap-2">
               <span className="text-emerald-600 text-lg">📌</span>
-              Detyrat e tua (në vazhdim)
+              Your ongoing tasks
             </h3>
 
             {tasks.filter((t) => t.status === "ongoing" || t.status === "pending").length === 0 ? (
-              <p className="text-blue-600 italic">Nuk ke detyra aktive për momentin.</p>
+              <p className="text-emerald-700 italic">No active tasks right now.</p>
             ) : (
               <ul className="space-y-3">
                 {tasks
@@ -838,24 +838,24 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* Informacion për Menaxherin - Green Theme */}
+          {/* Manager Information - Green Theme */}
           <section className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-6 border border-emerald-200">
-            <h3 className="text-lg font-semibold mb-3 text-emerald-800">ℹ️ Informacion për Menaxherin</h3>
+            <h3 className="text-lg font-semibold mb-3 text-emerald-800">ℹ️ Manager Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-emerald-700 mb-2">
-                  <strong>Roli juaj:</strong> Menaxher - Menaxhoni punonjësit dhe orët e punës për site-t që ju janë caktuar.
+                  <strong>Your role:</strong> Manager - You manage employees and work hours for your assigned sites.
                 </p>
                 <p className="text-emerald-700 mb-2">
-                  <strong>Site-t tuaja:</strong> {managerStats.mySites.join(", ") || "Nuk keni site të caktuar"}
+                  <strong>Your sites:</strong> {managerStats.mySites.join(", ") || "No assigned sites"}
                 </p>
               </div>
               <div>
                 <p className="text-emerald-700 mb-2">
-                  <strong>Punonjës aktivë:</strong> {managerStats.activeEmployees} nga {managerStats.totalEmployees} total
+                  <strong>Active employees:</strong> {managerStats.activeEmployees} of {managerStats.totalEmployees} total
                 </p>
                 <p className="text-emerald-700 mb-2">
-                  <strong>Detyrat e përfunduara:</strong> {managerStats.completedTasks} nga {managerStats.completedTasks + managerStats.pendingTasks} total
+                  <strong>Completed tasks:</strong> {managerStats.completedTasks} of {managerStats.completedTasks + managerStats.pendingTasks} total
                 </p>
               </div>
             </div>
