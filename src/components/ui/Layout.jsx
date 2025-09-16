@@ -134,14 +134,14 @@ export function MobileSidebar({ isOpen, onClose, children }) {
       {/* Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black bg-opacity-50 z-[60] lg:hidden backdrop-blur-sm"
           onClick={onClose}
         />
       )}
       
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-80 sm:w-96 transform transition-all duration-300 ease-in-out lg:hidden
+        fixed inset-y-0 left-0 z-[70] w-80 sm:w-96 transform transition-all duration-300 ease-in-out lg:hidden
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {children}
