@@ -1,6 +1,7 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import Button from './ui/Button';
+import { withTranslation, useTranslation } from 'react-i18next';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -86,6 +87,7 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      const { t } = this.props;
       return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-4">
           <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 border border-red-200">
@@ -172,6 +174,7 @@ class ErrorBoundary extends React.Component {
 
 // Hook për error handling në functional components
 export const useErrorHandler = () => {
+  const { t } = useTranslation();
   const handleError = (error, context = '') => {
     console.error(`🚨 Error in ${context}:`, error);
     
@@ -338,4 +341,4 @@ export const LoadingWithError = ({ loading, error, onRetry, children }) => {
   return children;
 };
 
-export default ErrorBoundary; 
+export default withTranslation()(ErrorBoundary); 
