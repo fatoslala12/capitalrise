@@ -731,8 +731,9 @@ p {
   top: 0;
   z-index: 50;
 }
-  
-  /* Ensure mobile sidebar is completely hidden on desktop */
+
+/* Ensure mobile sidebar is completely hidden on desktop */
+@media (min-width: 1024px) {
   .mobile-sidebar-overlay {
     display: none !important;
   }
@@ -740,6 +741,7 @@ p {
   .mobile-sidebar {
     display: none !important;
   }
+}
   
   /* Ensure content doesn't overflow when sidebar is open */
   .main-content-constrained {
