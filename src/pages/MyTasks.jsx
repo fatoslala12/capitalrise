@@ -200,10 +200,10 @@ export default function MyTasks() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
-          <h2 className="text-2xl font-bold text-blue-600 mb-4">Duke ngarkuar detyrat...</h2>
+          <div className="animate-spin rounded-full h-32 w-32 border-4 border-green-200 border-t-emerald-600 mx-auto mb-6"></div>
+          <h2 className="text-2xl font-bold text-emerald-700 mb-4">Duke ngarkuar detyrat...</h2>
         </div>
       </div>
     );
@@ -216,20 +216,20 @@ export default function MyTasks() {
         <div className={`fixed top-16 md:top-20 right-2 md:right-4 z-50 px-4 md:px-6 py-3 md:py-4 rounded-lg shadow-lg text-white font-semibold transform transition-all duration-300 text-sm md:text-base ${
           toast.type === 'success' ? 'bg-green-500' : 
           toast.type === 'error' ? 'bg-red-500' : 
-          'bg-blue-500'
+          'bg-emerald-600'
         }`}>
           {toast.message}
         </div>
       )}
 
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+        <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-green-700">
           📌 Detyrat e Mia
         </h2>
         {user?.role === "manager" && (
           <button
             onClick={() => setShowAddTaskModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
           >
             ➕ Shto Detyrë të Re
           </button>
@@ -238,7 +238,7 @@ export default function MyTasks() {
 
       {/* 📊 Statistika */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-3 md:p-4 text-center">
+        <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl p-3 md:p-4 text-center">
           <div className="text-lg md:text-xl lg:text-2xl font-bold">{total}</div>
           <div className="text-xs md:text-sm">Total</div>
         </div>
@@ -246,7 +246,7 @@ export default function MyTasks() {
           <div className="text-lg md:text-xl lg:text-2xl font-bold">{completed}</div>
           <div className="text-xs md:text-sm">Përfunduara</div>
         </div>
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-3 md:p-4 text-center">
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl p-3 md:p-4 text-center">
           <div className="text-lg md:text-xl lg:text-2xl font-bold">{inProgress}</div>
           <div className="text-xs md:text-sm">Në Progres</div>
         </div>
@@ -257,12 +257,12 @@ export default function MyTasks() {
       </div>
 
       {/* 🔽 Filtra */}
-      <div className="bg-white rounded-xl p-3 md:p-4 shadow-lg border border-blue-100">
+      <div className="bg-white rounded-xl p-3 md:p-4 shadow-lg border border-emerald-100">
         <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-blue-700">Statusi:</label>
+            <label className="text-sm font-medium text-emerald-700">Statusi:</label>
             <select
-              className="border-2 border-blue-200 p-2 rounded-xl focus:ring-2 focus:ring-blue-300"
+              className="border-2 border-emerald-200 p-2 rounded-xl focus:ring-2 focus:ring-emerald-300"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -275,9 +275,9 @@ export default function MyTasks() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-blue-700">Prioriteti:</label>
+            <label className="text-sm font-medium text-emerald-700">Prioriteti:</label>
             <select
-              className="border-2 border-blue-200 p-2 rounded-xl focus:ring-2 focus:ring-blue-300"
+              className="border-2 border-emerald-200 p-2 rounded-xl focus:ring-2 focus:ring-emerald-300"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
             >
@@ -289,9 +289,9 @@ export default function MyTasks() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-blue-700">Site-i:</label>
+            <label className="text-sm font-medium text-emerald-700">Site-i:</label>
             <select
-              className="border-2 border-blue-200 p-2 rounded-xl focus:ring-2 focus:ring-blue-300"
+              className="border-2 border-emerald-200 p-2 rounded-xl focus:ring-2 focus:ring-emerald-300"
               value={siteFilter}
               onChange={(e) => setSiteFilter(e.target.value)}
             >
@@ -305,9 +305,9 @@ export default function MyTasks() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-blue-700">Renditja:</label>
+            <label className="text-sm font-medium text-emerald-700">Renditja:</label>
             <select
-              className="border-2 border-blue-200 p-2 rounded-xl focus:ring-2 focus:ring-blue-300"
+              className="border-2 border-emerald-200 p-2 rounded-xl focus:ring-2 focus:ring-emerald-300"
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
             >
@@ -330,7 +330,7 @@ export default function MyTasks() {
           {filteredTasks.map((task) => (
             <div
               key={task.id}
-              className="bg-white rounded-xl p-4 md:p-6 shadow-lg border border-blue-200 hover:shadow-xl transition-all duration-300"
+              className="bg-white rounded-xl p-4 md:p-6 shadow-lg border border-emerald-200 hover:shadow-xl transition-all duration-300"
             >
               <div className="flex flex-col md:flex-row md:items-start gap-4">
                 {/* Prioriteti dhe statusi */}
@@ -348,10 +348,10 @@ export default function MyTasks() {
 
                 {/* Detajet kryesore */}
                 <div className="flex-1">
-                  <h4 className="text-xl font-bold text-blue-800 mb-2">
+                  <h4 className="text-xl font-bold text-emerald-800 mb-2">
                     {task.title}
                     {user?.role === 'manager' && (
-                      <span className="ml-2 text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 align-middle">
+                      <span className="ml-2 text-sm font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 align-middle">
                         {getEmployeeName(task)}
                       </span>
                     )}
@@ -374,7 +374,7 @@ export default function MyTasks() {
                       <span className="flex items-center gap-2">
                         <span>🏗️</span>
                         <span className="font-semibold">Site:</span>
-                        <span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                        <span className="px-2 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
                           {task.site}
                         </span>
                       </span>
@@ -396,7 +396,7 @@ export default function MyTasks() {
                     <select
                       value={task.status}
                       onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                      className="p-2 border-2 border-blue-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-300"
+                      className="p-2 border-2 border-emerald-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-300"
                     >
                       <option value="pending">⏳ Në pritje</option>
                       <option value="in_progress">🔄 Në progres</option>
@@ -428,18 +428,18 @@ export default function MyTasks() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             {/* Header me gradient */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-emerald-600 to-green-600 text-white p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="text-3xl">➕</div>
                   <div>
                     <h3 className="text-2xl font-bold">Shto Detyrë të Re</h3>
-                    <p className="text-blue-100 text-sm">Cakto detyra për punonjësit e site-ve tuaj</p>
+                    <p className="text-green-100 text-sm">Cakto detyra për punonjësit e site-ve tuaj</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowAddTaskModal(false)}
-                  className="text-white hover:text-blue-100 text-3xl font-light transition-colors"
+                  className="text-white hover:text-emerald-100 text-3xl font-light transition-colors"
                 >
                   ×
                 </button>
@@ -461,7 +461,7 @@ export default function MyTasks() {
                       required
                       value={newTask.title}
                       onChange={(e) => setNewTask({...newTask, title: e.target.value})}
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg"
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg"
                       placeholder="Shkruaj titullin e detyrës"
                     />
                   </div>
@@ -475,7 +475,7 @@ export default function MyTasks() {
                       type="text"
                       value={newTask.description}
                       onChange={(e) => setNewTask({...newTask, description: e.target.value})}
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg"
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg"
                       placeholder="Përshkrimi i detyrës"
                     />
                   </div>
@@ -492,7 +492,7 @@ export default function MyTasks() {
                       required
                       value={newTask.assigned_to}
                       onChange={(e) => setNewTask({...newTask, assigned_to: e.target.value})}
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg bg-white"
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg bg-white"
                     >
                       <option value="">Zgjidh punonjësin</option>
                       {availableEmployees.map(emp => (
@@ -512,7 +512,7 @@ export default function MyTasks() {
                       required
                       value={newTask.site_name}
                       onChange={(e) => setNewTask({...newTask, site_name: e.target.value})}
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg bg-white"
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg bg-white"
                     >
                       <option value="">Zgjidh site-in</option>
                       {availableSites.map(site => (
@@ -533,7 +533,7 @@ export default function MyTasks() {
                       type="date"
                       value={newTask.due_date}
                       onChange={(e) => setNewTask({...newTask, due_date: e.target.value})}
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg"
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg"
                     />
                   </div>
                   
@@ -545,7 +545,7 @@ export default function MyTasks() {
                     <select
                       value={newTask.priority}
                       onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 text-lg bg-white"
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg bg-white"
                     >
                       <option value="low">🟢 E ulët</option>
                       <option value="medium">🟡 Mesatare</option>
@@ -565,7 +565,7 @@ export default function MyTasks() {
                   </button>
                   <button
                     type="submit"
-                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     ✅ Shto Detyrën
                   </button>

@@ -253,7 +253,8 @@ export default function MyProfile() {
             rate: val.rate || employee.hourly_rate,
           });
         }
-      });
+      }
+    });
   });
 
   // Për filtrim sipas site-it
