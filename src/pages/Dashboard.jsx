@@ -363,7 +363,7 @@ export default function Dashboard() {
                 <div>
                   <p className="text-green-100 text-xs md:text-sm">{t('dashboard.tasks')}</p>
                   <p className="text-xl md:text-2xl lg:text-3xl font-bold">
-                    {tasks.filter(t => t.assignedTo === user.email && t.status === "ongoing").length}
+                    {tasks.filter(task => task.assignedTo === user.email && task.status === "ongoing").length}
                   </p>
                 </div>
                 <div className="text-2xl md:text-3xl lg:text-4xl">📋</div>
@@ -407,7 +407,7 @@ export default function Dashboard() {
                 Shiko të gjitha →
               </Link>
             </div>
-            {tasks.filter((t) => t.assignedTo === user.email).length === 0 ? (
+            {tasks.filter((task) => task.assignedTo === user.email).length === 0 ? (
               <div className="text-center py-8">
                 <div className="text-6xl mb-4">🎉</div>
                 <p className="text-gray-500 text-lg">Nuk ke detyra aktive për momentin!</p>
@@ -416,30 +416,30 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-4">
                 {tasks
-                  .filter((t) => t.assignedTo === user.email)
+                  .filter((task) => task.assignedTo === user.email)
                   .slice(0, 3)
-                  .map((t) => (
+                  .map((task) => (
                     <div
-                      key={t.id}
+                      key={task.id}
                       className="flex items-center justify-between bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 px-6 py-4 rounded-xl shadow-sm hover:shadow-md transition"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                          <h4 className="font-semibold text-gray-800">{t.description || t.title}</h4>
+                          <h4 className="font-semibold text-gray-800">{task.description || task.title}</h4>
                         </div>
                         <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                          {t.siteName && (
+                          {task.siteName && (
                             <span className="flex items-center gap-1">
-                              <span>📍</span> {t.siteName}
+                              <span>📍</span> {task.siteName}
                             </span>
                           )}
-                          {t.dueDate && (
-                            <span className={`flex items-center gap-1 ${new Date(t.dueDate) < new Date() ? 'text-red-600 font-semibold' : ''}`}>
+                          {task.dueDate && (
+                            <span className={`flex items-center gap-1 ${new Date(task.dueDate) < new Date() ? 'text-red-600 font-semibold' : ''}`}>
                               <span>⏰</span> 
-                              {new Date(t.dueDate) < new Date() 
+                              {new Date(task.dueDate) < new Date() 
                                 ? "Ka kaluar afati!" 
-                                : `Afat: ${new Date(t.dueDate).toLocaleDateString()}`
+                                : `Afat: ${new Date(task.dueDate).toLocaleDateString()}`
                               }
                             </span>
                           )}
@@ -750,37 +750,37 @@ export default function Dashboard() {
               Your ongoing tasks
             </h3>
 
-            {tasks.filter((t) => t.status === "ongoing" || t.status === "pending").length === 0 ? (
+            {tasks.filter((task) => task.status === "ongoing" || task.status === "pending").length === 0 ? (
               <p className="text-emerald-700 italic">No active tasks right now.</p>
             ) : (
               <ul className="space-y-3">
                 {tasks
-                  .filter((t) => t.status === "ongoing" || t.status === "pending")
+                  .filter((task) => task.status === "ongoing" || task.status === "pending")
                   .slice(0, 3)
-                  .map((t) => (
+                  .map((task) => (
                     <li
-                      key={t.id}
+                      key={task.id}
                       className="flex flex-col bg-gradient-to-r from-emerald-50 to-green-50 border-l-4 border-emerald-400 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
                     >
                       <div className="flex items-center gap-2 text-emerald-800 font-medium text-sm">
-                        🕒 {t.title || t.description}
+                        🕒 {task.title || task.description}
                         {user?.role === 'manager' && (
                           <span className="ml-2 text-xs text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200">
-                            {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : `Employee #${t.assigned_to}`}
+                            {task.first_name && task.last_name ? `${task.first_name} ${task.last_name}` : `Employee #${task.assigned_to}`}
                           </span>
                         )}
                       </div>
-                      {t.due_date && (
+                      {task.due_date && (
                         <div className="text-xs text-emerald-700 mt-1">
-                          {new Date(t.due_date) < new Date()
+                          {new Date(task.due_date) < new Date()
                             ? "❗ Ka kaluar afati!"
-                            : `⏳ Afat deri më: ${new Date(t.due_date).toLocaleDateString()}`}
+                            : `⏳ Afat deri më: ${new Date(task.due_date).toLocaleDateString()}`}
                         </div>
                       )}
-                      {t.site_name && (
-                        <div className="text-xs text-emerald-700">📍 Site: {t.site_name}</div>
+                      {task.site_name && (
+                        <div className="text-xs text-emerald-700">📍 Site: {task.site_name}</div>
                       )}
-                      <div className="text-xs text-emerald-700 font-semibold mt-1">Statusi: {t.status === 'ongoing' ? 'Në vazhdim' : 'Në pritje'}</div>
+                      <div className="text-xs text-emerald-700 font-semibold mt-1">Statusi: {task.status === 'ongoing' ? 'Në vazhdim' : 'Në pritje'}</div>
                     </li>
                   ))}
               </ul>
