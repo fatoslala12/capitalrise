@@ -167,6 +167,7 @@ function TopContractsBarChart({ contracts }) {
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [hourData, setHourData] = useState({});
