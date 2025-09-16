@@ -671,64 +671,64 @@ export default function Dashboard() {
       {/* Manager */}
       {user.role === "manager" && (
         <div className="space-y-6">
-          {/* Quick Stats për Menaxherin - Light Blue Gradients */}
+          {/* Quick Stats për Menaxherin - Green Theme */}
           <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-gradient-to-br from-emerald-50 to-green-100 border border-emerald-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-600 text-sm font-medium">Punonjësit</p>
-                  <p className="text-2xl font-bold text-blue-800">{managerStats.totalEmployees}</p>
+                  <p className="text-emerald-600 text-sm font-medium">Punonjësit</p>
+                  <p className="text-2xl font-bold text-emerald-800">{managerStats.totalEmployees}</p>
                 </div>
-                <div className="text-3xl text-blue-500">👷</div>
+                <div className="text-3xl text-emerald-500">👷</div>
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-100 border border-cyan-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-100 border border-teal-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-cyan-600 text-sm font-medium">Orët e Javës</p>
-                  <p className="text-2xl font-bold text-cyan-800">{managerStats.totalHoursThisWeek}</p>
+                  <p className="text-teal-600 text-sm font-medium">Orët e Javës</p>
+                  <p className="text-2xl font-bold text-teal-800">{managerStats.totalHoursThisWeek}</p>
                 </div>
-                <div className="text-3xl text-cyan-500">⏰</div>
+                <div className="text-3xl text-teal-500">⏰</div>
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 border border-indigo-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-gradient-to-br from-emerald-50 to-green-100 border border-green-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-indigo-600 text-sm font-medium">Paga e Javës</p>
-                  <p className="text-2xl font-bold text-indigo-800">£{managerStats.totalPayThisWeek.toFixed(2)}</p>
+                  <p className="text-green-700 text-sm font-medium">Paga e Javës</p>
+                  <p className="text-2xl font-bold text-green-800">£{managerStats.totalPayThisWeek.toFixed(2)}</p>
                 </div>
-                <div className="text-3xl text-indigo-500">💰</div>
+                <div className="text-3xl text-green-600">💰</div>
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-blue-50 to-sky-100 border border-sky-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-gradient-to-br from-emerald-50 to-green-100 border border-emerald-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sky-600 text-sm font-medium">Detyrat</p>
-                  <p className="text-2xl font-bold text-sky-800">{managerStats.pendingTasks}</p>
+                  <p className="text-emerald-600 text-sm font-medium">Detyrat</p>
+                  <p className="text-2xl font-bold text-emerald-800">{managerStats.pendingTasks}</p>
                 </div>
-                <div className="text-3xl text-sky-500">📋</div>
+                <div className="text-3xl text-emerald-500">📋</div>
               </div>
             </div>
           </section>
 
-          {/* Site-t e Menaxherit - Light Blue Theme */}
-          <section className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm border border-blue-100 p-6 mb-6">
+          {/* Site-t e Menaxherit - Green Theme */}
+          <section className="bg-gradient-to-br from-emerald-50 to-white rounded-xl shadow-sm border border-emerald-100 p-6 mb-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <span className="text-blue-600 text-lg">🏗️</span>
+              <span className="text-emerald-600 text-lg">🏗️</span>
               Site-t që Menaxhoni
             </h3>
             {managerStats.mySites.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {managerStats.mySites.map((site, index) => (
-                  <div key={index} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200 hover:border-blue-300 transition-all duration-300">
+                  <div key={index} className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg p-4 border border-emerald-200 hover:border-emerald-300 transition-all duration-300">
                     <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                      <span className="font-semibold text-blue-700">{site}</span>
+                      <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
+                      <span className="font-semibold text-emerald-700">{site}</span>
                     </div>
-                    <div className="mt-2 text-sm text-blue-600">
+                    <div className="mt-2 text-sm text-emerald-700">
                       Punonjës aktivë: {employees.filter(emp => 
                         emp.workplace && Array.isArray(emp.workplace) && 
                         emp.workplace.includes(site) && emp.status === 'Aktiv'
@@ -738,14 +738,14 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-blue-600 italic">Nuk keni site të caktuar për momentin.</p>
+              <p className="text-emerald-700 italic">Nuk keni site të caktuar për momentin.</p>
             )}
           </section>
 
-          {/* Detyrat e Menaxherit - Light Blue Theme */}
+          {/* Detyrat e Menaxherit - Green Theme */}
           <section className="space-y-4">
             <h3 className="text-xl font-semibold flex items-center gap-2">
-              <span className="text-blue-600 text-lg">📌</span>
+              <span className="text-emerald-600 text-lg">📌</span>
               Detyrat e tua (në vazhdim)
             </h3>
 
@@ -759,27 +759,27 @@ export default function Dashboard() {
                   .map((t) => (
                     <li
                       key={t.id}
-                      className="flex flex-col bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+                      className="flex flex-col bg-gradient-to-r from-emerald-50 to-green-50 border-l-4 border-emerald-400 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
                     >
-                      <div className="flex items-center gap-2 text-blue-800 font-medium text-sm">
+                      <div className="flex items-center gap-2 text-emerald-800 font-medium text-sm">
                         🕒 {t.title || t.description}
                         {user?.role === 'manager' && (
-                          <span className="ml-2 text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded border border-blue-200">
+                          <span className="ml-2 text-xs text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200">
                             {t.first_name && t.last_name ? `${t.first_name} ${t.last_name}` : `Employee #${t.assigned_to}`}
                           </span>
                         )}
                       </div>
                       {t.due_date && (
-                        <div className="text-xs text-blue-600 mt-1">
+                        <div className="text-xs text-emerald-700 mt-1">
                           {new Date(t.due_date) < new Date()
                             ? "❗ Ka kaluar afati!"
                             : `⏳ Afat deri më: ${new Date(t.due_date).toLocaleDateString()}`}
                         </div>
                       )}
                       {t.site_name && (
-                        <div className="text-xs text-blue-600">📍 Site: {t.site_name}</div>
+                        <div className="text-xs text-emerald-700">📍 Site: {t.site_name}</div>
                       )}
-                      <div className="text-xs text-blue-700 font-semibold mt-1">Statusi: {t.status === 'ongoing' ? 'Në vazhdim' : 'Në pritje'}</div>
+                      <div className="text-xs text-emerald-700 font-semibold mt-1">Statusi: {t.status === 'ongoing' ? 'Në vazhdim' : 'Në pritje'}</div>
                     </li>
                   ))}
               </ul>
@@ -787,74 +787,74 @@ export default function Dashboard() {
 
             <Link
               to={`/${user.role}/my-tasks`}
-              className="inline-block mt-3 bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 text-blue-700 text-sm font-medium px-4 py-2 rounded-lg transition-all duration-300 border border-blue-200"
+              className="inline-block mt-3 bg-gradient-to-r from-emerald-100 to-green-200 hover:from-green-200 hover:to-green-300 text-emerald-800 text-sm font-medium px-4 py-2 rounded-lg transition-all duration-300 border border-emerald-200"
             >
                               ➕ {t('dashboard.tasks')}
             </Link>
           </section>
 
-          {/* Quick Actions për Menaxherin - Light Blue Gradients, No Reports/Payments */}
-          <section className="bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm border border-blue-100 p-6">
+          {/* Quick Actions për Menaxherin - Green Theme */}
+          <section className="bg-gradient-to-br from-emerald-50 to-white rounded-xl shadow-sm border border-emerald-100 p-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <span className="text-blue-600 text-lg">⚡</span>
+              <span className="text-emerald-600 text-lg">⚡</span>
               Aksione të Shpejta
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Link
                 to="/manager/employees-list"
-                className="bg-gradient-to-br from-blue-100 to-blue-200 border border-blue-300 text-blue-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-blue-200 hover:to-blue-300 transition-all duration-300 text-center group"
+                className="bg-gradient-to-br from-emerald-100 to-green-200 border border-green-300 text-green-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-emerald-200 hover:to-green-300 transition-all duration-300 text-center group"
               >
-                <div className="text-2xl mb-2 text-blue-600 group-hover:scale-110 transition-transform">👷</div>
+                <div className="text-2xl mb-2 text-emerald-600 group-hover:scale-110 transition-transform">👷</div>
                 <div className="font-semibold">Menaxho Punonjësit</div>
                 <div className="text-sm opacity-80">Shto, edito dhe menaxho punonjësit</div>
               </Link>
 
               <Link
                 to="/manager/work-hours"
-                className="bg-gradient-to-br from-cyan-100 to-cyan-200 border border-cyan-300 text-cyan-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-cyan-200 hover:to-cyan-300 transition-all duration-300 text-center group"
+                className="bg-gradient-to-br from-teal-100 to-teal-200 border border-teal-300 text-teal-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-teal-200 hover:to-teal-300 transition-all duration-300 text-center group"
               >
-                <div className="text-2xl mb-2 text-cyan-600 group-hover:scale-110 transition-transform">🕒</div>
+                <div className="text-2xl mb-2 text-teal-600 group-hover:scale-110 transition-transform">🕒</div>
                 <div className="font-semibold">Orët e Punës</div>
                 <div className="text-sm opacity-80">Regjistro dhe menaxho orët e punës</div>
               </Link>
 
               <Link
                 to="/manager/my-profile"
-                className="bg-gradient-to-br from-indigo-100 to-indigo-200 border border-indigo-300 text-indigo-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-indigo-200 hover:to-indigo-300 transition-all duration-300 text-center group"
+                className="bg-gradient-to-br from-green-100 to-emerald-200 border border-emerald-300 text-emerald-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-green-200 hover:to-emerald-300 transition-all duration-300 text-center group"
               >
-                <div className="text-2xl mb-2 text-indigo-600 group-hover:scale-110 transition-transform">👤</div>
+                <div className="text-2xl mb-2 text-emerald-600 group-hover:scale-110 transition-transform">👤</div>
                 <div className="font-semibold">{t('dashboard.profile')}</div>
                 <div className="text-sm opacity-80">Shiko dhe edito profilin tuaj</div>
               </Link>
 
               <Link
                 to="/manager/my-tasks"
-                className="bg-gradient-to-br from-sky-100 to-sky-200 border border-sky-300 text-sky-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-sky-200 hover:to-sky-300 transition-all duration-300 text-center group"
+                className="bg-gradient-to-br from-green-100 to-green-200 border border-green-300 text-green-800 p-4 rounded-lg shadow-sm hover:shadow-md hover:from-green-200 hover:to-green-300 transition-all duration-300 text-center group"
               >
-                <div className="text-2xl mb-2 text-sky-600 group-hover:scale-110 transition-transform">📋</div>
+                <div className="text-2xl mb-2 text-green-600 group-hover:scale-110 transition-transform">📋</div>
                 <div className="font-semibold">Detyrat e Mia</div>
                 <div className="text-sm opacity-80">Menaxho detyrat tuaja</div>
               </Link>
             </div>
           </section>
 
-          {/* Informacion për Menaxherin - Light Blue Theme */}
-          <section className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-            <h3 className="text-lg font-semibold mb-3 text-blue-800">ℹ️ Informacion për Menaxherin</h3>
+          {/* Informacion për Menaxherin - Green Theme */}
+          <section className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-6 border border-emerald-200">
+            <h3 className="text-lg font-semibold mb-3 text-emerald-800">ℹ️ Informacion për Menaxherin</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-blue-700 mb-2">
+                <p className="text-emerald-700 mb-2">
                   <strong>Roli juaj:</strong> Menaxher - Menaxhoni punonjësit dhe orët e punës për site-t që ju janë caktuar.
                 </p>
-                <p className="text-blue-700 mb-2">
+                <p className="text-emerald-700 mb-2">
                   <strong>Site-t tuaja:</strong> {managerStats.mySites.join(", ") || "Nuk keni site të caktuar"}
                 </p>
               </div>
               <div>
-                <p className="text-blue-700 mb-2">
+                <p className="text-emerald-700 mb-2">
                   <strong>Punonjës aktivë:</strong> {managerStats.activeEmployees} nga {managerStats.totalEmployees} total
                 </p>
-                <p className="text-blue-700 mb-2">
+                <p className="text-emerald-700 mb-2">
                   <strong>Detyrat e përfunduara:</strong> {managerStats.completedTasks} nga {managerStats.completedTasks + managerStats.pendingTasks} total
                 </p>
               </div>
