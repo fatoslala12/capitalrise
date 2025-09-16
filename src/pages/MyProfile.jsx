@@ -12,7 +12,8 @@ import { useTranslation } from "react-i18next";
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 export default function MyProfile() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const tr = (sq, en) => (i18n?.language === 'en' ? en : sq);
   const { user } = useAuth();
   const [employee, setEmployee] = useState(null);
   const [workHistory, setWorkHistory] = useState([]);
@@ -187,9 +188,7 @@ export default function MyProfile() {
               <div className="w-16 h-16 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full animate-pulse"></div>
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-emerald-800 mb-4">
-            Duke ngarkuar profilin tuaj...
-          </h2>
+          <h2 className="text-3xl font-bold text-emerald-800 mb-4">{tr('Duke ngarkuar profilin tuaj...','Loading your profile...')}</h2>
           <p className="text-emerald-700 text-lg max-w-md mx-auto">
             Ju lutem prisni ndërsa marrim informacionet e plota të profilit tuaj
           </p>
@@ -203,8 +202,8 @@ export default function MyProfile() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">👤</div>
-          <h2 className="text-2xl font-bold text-emerald-800 mb-2">Profili juaj</h2>
-          <p className="text-emerald-700">Nuk u gjetën të dhëna për profilin tuaj.</p>
+          <h2 className="text-2xl font-bold text-emerald-800 mb-2">{tr('Profili juaj','Your Profile')}</h2>
+          <p className="text-emerald-700">{tr('Nuk u gjetën të dhëna për profilin tuaj.','No profile data found.')}</p>
         </div>
       </div>
     );
@@ -359,7 +358,7 @@ export default function MyProfile() {
           <div className="bg-gradient-to-br from-emerald-50 to-green-100 border border-emerald-200 text-emerald-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-emerald-700 text-xs md:text-sm font-medium">Total Orë</p>
+                <p className="text-emerald-700 text-xs md:text-sm font-medium">{tr('Total Orë','Total Hours')}</p>
                 <p className="text-lg md:text-3xl font-bold">
                   {Object.values(workHistory).reduce((total, days) => {
                     return total + Object.values(days).reduce((dayTotal, val) => {
@@ -375,7 +374,7 @@ export default function MyProfile() {
           <div className="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 text-teal-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-teal-600 text-xs md:text-sm font-medium">Paga Bruto</p>
+                <p className="text-teal-600 text-xs md:text-sm font-medium">{tr('Paga Bruto','Gross Pay')}</p>
                 <p className="text-lg md:text-3xl font-bold">
                   £{Object.values(workHistory).reduce((total, days) => {
                     return total + Object.values(days).reduce((dayTotal, val) => {
@@ -391,7 +390,7 @@ export default function MyProfile() {
           <div className="bg-gradient-to-br from-green-50 to-emerald-100 border border-emerald-200 text-emerald-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-emerald-700 text-xs md:text-sm font-medium">Site-t</p>
+                <p className="text-emerald-700 text-xs md:text-sm font-medium">{tr('Site-t','Sites')}</p>
                 <p className="text-lg md:text-3xl font-bold">{employeeSites.length}</p>
               </div>
               <div className="text-2xl md:text-4xl text-emerald-600">🏗️</div>
@@ -401,7 +400,7 @@ export default function MyProfile() {
           <div className="bg-gradient-to-br from-green-50 to-emerald-100 border border-emerald-200 text-emerald-800 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-emerald-700 text-xs md:text-sm font-medium">Detyrat e Përfunduara</p>
+                <p className="text-emerald-700 text-xs md:text-sm font-medium">{tr('Detyrat e Përfunduara','Completed Tasks')}</p>
                 <p className="text-lg md:text-3xl font-bold">{tasks.length}</p>
               </div>
               <div className="text-2xl md:text-4xl text-emerald-700">✅</div>
@@ -442,22 +441,22 @@ export default function MyProfile() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 md:gap-x-12 gap-y-3 md:gap-y-4 text-sm md:text-base mb-6 md:mb-8">
-                <p><span className="font-bold text-emerald-700">📧 Email:</span> {email || user?.email || <span className="italic text-emerald-500">N/A</span>}</p>
-                <p><span className="font-bold text-emerald-700">📞 Tel:</span> {phone || <span className="italic text-emerald-500">N/A</span>}</p>
+                <p><span className="font-bold text-emerald-700">📧 {tr('Email:','Email:')}</span> {email || user?.email || <span className="italic text-emerald-500">N/A</span>}</p>
+                <p><span className="font-bold text-emerald-700">📞 {tr('Tel:','Phone:')}</span> {phone || <span className="italic text-emerald-500">N/A</span>}</p>
                 <p><span className="font-bold text-emerald-700">🆔 NID:</span> {nid || <span className="italic text-emerald-500">N/A</span>}</p>
-                <p><span className="font-bold text-emerald-700">🎂 Data lindjes:</span> {formatDate(dob)}</p>
-                <p><span className="font-bold text-emerald-700">🏠 Vendbanimi:</span> {residence || <span className="italic text-emerald-500">N/A</span>}</p>
-                <p><span className="font-bold text-emerald-700">💷 Paga/Orë:</span>
+                <p><span className="font-bold text-emerald-700">🎂 {tr('Data lindjes:','Date of Birth:')}</span> {formatDate(dob)}</p>
+                <p><span className="font-bold text-emerald-700">🏠 {tr('Vendbanimi:','Residence:')}</span> {residence || <span className="italic text-emerald-500">N/A</span>}</p>
+                <p><span className="font-bold text-emerald-700">💷 {tr('Paga/Orë:','Pay/Hour:')}</span>
                   <span className="text-emerald-700 font-bold">
                     £{hourly_rate && !isNaN(Number(hourly_rate)) ? Number(hourly_rate).toFixed(2) : "0.00"}
                   </span>
                 </p>
-                <p><span className="font-bold text-emerald-700">🏢 Vendet e punës:</span> {workplace?.join(", ") || <span className="italic text-emerald-500">N/A</span>}</p>
+                <p><span className="font-bold text-emerald-700">🏢 {tr('Vendet e punës:','Workplaces:')}</span> {workplace?.join(", ") || <span className="italic text-emerald-500">N/A</span>}</p>
                 {user?.role === "manager" && (
-                  <p><span className="font-bold text-emerald-700">👥 Site-t që menaxhoni:</span> {workplace?.join(", ") || <span className="italic text-emerald-500">N/A</span>}</p>
+                  <p><span className="font-bold text-emerald-700">👥 {tr('Site-t që menaxhoni:','Sites you manage:')}</span> {workplace?.join(", ") || <span className="italic text-emerald-500">N/A</span>}</p>
                 )}
-                <p><span className="font-bold text-emerald-700">👨‍👩‍👧 Next of Kin:</span> {next_of_kin || <span className="italic text-emerald-500">N/A</span>}</p>
-                <p><span className="font-bold text-emerald-700">👨‍👩‍👧 Next of Kin Tel:</span> {next_of_kin_phone || <span className="italic text-emerald-500">N/A</span>}</p>
+                <p><span className="font-bold text-emerald-700">👨‍👩‍👧 {tr('Next of Kin:','Next of Kin:')}</span> {next_of_kin || <span className="italic text-emerald-500">N/A</span>}</p>
+                <p><span className="font-bold text-emerald-700">👨‍👩‍👧 {tr('Next of Kin Tel:','Next of Kin Phone:')}</span> {next_of_kin_phone || <span className="italic text-emerald-500">N/A</span>}</p>
                 <p><span className="font-bold text-emerald-700">🎓 Kualifikimi:</span> {qualification || <span className="italic text-emerald-500">N/A</span>}</p>
               </div>
 
@@ -476,7 +475,7 @@ export default function MyProfile() {
 
         {/* Kalendar i orëve të punës - Light Blue Theme */}
         <div className="w-full bg-gradient-to-br from-emerald-50 to-white rounded-xl md:rounded-2xl shadow-sm border border-emerald-200 p-4 md:p-8 mb-6 md:mb-10">
-          <h3 className="text-xl md:text-2xl font-extrabold text-emerald-800 mb-4 md:mb-6 flex items-center gap-2">📅 Kalendar i Orëve të Punës</h3>
+          <h3 className="text-xl md:text-2xl font-extrabold text-emerald-800 mb-4 md:mb-6 flex items-center gap-2">📅 {tr('Kalendar i Orëve të Punës','Work Hours Calendar')}</h3>
           <div className="flex flex-col md:flex-row flex-wrap gap-3 md:gap-4 mb-4 items-center">
             <label className="font-semibold text-emerald-700 text-sm md:text-base">Filtro sipas site-it:</label>
             <select value={filterSite} onChange={e => setFilterSite(e.target.value)} className="p-2 rounded-xl border-2 border-emerald-200 text-sm md:text-base bg-white">
@@ -546,7 +545,7 @@ export default function MyProfile() {
 
         {/* Grafik i pagave - Light Blue Theme */}
         <div className="w-full bg-gradient-to-br from-emerald-50 to-white rounded-xl md:rounded-2xl shadow-sm border border-emerald-200 p-4 md:p-6 mb-6 md:mb-10">
-          <h3 className="text-xl md:text-2xl font-extrabold text-emerald-800 mb-4 md:mb-6 flex items-center gap-2">📊 Grafik i Pagave për Javë</h3>
+          <h3 className="text-xl md:text-2xl font-extrabold text-emerald-800 mb-4 md:mb-6 flex items-center gap-2">📊 {tr('Grafik i Pagave për Javë','Weekly Pay Chart')}</h3>
           <div className="w-full max-w-4xl mx-auto">
             <Bar data={barData} options={{
               responsive: true,
@@ -582,7 +581,7 @@ export default function MyProfile() {
 
         {/* Dokumentet e Mia - Light Blue Theme */}
         <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl md:rounded-2xl shadow-sm border border-emerald-200 p-4 md:p-6 mb-6 md:mb-10">
-          <h3 className="text-lg md:text-xl font-bold text-emerald-800 mb-4 flex items-center gap-2">📄 Dokumentet e Mia</h3>
+          <h3 className="text-lg md:text-xl font-bold text-emerald-800 mb-4 flex items-center gap-2">📄 {tr('Dokumentet e Mia','My Documents')}</h3>
           
           {/* Upload dokumenti */}
           <div className="mb-4 p-4 bg-emerald-50 rounded-xl border-2 border-dashed border-emerald-200">
@@ -597,7 +596,7 @@ export default function MyProfile() {
                 <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-3 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
               </div>
             )}
-            <p className="text-sm text-emerald-700 mt-2">Mund të ngarkoni dokumente në formate: PDF, DOC, DOCX, JPG, PNG</p>
+            <p className="text-sm text-emerald-700 mt-2">{tr('Mund të ngarkoni dokumente në formate: PDF, DOC, DOCX, JPG, PNG','You can upload documents in: PDF, DOC, DOCX, JPG, PNG')}</p>
           </div>
 
           {attachments.length > 0 ? (
@@ -617,13 +616,13 @@ export default function MyProfile() {
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500 italic">Nuk ka dokumente të ngarkuara.</p>
+            <p className="text-gray-500 italic">{tr('Nuk ka dokumente të ngarkuara.','No documents uploaded.')}</p>
           )}
         </div>
 
         {/* Detyrat e Përfunduara */}
         <div className="bg-white/80 rounded-xl md:rounded-2xl shadow-xl border border-emerald-100 p-4 md:p-6 mb-6 md:mb-10">
-          <h3 className="text-lg md:text-xl font-bold text-emerald-800 mb-4 flex items-center gap-2">✅ Detyrat e Përfunduara</h3>
+          <h3 className="text-lg md:text-xl font-bold text-emerald-800 mb-4 flex items-center gap-2">✅ {tr('Detyrat e Përfunduara','Completed Tasks')}</h3>
           {tasks.length > 0 ? (
             <div className="grid gap-3 md:gap-4">
               {tasks.slice(0, 10).map((task, index) => (
@@ -657,7 +656,7 @@ export default function MyProfile() {
 
         {/* Historiku i orëve të punës - Light Blue Theme */}
         <div className="w-full bg-gradient-to-br from-emerald-50 to-white rounded-xl md:rounded-2xl shadow-sm border border-emerald-200 p-4 md:p-6 mb-6 md:mb-10">
-          <h3 className="text-lg md:text-xl font-bold text-emerald-800 mb-4 flex items-center gap-2">📊 Historiku i Orëve të Punës</h3>
+          <h3 className="text-lg md:text-xl font-bold text-emerald-800 mb-4 flex items-center gap-2">📊 {tr('Historiku i Orëve të Punës','Work Hours History')}</h3>
           <div className="space-y-3 md:space-y-4">
             {Object.entries(workHistory).map(([weekLabel, days]) => {
               const totalHours = Object.values(days).reduce((total, val) => total + Number(val.hours || 0), 0);
@@ -671,10 +670,10 @@ export default function MyProfile() {
                       <h4 className="font-bold text-emerald-800 text-sm md:text-base">{weekLabel}</h4>
                       <div className="flex flex-wrap gap-2 md:gap-4 mt-1 text-xs md:text-sm">
                         <span className="text-emerald-700">
-                          <strong>Orët:</strong> {totalHours}
+                          <strong>{tr('Orët:','Hours:')}</strong> {totalHours}
                         </span>
                         <span className="text-emerald-700">
-                          <strong>Paga:</strong> £{totalPay.toFixed(2)}
+                          <strong>{tr('Paga:','Pay:')}</strong> £{totalPay.toFixed(2)}
                         </span>
                         <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold shadow-sm border ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
                           {isPaid ? t('payments.paid') : t('payments.unpaid')}
@@ -688,7 +687,7 @@ export default function MyProfile() {
                           type="text"
                           value={weekNotes[weekLabel] || ''}
                           onChange={e => setWeekNotes(prev => ({ ...prev, [weekLabel]: e.target.value }))}
-                          placeholder="Shkruaj koment për këtë javë..."
+                          placeholder={tr('Shkruaj koment për këtë javë...','Write a note for this week...')}
                           className="p-2 rounded-xl border-2 border-emerald-200 text-xs md:text-sm flex-1 bg-white"
                         />
                         <button
