@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 export default function MyTasks() {
   const { user } = useAuth();
+  const { i18n } = useTranslation();
+  const tr = (sq, en) => (i18n?.language === 'en' ? en : sq);
   const [tasks, setTasks] = useState([]);
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
@@ -100,10 +103,10 @@ export default function MyTasks() {
   // Funksion për të marrë emrin e statusit
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'pending': return 'Në pritje';
-      case 'in_progress': return 'Në progres';
-      case 'completed': return 'Përfunduar';
-      case 'cancelled': return 'Anuluar';
+      case 'pending': return tr('Në pritje', 'Pending');
+      case 'in_progress': return tr('Në progres', 'In Progress');
+      case 'completed': return tr('Përfunduar', 'Completed');
+      case 'cancelled': return tr('Anuluar', 'Cancelled');
       default: return status;
     }
   };
@@ -224,14 +227,14 @@ export default function MyTasks() {
 
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-green-700">
-          📌 Detyrat e Mia
+          📌 {tr('Detyrat e Mia','My Tasks')}
         </h2>
         {user?.role === "manager" && (
           <button
             onClick={() => setShowAddTaskModal(true)}
             className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
           >
-            ➕ Shto Detyrë të Re
+            ➕ {tr('Shto Detyrë të Re','Add New Task')}
           </button>
         )}
       </div>
@@ -240,19 +243,19 @@ export default function MyTasks() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6">
         <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl p-3 md:p-4 text-center">
           <div className="text-lg md:text-xl lg:text-2xl font-bold">{total}</div>
-          <div className="text-xs md:text-sm">Total</div>
+          <div className="text-xs md:text-sm">{tr('Total','Total')}</div>
         </div>
         <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-3 md:p-4 text-center">
           <div className="text-lg md:text-xl lg:text-2xl font-bold">{completed}</div>
-          <div className="text-xs md:text-sm">Përfunduara</div>
+          <div className="text-xs md:text-sm">{tr('Përfunduara','Completed')}</div>
         </div>
         <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl p-3 md:p-4 text-center">
           <div className="text-lg md:text-xl lg:text-2xl font-bold">{inProgress}</div>
-          <div className="text-xs md:text-sm">Në Progres</div>
+          <div className="text-xs md:text-sm">{tr('Në Progres','In Progress')}</div>
         </div>
         <div className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-xl p-3 md:p-4 text-center">
           <div className="text-lg md:text-xl lg:text-2xl font-bold">{pending}</div>
-          <div className="text-xs md:text-sm">Në Pritje</div>
+          <div className="text-xs md:text-sm">{tr('Në Pritje','Pending')}</div>
         </div>
       </div>
 
@@ -260,42 +263,42 @@ export default function MyTasks() {
       <div className="bg-white rounded-xl p-3 md:p-4 shadow-lg border border-emerald-100">
         <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-emerald-700">Statusi:</label>
+            <label className="text-sm font-medium text-emerald-700">{tr('Statusi:','Status:')}</label>
             <select
               className="border-2 border-emerald-200 p-2 rounded-xl focus:ring-2 focus:ring-emerald-300"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="all">Të gjitha</option>
-              <option value="pending">⏳ Në pritje</option>
-              <option value="in_progress">🔄 Në progres</option>
-              <option value="completed">✅ Përfunduar</option>
-              <option value="cancelled">❌ Anuluar</option>
+              <option value="all">{tr('Të gjitha','All')}</option>
+              <option value="pending">⏳ {tr('Në pritje','Pending')}</option>
+              <option value="in_progress">🔄 {tr('Në progres','In Progress')}</option>
+              <option value="completed">✅ {tr('Përfunduar','Completed')}</option>
+              <option value="cancelled">❌ {tr('Anuluar','Cancelled')}</option>
             </select>
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-emerald-700">Prioriteti:</label>
+            <label className="text-sm font-medium text-emerald-700">{tr('Prioriteti:','Priority:')}</label>
             <select
               className="border-2 border-emerald-200 p-2 rounded-xl focus:ring-2 focus:ring-emerald-300"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
             >
-              <option value="all">Të gjitha</option>
-              <option value="high">🔴 E lartë</option>
-              <option value="medium">🟡 Mesatare</option>
-              <option value="low">🟢 E ulët</option>
+              <option value="all">{tr('Të gjitha','All')}</option>
+              <option value="high">🔴 {tr('E lartë','High')}</option>
+              <option value="medium">🟡 {tr('Mesatare','Medium')}</option>
+              <option value="low">🟢 {tr('E ulët','Low')}</option>
             </select>
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-emerald-700">Site-i:</label>
+            <label className="text-sm font-medium text-emerald-700">{tr('Site-i:','Site:')}</label>
             <select
               className="border-2 border-emerald-200 p-2 rounded-xl focus:ring-2 focus:ring-emerald-300"
               value={siteFilter}
               onChange={(e) => setSiteFilter(e.target.value)}
             >
-              <option value="all">Të gjitha</option>
+              <option value="all">{tr('Të gjitha','All')}</option>
               {uniqueSites.map((site) => (
                 <option key={site} value={site}>
                   {site}
@@ -305,14 +308,14 @@ export default function MyTasks() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-emerald-700">Renditja:</label>
+            <label className="text-sm font-medium text-emerald-700">{tr('Renditja:','Sort:')}</label>
             <select
               className="border-2 border-emerald-200 p-2 rounded-xl focus:ring-2 focus:ring-emerald-300"
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
             >
-              <option value="desc">Më të rejat fillimisht</option>
-              <option value="asc">Më të vjetrat fillimisht</option>
+              <option value="desc">{tr('Më të rejat fillimisht','Newest first')}</option>
+              <option value="asc">{tr('Më të vjetrat fillimisht','Oldest first')}</option>
             </select>
           </div>
         </div>
@@ -322,8 +325,8 @@ export default function MyTasks() {
       {filteredTasks.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📋</div>
-          <h3 className="text-xl font-bold text-gray-600 mb-2">Nuk ka detyra</h3>
-          <p className="text-gray-500">Nuk ka detyra të caktuara për ju ose sipas filtrave të zgjedhur.</p>
+          <h3 className="text-xl font-bold text-gray-600 mb-2">{tr('Nuk ka detyra','No tasks')}</h3>
+          <p className="text-gray-500">{tr('Nuk ka detyra të caktuara për ju ose sipas filtrave të zgjedhur.','There are no tasks assigned to you or matching the selected filters.')}</p>
         </div>
       ) : (
         <div className="grid gap-4">
@@ -362,10 +365,10 @@ export default function MyTasks() {
                     {task.due_date && (
                       <span className="flex items-center gap-2">
                         <span>📅</span>
-                        <span className="font-semibold">Afat:</span>
+                        <span className="font-semibold">{tr('Afat:','Due:')}</span>
                         <span className={new Date(task.due_date) < new Date() ? 'text-red-600 font-bold' : ''}>
                           {new Date(task.due_date).toLocaleDateString()}
-                          {new Date(task.due_date) < new Date() && ' (Ka kaluar!)'}
+                          {new Date(task.due_date) < new Date() && ` ${tr('(Ka kaluar!)','(Overdue!)')}`}
                         </span>
                       </span>
                     )}
@@ -383,7 +386,7 @@ export default function MyTasks() {
                     {task.category && (
                       <span className="flex items-center gap-2">
                         <span>🏷️</span>
-                        <span className="font-semibold">Kategoria:</span>
+                        <span className="font-semibold">{tr('Kategoria:','Category:')}</span>
                         <span>{task.category}</span>
                       </span>
                     )}
@@ -398,22 +401,22 @@ export default function MyTasks() {
                       onChange={(e) => handleStatusChange(task.id, e.target.value)}
                       className="p-2 border-2 border-emerald-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-300"
                     >
-                      <option value="pending">⏳ Në pritje</option>
-                      <option value="in_progress">🔄 Në progres</option>
-                      <option value="completed">✅ Përfunduar</option>
-                      <option value="cancelled">❌ Anuluar</option>
+                      <option value="pending">⏳ {tr('Në pritje','Pending')}</option>
+                      <option value="in_progress">🔄 {tr('Në progres','In Progress')}</option>
+                      <option value="completed">✅ {tr('Përfunduar','Completed')}</option>
+                      <option value="cancelled">❌ {tr('Anuluar','Cancelled')}</option>
                     </select>
                   )}
                   
                   {task.status === 'completed' && (
                     <span className="px-3 py-2 bg-green-100 text-green-700 rounded-xl text-sm font-bold text-center">
-                      ✅ Përfunduar
+                      ✅ {tr('Përfunduar','Completed')}
                     </span>
                   )}
                   
                   {task.status === 'cancelled' && (
                     <span className="px-3 py-2 bg-red-100 text-red-700 rounded-xl text-sm font-bold text-center">
-                      ❌ Anuluar
+                      ❌ {tr('Anuluar','Cancelled')}
                     </span>
                   )}
                 </div>
@@ -433,8 +436,8 @@ export default function MyTasks() {
                 <div className="flex items-center gap-3">
                   <div className="text-3xl">➕</div>
                   <div>
-                    <h3 className="text-2xl font-bold">Shto Detyrë të Re</h3>
-                    <p className="text-green-100 text-sm">Cakto detyra për punonjësit e site-ve tuaj</p>
+                    <h3 className="text-2xl font-bold">{tr('Shto Detyrë të Re','Add New Task')}</h3>
+                    <p className="text-green-100 text-sm">{tr('Cakto detyra për punonjësit e site-ve tuaj','Assign tasks to your site employees')}</p>
                   </div>
                 </div>
                 <button
@@ -454,7 +457,7 @@ export default function MyTasks() {
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                       <span className="text-red-500">*</span>
-                      <span>Titulli i Detyrës</span>
+                      <span>{tr('Titulli i Detyrës','Task Title')}</span>
                     </label>
                     <input
                       type="text"
@@ -462,21 +465,21 @@ export default function MyTasks() {
                       value={newTask.title}
                       onChange={(e) => setNewTask({...newTask, title: e.target.value})}
                       className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg"
-                      placeholder="Shkruaj titullin e detyrës"
+                      placeholder={tr('Shkruaj titullin e detyrës','Enter task title')}
                     />
                   </div>
                   
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                       <span>📝</span>
-                      <span>Përshkrimi</span>
+                      <span>{tr('Përshkrimi','Description')}</span>
                     </label>
                     <input
                       type="text"
                       value={newTask.description}
                       onChange={(e) => setNewTask({...newTask, description: e.target.value})}
                       className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg"
-                      placeholder="Përshkrimi i detyrës"
+                      placeholder={tr('Përshkrimi i detyrës','Task description')}
                     />
                   </div>
                 </div>
@@ -486,7 +489,7 @@ export default function MyTasks() {
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                       <span className="text-red-500">*</span>
-                      <span>👤 Cakto Për</span>
+                      <span>👤 {tr('Cakto Për','Assign To')}</span>
                     </label>
                     <select
                       required
@@ -494,7 +497,7 @@ export default function MyTasks() {
                       onChange={(e) => setNewTask({...newTask, assigned_to: e.target.value})}
                       className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg bg-white"
                     >
-                      <option value="">Zgjidh punonjësin</option>
+                      <option value="">{tr('Zgjidh punonjësin','Select employee')}</option>
                       {availableEmployees.map(emp => (
                         <option key={emp.id} value={emp.id}>
                           {emp.first_name} {emp.last_name} ({emp.username})
@@ -506,7 +509,7 @@ export default function MyTasks() {
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                       <span className="text-red-500">*</span>
-                      <span>🏗️ Site-i</span>
+                      <span>🏗️ {tr('Site-i','Site')}</span>
                     </label>
                     <select
                       required
@@ -514,7 +517,7 @@ export default function MyTasks() {
                       onChange={(e) => setNewTask({...newTask, site_name: e.target.value})}
                       className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg bg-white"
                     >
-                      <option value="">Zgjidh site-in</option>
+                      <option value="">{tr('Zgjidh site-in','Select site')}</option>
                       {availableSites.map(site => (
                         <option key={site} value={site}>{site}</option>
                       ))}
@@ -527,7 +530,7 @@ export default function MyTasks() {
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                       <span>📅</span>
-                      <span>Afati</span>
+                      <span>{tr('Afati','Deadline')}</span>
                     </label>
                     <input
                       type="date"
@@ -540,16 +543,16 @@ export default function MyTasks() {
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                       <span>🎯</span>
-                      <span>Prioriteti</span>
+                      <span>{tr('Prioriteti','Priority')}</span>
                     </label>
                     <select
                       value={newTask.priority}
                       onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
                       className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 transition-all duration-200 text-lg bg-white"
                     >
-                      <option value="low">🟢 E ulët</option>
-                      <option value="medium">🟡 Mesatare</option>
-                      <option value="high">🔴 E lartë</option>
+                      <option value="low">🟢 {tr('E ulët','Low')}</option>
+                      <option value="medium">🟡 {tr('Mesatare','Medium')}</option>
+                      <option value="high">🔴 {tr('E lartë','High')}</option>
                     </select>
                   </div>
                 </div>
@@ -561,13 +564,13 @@ export default function MyTasks() {
                     onClick={() => setShowAddTaskModal(false)}
                     className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium text-lg"
                   >
-                    ❌ Anulo
+                    ❌ {tr('Anulo','Cancel')}
                   </button>
                   <button
                     type="submit"
                     className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
-                    ✅ Shto Detyrën
+                    ✅ {tr('Shto Detyrën','Add Task')}
                   </button>
                 </div>
               </form>
