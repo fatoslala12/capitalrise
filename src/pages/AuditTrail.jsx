@@ -80,9 +80,13 @@ export default function AuditTrail() {
     try {
       setLoading(true);
       const params = { ...filters };
-      const logsRes = await api.get('/api/audit-trail', { params });
+      const [logsRes, statsRes] = await Promise.all([
+        api.get('/api/audit-trail', { params }),
+        api.get('/api/audit-trail/stats', { params })
+      ]);
       const payload = logsRes.data?.logs || logsRes.data?.data || [];
       setAuditLogs(payload);
+      if (statsRes.data?.data) setStats(statsRes.data.data);
     } catch (error) {
       console.error('Error fetching audit data:', error);
       toast.error(safeT('auditTrail.messages.dataLoadError', 'Gabim gjatë ngarkimit të të dhënave'));

@@ -162,62 +162,47 @@ router.post('/', verifyToken, async (req, res) => {
 router.get('/stats', verifyToken, async (req, res) => {
   try {
     const { dateFrom, dateTo } = req.query;
-    
-    let whereClause = '';
+
+    let paramIndex = 1;
+    const nextParam = () => `$${paramIndex++}`;
+    let where = 'WHERE 1=1';
     const params = [];
+    if (dateFrom) { where += ` AND timestamp >= ${nextParam()}`; params.push(dateFrom); }
+    if (dateTo)   { where += ` AND timestamp <= ${nextParam()}`; params.push(`${dateTo} 23:59:59`); }
 
-    if (dateFrom || dateTo) {
-      whereClause = 'WHERE ';
-      if (dateFrom) {
-        whereClause += 'timestamp >= ?';
-        params.push(dateFrom);
-      }
-      if (dateTo) {
-        whereClause += dateFrom ? ' AND ' : '';
-        whereClause += 'timestamp <= ?';
-        params.push(dateTo + ' 23:59:59');
-      }
-    }
-
-    // Action statistics
-    const actionStatsQuery = `
-      SELECT action, COUNT(*) as count
+    const totalQuery = `SELECT COUNT(*) AS total FROM audit_trail ${where}`;
+    const todayQuery = `SELECT COUNT(*) AS total FROM audit_trail WHERE date(timestamp) = CURRENT_DATE`;
+    const failedThisWeekQuery = `
+      SELECT COUNT(*) AS total
       FROM audit_trail
-      ${whereClause}
-      GROUP BY action
-      ORDER BY count DESC
+      WHERE action = 'LOGIN_FAILED' AND timestamp >= date_trunc('week', now())
     `;
-    const [actionStats] = await pool.query(actionStatsQuery, params);
-
-    // Module statistics
-    const moduleStatsQuery = `
-      SELECT module, COUNT(*) as count
+    const activeUsersQuery = `
+      SELECT COUNT(DISTINCT user_id) AS total
       FROM audit_trail
-      ${whereClause}
-      GROUP BY module
-      ORDER BY count DESC
+      WHERE timestamp >= now() - interval '7 days'
     `;
-    const [moduleStats] = await pool.query(moduleStatsQuery, params);
+    const actionStatsQuery = `SELECT action, COUNT(*)::int AS count FROM audit_trail ${where} GROUP BY action ORDER BY count DESC`;
+    const moduleStatsQuery = `SELECT entity_type AS module, COUNT(*)::int AS count FROM audit_trail ${where} GROUP BY entity_type ORDER BY count DESC`;
 
-    // User statistics
-    const userStatsQuery = `
-      SELECT 
-        CONCAT(e.name, ' ', e.surname) as user_name,
-        COUNT(*) as count
-      FROM audit_trail al
-      LEFT JOIN users u ON al.user_id = u.id
-      LEFT JOIN employees e ON u.employee_id = e.id
-      ${whereClause}
-      GROUP BY al.user_id, user_name
-      ORDER BY count DESC
-      LIMIT 10
-    `;
-    const [userStats] = await pool.query(userStatsQuery, params);
+    const [{ rows: totalRows }] = await Promise.all([
+      pool.query(totalQuery, params)
+    ]);
+    const { rows: todayRows } = await pool.query(todayQuery);
+    const { rows: failedRows } = await pool.query(failedThisWeekQuery);
+    const { rows: activeRows } = await pool.query(activeUsersQuery);
+    const { rows: actionRows } = await pool.query(actionStatsQuery, params);
+    const { rows: moduleRows } = await pool.query(moduleStatsQuery, params);
 
     res.json({
-      actionStats,
-      moduleStats,
-      userStats
+      data: {
+        totalLogs: Number(totalRows[0]?.total || 0),
+        todayLogs: Number(todayRows[0]?.total || 0),
+        failedThisWeek: Number(failedRows[0]?.total || 0),
+        activeUsers: Number(activeRows[0]?.total || 0),
+        actionStats: actionRows,
+        moduleStats: moduleRows
+      }
     });
   } catch (error) {
     console.error('Error fetching audit stats:', error);
