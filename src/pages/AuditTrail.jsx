@@ -47,7 +47,7 @@ export default function AuditTrail() {
   const [stats, setStats] = useState({});
   const [suspiciousActivities, setSuspiciousActivities] = useState([]);
   const [mostActiveEntities, setMostActiveEntities] = useState([]);
-  const [realTimeMode, setRealTimeMode] = useState(true);
+  const [realTimeMode, setRealTimeMode] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [filters, setFilters] = useState({
@@ -71,36 +71,25 @@ export default function AuditTrail() {
 
   useEffect(() => {
     fetchData();
-    
-    // Set up real-time updates if enabled
-    if (realTimeMode) {
-      const interval = setInterval(fetchData, 5000); // Update every 5 seconds for near real-time
-      return () => clearInterval(interval);
-    }
+    if (!realTimeMode) return;
+    const interval = setInterval(fetchData, 15000);
+    return () => clearInterval(interval);
   }, [realTimeMode]);
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      
-      const [logsRes, statsRes, suspiciousRes, entitiesRes] = await Promise.all([
-        api.get('/api/audit/test-logs', { params: { ...filters, ...advancedFilters } }),
-        api.get('/api/audit/test-stats'),
-        api.get('/api/audit/suspicious-activity'),
-        api.get('/api/audit/most-active-entities')
-      ]);
-
-      setAuditLogs(logsRes.data.data || []);
-      setStats(statsRes.data.data);
-      setSuspiciousActivities(suspiciousRes.data.data || []);
-      setMostActiveEntities(entitiesRes.data.data || []);
+      const params = { ...filters };
+      const logsRes = await api.get('/api/audit-trail', { params });
+      const payload = logsRes.data?.logs || logsRes.data?.data || [];
+      setAuditLogs(payload);
     } catch (error) {
       console.error('Error fetching audit data:', error);
       toast.error(safeT('auditTrail.messages.dataLoadError', 'Gabim gjatë ngarkimit të të dhënave'));
     } finally {
       setLoading(false);
     }
-  }, [filters, advancedFilters]);
+  }, [filters]);
 
   // Apliko filtra
   const applyFilters = () => {
