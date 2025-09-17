@@ -9,6 +9,9 @@ router.get('/', verifyToken, async (req, res) => {
     const { page = 1, limit = 50, action, module, user, dateFrom, dateTo, since } = req.query;
     const offset = (page - 1) * limit;
 
+    let paramIndex = 1;
+    const nextParam = () => `$${paramIndex++}`;
+
     let query = `
       SELECT 
         al.id,
@@ -29,27 +32,29 @@ router.get('/', verifyToken, async (req, res) => {
     const params = [];
 
     if (action) {
-      query += ` AND al.action = ?`;
+      query += ` AND al.action = ${nextParam()}`;
       params.push(action);
     }
 
     if (module) {
-      query += ` AND al.module = ?`;
+      query += ` AND al.module = ${nextParam()}`;
       params.push(module);
     }
 
     if (user) {
-      query += ` AND (u.email LIKE ? OR CONCAT(e.name, ' ', e.surname) LIKE ?)`;
+      const p1 = nextParam();
+      const p2 = nextParam();
+      query += ` AND (u.email ILIKE ${p1} OR CONCAT(e.name, ' ', e.surname) ILIKE ${p2})`;
       params.push(`%${user}%`, `%${user}%`);
     }
 
     if (dateFrom) {
-      query += ` AND al.timestamp >= ?`;
+      query += ` AND al.timestamp >= ${nextParam()}`;
       params.push(dateFrom);
     }
 
     if (dateTo) {
-      query += ` AND al.timestamp <= ?`;
+      query += ` AND al.timestamp <= ${nextParam()}`;
       params.push(dateTo + ' 23:59:59');
     }
 
@@ -58,20 +63,22 @@ router.get('/', verifyToken, async (req, res) => {
       // Try to parse as date; if invalid, treat as numeric id
       const sinceDate = new Date(since);
       if (!isNaN(sinceDate.getTime())) {
-        query += ` AND al.timestamp > ?`;
+        query += ` AND al.timestamp > ${nextParam()}`;
         params.push(since);
       } else if (!isNaN(Number(since))) {
-        query += ` AND al.id > ?`;
+        query += ` AND al.id > ${nextParam()}`;
         params.push(Number(since));
       }
     }
 
-    query += ` ORDER BY al.timestamp DESC, al.id DESC LIMIT ? OFFSET ?`;
+    query += ` ORDER BY al.timestamp DESC, al.id DESC LIMIT ${nextParam()} OFFSET ${nextParam()}`;
     params.push(parseInt(limit), offset);
 
     const [logs] = await pool.query(query, params);
 
     // Get total count for pagination
+    paramIndex = 1;
+    const nextParam2 = () => `$${paramIndex++}`;
     let countQuery = `
       SELECT COUNT(*) as total
       FROM audit_trail al
@@ -83,27 +90,29 @@ router.get('/', verifyToken, async (req, res) => {
     const countParams = [];
     
     if (action) {
-      countQuery += ` AND al.action = ?`;
+      countQuery += ` AND al.action = ${nextParam2()}`;
       countParams.push(action);
     }
 
     if (module) {
-      countQuery += ` AND al.module = ?`;
+      countQuery += ` AND al.module = ${nextParam2()}`;
       countParams.push(module);
     }
 
     if (user) {
-      countQuery += ` AND (u.email LIKE ? OR CONCAT(e.name, ' ', e.surname) LIKE ?)`;
+      const p1 = nextParam2();
+      const p2 = nextParam2();
+      countQuery += ` AND (u.email ILIKE ${p1} OR CONCAT(e.name, ' ', e.surname) ILIKE ${p2})`;
       countParams.push(`%${user}%`, `%${user}%`);
     }
 
     if (dateFrom) {
-      countQuery += ` AND al.timestamp >= ?`;
+      countQuery += ` AND al.timestamp >= ${nextParam2()}`;
       countParams.push(dateFrom);
     }
 
     if (dateTo) {
-      countQuery += ` AND al.timestamp <= ?`;
+      countQuery += ` AND al.timestamp <= ${nextParam2()}`;
       countParams.push(dateTo + ' 23:59:59');
     }
 
