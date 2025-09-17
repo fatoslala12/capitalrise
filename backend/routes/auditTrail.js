@@ -71,7 +71,7 @@ router.get('/', verifyToken, async (req, res) => {
     query += ` ORDER BY al.timestamp DESC, al.id DESC LIMIT ${nextParam()} OFFSET ${nextParam()}`;
     params.push(parseInt(limit), offset);
 
-    const [logs] = await pool.query(query, params);
+    const { rows: logs } = await pool.query(query, params);
 
     // Get total count for pagination
     paramIndex = 1;
@@ -111,13 +111,13 @@ router.get('/', verifyToken, async (req, res) => {
       countParams.push(dateTo + ' 23:59:59');
     }
 
-    const [countResult] = await pool.query(countQuery, countParams);
-    const total = countResult[0].total;
+    const { rows: countRows } = await pool.query(countQuery, countParams);
+    const total = Number(countRows[0]?.total || 0);
 
     res.json({
       logs: logs.map(log => ({
         ...log,
-        details: log.details ? JSON.parse(log.details) : null
+        details: (typeof log.details === 'string') ? (JSON.parse(log.details || 'null')) : (log.details || null)
       })),
       pagination: {
         page: parseInt(page),
