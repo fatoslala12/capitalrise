@@ -12,6 +12,8 @@ router.get('/', verifyToken, async (req, res) => {
     let paramIndex = 1;
     const nextParam = () => `$${paramIndex++}`;
 
+    const fullNameExpr = "COALESCE(e.first_name, e.name, '') || ' ' || COALESCE(e.last_name, e.surname, '')";
+
     let query = `
       SELECT 
         al.id,
@@ -22,7 +24,7 @@ router.get('/', verifyToken, async (req, res) => {
         al.timestamp,
         al.metadata AS details,
         u.email as user_email,
-        CONCAT(e.name, ' ', e.surname) as user_name
+        ${fullNameExpr} as user_name
       FROM audit_trail al
       LEFT JOIN users u ON al.user_id = u.id
       LEFT JOIN employees e ON u.employee_id = e.id
@@ -44,7 +46,7 @@ router.get('/', verifyToken, async (req, res) => {
     if (user) {
       const p1 = nextParam();
       const p2 = nextParam();
-      query += ` AND (u.email ILIKE ${p1} OR CONCAT(e.name, ' ', e.surname) ILIKE ${p2})`;
+      query += ` AND (u.email ILIKE ${p1} OR ${fullNameExpr} ILIKE ${p2})`;
       params.push(`%${user}%`, `%${user}%`);
     }
 
@@ -102,7 +104,7 @@ router.get('/', verifyToken, async (req, res) => {
     if (user) {
       const p1 = nextParam2();
       const p2 = nextParam2();
-      countQuery += ` AND (u.email ILIKE ${p1} OR CONCAT(e.name, ' ', e.surname) ILIKE ${p2})`;
+      countQuery += ` AND (u.email ILIKE ${p1} OR ${fullNameExpr} ILIKE ${p2})`;
       countParams.push(`%${user}%`, `%${user}%`);
     }
 
