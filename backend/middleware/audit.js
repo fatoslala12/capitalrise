@@ -96,9 +96,9 @@ async function logAuditEvent(req, res, responseData, statusCode, options) {
       const parser = new UAParser(userAgent);
       const result = parser.getResult();
       deviceInfo = {
-        device_type: result.device?.type || 'desktop',
-        device_brand: result.device?.vendor || null,
-        device_model: result.device?.model || null,
+        deviceType: result.device?.type || 'desktop',
+        deviceBrand: result.device?.vendor || null,
+        deviceModel: result.device?.model || null,
         os: result.os?.name ? `${result.os.name} ${result.os.version || ''}`.trim() : null,
         browser: result.browser?.name ? `${result.browser.name} ${result.browser.version || ''}`.trim() : null
       };
@@ -144,7 +144,8 @@ async function logAuditEvent(req, res, responseData, statusCode, options) {
         statusCode,
         responseSize: responseData ? JSON.stringify(responseData).length : 0,
         ...deviceInfo
-      }
+      },
+      ...deviceInfo
     });
 
   } catch (error) {

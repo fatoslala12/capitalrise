@@ -79,15 +79,21 @@ class AuditService {
     sessionId = null,
     severity = 'info',
     description = null,
-    metadata = null
+    metadata = null,
+    deviceType = null,
+    deviceBrand = null,
+    deviceModel = null,
+    os = null,
+    browser = null
   }) {
     try {
       const result = await pool.query(`
         INSERT INTO audit_trail (
           user_id, user_email, user_role, action, entity_type, entity_id,
           old_values, new_values, changes, ip_address, user_agent,
-          session_id, severity, description, metadata
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+          session_id, severity, description, metadata,
+          device_type, device_brand, device_model, os, browser
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
         RETURNING id, timestamp
       `, [
         userId, userEmail, userRole, action, entityType, entityId,
@@ -95,7 +101,8 @@ class AuditService {
         newValues ? JSON.stringify(newValues) : null,
         changes ? JSON.stringify(changes) : null,
         ipAddress, userAgent, sessionId, severity, description,
-        metadata ? JSON.stringify(metadata) : null
+        metadata ? JSON.stringify(metadata) : null,
+        deviceType, deviceBrand, deviceModel, os, browser
       ]);
 
       const auditEntry = result.rows[0];
