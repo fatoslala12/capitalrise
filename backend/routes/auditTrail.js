@@ -6,7 +6,7 @@ const { verifyToken } = require('../middleware/auth');
 // Get all audit logs with pagination and filtering
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const { page = 1, limit = 50, action, module, user, dateFrom, dateTo } = req.query;
+    const { page = 1, limit = 50, action, module, user, dateFrom, dateTo, since } = req.query;
     const offset = (page - 1) * limit;
 
     let query = `
@@ -53,7 +53,20 @@ router.get('/', verifyToken, async (req, res) => {
       params.push(dateTo + ' 23:59:59');
     }
 
-    query += ` ORDER BY al.timestamp DESC LIMIT ? OFFSET ?`;
+    // since parameter: fetch logs newer than a timestamp or id
+    if (since) {
+      // Try to parse as date; if invalid, treat as numeric id
+      const sinceDate = new Date(since);
+      if (!isNaN(sinceDate.getTime())) {
+        query += ` AND al.timestamp > ?`;
+        params.push(since);
+      } else if (!isNaN(Number(since))) {
+        query += ` AND al.id > ?`;
+        params.push(Number(since));
+      }
+    }
+
+    query += ` ORDER BY al.timestamp DESC, al.id DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), offset);
 
     const [logs] = await pool.query(query, params);

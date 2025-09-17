@@ -29,3 +29,12 @@ INSERT INTO audit_logs (action, module, description, user_id, timestamp, details
 ('LOGIN', 'AUTH', 'Përdorues u kyç në sistem', 2, NOW() - INTERVAL 8 HOUR, '{"ipAddress": "192.168.1.101", "userAgent": "Chrome/120.0"}'),
 ('CREATE', 'EMPLOYEES', 'Punonjës i ri u shtua', 1, NOW() - INTERVAL 9 HOUR, '{"employeeId": 8, "name": "John Doe", "position": "Worker"}'),
 ('PAYMENT', 'PAYMENTS', 'Pagesë u anuluar', 1, NOW() - INTERVAL 10 HOUR, '{"paymentId": 6, "reason": "client_request", "amount": 800}');
+
+ALTER TABLE audit_logs
+  ADD COLUMN IF NOT EXISTS ip_address VARCHAR(100) NULL COMMENT 'IP address of requester',
+  ADD COLUMN IF NOT EXISTS user_agent TEXT NULL COMMENT 'Raw User-Agent string',
+  ADD COLUMN IF NOT EXISTS device_type VARCHAR(50) NULL COMMENT 'Device type: mobile/tablet/desktop',
+  ADD COLUMN IF NOT EXISTS device_brand VARCHAR(100) NULL COMMENT 'Device brand e.g., Samsung/Apple',
+  ADD COLUMN IF NOT EXISTS device_model VARCHAR(100) NULL COMMENT 'Device model',
+  ADD COLUMN IF NOT EXISTS os VARCHAR(100) NULL COMMENT 'Operating system',
+  ADD COLUMN IF NOT EXISTS browser VARCHAR(100) NULL COMMENT 'Browser name';

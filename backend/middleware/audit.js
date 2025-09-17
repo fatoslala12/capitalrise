@@ -86,10 +86,25 @@ async function logAuditEvent(req, res, responseData, statusCode, options) {
     }
 
     // Merr IP address
-    const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
+    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress;
 
-    // Merr user agent
+    // Merr user agent dhe parse për pajisjen
     const userAgent = req.headers['user-agent'];
+    let deviceInfo = {};
+    try {
+      const UAParser = require('ua-parser-js');
+      const parser = new UAParser(userAgent);
+      const result = parser.getResult();
+      deviceInfo = {
+        device_type: result.device?.type || 'desktop',
+        device_brand: result.device?.vendor || null,
+        device_model: result.device?.model || null,
+        os: result.os?.name ? `${result.os.name} ${result.os.version || ''}`.trim() : null,
+        browser: result.browser?.name ? `${result.browser.name} ${result.browser.version || ''}`.trim() : null
+      };
+    } catch (e) {
+      deviceInfo = {};
+    }
 
     // Përcakto old values dhe new values
     let oldValues = null;
@@ -127,7 +142,8 @@ async function logAuditEvent(req, res, responseData, statusCode, options) {
         method: req.method,
         url: req.originalUrl,
         statusCode,
-        responseSize: responseData ? JSON.stringify(responseData).length : 0
+        responseSize: responseData ? JSON.stringify(responseData).length : 0,
+        ...deviceInfo
       }
     });
 

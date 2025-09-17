@@ -47,7 +47,7 @@ export default function AuditTrail() {
   const [stats, setStats] = useState({});
   const [suspiciousActivities, setSuspiciousActivities] = useState([]);
   const [mostActiveEntities, setMostActiveEntities] = useState([]);
-  const [realTimeMode, setRealTimeMode] = useState(false);
+  const [realTimeMode, setRealTimeMode] = useState(true);
   const [selectedLog, setSelectedLog] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [filters, setFilters] = useState({
@@ -74,7 +74,7 @@ export default function AuditTrail() {
     
     // Set up real-time updates if enabled
     if (realTimeMode) {
-      const interval = setInterval(fetchData, 30000); // Update every 30 seconds
+      const interval = setInterval(fetchData, 5000); // Update every 5 seconds for near real-time
       return () => clearInterval(interval);
     }
   }, [realTimeMode]);
