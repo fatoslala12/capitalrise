@@ -16,7 +16,7 @@ router.get('/', verifyToken, async (req, res) => {
       SELECT 
         al.id,
         al.action,
-        COALESCE(al.module, al.entity_type) AS module,
+        al.entity_type AS module,
         al.description,
         al.user_id,
         al.timestamp,
@@ -37,7 +37,7 @@ router.get('/', verifyToken, async (req, res) => {
     }
 
     if (module) {
-      query += ` AND COALESCE(al.module, al.entity_type) = ${nextParam()}`;
+      query += ` AND al.entity_type = ${nextParam()}`;
       params.push(module);
     }
 
@@ -95,7 +95,7 @@ router.get('/', verifyToken, async (req, res) => {
     }
 
     if (module) {
-      countQuery += ` AND COALESCE(al.module, al.entity_type) = ${nextParam2()}`;
+      countQuery += ` AND al.entity_type = ${nextParam2()}`;
       countParams.push(module);
     }
 
