@@ -22,7 +22,8 @@
     "pdfkit": "^0.17.1",
     "pg": "^8.16.3",
     "react-hot-toast": "^2.5.2",
-    "resend": "^3.5.0"
+    "resend": "^3.5.0",
+    "ua-parser-js": "^2.0.5"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
