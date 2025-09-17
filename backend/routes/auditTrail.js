@@ -16,11 +16,11 @@ router.get('/', verifyToken, async (req, res) => {
       SELECT 
         al.id,
         al.action,
-        al.module,
+        COALESCE(al.module, al.entity_type) AS module,
         al.description,
         al.user_id,
         al.timestamp,
-        al.details,
+        al.metadata AS details,
         u.email as user_email,
         CONCAT(e.name, ' ', e.surname) as user_name
       FROM audit_trail al
@@ -37,7 +37,7 @@ router.get('/', verifyToken, async (req, res) => {
     }
 
     if (module) {
-      query += ` AND al.module = ${nextParam()}`;
+      query += ` AND COALESCE(al.module, al.entity_type) = ${nextParam()}`;
       params.push(module);
     }
 
@@ -95,7 +95,7 @@ router.get('/', verifyToken, async (req, res) => {
     }
 
     if (module) {
-      countQuery += ` AND al.module = ${nextParam2()}`;
+      countQuery += ` AND COALESCE(al.module, al.entity_type) = ${nextParam2()}`;
       countParams.push(module);
     }
 
