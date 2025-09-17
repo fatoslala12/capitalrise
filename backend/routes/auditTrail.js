@@ -12,8 +12,6 @@ router.get('/', verifyToken, async (req, res) => {
     let paramIndex = 1;
     const nextParam = () => `$${paramIndex++}`;
 
-    const fullNameExpr = "COALESCE(e.first_name, e.name, '') || ' ' || COALESCE(e.last_name, e.surname, '')";
-
     let query = `
       SELECT 
         al.id,
@@ -23,11 +21,9 @@ router.get('/', verifyToken, async (req, res) => {
         al.user_id,
         al.timestamp,
         al.metadata AS details,
-        u.email as user_email,
-        ${fullNameExpr} as user_name
+        u.email as user_email
       FROM audit_trail al
       LEFT JOIN users u ON al.user_id = u.id
-      LEFT JOIN employees e ON u.employee_id = e.id
       WHERE 1=1
     `;
     
@@ -45,9 +41,8 @@ router.get('/', verifyToken, async (req, res) => {
 
     if (user) {
       const p1 = nextParam();
-      const p2 = nextParam();
-      query += ` AND (u.email ILIKE ${p1} OR ${fullNameExpr} ILIKE ${p2})`;
-      params.push(`%${user}%`, `%${user}%`);
+      query += ` AND (u.email ILIKE ${p1})`;
+      params.push(`%${user}%`);
     }
 
     if (dateFrom) {
@@ -85,7 +80,6 @@ router.get('/', verifyToken, async (req, res) => {
       SELECT COUNT(*) as total
       FROM audit_trail al
       LEFT JOIN users u ON al.user_id = u.id
-      LEFT JOIN employees e ON u.employee_id = e.id
       WHERE 1=1
     `;
     
@@ -103,9 +97,8 @@ router.get('/', verifyToken, async (req, res) => {
 
     if (user) {
       const p1 = nextParam2();
-      const p2 = nextParam2();
-      countQuery += ` AND (u.email ILIKE ${p1} OR ${fullNameExpr} ILIKE ${p2})`;
-      countParams.push(`%${user}%`, `%${user}%`);
+      countQuery += ` AND (u.email ILIKE ${p1})`;
+      countParams.push(`%${user}%`);
     }
 
     if (dateFrom) {
