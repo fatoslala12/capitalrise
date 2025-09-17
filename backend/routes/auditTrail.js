@@ -21,6 +21,13 @@ router.get('/', verifyToken, async (req, res) => {
         al.user_id,
         al.timestamp,
         al.metadata AS details,
+        al.ip_address,
+        al.user_agent,
+        al.device_type,
+        al.device_brand,
+        al.device_model,
+        al.os,
+        al.browser,
         u.email as user_email
       FROM audit_trail al
       LEFT JOIN users u ON al.user_id = u.id

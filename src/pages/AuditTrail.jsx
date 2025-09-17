@@ -124,7 +124,7 @@ export default function AuditTrail() {
   // Filtro log-et
   const filteredLogs = auditLogs.filter(log => {
     if (filters.action && log.action !== filters.action) return false;
-    if (filters.user && !log.user_name?.toLowerCase().includes(filters.user.toLowerCase())) return false;
+    if (filters.user && !(`${log.user_name || ''} ${log.user_email || ''}`.toLowerCase().includes(filters.user.toLowerCase()))) return false;
     if (filters.module && log.module !== filters.module) return false;
     if (filters.severity && log.severity !== filters.severity) return false;
     
@@ -636,6 +636,19 @@ export default function AuditTrail() {
                           {log.details?.ipInfo?.location && (
                             <span className="flex items-center gap-1">
                               📍 <span className="font-medium">{safeT('auditTrail.location', 'Lokacioni:')} {log.details.ipInfo.location}</span>
+                            </span>
+                          )}
+                          {(log.os || log.browser || log.device_type) && (
+                            <span className="flex items-center gap-1">
+                              🖥️ <span className="font-medium">{log.os || 'OS'}</span>
+                              <span className="text-gray-400">•</span>
+                              🌐 <span className="font-medium">{log.browser || 'Browser'}</span>
+                              {log.device_type && (
+                                <>
+                                  <span className="text-gray-400">•</span>
+                                  📱 <span className="font-medium">{log.device_type}</span>
+                                </>
+                              )}
                             </span>
                           )}
                         </div>
