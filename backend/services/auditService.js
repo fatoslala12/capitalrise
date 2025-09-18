@@ -119,6 +119,22 @@ class AuditService {
   // Log login events
   async logLogin(userId, userEmail, userRole, ipAddress, userAgent, success = true, metadata = null) {
     let loginMetadata = metadata || { success };
+    // Parse user agent to derive device fields
+    let deviceType = null, deviceBrand = null, deviceModel = null, os = null, browser = null;
+    try {
+      const UAParser = require('ua-parser-js');
+      const parser = new UAParser(userAgent || undefined);
+      const ua = parser.getResult();
+      deviceType = ua.device?.type || 'desktop';
+      deviceBrand = ua.device?.vendor || null;
+      deviceModel = ua.device?.model || null;
+      os = ua.os?.name ? `${ua.os.name} ${ua.os.version || ''}`.trim() : null;
+      browser = ua.browser?.name ? `${ua.browser.name} ${ua.browser.version || ''}`.trim() : null;
+      loginMetadata = {
+        ...loginMetadata,
+        deviceType, deviceBrand, deviceModel, os, browser
+      };
+    } catch (_) {}
     
     if (success) {
       // For successful logins, include user details
@@ -155,7 +171,12 @@ class AuditService {
       userAgent,
       severity: success ? 'info' : 'warning',
       description: success ? 'Përdoruesi u logua me sukses' : 'Tentativë e dështuar e login',
-      metadata: loginMetadata
+      metadata: loginMetadata,
+      deviceType,
+      deviceBrand,
+      deviceModel,
+      os,
+      browser
     });
   }
 

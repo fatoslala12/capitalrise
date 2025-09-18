@@ -235,6 +235,7 @@ router.get('/active-users', verifyToken, async (req, res) => {
           timestamp                      AS last_seen
         FROM audit_trail
         WHERE timestamp >= now() - ($1::int || ' minutes')::interval
+          AND COALESCE(user_email, '') <> ''
         ORDER BY COALESCE(user_email, user_id::text), timestamp DESC
       `,
       [withinMinutes]
