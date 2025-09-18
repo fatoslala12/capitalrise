@@ -47,6 +47,7 @@ export default function AuditTrail() {
   const [stats, setStats] = useState({});
   const [suspiciousActivities, setSuspiciousActivities] = useState([]);
   const [mostActiveEntities, setMostActiveEntities] = useState([]);
+  const [activeUsers, setActiveUsers] = useState([]);
   const [realTimeMode, setRealTimeMode] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -80,13 +81,15 @@ export default function AuditTrail() {
     try {
       setLoading(true);
       const params = { ...filters };
-      const [logsRes, statsRes] = await Promise.all([
+      const [logsRes, statsRes, activeRes] = await Promise.all([
         api.get('/api/audit-trail', { params }),
-        api.get('/api/audit-trail/stats', { params })
+        api.get('/api/audit-trail/stats', { params }),
+        api.get('/api/audit-trail/active-users', { params: { withinMinutes: 15 } })
       ]);
       const payload = logsRes.data?.logs || logsRes.data?.data || [];
       setAuditLogs(payload);
       if (statsRes.data?.data) setStats(statsRes.data.data);
+      setActiveUsers(activeRes.data?.data || []);
     } catch (error) {
       console.error('Error fetching audit data:', error);
       toast.error(safeT('auditTrail.messages.dataLoadError', 'Gabim gjatë ngarkimit të të dhënave'));
@@ -519,6 +522,41 @@ export default function AuditTrail() {
                 </Button>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Active Users Panel */}
+        <Card className="border-2 border-emerald-200/50 shadow-md">
+          <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50">
+            <CardTitle className="flex items-center gap-2 text-emerald-700">
+              <Users className="w-5 h-5" /> {safeT('auditTrail.activeUsers', 'Përdorues Aktivë')} ({activeUsers.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            {activeUsers.length === 0 ? (
+              <div className="text-sm text-gray-500">{safeT('auditTrail.noActiveUsers', 'Asnjë përdorues aktiv në 15 minutat e fundit')}</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {activeUsers.map((u, idx) => (
+                  <div key={idx} className="rounded-lg border border-emerald-200 bg-white p-3 text-sm">
+                    <div className="font-semibold text-emerald-800">{u.user_email || `#${u.user_id}`}</div>
+                    <div className="text-gray-600 mt-1 flex items-center gap-2">
+                      <span>🖥️ {u.os || 'OS'}</span>
+                      <span className="text-gray-300">|</span>
+                      <span>🌐 {u.browser || 'Browser'}</span>
+                      {u.device_type && (
+                        <>
+                          <span className="text-gray-300">|</span>
+                          <span>📱 {u.device_type}</span>
+                        </>
+                      )}
+                    </div>
+                    <div className="text-gray-500 mt-1">IP: {u.ip_address || '-'}</div>
+                    <div className="text-gray-400 text-xs mt-1">{format(new Date(u.last_seen), 'dd MMM yyyy, HH:mm')}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
