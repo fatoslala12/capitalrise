@@ -84,7 +84,7 @@ export default function AuditTrail() {
       const [logsRes, statsRes, activeRes] = await Promise.all([
         api.get('/api/audit-trail', { params }),
         api.get('/api/audit-trail/stats', { params }),
-        api.get('/api/audit-trail/active-users', { params: { withinMinutes: 15 } })
+        api.get('/api/audit-trail/active-users', { params: { withinMinutes: 15, limit: 5 } })
       ]);
       const payload = logsRes.data?.logs || logsRes.data?.data || [];
       setAuditLogs(payload);

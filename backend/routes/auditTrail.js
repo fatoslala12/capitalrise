@@ -221,10 +221,11 @@ router.get('/stats', verifyToken, async (req, res) => {
 router.get('/active-users', verifyToken, async (req, res) => {
   try {
     const withinMinutes = Number(req.query.withinMinutes || 15);
+    const limit = Number(req.query.limit || 5);
     const { rows } = await pool.query(
       `
-        SELECT DISTINCT ON (COALESCE(user_email, user_id::text))
-          COALESCE(user_email, '')       AS user_email,
+        SELECT 
+          COALESCE(user_email, '') AS user_email,
           user_id,
           ip_address,
           os,
@@ -232,16 +233,17 @@ router.get('/active-users', verifyToken, async (req, res) => {
           device_type,
           device_brand,
           device_model,
-          timestamp                      AS last_seen
+          timestamp AS last_seen
         FROM audit_trail
         WHERE timestamp >= now() - ($1::int || ' minutes')::interval
           AND COALESCE(user_email, '') <> ''
-        ORDER BY COALESCE(user_email, user_id::text), timestamp DESC
+        ORDER BY timestamp DESC
+        LIMIT $2
       `,
-      [withinMinutes]
+      [withinMinutes, limit]
     );
 
-    res.json({ data: rows, withinMinutes });
+    res.json({ data: rows, withinMinutes, limit });
   } catch (error) {
     console.error('Error fetching active users:', error);
     res.status(500).json({ error: 'Gabim gjatë marrjes së userëve aktivë' });
