@@ -540,7 +540,7 @@ export default function AuditTrail() {
                 {activeUsers.map((u, idx) => (
                   <div key={idx} className="rounded-lg border border-emerald-200 bg-white p-3 text-sm">
                     <div className="font-semibold text-emerald-800">{u.user_email || `#${u.user_id}`}</div>
-                    <div className="text-gray-600 mt-1 flex items-center gap-2">
+                    <div className="text-gray-600 mt-1 flex items-center gap-2 flex-wrap">
                       <span>🖥️ {u.os || 'OS'}</span>
                       <span className="text-gray-300">|</span>
                       <span>🌐 {u.browser || 'Browser'}</span>
@@ -548,6 +548,12 @@ export default function AuditTrail() {
                         <>
                           <span className="text-gray-300">|</span>
                           <span>📱 {u.device_type}</span>
+                        </>
+                      )}
+                      {(u.device_brand || u.device_model) && (
+                        <>
+                          <span className="text-gray-300">|</span>
+                          <span>🏷️ {(u.device_brand || '').toString()} {(u.device_model || '').toString()}</span>
                         </>
                       )}
                     </div>
