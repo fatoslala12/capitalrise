@@ -43,12 +43,14 @@ export default function AppRouter() {
 
         {!user ? (
           <>
-            <Route path="/" element={<Login />} />
-            <Route path="*" element={<Navigate to="/" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </>
         ) : (
           <>
             <Route path="/" element={<Navigate to={`/${user.role}/dashboard`} />} />
+            <Route path="/login" element={<Navigate to={`/${user.role}/dashboard`} replace />} />
             <Route path="/dashboard" element={<Navigate to={`/${user.role}/dashboard`} />} />
             <Route path="/notifications" element={<NotificationsPage />} />
 
