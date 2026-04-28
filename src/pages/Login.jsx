@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import { useErrorHandler } from "../components/ErrorBoundary";
 import { LoadingWithError } from "../components/ErrorBoundary";
 import { toast } from "react-hot-toast";
@@ -11,6 +12,7 @@ import bgImage from "../assets/382b2286-46ce-4e4e-ad8b-e6ac9d0ee9ef.png";
 
 export default function Login() {
   const { login } = useAuth();
+  const { changeLanguage } = useLanguage();
   const navigate = useNavigate();
   const { handleError } = useErrorHandler();
   const { t } = useTranslation();
@@ -21,6 +23,10 @@ export default function Login() {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    changeLanguage('en');
+  }, [changeLanguage]);
 
   // Validation functions
   const validateEmail = (email) => {
