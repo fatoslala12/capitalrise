@@ -46,7 +46,7 @@ export default function EmployeesList() {
     phone: "",
     role: "user",
     hourlyRate: "",
-    status: t('employees.active'),
+    status: "Aktiv",
     qualification: "CSS",
     labelType: "UTR",
     photo: employeePlaceholder,
@@ -67,6 +67,7 @@ export default function EmployeesList() {
   if (!user) return <div className="p-4 text-center">{t('common.loading')}</div>;
   const isManager = user?.role === "manager";
   const managerSites = Array.isArray(user?.workplace) ? user.workplace : [];
+  const isActiveStatus = (status) => status === "Aktiv" || status === "Active";
 
   // Merr kontratat nga backend
   useEffect(() => {
@@ -263,7 +264,7 @@ export default function EmployeesList() {
     
     // Validate that at least one workplace is selected
     if (!newEmployee.workplace || newEmployee.workplace.length === 0) {
-      alert("Ju lutem zgjidhni të paktën një vend pune!");
+      alert(t('employeesList.selectWorkplace'));
       return;
     }
     
@@ -272,7 +273,7 @@ export default function EmployeesList() {
         (wp) => !siteOptions.includes(wp)
       );
       if (invalidSites.length > 0) {
-        alert("Nuk mund të shtoni punonjës në site që nuk ju përkasin.");
+        alert(t('employeesList.managerSiteRestriction'));
         return;
       }
     }
@@ -332,46 +333,46 @@ export default function EmployeesList() {
         setShowAddModal(false);
         
         // Shfaq mesazh suksesi me të dhënat e plota
-        const successMessage = `✅ Punonjësi u krijua me sukses!
+        const successMessage = `✅ ${t('employeesList.employeeCreated')}
 
-👤 Informacionet e Punonjësit:
-   Emri: ${res.data.data.firstName} ${res.data.data.lastName}
+👤 ${t('employeesList.employeeInformation')}:
+   ${t('employeesList.name')}: ${res.data.data.firstName} ${res.data.data.lastName}
    Email: ${res.data.data.email}
-   Roli: ${res.data.data.role}
-   Statusi: ${res.data.data.status}
-   Telefoni: ${res.data.data.phone || 'N/A'}
-   Adresa: ${res.data.data.residence || res.data.data.address || 'N/A'}
-   Kualifikimi: ${res.data.data.qualification || 'N/A'}
-   Paga për orë: £${res.data.data.hourlyRate || 'N/A'}
-   Data e fillimit: ${res.data.data.startDate || 'N/A'}
-   Kontakti i ngushtë: ${res.data.data.nextOfKin || 'N/A'}
-   Telefoni i kontaktit: ${res.data.data.nextOfKinPhone || 'N/A'}
+   ${t('employeesList.role')}: ${res.data.data.role}
+   ${t('employeesList.status')}: ${res.data.data.status}
+   ${t('employeesList.phone')}: ${res.data.data.phone || 'N/A'}
+   ${t('employeesList.residence')}: ${res.data.data.residence || res.data.data.address || 'N/A'}
+   ${t('employeesList.qualification')}: ${res.data.data.qualification || 'N/A'}
+   ${t('employeesList.hourlyRate')}: £${res.data.data.hourlyRate || 'N/A'}
+   ${t('employeesList.startDate')}: ${res.data.data.startDate || 'N/A'}
+   ${t('employeesList.nextOfKin')}: ${res.data.data.nextOfKin || 'N/A'}
+   ${t('employeesList.nextOfKinPhone')}: ${res.data.data.nextOfKinPhone || 'N/A'}
    NID: ${res.data.data.nid || 'N/A'}
    Label Type: ${res.data.data.labelType || 'N/A'}
 
-🔐 Kredencialet e hyrjes:
+🔐 ${t('employeesList.loginCredentials')}:
    Email: ${res.data.data.email}
-   Fjalëkalimi: ${res.data.data.password}
+   ${t('employeesList.password')}: ${res.data.data.password}
 
-📧 Statusi i email-it: ${res.data.data.emailSent ? '✅ U dërgua' : '❌ Nuk u dërgua'}
+📧 ${t('employeesList.emailStatus')}: ${res.data.data.emailSent ? `✅ ${t('employeesList.sent')}` : `❌ ${t('employeesList.notSent')}`}
 
-⚠️ Ju lutem ndryshoni fjalëkalimin pas hyrjes së parë për sigurinë e llogarisë.`;
+⚠️ ${t('employeesList.changePasswordAfterLogin')}`;
 
         alert(successMessage);
       }
     } catch (error) {
-      console.error("Gabim në shtimin e punonjësit:", error);
+      console.error("Error adding employee:", error);
       
-      let errorMessage = "Gabim në shtimin e punonjësit. Provoni përsëri.";
+      let errorMessage = t('employeesList.errorCreatingEmployee');
       
       if (error.response?.data?.error?.message) {
         errorMessage = error.response.data.error.message;
       } else if (error.response?.status === 409) {
-        errorMessage = "Email-i ekziston tashmë në sistem";
+        errorMessage = t('employeesList.emailExists');
       } else if (error.response?.status === 400) {
-        errorMessage = "Të dhënat nuk janë të vlefshme. Kontrolloni fushat e detyrueshme.";
+        errorMessage = t('employeesList.invalidData');
       } else if (error.response?.status === 403) {
-        errorMessage = "Nuk keni leje për të krijuar punonjës";
+        errorMessage = t('employeesList.noCreatePermission');
       }
       
       alert(`❌ ${errorMessage}`);
@@ -416,7 +417,7 @@ export default function EmployeesList() {
 
   const handleDelete = async (id) => {
     if (!id) return;
-    if (window.confirm("A jeni i sigurt që doni të fshini këtë punonjës?")) {
+    if (window.confirm(t('employeesList.confirmDelete'))) {
       try {
         await axios.delete(`https://capitalrise-cwcq.onrender.com/api/employees/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -427,7 +428,7 @@ export default function EmployeesList() {
         });
         setEmployees(res.data);
       } catch (err) {
-        alert("Gabim gjatë fshirjes së punonjësit!");
+        alert(t('employeesList.errorDeletingEmployee'));
       }
     }
   };
@@ -470,6 +471,25 @@ export default function EmployeesList() {
       }
       return 0;
     });
+
+  const getStatusLabel = (status) => {
+    const labels = {
+      Aktiv: t('employeesList.active'),
+      Joaktiv: t('employeesList.inactive'),
+      Active: t('employeesList.active'),
+      Inactive: t('employeesList.inactive')
+    };
+    return labels[status] || status;
+  };
+
+  const getRoleLabel = (role) => {
+    const labels = {
+      user: t('employeesList.employee'),
+      manager: t('employeesList.manager'),
+      admin: t('employeesList.admin')
+    };
+    return labels[role] || role;
+  };
 
   const exportToCSV = () => {
     const filtered = employees.filter((e) => {
@@ -548,7 +568,7 @@ export default function EmployeesList() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#32938b]/10 via-white to-[#2a6b66]/10">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#32938b] mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700">Duke ngarkuar punonjësit...</h2>
+          <h2 className="text-xl font-semibold text-gray-700">{t('employeesList.loading')}</h2>
         </div>
       </div>
     );
@@ -746,7 +766,7 @@ export default function EmployeesList() {
                         ))
                       ) : (
                         <div className="text-red-500 text-sm">
-                          ⚠️ Nuk ka site të disponueshme. Kontrolloni që menaxheri të ketë site të caktuar.
+                          ⚠️ {t('employeesList.noSitesAvailable')}
                         </div>
                       )}
                     </div>
@@ -763,7 +783,7 @@ export default function EmployeesList() {
                         <input 
                           type="text" 
                           name="phone" 
-                          placeholder="Numri i telefonit" 
+                          placeholder={t('employeesList.phonePlaceholder')}
                           required 
                           value={newEmployee.phone} 
                     onChange={handleChange}
@@ -775,7 +795,7 @@ export default function EmployeesList() {
                         <input 
                           type="text" 
                           name="nextOfKin" 
-                          placeholder="Kontakti i ngushtë" 
+                          placeholder={t('employeesList.nextOfKin')}
                           value={newEmployee.nextOfKin || ""} 
                           onChange={handleChange} 
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#2a6b66]/30 focus:border-[#2a6b66] transition-all" 
@@ -786,7 +806,7 @@ export default function EmployeesList() {
                         <input 
                           type="text" 
                           name="nextOfKinPhone" 
-                          placeholder="Telefoni i kontaktit" 
+                          placeholder={t('employeesList.nextOfKinPhone')}
                           value={newEmployee.nextOfKinPhone || ""} 
                     onChange={handleChange}
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-[#2a6b66]/30 focus:border-[#2a6b66] transition-all" 
@@ -798,23 +818,23 @@ export default function EmployeesList() {
                   {/* WORK DETAILS SECTION */}
                   <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      💼 Detajet e Punës
+                      💼 {t('employeesList.workDetails')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Roli</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.role')}</label>
                 <select
                   name="role"
                   value={newEmployee.role}
                   onChange={handleChange}
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
                 >
-                  <option value="user">Punonjës</option>
-                  <option value="manager">Menaxher</option>
+                  <option value="user">{t('employeesList.employee')}</option>
+                  <option value="manager">{t('employeesList.manager')}</option>
                 </select>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Paga / Orë (£)</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.salaryPerHour')}</label>
                         <input 
                           type="number" 
                           name="hourlyRate" 
@@ -825,7 +845,7 @@ export default function EmployeesList() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Kualifikimi</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.qualification')}</label>
                         <select 
                           name="qualification" 
                           value={newEmployee.qualification} 
@@ -850,7 +870,7 @@ export default function EmployeesList() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Statusi *</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.status')} *</label>
                         <select 
                           name="status" 
                           required 
@@ -858,8 +878,8 @@ export default function EmployeesList() {
                           onChange={handleChange} 
                           className="w-full p-3 border-2 border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
                         >
-                  <option value="Aktiv">Aktiv</option>
-                  <option value="Joaktiv">Joaktiv</option>
+                  <option value="Aktiv">{t('employeesList.active')}</option>
+                  <option value="Joaktiv">{t('employeesList.inactive')}</option>
                 </select>
                       </div>
                     </div>
@@ -868,11 +888,11 @@ export default function EmployeesList() {
                   {/* FILES SECTION */}
                   <div className="bg-orange-50/50 rounded-xl p-4 border border-orange-200">
                     <label className="text-sm font-medium text-slate-600 uppercase tracking-wide mb-4 block">
-                      📁 Dokumentet
+                      📁 {t('employeesList.documents')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Ngarko Foto</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.uploadPhoto')}</label>
                         <input 
                           type="file" 
                           name="photo" 
@@ -882,7 +902,7 @@ export default function EmployeesList() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">Ngarko Dokument PDF</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1 block">{t('employeesList.uploadPdfDocument')}</label>
                         <input 
                           type="file" 
                           name="documents" 
@@ -901,8 +921,8 @@ export default function EmployeesList() {
                       className="flex-1 bg-gradient-to-r from-[#32938b] to-[#2a6b66] hover:from-[#2a6b66] hover:to-[#1c514f] text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
                       <span className="text-xl">➕</span>
-                      <span className="hidden sm:inline">Shto Punonjës</span>
-                      <span className="sm:hidden">Shto</span>
+                      <span className="hidden sm:inline">{t('employeesList.addEmployee')}</span>
+                      <span className="sm:hidden">{t('employeesList.add')}</span>
                   </button>
                   <button 
                     type="button"
@@ -910,8 +930,8 @@ export default function EmployeesList() {
                       className="flex-1 bg-slate-400 hover:bg-slate-500 text-white px-6 py-3 rounded-xl font-bold text-base shadow-lg transition-all flex items-center gap-2 justify-center hover:shadow-xl hover:scale-105"
                   >
                       <span className="text-xl">✕</span>
-                      <span className="hidden sm:inline">Anulo</span>
-                      <span className="sm:hidden">Mbyll</span>
+                      <span className="hidden sm:inline">{t('employeesList.cancel')}</span>
+                      <span className="sm:hidden">{t('employeesList.close')}</span>
                   </button>
                 </div>
               </form>
@@ -933,8 +953,8 @@ export default function EmployeesList() {
                 className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#32938b]/30 transition-all"
               >
             <option value="All">{t('employeesList.allStatuses')}</option>
-            <option value="Aktiv">Aktiv</option>
-            <option value="Joaktiv">Joaktiv</option>
+            <option value="Aktiv">{t('employeesList.active')}</option>
+            <option value="Joaktiv">{t('employeesList.inactive')}</option>
           </select>
               <select 
                 value={filterWorkplace} 
@@ -950,8 +970,8 @@ export default function EmployeesList() {
                 className="p-2 sm:p-3 border-2 border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#32938b]/30 transition-all"
               >
             <option value="All">{t('employeesList.allRoles')}</option>
-            <option value="user">Punonjës</option>
-            <option value="manager">Menaxher</option>
+            <option value="user">{t('employeesList.employee')}</option>
+            <option value="manager">{t('employeesList.manager')}</option>
           </select>
               <select 
                 value={filterTax} 
@@ -1005,7 +1025,7 @@ export default function EmployeesList() {
                 const firstName = emp.firstName || emp.first_name || "";
                 const lastName = emp.lastName || emp.last_name || "";
                 const status = emp.status || "";
-                const statusColor = status === "Aktiv" ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200";
+                const statusColor = isActiveStatus(status) ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200";
                 const role = emp.role || "";
                 return (
                       <tr key={emp.id} className="hover:bg-slate-50 transition-all duration-200 border-b border-slate-100">
@@ -1019,7 +1039,7 @@ export default function EmployeesList() {
                         <td className="py-3 px-2 font-bold text-slate-700">{emp.id || ""}</td>
                         <td className="py-3 px-2 font-semibold text-slate-800">{firstName} {lastName}</td>
                         <td className="py-3 px-2 text-center">
-                          <span className="text-xs font-semibold text-white bg-gradient-to-r from-[#32938b] to-[#2a6b66] px-2 py-1 rounded-full shadow uppercase tracking-wide">{role}</span>
+                          <span className="text-xs font-semibold text-white bg-gradient-to-r from-[#32938b] to-[#2a6b66] px-2 py-1 rounded-full shadow uppercase tracking-wide">{getRoleLabel(role)}</span>
                     </td>
                         <td className="py-3 px-2 text-center text-xs text-slate-600">
                       {Array.isArray(emp.workplace) ? emp.workplace.join(", ") : (emp.workplace || "")}
@@ -1027,7 +1047,7 @@ export default function EmployeesList() {
                         <td className="py-3 px-2 text-center text-slate-700">{emp.phone || ""}</td>
                         <td className="py-3 px-2 text-center font-bold text-emerald-600">{emp.hourlyRate !== undefined && emp.hourlyRate !== null && emp.hourlyRate !== "" ? `£${emp.hourlyRate}` : (emp.hourly_rate !== undefined && emp.hourly_rate !== null && emp.hourly_rate !== "" ? `£${emp.hourly_rate}` : "")}</td>
                         <td className="py-3 px-2 text-center">
-                          <span className={`px-3 py-1 rounded-full border text-xs font-bold shadow-md ${statusColor}`}>{status}</span>
+                          <span className={`px-3 py-1 rounded-full border text-xs font-bold shadow-md ${statusColor}`}>{getStatusLabel(status)}</span>
                     </td>
                         <td className="py-3 px-2 text-center font-semibold text-[#32938b]">{emp.labelType || emp.label_type || ""}</td>
                         <td className="py-3 px-2">
@@ -1060,7 +1080,7 @@ export default function EmployeesList() {
                 const firstName = emp.firstName || emp.first_name || "";
                 const lastName = emp.lastName || emp.last_name || "";
                 const status = emp.status || "";
-                const statusColor = status === "Aktiv" ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200";
+                const statusColor = isActiveStatus(status) ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200";
                 const role = emp.role || "";
                 return (
                   <div key={emp.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all">
@@ -1075,33 +1095,33 @@ export default function EmployeesList() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="font-bold text-slate-800 truncate">{firstName} {lastName}</h4>
-                          <span className={`px-2 py-1 rounded-full border text-xs font-bold ${statusColor}`}>{status}</span>
+                          <span className={`px-2 py-1 rounded-full border text-xs font-bold ${statusColor}`}>{getStatusLabel(status)}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-sm text-slate-600 mb-3">
                           <div><span className="font-medium">ID:</span> {emp.id}</div>
                           <div><span className="font-medium">Tel:</span> {emp.phone || "N/A"}</div>
-                          <div><span className="font-medium">Roli:</span> <span className="text-xs font-semibold text-white bg-gradient-to-r from-[#32938b] to-[#2a6b66] px-2 py-0.5 rounded-full">{role}</span></div>
-                          <div><span className="font-medium">Paga:</span> {emp.hourlyRate !== undefined && emp.hourlyRate !== null && emp.hourlyRate !== "" ? `£${emp.hourlyRate}` : (emp.hourly_rate !== undefined && emp.hourly_rate !== null && emp.hourly_rate !== "" ? `£${emp.hourly_rate}` : "N/A")}</div>
+                          <div><span className="font-medium">{t('employeesList.role')}:</span> <span className="text-xs font-semibold text-white bg-gradient-to-r from-[#32938b] to-[#2a6b66] px-2 py-0.5 rounded-full">{getRoleLabel(role)}</span></div>
+                          <div><span className="font-medium">{t('employeesList.salary')}:</span> {emp.hourlyRate !== undefined && emp.hourlyRate !== null && emp.hourlyRate !== "" ? `£${emp.hourlyRate}` : (emp.hourly_rate !== undefined && emp.hourly_rate !== null && emp.hourly_rate !== "" ? `£${emp.hourly_rate}` : "N/A")}</div>
                         </div>
                         <div className="text-xs text-slate-500 mb-3">
-                          <span className="font-medium">Vendet e punës:</span> {Array.isArray(emp.workplace) ? emp.workplace.join(", ") : (emp.workplace || "N/A")}
+                          <span className="font-medium">{t('employeesList.workplaces')}:</span> {Array.isArray(emp.workplace) ? emp.workplace.join(", ") : (emp.workplace || "N/A")}
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="text-xs text-slate-500">
-                            <span className="font-medium">Taksimi:</span> {emp.labelType || emp.label_type || "N/A"}
+                            <span className="font-medium">{t('employeesList.taxation')}:</span> {emp.labelType || emp.label_type || "N/A"}
                           </div>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 text-[#32938b] hover:text-[#2a6b66] hover:scale-110 transition-all" title="Shiko Detaje">
+                            <button onClick={() => navigate(`/admin/employee/${emp.id}`)} className="p-2 text-[#32938b] hover:text-[#2a6b66] hover:scale-110 transition-all" title={t('employeesList.viewDetails')}>
                               <FaEye />
                             </button>
                             <button
                               onClick={() => handleExtract(emp)}
                               className="p-2 text-emerald-600 hover:text-emerald-800 hover:scale-110 transition-all"
-                              title="Eksporto të dhënat"
+                              title={t('employeesList.exportData')}
                             >
                               📥
                             </button>
-                            <button onClick={() => handleDelete(emp.id)} className="p-2 text-red-600 hover:text-red-800 hover:scale-110 transition-all" title="Fshi">
+                            <button onClick={() => handleDelete(emp.id)} className="p-2 text-red-600 hover:text-red-800 hover:scale-110 transition-all" title={t('employeesList.delete')}>
                               🗑
                             </button>
                           </div>

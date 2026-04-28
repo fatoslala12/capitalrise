@@ -250,33 +250,33 @@ export default function DashboardStats() {
           </svg>
         </div>
         <div>
-          <h2 className="text-2xl font-bold mb-2 text-gray-900">Mirë se erdhe{userFullName ? `, ${userFullName}` : ""}</h2>
-          <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Paneli i Administrimit</div>
-          <div className="text-lg font-medium text-purple-700">Statistika, detyra, pagesa dhe më shumë</div>
+          <h2 className="text-2xl font-bold mb-2 text-gray-900">Welcome{userFullName ? `, ${userFullName}` : ""}</h2>
+          <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 tracking-tight mb-1 drop-shadow">Administration Panel</div>
+          <div className="text-lg font-medium text-purple-700">Statistics, tasks, payments and more</div>
         </div>
       </div>
 
       {/* Statistika kryesore */}
       <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="lg" className="mb-12">
         <CountStatCard
-          title="Site aktive"
+          title="Active Sites"
           count={activeSites.length}
           icon="📍"
           color="blue"
         />
         <CountStatCard
-          title="Punonjës aktivë"
+          title="Active Employees"
           count={activeEmployees.length}
           icon="👷"
           color="green"
         />
         <MoneyStatCard
-          title="Paguar këtë javë"
+          title="Paid This Week"
           amount={dashboardStats.totalPaid}
           color="purple"
         />
         <MoneyStatCard
-          title="Fitimi (20%)"
+          title="Profit (20%)"
           amount={dashboardStats.totalProfit}
           color="amber"
         />
@@ -284,19 +284,19 @@ export default function DashboardStats() {
 
       {/* Detyrat - më të dukshme */}
       <div className="bg-gradient-to-r from-yellow-50 via-white to-green-50 p-8 rounded-2xl shadow-xl col-span-full border border-yellow-200">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📋 Detyrat</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📋 Tasks</h3>
         <div className="mb-4 flex gap-4 items-center">
-          <label className="font-medium">Filtro:</label>
+          <label className="font-medium">Filter:</label>
           <select value={taskFilter} onChange={e => setTaskFilter(e.target.value)} className="border p-2 rounded">
-            <option value="ongoing">Vetëm aktive</option>
-            <option value="completed">Vetëm të përfunduara</option>
-            <option value="all">Të gjitha</option>
+            <option value="ongoing">Active only</option>
+            <option value="completed">Completed only</option>
+            <option value="all">All</option>
           </select>
         </div>
         <div className="mb-4 flex flex-wrap gap-6">
-          <div className="bg-blue-100 px-6 py-3 rounded-xl text-blue-800 font-bold shadow">Totali: {allTasks.length}</div>
-          <div className="bg-green-100 px-6 py-3 rounded-xl text-green-800 font-bold shadow">✅ Të përfunduara: {allTasks.filter(t => t.status === 'completed').length}</div>
-          <div className="bg-yellow-100 px-6 py-3 rounded-xl text-yellow-800 font-bold shadow">🕒 Në vazhdim: {allTasks.filter(t => t.status === 'ongoing').length}</div>
+          <div className="bg-blue-100 px-6 py-3 rounded-xl text-blue-800 font-bold shadow">Total: {allTasks.length}</div>
+          <div className="bg-green-100 px-6 py-3 rounded-xl text-green-800 font-bold shadow">✅ Completed: {allTasks.filter(t => t.status === 'completed').length}</div>
+          <div className="bg-yellow-100 px-6 py-3 rounded-xl text-yellow-800 font-bold shadow">🕒 Ongoing: {allTasks.filter(t => t.status === 'ongoing').length}</div>
         </div>
         {filteredTasks.length > 0 ? (
           <ul className="space-y-3">
@@ -305,8 +305,8 @@ export default function DashboardStats() {
                 <StatusBadge status={t.status === 'completed' ? 'completed' : 'ongoing'} />
                 <span className="font-semibold flex-1 text-lg">{t.description || t.title || ''}</span>
                 <span className="text-lg text-blue-700 font-bold">{t.site_name || t.siteName || ''}</span>
-                <span className="text-lg text-purple-700 font-bold">Afati: {t.due_date ? new Date(t.due_date).toLocaleDateString() : ''}</span>
-                <span className="text-xs text-gray-500">Nga: {t.assigned_by || t.assignedBy || ''}</span>
+                <span className="text-lg text-purple-700 font-bold">Due: {t.due_date ? new Date(t.due_date).toLocaleDateString() : ''}</span>
+                <span className="text-xs text-gray-500">From: {t.assigned_by || t.assignedBy || ''}</span>
               </li>
             ))}
           </ul>
@@ -317,28 +317,28 @@ export default function DashboardStats() {
 
       {/* Grafik për site */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Ora të punuara këtë javë sipas site-ve ({dashboardStats.thisWeek})</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📊 Hours worked this week by site ({dashboardStats.thisWeek})</h3>
         <div className="mb-4 text-lg font-semibold text-gray-700">
-          Total orë të punuara: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> orë
+          Total hours worked: <span className="text-blue-600">{dashboardStats.totalWorkHours}</span> hours
         </div>
         {dashboardStats.workHoursBysite && dashboardStats.workHoursBysite.length > 0 ? (
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={dashboardStats.workHoursBysite} layout="vertical" margin={{ left: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" label={{ value: "Orë", position: "insideBottomRight", offset: -5 }} />
+              <XAxis type="number" label={{ value: "Hours", position: "insideBottomRight", offset: -5 }} />
               <YAxis type="category" dataKey="site" width={200} tick={{ fontSize: 18, fontWeight: 'bold', fill: '#3b82f6' }} />
               <Tooltip />
               <Bar dataKey="hours" fill="#3b82f6" radius={[0, 6, 6, 0]} barSize={30} />
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka orë pune të regjistruara për këtë javë</p>
+          <p className="text-gray-500 italic text-center py-8">No work hours recorded for this week</p>
         )}
       </div>
 
       {/* Top 5 më të paguar */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">🏅 Top 5 punonjësit më të paguar këtë javë</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">🏅 Top 5 highest paid employees this week</h3>
         {dashboardStats.top5Employees && dashboardStats.top5Employees.length > 0 ? (
           <ul className="space-y-3 text-gray-800">
             {dashboardStats.top5Employees.map((e, i) => (
@@ -351,7 +351,7 @@ export default function DashboardStats() {
                     {e.name}
                   </p>
                   <p className="text-sm text-gray-600">
-                    {e.isPaid ? '✅ E paguar' : '⏳ E papaguar'}
+                    {e.isPaid ? '✅ Paid' : '⏳ Unpaid'}
                   </p>
                 </div>
                 <div className="text-blue-700 font-extrabold text-xl">£{e.grossAmount.toFixed(2)}</div>
@@ -359,21 +359,21 @@ export default function DashboardStats() {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500 italic text-center py-8">Nuk ka pagesa të regjistruara për këtë javë</p>
+          <p className="text-gray-500 italic text-center py-8">No payments recorded for this week</p>
         )}
       </div>
 
       {/* Faturat e papaguara */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Faturat e Papaguara</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📌 Unpaid Invoices</h3>
         {unpaid.length === 0 ? (
-          <p className="text-gray-500 italic">Të gjitha faturat janë të paguara ✅</p>
+          <p className="text-gray-500 italic">All invoices are paid ✅</p>
         ) : (
           <ul className="space-y-2 text-red-700 text-base">
             {unpaid.map((item, idx) => (
               <li key={idx} className="bg-red-50 p-3 rounded shadow-sm border border-red-200 flex items-center gap-4">
-                <span className="font-bold">🔴 Kontrata #{item.contractNumber || ''}</span>
-                <span className="font-bold text-black">Nr. Fature: <b>{item.invoiceNumber || ''}</b></span>
+                <span className="font-bold">🔴 Contract #{item.contractNumber || ''}</span>
+                <span className="font-bold text-black">Invoice No.: <b>{item.invoiceNumber || ''}</b></span>
                 <span className="font-bold text-black flex items-center gap-1">🏢 Site: <b>{item.siteName || ''}</b></span>
                 <span className="font-bold text-lg flex items-center gap-1">💷 {item.total !== undefined ? `£${item.total.toFixed(2)}` : ''}</span>
               </li>
@@ -384,9 +384,9 @@ export default function DashboardStats() {
 
       {/* Shpenzimet e papaguara */}
       <div className="bg-white p-8 rounded-2xl shadow-md col-span-full mb-8">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 Shpenzimet e Papaguara</h3>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">📂 Unpaid Expenses</h3>
         {unpaidExpenses.length === 0 ? (
-          <p className="text-gray-500 italic">Të gjitha shpenzimet janë të paguara ✅</p>
+          <p className="text-gray-500 italic">All expenses are paid ✅</p>
         ) : (
           <ul className="space-y-2 text-red-700 text-base">
             {unpaidExpenses.map((item, idx) => (
@@ -406,7 +406,7 @@ export default function DashboardStats() {
         )}
       </div>
 
-      {/* Butoni Dil */}
+      {/* Logout button */}
       <div className="flex justify-center mt-4">
         <button
           onClick={() => {
@@ -416,7 +416,7 @@ export default function DashboardStats() {
           }}
           className="bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:from-pink-500 hover:to-red-500 transition text-lg"
         >
-          🚪 Dil
+          🚪 Logout
         </button>
       </div>
     </div>

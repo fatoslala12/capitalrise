@@ -96,13 +96,17 @@ export function StatusBadge({ status, ...props }) {
 }
 
 export function PaymentBadge({ isPaid, ...props }) {
+  const userLanguage = localStorage.getItem('language') || 'en';
+
   return (
     <Badge 
       variant={isPaid ? 'success' : 'warning'} 
       {...props}
     >
       <span className="mr-1">{isPaid ? '✅' : '⏳'}</span>
-      {isPaid ? 'E paguar' : 'E papaguar'}
+      {isPaid
+        ? (userLanguage === 'sq' ? 'E paguar' : 'Paid')
+        : (userLanguage === 'sq' ? 'E papaguar' : 'Unpaid')}
     </Badge>
   );
 }

@@ -14,8 +14,7 @@ export const useLanguage = () => {
 export const LanguageProvider = ({ children }) => {
   const { i18n } = useTranslation();
   const [currentLanguage, setCurrentLanguage] = useState(() => {
-    // Get language from localStorage or default to Albanian
-    return localStorage.getItem('language') || 'sq';
+    return localStorage.getItem('language') || 'en';
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);

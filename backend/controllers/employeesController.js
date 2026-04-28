@@ -29,15 +29,15 @@ exports.getAllEmployees = async (req, res) => {
       workplaceMap[w.employee_id].push(w.site_name);
     });
 
-    // Bashko workplace te çdo employee dhe përditëso të dhënat
+    // Keep employee profile names as the source of truth. User names can be
+    // stale when the employee table is edited directly in the database.
     const employeesWithWorkplace = employees.map(emp => ({
       ...emp,
       workplace: workplaceMap[emp.id] || [],
-      // Përditëso të dhënat nga users nëse janë të disponueshme
       role: emp.role || 'user',
       email: emp.email || emp.username,
-      first_name: emp.user_first_name || emp.first_name,
-      last_name: emp.user_last_name || emp.last_name
+      first_name: emp.first_name || emp.user_first_name,
+      last_name: emp.last_name || emp.user_last_name
     }));
     res.json(employeesWithWorkplace);
   } catch (err) {
