@@ -109,7 +109,7 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(false);
     
     // Navigate to login
-    navigate("/");
+    navigate("/login", { replace: true });
   }, [user?.role, getRoleBasedTokenKey, getRoleBasedUserKey, navigate]);
 
   // Check authentication status on mount

@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import MainLayout from "../layouts/MainLayout";
 import { useAuth } from "../context/AuthContext";
 import Login from "../pages/Login";
@@ -28,15 +28,36 @@ const Settings = lazy(() => import("../pages/Settings"));
 
 
 // Loading handled at layout level
+const RouteLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600">
+    Loading...
+  </div>
+);
+
+const getDashboardPath = (role) => {
+  const normalizedRole = String(role || "").toLowerCase();
+
+  if (normalizedRole === "admin" || normalizedRole === "administrator") {
+    return "/admin/dashboard";
+  }
+
+  if (normalizedRole === "manager") {
+    return "/manager/dashboard";
+  }
+
+  return "/user/dashboard";
+};
 
 export default function AppRouter() {
   const { user, loading } = useAuth();
+  const dashboardPath = getDashboardPath(user?.role);
 
   if (loading) {
-    return null;
+    return <RouteLoader />;
   }
 
   return (
+    <Suspense fallback={<RouteLoader />}>
       <Routes>
         {/* Rruga për Forgot Password e hapur për të gjithë */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -49,9 +70,9 @@ export default function AppRouter() {
           </>
         ) : (
           <>
-            <Route path="/" element={<Navigate to={`/${user.role}/dashboard`} />} />
-            <Route path="/login" element={<Navigate to={`/${user.role}/dashboard`} replace />} />
-            <Route path="/dashboard" element={<Navigate to={`/${user.role}/dashboard`} />} />
+            <Route path="/" element={<Navigate to={dashboardPath} replace />} />
+            <Route path="/login" element={<Navigate to={dashboardPath} replace />} />
+            <Route path="/dashboard" element={<Navigate to={dashboardPath} replace />} />
             <Route path="/notifications" element={<NotificationsPage />} />
 
             <Route path="/admin" element={<MainLayout />}>
@@ -94,8 +115,10 @@ export default function AppRouter() {
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="settings" element={<Settings />} />
             </Route>
+            <Route path="*" element={<Navigate to={dashboardPath} replace />} />
           </>
         )}
       </Routes>
+    </Suspense>
   );
 }
